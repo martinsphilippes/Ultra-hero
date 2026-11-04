@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { Button, Checkbox, DatePicker, DateRangePicker, FormField, Input, MoneyInput, QuantityInput, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, DateRangePicker, FormField, Input, MoneyInput, NumberInput, QuantityInput, Select, Textarea, useToast } from "@/components/ui";
 import { fichaLinks, formActions, publishBlock, type HeroChoice } from "@/lib/sponsorship/hero-pick";
 import { parseBrlToCents } from "@/lib/deals/schemas";
 import { saveSponsorshipAction, type OpportunityHeroSearchResult } from "@/lib/sponsorship/actions";
@@ -141,8 +141,9 @@ export function SponsorshipForm({ initial, brands, status = "new", heroLocked = 
       <FormField label={t("description")} hint={t("descriptionHint")}>
         <Textarea value={v.description} maxLength={2000} rows={3} onChange={(e) => set("description", e.target.value)} disabled={pending} />
       </FormField>
-      <FormField label={t("reach")}>
-        <Input value={v.expectedReach} maxLength={160} placeholder={t("reachPlaceholder")} onChange={(e) => set("expectedReach", e.target.value)} disabled={pending} />
+      <FormField label={t("reach")} hint={t("reachHint")}>
+        {/* só números (pedido do responsável, 04/11): ponto de milhar enquanto digita, guardado como "5.000" */}
+        <NumberInput value={v.expectedReach} max={999_999_999} placeholder={t("reachPlaceholder")} onValueChange={(text) => set("expectedReach", text)} disabled={pending} />
       </FormField>
       <fieldset className="flex flex-col gap-3" data-testid="sponsorship-tiers">
         <legend className="mb-1 flex flex-col gap-0.5">

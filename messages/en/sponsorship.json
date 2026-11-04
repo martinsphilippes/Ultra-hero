@@ -17,7 +17,8 @@
     "reach": "Expected reach",
     "respondBy": "Reply by {date}",
     "networks": "Networks",
-    "perks": "What the brand gets"
+    "perks": "What the brand gets",
+    "reachValue": "{value} people"
   },
   "agency": {
     "title": "Sponsorship opportunities",
@@ -74,7 +75,7 @@
       "description": "Description",
       "descriptionHint": "What will happen. Brands read this text.",
       "reach": "Expected reach",
-      "reachPlaceholder": "E.g.: 5,000 people along the route",
+      "reachPlaceholder": "E.g.: 5,000",
       "perks": "What the brand gets",
       "perksHint": "One per line, up to {max}.",
       "perksPlaceholder": "Logo on the shirt\n3 live stories",
@@ -190,7 +191,8 @@
             }
           }
         }
-      }
+      },
+      "reachHint": "Number of people the action should reach."
     },
     "decide": {
       "title": "Decision",

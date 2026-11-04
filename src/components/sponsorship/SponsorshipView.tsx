@@ -87,7 +87,7 @@ export function SponsorshipFacts({ o, timeZone, talentName = null, showDeadline 
             <Megaphone className={icon} aria-hidden="true" />
             <span>
               <span className="text-fg-muted">{t("reach")}: </span>
-              {o.expectedReach}
+              {/^\d{1,3}(\.\d{3})*$/.test(o.expectedReach) ? t("reachValue", { value: o.expectedReach }) : o.expectedReach}
             </span>
           </li>
         ) : null}

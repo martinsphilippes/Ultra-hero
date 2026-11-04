@@ -71,7 +71,8 @@ export const sponsorshipSchema = z
     startTime: time,
     endTime: time,
     allDay: z.boolean(),
-    expectedReach: z.string().trim().max(160),
+    // só números com ponto de milhar ("5.000") ou vazio
+    expectedReach: z.string().trim().max(20).regex(/^(\d{1,3}(\.\d{3})*)?$/),
     perks: z.array(z.string()).max(MAX_PERKS),
     networks: z.array(z.enum(NETWORKS)).min(1).max(NETWORKS.length),
     respondDate: isoDate,

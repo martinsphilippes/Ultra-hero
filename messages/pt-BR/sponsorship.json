@@ -17,7 +17,8 @@
     "reach": "Alcance esperado",
     "respondBy": "Responder até {date}",
     "networks": "Redes",
-    "perks": "O que a marca recebe"
+    "perks": "O que a marca recebe",
+    "reachValue": "{value} pessoas"
   },
   "agency": {
     "title": "Oportunidades de patrocínio",
@@ -74,7 +75,7 @@
       "description": "Descrição",
       "descriptionHint": "O que vai acontecer. As marcas leem este texto.",
       "reach": "Alcance esperado",
-      "reachPlaceholder": "Ex.: 5 mil pessoas no percurso",
+      "reachPlaceholder": "Ex.: 5.000",
       "perks": "O que a marca recebe",
       "perksHint": "Uma por linha, até {max}.",
       "perksPlaceholder": "Logo na camiseta\n3 stories ao vivo",
@@ -190,7 +191,8 @@
             }
           }
         }
-      }
+      },
+      "reachHint": "Número de pessoas que a ação deve alcançar."
     },
     "decide": {
       "title": "Decisão",
