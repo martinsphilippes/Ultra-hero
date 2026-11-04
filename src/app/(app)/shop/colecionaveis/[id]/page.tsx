@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ShopComingSoonGate } from "@/components/commerce/coming-soon/ShopComingSoonGate";
 import { ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -45,67 +46,69 @@ export default async function CollectiblePage({ params }: Props) {
   const viewer = !user ? "anon" : isAdmin ? "admin" : "user";
 
   return (
-    <div className="flex flex-col gap-5 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] md:items-start md:gap-8">
-      <div className="flex flex-col gap-4">
-        <BackLink href="/shop/colecionaveis">{t("detail.back")}</BackLink>
-        <Gallery photos={item.photos} title={item.title} />
-      </div>
+    <ShopComingSoonGate section="collectible" nextPath={`/shop/colecionaveis/${id}`}>
+      <div className="flex flex-col gap-5 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] md:items-start md:gap-8">
+        <div className="flex flex-col gap-4">
+          <BackLink href="/shop/colecionaveis">{t("detail.back")}</BackLink>
+          <Gallery photos={item.photos} title={item.title} />
+        </div>
 
-      <div className="flex flex-col gap-4">
-        <header className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            {item.isDemo ? <span className="font-mono text-[0.6875rem] uppercase tracking-wider text-warning">{t("detail.demoItem")}</span> : null}
-          </div>
-          <h1 className="text-2xl font-bold leading-tight text-fg">{item.title}</h1>
-          {item.hero ? (
-            <Link
-              href={`/personalities/${item.hero.slug}`}
-              className="inline-flex min-h-11 w-fit items-center gap-2 text-sm font-medium text-fg hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-            >
-              <span className="relative inline-flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-elevated text-xs font-bold uppercase">
-                <AvatarImage src={item.hero.avatar_url} alt="" fallback={<AvatarInitials name={item.hero.name} />} fill sizes="32px" className="object-cover" />
-              </span>
-              {t("detail.signedBy", { name: item.hero.name })}
-            </Link>
-          ) : null}
-        </header>
-
-        <AuctionRoom
-          initial={{ item, bids: loaded.bids, mine }}
-          serverNow={Date.now()}
-          viewer={viewer}
-          loginHref={`/login?next=${encodeURIComponent(`/shop/colecionaveis/${id}`)}`}
-        />
-
-        {item.description ? (
-          <section aria-labelledby="collectible-about" className="flex flex-col gap-1">
-            <h2 id="collectible-about" className="text-sm font-semibold text-fg">
-              {t("detail.about")}
-            </h2>
-            <p className="whitespace-pre-line text-sm text-fg-muted">{item.description}</p>
-          </section>
-        ) : null}
-        {item.authenticityNote ? (
-          <section aria-labelledby="collectible-auth" className="flex gap-3 rounded-2xl border border-border bg-surface p-4">
-            <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-success" />
-            <div className="flex flex-col gap-1">
-              <h2 id="collectible-auth" className="text-sm font-semibold text-fg">
-                {t("detail.authenticity")}
-              </h2>
-              <p className="whitespace-pre-line text-sm text-fg-muted">{item.authenticityNote}</p>
+        <div className="flex flex-col gap-4">
+          <header className="flex flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {item.isDemo ? <span className="font-mono text-[0.6875rem] uppercase tracking-wider text-warning">{t("detail.demoItem")}</span> : null}
             </div>
-          </section>
-        ) : null}
-        <details className="rounded-2xl border border-border bg-surface p-4 text-sm text-fg-muted">
-          <summary className="min-h-11 cursor-pointer content-center font-semibold text-fg">{t("detail.rulesTitle")}</summary>
-          <ul className="mt-2 list-disc space-y-1 pl-5">
-            <li>{t("detail.rules.increments")}</li>
-            <li>{t("detail.rules.antiSnipe")}</li>
-            <li>{t("detail.rules.selfOutbid")}</li>
-            <li>{t("detail.rules.winner")}</li>
-          </ul>
-        </details>
+            <h1 className="text-2xl font-bold leading-tight text-fg">{item.title}</h1>
+            {item.hero ? (
+              <Link
+                href={`/personalities/${item.hero.slug}`}
+                className="inline-flex min-h-11 w-fit items-center gap-2 text-sm font-medium text-fg hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              >
+                <span className="relative inline-flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-elevated text-xs font-bold uppercase">
+                  <AvatarImage src={item.hero.avatar_url} alt="" fallback={<AvatarInitials name={item.hero.name} />} fill sizes="32px" className="object-cover" />
+                </span>
+                {t("detail.signedBy", { name: item.hero.name })}
+              </Link>
+            ) : null}
+          </header>
+
+          <AuctionRoom
+            initial={{ item, bids: loaded.bids, mine }}
+            serverNow={Date.now()}
+            viewer={viewer}
+            loginHref={`/login?next=${encodeURIComponent(`/shop/colecionaveis/${id}`)}`}
+          />
+
+          {item.description ? (
+            <section aria-labelledby="collectible-about" className="flex flex-col gap-1">
+              <h2 id="collectible-about" className="text-sm font-semibold text-fg">
+                {t("detail.about")}
+              </h2>
+              <p className="whitespace-pre-line text-sm text-fg-muted">{item.description}</p>
+            </section>
+          ) : null}
+          {item.authenticityNote ? (
+            <section aria-labelledby="collectible-auth" className="flex gap-3 rounded-2xl border border-border bg-surface p-4">
+              <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-success" />
+              <div className="flex flex-col gap-1">
+                <h2 id="collectible-auth" className="text-sm font-semibold text-fg">
+                  {t("detail.authenticity")}
+                </h2>
+                <p className="whitespace-pre-line text-sm text-fg-muted">{item.authenticityNote}</p>
+              </div>
+            </section>
+          ) : null}
+          <details className="rounded-2xl border border-border bg-surface p-4 text-sm text-fg-muted">
+            <summary className="min-h-11 cursor-pointer content-center font-semibold text-fg">{t("detail.rulesTitle")}</summary>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              <li>{t("detail.rules.increments")}</li>
+              <li>{t("detail.rules.antiSnipe")}</li>
+              <li>{t("detail.rules.selfOutbid")}</li>
+              <li>{t("detail.rules.winner")}</li>
+            </ul>
+          </details>
+        </div>
       </div>
-    </div>
+    </ShopComingSoonGate>
   );
 }

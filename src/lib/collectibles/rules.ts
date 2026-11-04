@@ -173,6 +173,8 @@ export const BID_ERROR_CODES = [
   "invalid_increment",
   "already_winning",
   "rate_limited",
+  // não vem do banco: a action barra no modo Coming soon da aba Comprar (src/lib/shop/coming-soon.ts)
+  "shop_coming_soon",
 ] as const;
 export type BidErrorCode = (typeof BID_ERROR_CODES)[number] | "generic";
 

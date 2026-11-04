@@ -24,6 +24,11 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: "profile", href: "/profile", icon: User },
 ];
 
+/** Destino do item: no Coming soon da aba Comprar a entrada é Colecionáveis (a Loja segue em /shop). */
+export function navHref(key: NavKey, href: string, shopSoon: boolean): string {
+  return key === "shop" && shopSoon ? "/shop/colecionaveis" : href;
+}
+
 function underPath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }

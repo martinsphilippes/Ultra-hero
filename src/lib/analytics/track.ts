@@ -26,6 +26,7 @@ export type AnalyticsEvent =
   | "cart.add"
   | "cart.remove"
   | "checkout.start"
+  | "shop.launch_notify"
   | "order.test_confirmed"
   | "order.cancelled"
   | "progress.update"

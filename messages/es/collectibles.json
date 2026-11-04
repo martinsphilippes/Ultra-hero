@@ -99,7 +99,8 @@
       "invalid_increment": "Valor de puja no válido. Usa uno de los botones.",
       "already_winning": "Ya vas ganando.",
       "rate_limited": "¡Calma! Espera 2 segundos entre pujas.",
-      "generic": "No se pudo registrar la puja. Inténtalo de nuevo."
+      "generic": "No se pudo registrar la puja. Inténtalo de nuevo.",
+      "shop_coming_soon": "Las pujas empiezan cuando abra la tienda, en 2027."
     },
     "confirm": {
       "title": "Confirmar puja",

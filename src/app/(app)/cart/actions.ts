@@ -6,6 +6,7 @@ import { parseRpcError, rpcErrorToString, type CartIssue } from "@/components/co
 import { readExpectedPrices, writeDestinationCookie, writeExpectedPrices } from "@/components/commerce/server/cookies";
 import { trackEvent } from "@/lib/analytics/track";
 import { getUser } from "@/lib/auth/session";
+import { isShopLockedForViewer } from "@/lib/shop/coming-soon-server";
 import { createClient } from "@/lib/supabase/server";
 
 // Ações do carrinho de teste: quantidade, remoção, destino fictício e saneamento de problemas.
@@ -29,6 +30,8 @@ export async function setCartQuantity(input: { productId: string; quantity: numb
   if (!parsed.success) return { ok: false, error: "invalid_input" };
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
+  // Coming soon: remover (0) continua livre; aumentar não, antes da abertura (admin passa)
+  if (parsed.data.quantity > 0 && (await isShopLockedForViewer())) return { ok: false, error: "shop_coming_soon" };
   try {
     const supabase = await createClient();
     const { error } = await supabase.rpc("cart_set_item", { p_product: parsed.data.productId, p_quantity: parsed.data.quantity });

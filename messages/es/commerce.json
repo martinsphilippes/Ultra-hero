@@ -18,7 +18,8 @@
     "cart_changed": "Algunos artículos cambiaron desde que revisaste el carrito.",
     "forbidden": "No tienes permiso para esta acción.",
     "order_already_dispatched": "Este pedido de prueba ya tiene un envío despachado (simulación) y ya no puede cancelarse.",
-    "fulfillment_not_found": "Envío no encontrado."
+    "fulfillment_not_found": "Envío no encontrado.",
+    "shop_coming_soon": "La tienda aún no abrió: las compras empiezan en 2027. No se cobró nada."
   },
   "shop": {
     "title": "Comprar",
@@ -340,5 +341,26 @@
       "invalid_input": "Revisa los campos destacados.",
       "generic": "No se pudo guardar. Inténtalo de nuevo."
     }
+  },
+  "comingSoon": {
+    "eyebrowShop": "Tienda Ultra.e Life",
+    "eyebrowCollectibles": "Coleccionables",
+    "title": "Coming soon",
+    "units": {
+      "days": "Días",
+      "hours": "Horas",
+      "minutes": "Min",
+      "seconds": "Seg"
+    },
+    "srCountdown": "Faltan {days, plural, one {# día} other {# días}}, {hours, plural, one {# hora} other {# horas}} y {minutes, plural, one {# minuto} other {# minutos}} para la apertura, el {date}.",
+    "body": "La tienda Ultra.e Life y los coleccionables firmados por los héroes llegan en 2027.",
+    "collectiblesTease": "Artículos raros firmados por los héroes — exclusivos, en cantidad mínima.",
+    "collectiblesDescription": "Artículos raros firmados por los héroes — exclusivos, en cantidad mínima.",
+    "notify": "Avísame cuando abra",
+    "notified": "¡Listo! Te avisaremos.",
+    "notifyError": "No se pudo guardar ahora. Inténtalo de nuevo.",
+    "loginHint": "Inicia sesión o crea tu cuenta para recibir el aviso.",
+    "backToShop": "Volver a Comprar",
+    "adminNotice": "“Coming soon” activo para el público hasta el {date} (hora de Brasilia). Como admin, ves y usas la tienda normal para preparar los productos."
   }
 }

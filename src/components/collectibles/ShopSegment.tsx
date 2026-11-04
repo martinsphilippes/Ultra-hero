@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { fetchLiveSummary } from "@/lib/collectibles/queries";
+import { getShopComingSoonState } from "@/lib/shop/coming-soon-server";
 import { cn } from "@/lib/utils";
 import { LiveBadge } from "./LiveBadge";
 
@@ -8,14 +9,14 @@ type Props = { current: "shop" | "collectibles" };
 
 // Topo da aba Comprar: "Loja | Colecionáveis" (links, com aria-current). Colecionáveis ganha o selo
 // "AO VIVO" pulsando quando há item ao vivo. Sem a 0057 no banco o seletor some da loja.
+// No modo Coming soon (src/lib/shop/coming-soon.ts) Colecionáveis vem primeiro, como aba padrão.
 export async function ShopSegment({ current }: Props) {
-  const [t, summary] = await Promise.all([getTranslations("collectibles.segment"), fetchLiveSummary()]);
+  const [t, summary, comingSoon] = await Promise.all([getTranslations("collectibles.segment"), fetchLiveSummary(), getShopComingSoonState()]);
   if (!summary.available && current === "shop") return null;
 
-  const tabs = [
-    { key: "shop" as const, href: "/shop", label: t("shop") },
-    { key: "collectibles" as const, href: "/shop/colecionaveis", label: t("collectibles") },
-  ];
+  const shopTab = { key: "shop" as const, href: "/shop", label: t("shop") };
+  const collectiblesTab = { key: "collectibles" as const, href: "/shop/colecionaveis", label: t("collectibles") };
+  const tabs = comingSoon.locked ? [collectiblesTab, shopTab] : [shopTab, collectiblesTab];
 
   return (
     <nav aria-label={t("label")} data-testid="shop-segment" className="flex">

@@ -18,7 +18,8 @@
     "cart_changed": "Some items changed since you reviewed the cart.",
     "forbidden": "You do not have permission for this action.",
     "order_already_dispatched": "This test order already has a dispatched shipment (simulation) and can no longer be cancelled.",
-    "fulfillment_not_found": "Shipment not found."
+    "fulfillment_not_found": "Shipment not found.",
+    "shop_coming_soon": "The store isn't open yet: purchases start in 2027. Nothing was charged."
   },
   "shop": {
     "title": "Shop",
@@ -340,5 +341,26 @@
       "invalid_input": "Review the highlighted fields.",
       "generic": "Could not save. Try again."
     }
+  },
+  "comingSoon": {
+    "eyebrowShop": "Ultra.e Life store",
+    "eyebrowCollectibles": "Collectibles",
+    "title": "Coming soon",
+    "units": {
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Min",
+      "seconds": "Sec"
+    },
+    "srCountdown": "{days, plural, one {# day} other {# days}}, {hours, plural, one {# hour} other {# hours}} and {minutes, plural, one {# minute} other {# minutes}} until opening, on {date}.",
+    "body": "The Ultra.e Life store and collectibles signed by the heroes arrive in 2027.",
+    "collectiblesTease": "Rare items signed by the heroes — exclusive, in tiny quantities.",
+    "collectiblesDescription": "Rare items signed by the heroes — exclusive, in tiny quantities.",
+    "notify": "Notify me when it opens",
+    "notified": "Done! We'll let you know.",
+    "notifyError": "Couldn't save right now. Please try again.",
+    "loginHint": "Sign in or create your account to get the notice.",
+    "backToShop": "Back to Shop",
+    "adminNotice": "“Coming soon” is live for the public until {date} (Brasília time). As an admin, you see and use the regular store to prepare products."
   }
 }

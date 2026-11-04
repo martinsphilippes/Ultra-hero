@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ShopComingSoonGate } from "@/components/commerce/coming-soon/ShopComingSoonGate";
 import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
@@ -57,133 +58,135 @@ export default async function CheckoutPage() {
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      <CommerceEventTracker event="checkout.start" properties={{ items: snapshot.lines.length, sellers: snapshot.sellerCount, subtotal_cents_demo: snapshot.subtotalCents }} />
-      <PageHeader title={t("title")} description={t("description")} backHref="/cart" backLabel={t("backToCart")} />
+    <ShopComingSoonGate section="checkout" nextPath="/checkout" enabled={hasProducts || !hasServices}>
+      <div className="flex flex-col gap-6">
+        <CommerceEventTracker event="checkout.start" properties={{ items: snapshot.lines.length, sellers: snapshot.sellerCount, subtotal_cents_demo: snapshot.subtotalCents }} />
+        <PageHeader title={t("title")} description={t("description")} backHref="/cart" backLabel={t("backToCart")} />
 
-      {!commerceEnabled ? (
-        <DemoNotice tone="warning" live="alert">
-          <strong className="font-semibold">{t("disabledTitle")}</strong> — {t("disabledDescription")}
-        </DemoNotice>
-      ) : null}
+        {!commerceEnabled ? (
+          <DemoNotice tone="warning" live="alert">
+            <strong className="font-semibold">{t("disabledTitle")}</strong> — {t("disabledDescription")}
+          </DemoNotice>
+        ) : null}
 
-      {!hasProducts && !hasServices ? (
-        <div className="rounded-2xl border border-border bg-surface">
-          <EmptyState
-            icon={<ShoppingBag />}
-            title={t("empty")}
-            description={t("emptyDescription")}
-            action={
-              <Button asChild>
-                <Link href="/shop">{tc("goToShop")}</Link>
-              </Button>
-            }
-          />
-        </div>
-      ) : (
-        <div className="grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
-          <div className="flex flex-col gap-6">
-            {hasProducts ? (
-            <section aria-labelledby="checkout-items" className="rounded-2xl border border-border bg-surface p-5">
-              <h2 id="checkout-items" className="type-h3 mb-3 text-fg">
-                {t("reviewItems")}
-              </h2>
-              <ul className="divide-y divide-border">
-                {snapshot.groups.map((group) => (
-                  <li key={group.sellerId} className="py-3 first:pt-0 last:pb-0">
-                    <p className="mb-2 text-sm font-semibold text-fg">{group.sellerName ? tc("sellerGroup", { name: group.sellerName }) : tc("unknownProduct")}</p>
-                    <ul className="flex flex-col gap-2">
-                      {group.lines.map((line) => (
-                        <li key={line.product_id} className="flex items-center gap-3">
-                          <div className="relative size-12 shrink-0 overflow-hidden rounded-lg border border-border bg-surface-elevated">
-                            {line.product ? <Image src={line.product.image_url} alt="" fill sizes="48px" unoptimized={line.product.image_url.endsWith(".svg")} className="object-cover" /> : null}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="line-clamp-1 text-sm font-medium text-fg">{line.product?.title ?? tc("unknownProduct")}</p>
-                            {line.product ? <p className="type-caption text-fg-muted">{t("itemLine", { qty: line.quantity, price: formatCurrency(line.product.price_cents_demo / 100, uiLocale) })}</p> : null}
-                          </div>
-                          {line.product ? <p className="type-numeric text-sm font-semibold text-fg">{formatCurrency((line.product.price_cents_demo * line.quantity) / 100, uiLocale)}</p> : null}
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                ))}
-              </ul>
-            </section>
-            ) : null}
-
-            {hasServices ? <ServiceCartSection items={services.items} subtotalCents={services.subtotalCents} /> : null}
-
-            {hasProducts ? (
-            <section aria-labelledby="checkout-destination" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5">
-              <h2 id="checkout-destination" className="type-h3 text-fg">
-                {t("destination")}
-              </h2>
-              {snapshot.destination ? (
-                <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <span className="font-medium text-fg">{localizedLabel(snapshot.destination.name, uiLocale)}</span>
-                  <Badge variant="neutral" size="sm">
-                    {tc(`destination.zone.${snapshot.destination.zone}`)}
-                  </Badge>
-                  <Badge variant="neutral" size="sm">
-                    {td("fictional")}
-                  </Badge>
-                </div>
-              ) : (
-                <p className="type-body-sm text-warning" role="status">
-                  {t("selectDestination")}
-                </p>
-              )}
-              <DestinationSelector destinations={snapshot.destinations} selectedId={snapshot.destination?.id ?? null} compact />
-            </section>
-            ) : (
-              <p className="type-body-sm text-fg-muted">{tp("checkout.noDestinationNeeded")}</p>
-            )}
-
-            <CheckoutConfirm
-              destinationId={snapshot.destination?.id ?? null}
-              expected={expected}
-              services={services.expected}
-              needsDestination={hasProducts}
-              disabled={!commerceEnabled || blocking || (visibleLines.length === 0 && services.expected.length === 0)}
+        {!hasProducts && !hasServices ? (
+          <div className="rounded-2xl border border-border bg-surface">
+            <EmptyState
+              icon={<ShoppingBag />}
+              title={t("empty")}
+              description={t("emptyDescription")}
+              action={
+                <Button asChild>
+                  <Link href="/shop">{tc("goToShop")}</Link>
+                </Button>
+              }
             />
           </div>
-
-          <aside className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 lg:sticky lg:top-[calc(var(--spacing-topbar)+1rem)]" aria-labelledby="checkout-summary">
-            <h2 id="checkout-summary" className="type-h3 text-fg">
-              {tc("summaryTitle")}
-            </h2>
-            <dl className="flex flex-col gap-2 text-sm">
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
+            <div className="flex flex-col gap-6">
               {hasProducts ? (
-                <>
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-fg-muted">{t("subtotal")}</dt>
-                    <dd className="type-numeric font-medium text-fg">{formatCurrency(snapshot.subtotalCents / 100, uiLocale)}</dd>
-                  </div>
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-fg-muted">{t("shipping")}</dt>
-                    <dd className="type-numeric font-medium text-fg">
-                      {snapshot.shippingCents === null ? <span className="text-fg-muted">{tc("shippingPending")}</span> : snapshot.shippingCents === 0 ? tc("shippingFree") : formatCurrency(snapshot.shippingCents / 100, uiLocale)}
-                    </dd>
-                  </div>
-                  {snapshot.rule ? <p className="type-caption text-fg-muted">{tc("destination.eta", { min: snapshot.rule.eta_days_min, max: snapshot.rule.eta_days_max })}</p> : null}
-                </>
+              <section aria-labelledby="checkout-items" className="rounded-2xl border border-border bg-surface p-5">
+                <h2 id="checkout-items" className="type-h3 mb-3 text-fg">
+                  {t("reviewItems")}
+                </h2>
+                <ul className="divide-y divide-border">
+                  {snapshot.groups.map((group) => (
+                    <li key={group.sellerId} className="py-3 first:pt-0 last:pb-0">
+                      <p className="mb-2 text-sm font-semibold text-fg">{group.sellerName ? tc("sellerGroup", { name: group.sellerName }) : tc("unknownProduct")}</p>
+                      <ul className="flex flex-col gap-2">
+                        {group.lines.map((line) => (
+                          <li key={line.product_id} className="flex items-center gap-3">
+                            <div className="relative size-12 shrink-0 overflow-hidden rounded-lg border border-border bg-surface-elevated">
+                              {line.product ? <Image src={line.product.image_url} alt="" fill sizes="48px" unoptimized={line.product.image_url.endsWith(".svg")} className="object-cover" /> : null}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="line-clamp-1 text-sm font-medium text-fg">{line.product?.title ?? tc("unknownProduct")}</p>
+                              {line.product ? <p className="type-caption text-fg-muted">{t("itemLine", { qty: line.quantity, price: formatCurrency(line.product.price_cents_demo / 100, uiLocale) })}</p> : null}
+                            </div>
+                            {line.product ? <p className="type-numeric text-sm font-semibold text-fg">{formatCurrency((line.product.price_cents_demo * line.quantity) / 100, uiLocale)}</p> : null}
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                </ul>
+              </section>
               ) : null}
-              {hasServices ? (
-                <div className="flex justify-between gap-3">
-                  <dt className="text-fg-muted">{tp("checkout.services")}</dt>
-                  <dd className="type-numeric font-medium text-fg">{formatCurrency(totals.servicesCents / 100, uiLocale)}</dd>
+
+              {hasServices ? <ServiceCartSection items={services.items} subtotalCents={services.subtotalCents} /> : null}
+
+              {hasProducts ? (
+              <section aria-labelledby="checkout-destination" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5">
+                <h2 id="checkout-destination" className="type-h3 text-fg">
+                  {t("destination")}
+                </h2>
+                {snapshot.destination ? (
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                    <span className="font-medium text-fg">{localizedLabel(snapshot.destination.name, uiLocale)}</span>
+                    <Badge variant="neutral" size="sm">
+                      {tc(`destination.zone.${snapshot.destination.zone}`)}
+                    </Badge>
+                    <Badge variant="neutral" size="sm">
+                      {td("fictional")}
+                    </Badge>
+                  </div>
+                ) : (
+                  <p className="type-body-sm text-warning" role="status">
+                    {t("selectDestination")}
+                  </p>
+                )}
+                <DestinationSelector destinations={snapshot.destinations} selectedId={snapshot.destination?.id ?? null} compact />
+              </section>
+              ) : (
+                <p className="type-body-sm text-fg-muted">{tp("checkout.noDestinationNeeded")}</p>
+              )}
+
+              <CheckoutConfirm
+                destinationId={snapshot.destination?.id ?? null}
+                expected={expected}
+                services={services.expected}
+                needsDestination={hasProducts}
+                disabled={!commerceEnabled || blocking || (visibleLines.length === 0 && services.expected.length === 0)}
+              />
+            </div>
+
+            <aside className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 lg:sticky lg:top-[calc(var(--spacing-topbar)+1rem)]" aria-labelledby="checkout-summary">
+              <h2 id="checkout-summary" className="type-h3 text-fg">
+                {tc("summaryTitle")}
+              </h2>
+              <dl className="flex flex-col gap-2 text-sm">
+                {hasProducts ? (
+                  <>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-fg-muted">{t("subtotal")}</dt>
+                      <dd className="type-numeric font-medium text-fg">{formatCurrency(snapshot.subtotalCents / 100, uiLocale)}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-fg-muted">{t("shipping")}</dt>
+                      <dd className="type-numeric font-medium text-fg">
+                        {snapshot.shippingCents === null ? <span className="text-fg-muted">{tc("shippingPending")}</span> : snapshot.shippingCents === 0 ? tc("shippingFree") : formatCurrency(snapshot.shippingCents / 100, uiLocale)}
+                      </dd>
+                    </div>
+                    {snapshot.rule ? <p className="type-caption text-fg-muted">{tc("destination.eta", { min: snapshot.rule.eta_days_min, max: snapshot.rule.eta_days_max })}</p> : null}
+                  </>
+                ) : null}
+                {hasServices ? (
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-fg-muted">{tp("checkout.services")}</dt>
+                    <dd className="type-numeric font-medium text-fg">{formatCurrency(totals.servicesCents / 100, uiLocale)}</dd>
+                  </div>
+                ) : null}
+                <div className="flex justify-between gap-3 border-t border-border pt-2 text-base">
+                  <dt className="font-semibold text-fg">{t("total")}</dt>
+                  <dd className="type-numeric font-bold text-fg">{totals.totalCents === null ? "—" : formatCurrency(totals.totalCents / 100, uiLocale)}</dd>
                 </div>
-              ) : null}
-              <div className="flex justify-between gap-3 border-t border-border pt-2 text-base">
-                <dt className="font-semibold text-fg">{t("total")}</dt>
-                <dd className="type-numeric font-bold text-fg">{totals.totalCents === null ? "—" : formatCurrency(totals.totalCents / 100, uiLocale)}</dd>
-              </div>
-            </dl>
-            <p className="type-caption text-fg-muted">{td("priceDemo")}</p>
-          </aside>
-        </div>
-      )}
-    </div>
+              </dl>
+              <p className="type-caption text-fg-muted">{td("priceDemo")}</p>
+            </aside>
+          </div>
+        )}
+      </div>
+    </ShopComingSoonGate>
   );
 }

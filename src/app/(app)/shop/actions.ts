@@ -8,6 +8,7 @@ import { isCommerceEnabled } from "@/components/commerce/lib/settings";
 import { readExpectedPrices, writeExpectedPrices } from "@/components/commerce/server/cookies";
 import { trackEvent } from "@/lib/analytics/track";
 import { getUser } from "@/lib/auth/session";
+import { isShopLockedForViewer } from "@/lib/shop/coming-soon-server";
 import { createClient } from "@/lib/supabase/server";
 
 // Ações da loja de demonstração: adicionar ao carrinho de teste e eventos de analytics.
@@ -29,6 +30,8 @@ export async function addToCart(input: { productId: string; quantity: number; pr
   if (!parsed.success) return { ok: false, error: "invalid_input" };
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
+  // Coming soon (src/lib/shop/coming-soon.ts): ninguém além do admin enche o carrinho antes da abertura
+  if (await isShopLockedForViewer()) return { ok: false, error: "shop_coming_soon" };
   try {
     const supabase = await createClient();
     // kill switch: cart_set_item não confere "commerce.enabled" (só checkout_cart), então a action barra

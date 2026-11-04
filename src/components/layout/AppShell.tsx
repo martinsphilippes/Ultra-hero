@@ -8,6 +8,7 @@ import { PushRegistrar } from "@/components/push/PushRegistrar";
 import { IconButton } from "@/components/ui/icon-button";
 import { getSessionSummary } from "@/lib/auth/session";
 import { getNativeApp } from "@/lib/native-app/server";
+import { isShopComingSoon, shopLockedFor } from "@/lib/shop/coming-soon";
 import { resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
 import { BottomNav, TopNavLinks } from "./AppNav";
 import { AppearanceMenu } from "./AppearanceMenu";
@@ -27,6 +28,8 @@ export async function AppShell({ children }: { children: ReactNode }) {
   ]);
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
   const theme = resolveTheme(themeCookie);
+  // Coming soon da aba Comprar: selo "Em breve" e Colecionáveis como entrada (admin vê a loja normal)
+  const shopSoon = shopLockedFor({ comingSoon: isShopComingSoon(), isAdmin: session?.roles.includes("admin") ?? false });
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -46,7 +49,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
 
           {/* Navegação principal só no desktop; no mobile fica na barra inferior */}
           <nav aria-label={ta("mainNavigation")} className="hidden md:block">
-            <TopNavLinks />
+            <TopNavLinks shopSoon={shopSoon} />
           </nav>
 
           <div className="flex items-center gap-0.5">
@@ -73,7 +76,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
       </main>
 
       <div className="print:hidden">
-        <BottomNav />
+        <BottomNav shopSoon={shopSoon} />
       </div>
       {/* app das lojas, logado: mantém o token de push deste aparelho na conta */}
       {session && nativeApp ? <PushRegistrar /> : null}

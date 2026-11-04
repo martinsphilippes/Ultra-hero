@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getUser } from "@/lib/auth/session";
 import { bidErrorCode, type BidErrorCode } from "@/lib/collectibles/rules";
 import { schedulePushDispatch } from "@/lib/push/schedule";
+import { isShopLockedForViewer } from "@/lib/shop/coming-soon-server";
 import { createClient } from "@/lib/supabase/server";
 
 // Lance dos Colecionáveis. As regras ficam no banco (place_bid, 0057); aqui só validamos a forma
@@ -22,6 +23,8 @@ export async function placeBidAction(id: string, increment: number): Promise<Pla
   if (!parsed.success) return { ok: false, code: "invalid_increment" };
   const user = await getUser();
   if (!user) return { ok: false, code: "unauthenticated" };
+  // Coming soon (src/lib/shop/coming-soon.ts): sem lance antes da abertura
+  if (await isShopLockedForViewer()) return { ok: false, code: "shop_coming_soon" };
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("place_bid", { auction_id: parsed.data.id, increment_cents: parsed.data.increment });
   if (error || !data) return { ok: false, code: bidErrorCode(error?.message) };

@@ -99,7 +99,8 @@
       "invalid_increment": "Valor de lance inválido. Use um dos botões.",
       "already_winning": "Você já está vencendo.",
       "rate_limited": "Calma! Espere 2 segundos entre um lance e outro.",
-      "generic": "Não foi possível registrar o lance. Tente de novo."
+      "generic": "Não foi possível registrar o lance. Tente de novo.",
+      "shop_coming_soon": "Os lances começam quando a loja abrir, em 2027."
     },
     "confirm": {
       "title": "Confirmar lance",

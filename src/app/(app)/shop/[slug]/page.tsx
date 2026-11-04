@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ShopComingSoonGate } from "@/components/commerce/coming-soon/ShopComingSoonGate";
 import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
 import { BackLink } from "@/components/ui/back-link";
@@ -108,119 +109,121 @@ export default async function ProductPage({ params }: Params) {
   const maxQuantity = product.demo_stock === null ? 20 : Math.min(20, product.demo_stock);
 
   return (
-    <div className="flex flex-col gap-8">
-      <CommerceEventTracker event="product.view" properties={{ product_id: product.id, category: product.category?.code ?? null, purchasable }} />
+    <ShopComingSoonGate section="product" nextPath={`/shop/${slug}`}>
+      <div className="flex flex-col gap-8">
+        <CommerceEventTracker event="product.view" properties={{ product_id: product.id, category: product.category?.code ?? null, purchasable }} />
 
-      <BackLink href="/shop">{t("backToShop")}</BackLink>
+        <BackLink href="/shop">{t("backToShop")}</BackLink>
 
-      <div className="grid gap-6 md:grid-cols-2 md:gap-10">
-        <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-border bg-surface-elevated">
-          <Image src={product.image_url} alt="" fill priority unoptimized={product.image_url.endsWith(".svg")} sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
-          <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
-            {product.category ? <Badge variant="neutral" className="bg-black/40 text-white border-white/30">{localizedLabel(product.category.name, uiLocale)}</Badge> : <span />}
-            {unavailable ? <Badge variant="warning">{tcat("productUnavailable")}</Badge> : null}
+        <div className="grid gap-6 md:grid-cols-2 md:gap-10">
+          <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-border bg-surface-elevated">
+            <Image src={product.image_url} alt="" fill priority unoptimized={product.image_url.endsWith(".svg")} sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
+            <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
+              {product.category ? <Badge variant="neutral" className="bg-black/40 text-white border-white/30">{localizedLabel(product.category.name, uiLocale)}</Badge> : <span />}
+              {unavailable ? <Badge variant="warning">{tcat("productUnavailable")}</Badge> : null}
+            </div>
           </div>
-        </div>
 
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-col gap-2">
-            <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 type-caption text-fg-muted">
-              {product.category ? (
-                <li>
-                  {t("categoryLabel")}: {localizedLabel(product.category.name, uiLocale)}
-                </li>
-              ) : null}
-              <li>
-                {t("typeLabel")}: {t(`type.${product.product_type}`)}
-              </li>
-              <li>{t("versionLabel", { n: product.version })}</li>
-            </ul>
-            <h1 className="type-h1 text-balance text-fg">{product.title}</h1>
-            {product.seller ? (
-              <p className="flex flex-wrap items-center gap-2 text-sm text-fg-muted">
-                <Store className="size-4" aria-hidden="true" />
-                <span>
-                  {t("sellerLabel")} <span className="font-semibold text-fg">{product.seller.name}</span> · {t(`sellerKind.${product.seller.kind}`)}
-                </span>
-                {product.seller.is_fictional ? (
-                  <Badge variant="neutral" size="sm">
-                    {t("fictionalSeller")}
-                  </Badge>
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 type-caption text-fg-muted">
+                {product.category ? (
+                  <li>
+                    {t("categoryLabel")}: {localizedLabel(product.category.name, uiLocale)}
+                  </li>
                 ) : null}
+                <li>
+                  {t("typeLabel")}: {t(`type.${product.product_type}`)}
+                </li>
+                <li>{t("versionLabel", { n: product.version })}</li>
+              </ul>
+              <h1 className="type-h1 text-balance text-fg">{product.title}</h1>
+              {product.seller ? (
+                <p className="flex flex-wrap items-center gap-2 text-sm text-fg-muted">
+                  <Store className="size-4" aria-hidden="true" />
+                  <span>
+                    {t("sellerLabel")} <span className="font-semibold text-fg">{product.seller.name}</span> · {t(`sellerKind.${product.seller.kind}`)}
+                  </span>
+                  {product.seller.is_fictional ? (
+                    <Badge variant="neutral" size="sm">
+                      {t("fictionalSeller")}
+                    </Badge>
+                  ) : null}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <p className="type-overline text-fg-muted">{t("priceLabel")}</p>
+              <p className="flex flex-wrap items-baseline gap-2">
+                <span className="type-numeric text-3xl font-bold text-fg">{formatCurrency(product.price_cents_demo / 100, uiLocale)}</span>
+                <span className="text-sm text-fg-muted">{td("priceDemo")}</span>
               </p>
-            ) : null}
-          </div>
+              {lowStock ? (
+                <p className="type-caption font-medium text-warning" role="status">
+                  {t("stockLow", { n: product.demo_stock ?? 0 })}
+                </p>
+              ) : null}
+              {outOfStock ? (
+                <p className="type-caption inline-flex items-center gap-1 font-medium text-fg-muted" role="status">
+                  <PackageX className="size-3.5" aria-hidden="true" />
+                  {t("stockOut")}
+                </p>
+              ) : null}
+            </div>
 
-          <div className="flex flex-col gap-1">
-            <p className="type-overline text-fg-muted">{t("priceLabel")}</p>
-            <p className="flex flex-wrap items-baseline gap-2">
-              <span className="type-numeric text-3xl font-bold text-fg">{formatCurrency(product.price_cents_demo / 100, uiLocale)}</span>
-              <span className="text-sm text-fg-muted">{td("priceDemo")}</span>
-            </p>
-            {lowStock ? (
-              <p className="type-caption font-medium text-warning" role="status">
-                {t("stockLow", { n: product.demo_stock ?? 0 })}
-              </p>
-            ) : null}
-            {outOfStock ? (
-              <p className="type-caption inline-flex items-center gap-1 font-medium text-fg-muted" role="status">
-                <PackageX className="size-3.5" aria-hidden="true" />
-                {t("stockOut")}
-              </p>
-            ) : null}
-          </div>
+            <AddToCartForm productId={product.id} priceCents={product.price_cents_demo} maxQuantity={maxQuantity} purchasable={purchasable} isLoggedIn={Boolean(user)} inCart={inCart} nextPath={path} />
 
-          <AddToCartForm productId={product.id} priceCents={product.price_cents_demo} maxQuantity={maxQuantity} purchasable={purchasable} isLoggedIn={Boolean(user)} inCart={inCart} nextPath={path} />
+            {/* A compra aqui segue simulada; a loja oficial da marca fica num link externo. */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              {favorite || canSaveToList ? (
+                <div className="flex items-center gap-2">
+                  {favorite ? <FavoriteButton kind="product" id={product.id} initial={favorite.favorite} path={path} /> : null}
+                  {canSaveToList ? <AddToListButton kind="product" id={product.id} withLabel /> : null}
+                </div>
+              ) : null}
+              <OfficialStoreLink attributes={product.attributes} className="w-fit" />
+            </div>
 
-          {/* A compra aqui segue simulada; a loja oficial da marca fica num link externo. */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            {favorite || canSaveToList ? (
-              <div className="flex items-center gap-2">
-                {favorite ? <FavoriteButton kind="product" id={product.id} initial={favorite.favorite} path={path} /> : null}
-                {canSaveToList ? <AddToListButton kind="product" id={product.id} withLabel /> : null}
-              </div>
-            ) : null}
-            <OfficialStoreLink attributes={product.attributes} className="w-fit" />
-          </div>
+            <PaymentNotice />
 
-          <PaymentNotice />
-
-          <section aria-labelledby="product-description" className="flex flex-col gap-2">
-            <h2 id="product-description" className="type-h3 text-fg">
-              {t("descriptionLabel")}
-            </h2>
-            <p className="type-body whitespace-pre-line text-fg-muted">{product.description}</p>
-          </section>
-
-          {attributes.length > 0 ? (
-            <section aria-labelledby="product-attributes" className="flex flex-col gap-2">
-              <h2 id="product-attributes" className="type-h3 text-fg">
-                {t("attributesLabel")}
+            <section aria-labelledby="product-description" className="flex flex-col gap-2">
+              <h2 id="product-description" className="type-h3 text-fg">
+                {t("descriptionLabel")}
               </h2>
-              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
-                {attributes.map(([key, value]) => (
-                  <div key={key} className="contents">
-                    <dt className="text-fg-muted">{t.has(`attributes.${key}`) ? t(`attributes.${key}`) : key.replaceAll("_", " ")}</dt>
-                    <dd className="font-medium text-fg">{attributeValue(value, td("yes"), td("no"))}</dd>
-                  </div>
-                ))}
-              </dl>
+              <p className="type-body whitespace-pre-line text-fg-muted">{product.description}</p>
             </section>
-          ) : null}
-        </div>
-      </div>
 
-      {foodInfo ? <FoodInfoBlock info={foodInfo} /> : null}
-
-      {related.length > 0 ? (
-        <Section id="related-content" title={t("relatedContent")} description={t("relatedContentNote")}>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((content) => (
-              <ContentCard key={content.id} content={content} />
-            ))}
+            {attributes.length > 0 ? (
+              <section aria-labelledby="product-attributes" className="flex flex-col gap-2">
+                <h2 id="product-attributes" className="type-h3 text-fg">
+                  {t("attributesLabel")}
+                </h2>
+                <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+                  {attributes.map(([key, value]) => (
+                    <div key={key} className="contents">
+                      <dt className="text-fg-muted">{t.has(`attributes.${key}`) ? t(`attributes.${key}`) : key.replaceAll("_", " ")}</dt>
+                      <dd className="font-medium text-fg">{attributeValue(value, td("yes"), td("no"))}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            ) : null}
           </div>
-        </Section>
-      ) : null}
-    </div>
+        </div>
+
+        {foodInfo ? <FoodInfoBlock info={foodInfo} /> : null}
+
+        {related.length > 0 ? (
+          <Section id="related-content" title={t("relatedContent")} description={t("relatedContentNote")}>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {related.map((content) => (
+                <ContentCard key={content.id} content={content} />
+              ))}
+            </div>
+          </Section>
+        ) : null}
+      </div>
+    </ShopComingSoonGate>
   );
 }

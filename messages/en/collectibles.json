@@ -99,7 +99,8 @@
       "invalid_increment": "Invalid bid amount. Use one of the buttons.",
       "already_winning": "You're already winning.",
       "rate_limited": "Easy! Wait 2 seconds between bids.",
-      "generic": "We couldn't place the bid. Try again."
+      "generic": "We couldn't place the bid. Try again.",
+      "shop_coming_soon": "Bidding starts when the store opens, in 2027."
     },
     "confirm": {
       "title": "Confirm bid",
