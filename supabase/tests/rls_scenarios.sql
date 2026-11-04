@@ -16193,6 +16193,335 @@ delete from public.agency_members where agency_id::text like 'a1120000-%';
 delete from public.agencies where id::text like 'a1120000-%';
 delete from auth.users where id::text like 'a1120000-%';
 
+-- ================================================================ S113 · Roteiros de entrega — Fase 1: catálogo, setores, roteiro em dias úteis, painel e avisos (0107)
+-- Dias úteis BR (feriados nacionais calculados, Carnaval/Consciência Negra), modelo Groscove semeado (8 produtos, por
+-- gatilho em agência nova), catálogo só o Adm escreve, setores só o Adm define, negócio com cliente só herói (sem marca,
+-- sem pedido) ou marca + herói com serviço → etapas em tasks com setor e prazo encadeado; quem é do setor lê e conclui as
+-- etapas do setor (sem ver o negócio), a cadeia recalcula e a automática se conclui; herói-cliente vê só as etapas
+-- visíveis; painel do setor, indicadores (gestor+) e avisos (1 dia útil antes / atraso ao Gestor) sem duplicar os
+-- avisos antigos. Visitante nada; S14 segue 18.
+\ir ../migrations/0107_roteiros_entrega.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1130000-0000-4000-8000-000000000001', 's113-adm@test.local'),
+  ('a1130000-0000-4000-8000-000000000002', 's113-gestor@test.local'),
+  ('a1130000-0000-4000-8000-000000000003', 's113-op@test.local'),
+  ('a1130000-0000-4000-8000-000000000004', 's113-sem@test.local'),
+  ('a1130000-0000-4000-8000-000000000005', 's113-heroi@test.local'),
+  ('a1130000-0000-4000-8000-000000000006', 's113-outroheroi@test.local'),
+  ('a1130000-0000-4000-8000-000000000007', 's113-marca@test.local'),
+  ('a1130000-0000-4000-8000-000000000008', 's113-comum@test.local'),
+  ('a1130000-0000-4000-8000-000000000009', 's113-outra-ag@test.local');
+insert into public.agencies (id, slug, name) values
+  ('a1130000-0000-4000-8000-0000000000a1', 's113-agencia', 'Agência S113'),
+  ('a1130000-0000-4000-8000-0000000000a2', 's113-outra', 'Outra S113');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1130000-0000-4000-8000-0000000000a1', 'a1130000-0000-4000-8000-000000000001', 'admin', 'Ana Adm S113'),
+  ('a1130000-0000-4000-8000-0000000000a1', 'a1130000-0000-4000-8000-000000000002', 'manager', 'Gil Gestor S113'),
+  ('a1130000-0000-4000-8000-0000000000a1', 'a1130000-0000-4000-8000-000000000003', 'staff', 'Olga Operação S113'),
+  ('a1130000-0000-4000-8000-0000000000a1', 'a1130000-0000-4000-8000-000000000004', 'staff', 'Sem Setor S113'),
+  ('a1130000-0000-4000-8000-0000000000a2', 'a1130000-0000-4000-8000-000000000009', 'admin', 'Adm Outra S113');
+insert into public.brands (id, slug, name, site_url) values ('a1130000-0000-4000-8000-0000000000b1', 's113-marca', 'Marca S113', 'https://m.s113.test');
+insert into public.agency_brands (agency_id, brand_id) values ('a1130000-0000-4000-8000-0000000000a1', 'a1130000-0000-4000-8000-0000000000b1');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1130000-0000-4000-8000-0000000000b1', 'a1130000-0000-4000-8000-000000000007', 'owner', 'Dona S113');
+insert into public.talent_profiles (id, agency_id, display_name, user_id) values
+  ('a1130000-0000-4000-8000-0000000000c1', 'a1130000-0000-4000-8000-0000000000a1', 'Herói Cliente S113', 'a1130000-0000-4000-8000-000000000005'),
+  ('a1130000-0000-4000-8000-0000000000c2', 'a1130000-0000-4000-8000-0000000000a1', 'Outro Herói S113', 'a1130000-0000-4000-8000-000000000006'),
+  ('a1130000-0000-4000-8000-0000000000c9', 'a1130000-0000-4000-8000-0000000000a2', 'Herói Outra S113', null);
+create table tests.s113 (k text primary key, v text);
+grant all on tests.s113 to anon, authenticated;
+
+select tests.ok('S113 estrutura: RLS nas tabelas novas, só leitura, nada para visitante, RPCs fechadas, search_path fixo; S14 segue 18',
+  (select relrowsecurity from pg_class where oid = 'public.agency_services'::regclass)
+  and (select relrowsecurity from pg_class where oid = 'public.agency_service_steps'::regclass)
+  and not has_table_privilege('anon', 'public.agency_services', 'select')
+  and not has_table_privilege('anon', 'public.agency_service_steps', 'select')
+  and not has_table_privilege('authenticated', 'public.agency_services', 'insert')
+  and not has_table_privilege('authenticated', 'public.agency_services', 'update')
+  and not has_table_privilege('authenticated', 'public.agency_service_steps', 'delete')
+  and not has_function_privilege('anon', 'public.agency_deal_open(uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.deal_roadmap(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.client_projects()', 'execute')
+  and not has_function_privilege('anon', 'public.br_add_business_days(date, int)', 'execute')
+  and not has_function_privilege('authenticated', 'public.roadmap_recalc(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.deal_roadmap_generate(uuid, uuid, date)', 'execute')
+  and not has_function_privilege('authenticated', 'public.roadmap_alert_scan()', 'execute')
+  and not has_function_privilege('authenticated', 'public.agency_services_seed(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.roadmap_progress(uuid, boolean)', 'execute')
+  and has_function_privilege('authenticated', 'public.roadmap_task_set(uuid, boolean)', 'execute')
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proconfig is null
+                  and (p.proname like 'br\_%' or p.proname like 'roadmap\_%' or p.proname like '%service%' or p.proname in ('agency_deal_open', 'deal_roadmap', 'deal_roadmap_start',
+                       'deal_client_set', 'client_projects', 'my_agency_sector_keys', 'tasks_roadmap_after', 'agencies_seed_services', 'deals_client_scope', 'agency_member_sectors_set')))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+select tests.ok('S113 dias úteis: Páscoa, Carnaval, Consciência Negra, fim de semana e intervalo',
+  public.br_easter(2026) = '2026-04-05' and public.br_easter(2027) = '2027-03-28'
+  and public.br_add_business_days('2027-02-05', 1) = '2027-02-10'
+  and not public.br_is_business_day('2026-11-20') and not public.br_is_business_day('2026-11-21') and public.br_is_business_day('2026-12-24')
+  and public.br_business_days_between('2026-11-13', '2026-11-23') = 5
+  and public.br_roll_business_day('2026-11-21') = '2026-11-23' and public.br_next_business_day('2026-12-24') = '2026-12-28');
+
+select tests.ok('S113 modelo Groscove semeado na agência nova: 8 serviços com as etapas e os prazos do PDF',
+  (select count(*) from public.agency_services where agency_id = 'a1130000-0000-4000-8000-0000000000a1' and from_model) = 8
+  and (select array_agg(s.slug || ':' || s.sla_days || ':' || (select count(*) from public.agency_service_steps x where x.service_id = s.id) order by s.position)
+       from public.agency_services s where s.agency_id = 'a1130000-0000-4000-8000-0000000000a1')
+      = array['producao-de-video:40:20', 'producao-fotografica:25:21', 'assessoria-de-imprensa:20:12', 'assessoria-artistica:13:15',
+              'mentoria-jonathas:28:15', 'business-plan:60:16', 'publipost:15:18', 'live-session:35:19']
+  and (select count(*) from public.agency_service_steps x join public.agency_services s on s.id = x.service_id
+       where s.agency_id = 'a1130000-0000-4000-8000-0000000000a1' and s.slug = 'publipost' and x.automatic) = 2
+  and (select count(*) from public.agency_service_steps x join public.agency_services s on s.id = x.service_id
+       where s.agency_id = 'a1130000-0000-4000-8000-0000000000a1' and x.due_rule = 'recurring') > 0);
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S113 visitante não lê o catálogo', $q$select count(*) from public.agency_services$q$, 'permission denied');
+select tests.expect_error('S113 visitante não abre negócio', $q$select public.agency_deal_open('a1130000-0000-4000-8000-0000000000a1', '{}')$q$, 'permission denied');
+select tests.expect_error('S113 visitante não lê o painel', $q$select public.roadmap_today('a1130000-0000-4000-8000-0000000000a1', 'all')$q$, 'permission denied');
+
+-- catálogo: equipe lê a própria agência; só o Adm escreve
+select tests.login('a1130000-0000-4000-8000-000000000004', 's113-sem@test.local');
+select tests.ok('S113 colaborador lê o catálogo da agência e não o da outra',
+  (select count(*) from public.agency_services where agency_id = 'a1130000-0000-4000-8000-0000000000a1') = 8
+  and (select count(*) from public.agency_services where agency_id = 'a1130000-0000-4000-8000-0000000000a2') = 0
+  and (select count(*) from public.agency_service_steps where agency_id = 'a1130000-0000-4000-8000-0000000000a1') = 136);
+select tests.login('a1130000-0000-4000-8000-000000000008', 's113-comum@test.local');
+select tests.ok('S113 quem não é da agência não lê o catálogo', (select count(*) from public.agency_services) = 0);
+select tests.login('a1130000-0000-4000-8000-000000000002', 's113-gestor@test.local');
+select tests.expect_error('S113 gestor não edita o catálogo',
+  $q$select public.agency_service_save('a1130000-0000-4000-8000-0000000000a1', null, '{"name": "Novo", "sla_days": 5, "steps": [{"title": "Fazer", "sector": "gestor"}]}')$q$, 'forbidden');
+select tests.expect_error('S113 gestor não define setores',
+  $q$select public.agency_member_sectors_set('a1130000-0000-4000-8000-0000000000a1', 'a1130000-0000-4000-8000-000000000003', array['operacao'])$q$, 'forbidden');
+select tests.login('a1130000-0000-4000-8000-000000000009', 's113-outra-ag@test.local');
+select tests.expect_error('S113 Adm de outra agência não edita este catálogo',
+  $q$select public.agency_service_save('a1130000-0000-4000-8000-0000000000a1', null, '{"name": "Novo", "sla_days": 5, "steps": [{"title": "Fazer", "sector": "gestor"}]}')$q$, 'not_found');
+select tests.login('a1130000-0000-4000-8000-000000000001', 's113-adm@test.local');
+select tests.expect_error('S113 etapa com título curto é recusada',
+  $q$select public.agency_service_save('a1130000-0000-4000-8000-0000000000a1', null, '{"name": "Serviço X", "sla_days": 5, "steps": [{"title": "x", "sector": "gestor"}]}')$q$, 'invalid_input');
+select tests.expect_error('S113 setor desconhecido é recusado',
+  $q$select public.agency_service_save('a1130000-0000-4000-8000-0000000000a1', null, '{"name": "Serviço X", "sla_days": 5, "steps": [{"title": "Fazer algo", "sector": "financeiro"}]}')$q$, 'invalid_input');
+insert into tests.s113 values ('svc_new', public.agency_service_save('a1130000-0000-4000-8000-0000000000a1', null,
+  '{"name": "Consultoria Rápida", "client_kind": "talent", "sla_days": 3, "steps": [
+     {"title": "Reunião inicial", "sector": "gestor", "due_rule": "business_days", "due_days": 1, "client_visible": true},
+     {"title": "Relatório final", "sector": "estrategia", "sector_extra": "comunicacao", "due_rule": "business_days", "due_days": 2}]}')::text);
+select tests.ok('S113 Adm cria serviço com slug e etapas na ordem',
+  (select slug = 'consultoria-rapida' and not from_model and client_kind = 'talent' from public.agency_services where id = (select v::uuid from tests.s113 where k = 'svc_new'))
+  and (select array_agg(title || ':' || position || ':' || sector || ':' || coalesce(sector_extra, '-') order by position) from public.agency_service_steps
+       where service_id = (select v::uuid from tests.s113 where k = 'svc_new')) = array['Reunião inicial:1:gestor:-', 'Relatório final:2:estrategia:comunicacao']);
+do $$
+declare v_svc uuid := (select v::uuid from tests.s113 where k = 'svc_new'); v_a uuid; v_b uuid;
+begin
+  select id into v_a from public.agency_service_steps where service_id = v_svc and position = 1;
+  select id into v_b from public.agency_service_steps where service_id = v_svc and position = 2;
+  perform public.agency_service_save('a1130000-0000-4000-8000-0000000000a1', v_svc, jsonb_build_object('name', 'Consultoria Rápida', 'client_kind', 'talent', 'sla_days', 4,
+    'steps', jsonb_build_array(jsonb_build_object('id', v_b, 'title', 'Relatório final', 'sector', 'estrategia', 'due_days', 2),
+                               jsonb_build_object('id', v_a, 'title', 'Reunião inicial', 'sector', 'gestor', 'due_rule', 'same_day'),
+                               jsonb_build_object('title', 'Envio ao cliente', 'sector', 'comunicacao', 'automatic', true, 'due_days', 1))));
+  insert into tests.s113 values ('step_a', v_a::text), ('step_b', v_b::text);
+end $$;
+select tests.ok('S113 Adm reordena (mesmos ids), muda regra e acrescenta etapa',
+  (select array_agg(id::text || ':' || position || ':' || due_rule || ':' || due_days order by position) from public.agency_service_steps
+   where service_id = (select v::uuid from tests.s113 where k = 'svc_new'))
+   = array[(select v from tests.s113 where k = 'step_b') || ':1:business_days:2', (select v from tests.s113 where k = 'step_a') || ':2:same_day:0']
+     || (select array_agg(id::text || ':3:business_days:1') from public.agency_service_steps where service_id = (select v::uuid from tests.s113 where k = 'svc_new') and position = 3)
+  and (select sla_days from public.agency_services where id = (select v::uuid from tests.s113 where k = 'svc_new')) = 4);
+select tests.ok('S113 restaurar o modelo não duplica nada', public.agency_services_restore('a1130000-0000-4000-8000-0000000000a1') = 0
+  and (select count(*) from public.agency_services where agency_id = 'a1130000-0000-4000-8000-0000000000a1') = 9);
+select tests.expect_error('S113 setor inválido na equipe é recusado',
+  $q$select public.agency_member_sectors_set('a1130000-0000-4000-8000-0000000000a1', 'a1130000-0000-4000-8000-000000000003', array['vendas'])$q$, 'invalid_input');
+select tests.ok('S113 Adm define setores (sem repetir)',
+  public.agency_member_sectors_set('a1130000-0000-4000-8000-0000000000a1', 'a1130000-0000-4000-8000-000000000003', array['operacao', 'operacao']) = array['operacao']
+  and public.agency_member_sectors_set('a1130000-0000-4000-8000-0000000000a1', 'a1130000-0000-4000-8000-000000000002', array['gestor']) = array['gestor']);
+
+-- negócio: cliente só herói (sem marca, sem pedido) com serviço → roteiro; marca + herói com Publipost
+select tests.login('a1130000-0000-4000-8000-000000000002', 's113-gestor@test.local');
+select tests.expect_error('S113 negócio sem cliente é recusado',
+  $q$select public.agency_deal_open('a1130000-0000-4000-8000-0000000000a1', '{"title": "Sem cliente"}')$q$, 'client_required');
+select tests.expect_error('S113 herói de outra agência é recusado',
+  $q$select public.agency_deal_open('a1130000-0000-4000-8000-0000000000a1', '{"title": "Herói errado", "client_talent_id": "a1130000-0000-4000-8000-0000000000c9"}')$q$, 'not_found');
+insert into tests.s113 values ('d_video', public.agency_deal_open('a1130000-0000-4000-8000-0000000000a1', jsonb_build_object(
+  'title', 'Vídeo do Herói S113', 'client_talent_id', 'a1130000-0000-4000-8000-0000000000c1',
+  'service_id', (select id from public.agency_services where agency_id = 'a1130000-0000-4000-8000-0000000000a1' and slug = 'producao-de-video'),
+  'start_on', ((now() at time zone 'America/Sao_Paulo')::date - 45)::text))::text);
+insert into tests.s113 values ('d_publi', public.agency_deal_open('a1130000-0000-4000-8000-0000000000a1', jsonb_build_object(
+  'title', 'Publipost S113', 'brand_id', 'a1130000-0000-4000-8000-0000000000b1', 'client_talent_id', 'a1130000-0000-4000-8000-0000000000c1',
+  'service_id', (select id from public.agency_services where agency_id = 'a1130000-0000-4000-8000-0000000000a1' and slug = 'publipost')))::text);
+insert into tests.s113 values ('d_brand', public.agency_deal_open('a1130000-0000-4000-8000-0000000000a1', jsonb_build_object(
+  'title', 'Só a marca S113', 'brand_id', 'a1130000-0000-4000-8000-0000000000b1'))::text);
+select tests.su();
+select tests.ok('S113 negócio só do herói: sem marca e sem pedido, 20 etapas encadeadas até o Dia 40, só a 1ª vencida',
+  (select brand_id is null and request_id is null and client_talent_id = 'a1130000-0000-4000-8000-0000000000c1' and roadmap_started_on is not null
+   from public.deals where id = (select v::uuid from tests.s113 where k = 'd_video'))
+  and (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_video') and roadmap_position is not null and side = 'agency' and sector is not null) = 20
+  and (select due_on from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_video') and roadmap_position = 1)
+      = public.br_roll_business_day((now() at time zone 'America/Sao_Paulo')::date - 45)
+  and (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_video') and due_on < (now() at time zone 'America/Sao_Paulo')::date) = 1
+  and (select due_on from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_video') and roadmap_position = 2)
+      = public.br_next_business_day((now() at time zone 'America/Sao_Paulo')::date)
+  and (select count(*) from public.activities where deal_id = (select v::uuid from tests.s113 where k = 'd_video') and body = 'roadmap_started|Produção de vídeo') = 1);
+select tests.ok('S113 marca + herói: pedido de origem agência, herói-cliente e Publipost no Dia 7 (no ar) / Dia 15',
+  (select brand_id = 'a1130000-0000-4000-8000-0000000000b1' and request_id is not null and client_talent_id = 'a1130000-0000-4000-8000-0000000000c1'
+   from public.deals where id = (select v::uuid from tests.s113 where k = 'd_publi'))
+  and (select due_on from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_publi') and milestone = 'go_live')
+      = public.br_add_business_days(public.br_roll_business_day((now() at time zone 'America/Sao_Paulo')::date), 6)
+  and (select max(due_on) from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_publi'))
+      = public.br_add_business_days(public.br_roll_business_day((now() at time zone 'America/Sao_Paulo')::date), 14)
+  and (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_publi') and status = 'done') = 0);
+select tests.expect_error('S113 negócio sem marca nem herói não passa no banco',
+  $q$insert into public.deals (agency_id, title) values ('a1130000-0000-4000-8000-0000000000a1', 'Ninguém S113')$q$, 'deals_client_check');
+
+-- RLS por setor: Operação lê as etapas do setor, não o negócio; sem setor não lê
+select tests.login('a1130000-0000-4000-8000-000000000003', 's113-op@test.local');
+select tests.ok('S113 setor Operação lê só as etapas do setor e não o negócio',
+  (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_video'))
+    = (select count(*) from public.agency_service_steps x join public.agency_services s on s.id = x.service_id
+       where s.agency_id = 'a1130000-0000-4000-8000-0000000000a1' and s.slug = 'producao-de-video' and 'operacao' in (x.sector, x.sector_extra))
+  and (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_video') and sector <> 'operacao' and sector_extra is distinct from 'operacao') = 0
+  and (select count(*) from public.deals where id = (select v::uuid from tests.s113 where k = 'd_video')) = 0);
+select tests.expect_error('S113 setor Operação não abre o roteiro do negócio de fora', $q$select public.deal_roadmap((select v::uuid from tests.s113 where k = 'd_video'))$q$, 'not_found');
+select tests.su();
+insert into tests.s113 select 'video_t' || roadmap_position, id::text from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_video') and roadmap_position is not null;
+select tests.login('a1130000-0000-4000-8000-000000000003', 's113-op@test.local');
+select tests.expect_error('S113 Operação não conclui etapa do Gestor (forbidden)', $q$select public.roadmap_task_set((select v::uuid from tests.s113 where k = 'video_t1'), true)$q$, 'forbidden');
+select tests.login('a1130000-0000-4000-8000-000000000004', 's113-sem@test.local');
+select tests.ok('S113 colaborador sem setor não lê as etapas', (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_video')) = 0);
+select tests.expect_error('S113 colaborador sem setor não conclui', $q$select public.roadmap_task_set((select v::uuid from tests.s113 where k = 'video_t3'), true)$q$, 'forbidden');
+select tests.ok('S113 painel do colaborador sem setor vem vazio (mesmo em todos os setores)',
+  jsonb_array_length(public.roadmap_today('a1130000-0000-4000-8000-0000000000a1', 'all') -> 'items') = 0);
+select tests.login('a1130000-0000-4000-8000-000000000008', 's113-comum@test.local');
+select tests.expect_error('S113 quem não é da agência não conclui', $q$select public.roadmap_task_set((select v::uuid from tests.s113 where k = 'video_t3'), true)$q$, 'not_found');
+select tests.expect_error('S113 quem não é da agência não lê o painel', $q$select public.roadmap_today('a1130000-0000-4000-8000-0000000000a1', 'sector')$q$, 'not_found');
+
+-- gestor: roteiro, atraso, cadeia
+select tests.login('a1130000-0000-4000-8000-000000000002', 's113-gestor@test.local');
+select tests.ok('S113 gestor vê "Dia X de 40 · Atrasado" e a previsão',
+  public.deal_roadmap((select v::uuid from tests.s113 where k = 'd_video')) -> 'progress' @> jsonb_build_object('total', 40, 'status', 'late', 'steps', 20, 'done', 0,
+    'day', 1 + public.br_business_days_between(public.br_roll_business_day((now() at time zone 'America/Sao_Paulo')::date - 45), (now() at time zone 'America/Sao_Paulo')::date))
+  and (public.deal_roadmap((select v::uuid from tests.s113 where k = 'd_video')) -> 'tasks' -> 0) @> '{"late": true, "can_work": true, "sector": "gestor"}'
+  and (public.deal_roadmap((select v::uuid from tests.s113 where k = 'd_video')) ->> 'can_replace')::boolean);
+select tests.ok('S113 painel do gestor (todos os setores) mostra a etapa atrasada',
+  (select count(*) from jsonb_array_elements(public.roadmap_today('a1130000-0000-4000-8000-0000000000a1', 'all') -> 'items') x
+   where x ->> 'id' = (select v from tests.s113 where k = 'video_t1') and x ->> 'bucket' = 'overdue' and (x ->> 'can_open')::boolean) = 1);
+select public.roadmap_task_set((select v::uuid from tests.s113 where k = 'video_t1'), true);
+select tests.ok('S113 concluir a etapa recalcula a cadeia a partir de hoje',
+  (select status = 'done' and completed_by = 'a1130000-0000-4000-8000-000000000002' from public.tasks where id = (select v::uuid from tests.s113 where k = 'video_t1'))
+  and (select available_on = public.br_next_business_day((now() at time zone 'America/Sao_Paulo')::date) and due_on = available_on
+       from public.tasks where id = (select v::uuid from tests.s113 where k = 'video_t2'))
+  and public.deal_roadmap((select v::uuid from tests.s113 where k = 'd_video')) -> 'progress' @> '{"status": "on_time", "done": 1}'
+  and not (public.deal_roadmap((select v::uuid from tests.s113 where k = 'd_video')) ->> 'can_replace')::boolean);
+select tests.expect_error('S113 com etapa concluída o serviço não troca',
+  $q$select public.deal_roadmap_start((select v::uuid from tests.s113 where k = 'd_video'), (select id from public.agency_services where agency_id = 'a1130000-0000-4000-8000-0000000000a1' and slug = 'live-session'), null, true)$q$, 'roadmap_started');
+select tests.expect_error('S113 reatribuir para quem não é da agência é recusado',
+  $q$select public.roadmap_task_assign((select v::uuid from tests.s113 where k = 'video_t2'), 'a1130000-0000-4000-8000-000000000008', 'gestor')$q$, 'invalid_input');
+select public.roadmap_task_assign((select v::uuid from tests.s113 where k = 'video_t2'), 'a1130000-0000-4000-8000-000000000003', 'estrategia');
+select tests.su();
+select tests.ok('S113 reatribuir grava responsável e setor e avisa o responsável',
+  (select assignee_id = 'a1130000-0000-4000-8000-000000000003' and sector = 'estrategia' from public.tasks where id = (select v::uuid from tests.s113 where k = 'video_t2'))
+  and (select count(*) from public.inbox_notifications where user_id = 'a1130000-0000-4000-8000-000000000003' and kind = 'task_assigned'
+       and entity_id = (select v::uuid from tests.s113 where k = 'video_t2')) = 1);
+
+-- quem é do setor (ou o responsável) conclui; reabrir recalcula de novo
+select tests.login('a1130000-0000-4000-8000-000000000003', 's113-op@test.local');
+select tests.expect_error('S113 Operação (fora da equipe) não reatribui', $q$select public.roadmap_task_assign((select v::uuid from tests.s113 where k = 'video_t3'), null, 'operacao')$q$, 'forbidden');
+select public.roadmap_task_set((select v::uuid from tests.s113 where k = 'video_t3'), true);
+select tests.ok('S113 Operação conclui etapa do setor fora da ordem; a cadeia segue',
+  (select status from public.tasks where id = (select v::uuid from tests.s113 where k = 'video_t3')) = 'done');
+select public.roadmap_task_set((select v::uuid from tests.s113 where k = 'video_t3'), false);
+select tests.ok('S113 Operação reabre a etapa', (select status = 'todo' and completed_at is null from public.tasks where id = (select v::uuid from tests.s113 where k = 'video_t3')));
+select tests.ok('S113 painel "Só minhas" da Operação mostra a etapa atribuída (vence no próximo dia útil)',
+  (select count(*) from jsonb_array_elements(public.roadmap_today('a1130000-0000-4000-8000-0000000000a1', 'mine') -> 'items') x
+   where x ->> 'id' = (select v from tests.s113 where k = 'video_t2') and x ->> 'bucket' in ('today', 'next') and not (x ->> 'can_open')::boolean) = 1
+  and public.roadmap_today('a1130000-0000-4000-8000-0000000000a1', 'sector') @> '{"sectors": ["operacao"], "scope": "sector"}');
+select tests.expect_error('S113 colaborador não vê indicadores', $q$select public.roadmap_indicators('a1130000-0000-4000-8000-0000000000a1')$q$, 'forbidden');
+
+-- automática: Publipost conclui "passar prazos ao cliente" e "calendário" quando as anteriores terminam
+select tests.login('a1130000-0000-4000-8000-000000000002', 's113-gestor@test.local');
+do $$
+declare r record;
+begin
+  for r in select id from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_publi') and roadmap_position between 1 and 11 order by roadmap_position loop
+    perform public.roadmap_task_set(r.id, true);
+  end loop;
+end $$;
+select tests.ok('S113 etapas automáticas se concluem ao serem alcançadas e a seguinte ganha prazo',
+  (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_publi') and automatic and status = 'done' and completed_by is null) = 2
+  and (select status = 'todo' and due_on = public.br_add_business_days(public.br_next_business_day((now() at time zone 'America/Sao_Paulo')::date), 1)
+       from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_publi') and roadmap_position = 14));
+select tests.ok('S113 indicadores do gestor: no prazo, tempo médio e setores',
+  (public.roadmap_indicators('a1130000-0000-4000-8000-0000000000a1') ->> 'done')::int = 12
+  and (public.roadmap_indicators('a1130000-0000-4000-8000-0000000000a1') ->> 'on_time')::int = 11
+  and public.roadmap_indicators('a1130000-0000-4000-8000-0000000000a1') ->> 'worst_sector' = 'gestor'
+  and jsonb_array_length(public.roadmap_indicators('a1130000-0000-4000-8000-0000000000a1') -> 'sectors') = 4);
+
+-- trocar o serviço só sem etapa concluída
+select tests.ok('S113 negócio só da marca recebe o roteiro depois (Foto, 21 etapas)',
+  public.deal_roadmap_start((select v::uuid from tests.s113 where k = 'd_brand'), (select id from public.agency_services where agency_id = 'a1130000-0000-4000-8000-0000000000a1' and slug = 'producao-fotografica'),
+    ((now() at time zone 'America/Sao_Paulo')::date - 20)) = 21);
+select tests.expect_error('S113 gerar de novo sem trocar é recusado',
+  $q$select public.deal_roadmap_start((select v::uuid from tests.s113 where k = 'd_brand'), (select id from public.agency_services where agency_id = 'a1130000-0000-4000-8000-0000000000a1' and slug = 'live-session'))$q$, 'roadmap_exists');
+select tests.ok('S113 trocar o serviço substitui as etapas (Live Session, 19)',
+  public.deal_roadmap_start((select v::uuid from tests.s113 where k = 'd_brand'), (select id from public.agency_services where agency_id = 'a1130000-0000-4000-8000-0000000000a1' and slug = 'live-session'),
+    ((now() at time zone 'America/Sao_Paulo')::date - 20), true) = 19);
+select tests.ok('S113 a troca não deixa etapas do serviço anterior',
+  (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_brand') and roadmap_position is not null) = 19);
+select tests.expect_error('S113 negócio só do herói não fica sem cliente', $q$select public.deal_client_set((select v::uuid from tests.s113 where k = 'd_video'), null)$q$, 'invalid_input');
+select public.deal_client_set((select v::uuid from tests.s113 where k = 'd_brand'), 'a1130000-0000-4000-8000-0000000000c2');
+select tests.login('a1130000-0000-4000-8000-000000000004', 's113-sem@test.local');
+select tests.expect_error('S113 colaborador fora da equipe não troca o cliente', $q$select public.deal_client_set((select v::uuid from tests.s113 where k = 'd_brand'), null)$q$, 'forbidden');
+
+-- herói-cliente no portal: só as etapas visíveis, sem responsáveis; outros não veem
+select tests.su();
+insert into tests.s113 select 'vis_' || k.deal_id::text, count(*)::text from public.tasks k
+  where k.agency_id = 'a1130000-0000-4000-8000-0000000000a1' and k.roadmap_position is not null and k.client_visible group by k.deal_id;
+select tests.login('a1130000-0000-4000-8000-000000000005', 's113-heroi@test.local');
+select tests.ok('S113 herói-cliente vê os 2 projetos só com as etapas visíveis ao cliente',
+  jsonb_array_length(public.client_projects()) = 2
+  and (select bool_and(jsonb_array_length(p -> 'steps') = (select v::int from tests.s113 where k = 'vis_' || (p ->> 'deal_id'))
+                       and (p -> 'progress') ? 'day' and not (p::text like '%assignee%'))
+       from jsonb_array_elements(public.client_projects()) p)
+  and (select count(*) from public.tasks) = 0
+  and (select count(*) from public.deals where client_talent_id = 'a1130000-0000-4000-8000-0000000000c1') = 0);
+select tests.login('a1130000-0000-4000-8000-000000000006', 's113-outroheroi@test.local');
+select tests.ok('S113 o outro herói vê só o negócio em que virou cliente', jsonb_array_length(public.client_projects()) = 1
+  and public.client_projects() -> 0 ->> 'title' = 'Só a marca S113');
+select tests.login('a1130000-0000-4000-8000-000000000007', 's113-marca@test.local');
+select tests.ok('S113 marca não lê etapas internas nem projetos de herói', (select count(*) from public.tasks) = 0 and public.client_projects() = '[]'::jsonb);
+select tests.login('a1130000-0000-4000-8000-000000000008', 's113-comum@test.local');
+select tests.ok('S113 quem não é de nada não vê projetos', public.client_projects() = '[]'::jsonb);
+
+-- avisos: 1 dia útil antes (responsável) e atraso (setor Gestor); os avisos antigos ignoram o roteiro
+select tests.su();
+insert into tests.s113 values ('scan1', public.roadmap_alert_scan()::text);
+select tests.ok('S113 varredura avisa a etapa do dia útil seguinte ao responsável e o atraso ao Gestor',
+  ((select v from tests.s113 where k = 'scan1')::jsonb ->> 'deals')::int >= 3
+  and (select count(*) from public.inbox_notifications where user_id = 'a1130000-0000-4000-8000-000000000003' and kind = 'roadmap_due_soon'
+       and entity_id = (select v::uuid from tests.s113 where k = 'video_t2') and link = '/agencia') = 1
+  and (select count(*) from public.inbox_notifications n join public.tasks k on k.id = n.entity_id
+       where n.user_id = 'a1130000-0000-4000-8000-000000000002' and n.kind = 'roadmap_overdue' and k.deal_id = (select v::uuid from tests.s113 where k = 'd_brand')
+         and n.link like '/agencia/negocios/%/roteiro') = 1
+  and (select count(*) from public.inbox_notifications where user_id = 'a1130000-0000-4000-8000-000000000001' and kind = 'roadmap_overdue') = 0);
+select tests.ok('S113 a varredura seguinte não repete os avisos', (public.roadmap_alert_scan() ->> 'overdue')::int = 0 and (public.roadmap_alert_scan() ->> 'due_soon')::int = 0);
+select public.task_due_soon_scan();
+select public.agency_relationship_scan();
+select tests.ok('S113 avisos antigos de prazo não pegam as etapas do roteiro',
+  (select count(*) from public.inbox_notifications n join public.tasks k on k.id = n.entity_id
+   where k.roadmap_position is not null and n.kind in ('task_due_soon', 'task_overdue')) = 0);
+
+select tests.su();
+delete from public.inbox_notifications where user_id::text like 'a1130000-%';
+delete from public.tasks where agency_id::text like 'a1130000-%';
+delete from public.activities where agency_id::text like 'a1130000-%';
+delete from public.calendar_events where agency_id::text like 'a1130000-%';
+delete from public.deals where agency_id::text like 'a1130000-%';
+delete from public.campaign_requests where agency_id::text like 'a1130000-%';
+delete from public.talent_profiles where id::text like 'a1130000-%';
+delete from public.brand_members where brand_id::text like 'a1130000-%';
+delete from public.agency_brands where agency_id::text like 'a1130000-%';
+delete from public.brands where id::text like 'a1130000-%';
+delete from public.agency_members where agency_id::text like 'a1130000-%';
+delete from public.agencies where id::text like 'a1130000-%';
+delete from auth.users where id::text like 'a1130000-%';
+drop table tests.s113;
 
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

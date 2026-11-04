@@ -27,18 +27,30 @@ function revalidateDeal(dealId: string) {
 export async function createDealAction(input: z.input<typeof dealCreateSchema>): Promise<DealResult> {
   const ctx = await requireAgency("manager");
   const parsed = dealCreateSchema.safeParse(input);
-  if (!parsed.success) return agencyFail("invalid_input");
+  if (!parsed.success) return agencyFail(parsed.error.issues.some((i) => i.message === "client_required") ? "client_required" : "invalid_input");
   const d = parsed.data;
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("agency_deal_create", {
+    // 0107: cliente marca e/ou herói + serviço (o roteiro nasce junto); sem a 0107, o caminho antigo (só marca)
+    const { data, error } = await supabase.rpc("agency_deal_open", {
       p_agency: ctx.agency.id,
-      p_brand: d.brandId,
-      p_data: { title: d.title, talent_brief: d.talentBrief, expected_start: d.expectedStart, expected_end: d.expectedEnd, owner_id: d.ownerId, notes: d.notes },
+      p_data: {
+        brand_id: d.brandId,
+        client_talent_id: d.clientTalentId,
+        service_id: d.serviceId,
+        start_on: d.startOn,
+        title: d.title,
+        talent_brief: d.talentBrief,
+        expected_start: d.expectedStart,
+        expected_end: d.expectedEnd,
+        owner_id: d.ownerId,
+        notes: d.notes,
+      },
     });
     if (error) return agencyFail(error);
     if (!data) return agencyFail("generic");
     revalidatePath("/agencia/pipeline");
+    revalidatePath("/agencia");
     const t = await getTranslations("agency.deal");
     return { ok: true, message: t("created"), id: data };
   } catch (error) {

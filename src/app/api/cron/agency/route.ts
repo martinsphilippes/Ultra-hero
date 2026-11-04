@@ -73,6 +73,14 @@ async function handler(request: Request) {
     } else {
       out.payments_notified = Number(payments.data ?? 0);
     }
+    // 0107: roteiros de entrega — recalcula a previsão, avisa 1 dia útil antes do prazo e o atraso ao Gestor
+    const roadmap = await admin.rpc("roadmap_alert_scan");
+    if (roadmap.error) {
+      if (!NOT_MIGRATED.has(roadmap.error.code ?? "")) throw new Error(roadmap.error.message);
+      out.roadmap_skipped = "not_migrated";
+    } else {
+      out.roadmap = roadmap.data;
+    }
     try {
       Object.assign(out, await collectYouTubeMetrics(admin));
     } catch (error) {

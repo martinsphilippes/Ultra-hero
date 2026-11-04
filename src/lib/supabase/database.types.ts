@@ -6225,6 +6225,7 @@ export type Database = {
           role: string;
           updated_at: string;
           user_id: string;
+          sectors: string[];
         };
         ComputedFields: never;
         Insert: {
@@ -6238,6 +6239,7 @@ export type Database = {
           role: string;
           updated_at?: string;
           user_id: string;
+          sectors?: string[];
         };
         Update: {
           agency_id?: string;
@@ -6250,6 +6252,7 @@ export type Database = {
           role?: string;
           updated_at?: string;
           user_id?: string;
+          sectors?: string[];
         };
         Relationships: [
           {
@@ -6475,6 +6478,151 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [];
+      };
+      agency_services: {
+        Row: {
+          active: boolean;
+          agency_id: string;
+          client_kind: string;
+          created_at: string;
+          created_by: string | null;
+          description: string;
+          from_model: boolean;
+          id: string;
+          milestone_days: number | null;
+          milestone_label: string;
+          name: string;
+          position: number;
+          recurrence: string;
+          sla_days: number;
+          slug: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          active?: boolean;
+          agency_id: string;
+          client_kind?: string;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string;
+          from_model?: boolean;
+          id?: string;
+          milestone_days?: number | null;
+          milestone_label?: string;
+          name: string;
+          position?: number;
+          recurrence?: string;
+          sla_days: number;
+          slug: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          active?: boolean;
+          agency_id?: string;
+          client_kind?: string;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string;
+          from_model?: boolean;
+          id?: string;
+          milestone_days?: number | null;
+          milestone_label?: string;
+          name?: string;
+          position?: number;
+          recurrence?: string;
+          sla_days?: number;
+          slug?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "agency_services_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      agency_service_steps: {
+        Row: {
+          agency_id: string;
+          automatic: boolean;
+          client_visible: boolean;
+          created_at: string;
+          depends_on_prev: boolean;
+          description: string;
+          due_days: number;
+          due_rule: string;
+          id: string;
+          milestone: string | null;
+          position: number;
+          recurrence: string | null;
+          sector: string;
+          sector_extra: string | null;
+          service_id: string;
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          automatic?: boolean;
+          client_visible?: boolean;
+          created_at?: string;
+          depends_on_prev?: boolean;
+          description?: string;
+          due_days?: number;
+          due_rule?: string;
+          id?: string;
+          milestone?: string | null;
+          position: number;
+          recurrence?: string | null;
+          sector: string;
+          sector_extra?: string | null;
+          service_id: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          automatic?: boolean;
+          client_visible?: boolean;
+          created_at?: string;
+          depends_on_prev?: boolean;
+          description?: string;
+          due_days?: number;
+          due_rule?: string;
+          id?: string;
+          milestone?: string | null;
+          position?: number;
+          recurrence?: string | null;
+          sector?: string;
+          sector_extra?: string | null;
+          service_id?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "agency_service_steps_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "agency_service_steps_service_fk";
+            columns: ["service_id"];
+            isOneToOne: false;
+            referencedRelation: "agency_services";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       agency_brands: {
         Row: {
@@ -7300,7 +7448,7 @@ export type Database = {
       deals: {
         Row: {
           agency_id: string;
-          brand_id: string;
+          brand_id: string | null;
           brand_visible: boolean;
           closed_at: string | null;
           confirmed_at: string | null;
@@ -7321,11 +7469,14 @@ export type Database = {
           talent_brief: string;
           title: string;
           updated_at: string;
+          client_talent_id: string | null;
+          roadmap_started_on: string | null;
+          service_id: string | null;
         };
         ComputedFields: never;
         Insert: {
           agency_id: string;
-          brand_id: string;
+          brand_id?: string | null;
           brand_visible?: boolean;
           closed_at?: string | null;
           confirmed_at?: string | null;
@@ -7346,10 +7497,13 @@ export type Database = {
           talent_brief?: string;
           title: string;
           updated_at?: string;
+          client_talent_id?: string | null;
+          roadmap_started_on?: string | null;
+          service_id?: string | null;
         };
         Update: {
           agency_id?: string;
-          brand_id?: string;
+          brand_id?: string | null;
           brand_visible?: boolean;
           closed_at?: string | null;
           confirmed_at?: string | null;
@@ -7370,6 +7524,9 @@ export type Database = {
           talent_brief?: string;
           title?: string;
           updated_at?: string;
+          client_talent_id?: string | null;
+          roadmap_started_on?: string | null;
+          service_id?: string | null;
         };
         Relationships: [
           {
@@ -7398,6 +7555,20 @@ export type Database = {
             columns: ["request_id"];
             isOneToOne: false;
             referencedRelation: "campaign_requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deals_client_talent_fk";
+            columns: ["client_talent_id"];
+            isOneToOne: false;
+            referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deals_service_fk";
+            columns: ["service_id"];
+            isOneToOne: false;
+            referencedRelation: "agency_services";
             referencedColumns: ["id"];
           },
         ];
@@ -10493,6 +10664,19 @@ export type Database = {
           template_step: number | null;
           title: string;
           updated_at: string;
+          automatic: boolean;
+          available_on: string | null;
+          client_visible: boolean;
+          depends_on_prev: boolean;
+          due_days: number | null;
+          due_on: string | null;
+          due_rule: string | null;
+          milestone: string | null;
+          recurrence: string | null;
+          roadmap_position: number | null;
+          roadmap_step_id: string | null;
+          sector: string | null;
+          sector_extra: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -10518,6 +10702,19 @@ export type Database = {
           template_step?: number | null;
           title?: string;
           updated_at?: string;
+          automatic?: boolean;
+          available_on?: string | null;
+          client_visible?: boolean;
+          depends_on_prev?: boolean;
+          due_days?: number | null;
+          due_on?: string | null;
+          due_rule?: string | null;
+          milestone?: string | null;
+          recurrence?: string | null;
+          roadmap_position?: number | null;
+          roadmap_step_id?: string | null;
+          sector?: string | null;
+          sector_extra?: string | null;
         };
         Update: {
           agency_id?: string;
@@ -10542,6 +10739,19 @@ export type Database = {
           template_step?: number | null;
           title?: string;
           updated_at?: string;
+          automatic?: boolean;
+          available_on?: string | null;
+          client_visible?: boolean;
+          depends_on_prev?: boolean;
+          due_days?: number | null;
+          due_on?: string | null;
+          due_rule?: string | null;
+          milestone?: string | null;
+          recurrence?: string | null;
+          roadmap_position?: number | null;
+          roadmap_step_id?: string | null;
+          sector?: string | null;
+          sector_extra?: string | null;
         };
         Relationships: [
           {
@@ -10584,6 +10794,13 @@ export type Database = {
             columns: ["talent_id"];
             isOneToOne: false;
             referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tasks_roadmap_step_fk";
+            columns: ["roadmap_step_id"];
+            isOneToOne: false;
+            referencedRelation: "agency_service_steps";
             referencedColumns: ["id"];
           },
         ];
@@ -11343,6 +11560,34 @@ isOneToOne: false
         Args: { p_agency: string; p_brand: string; p_data: Json };
         Returns: string;
       };
+      // roteiros de entrega (0107)
+      br_easter: { Args: { p_year: number }; Returns: string };
+      br_is_business_day: { Args: { p_day: string }; Returns: boolean };
+      br_next_business_day: { Args: { p_day: string }; Returns: string };
+      br_roll_business_day: { Args: { p_day: string }; Returns: string };
+      br_add_business_days: { Args: { p_day: string; p_n: number }; Returns: string };
+      br_business_days_between: { Args: { p_from: string; p_to: string }; Returns: number };
+      br_holidays: { Args: { p_year: number }; Returns: { day: string; name: string }[] };
+      roadmap_sector_ok: { Args: { p: string }; Returns: boolean };
+      roadmap_slugify: { Args: { p: string }; Returns: string };
+      my_agency_sector_keys: { Args: Record<PropertyKey, never>; Returns: string[] };
+      groscove_service_model: { Args: Record<PropertyKey, never>; Returns: Json };
+      agency_services_seed: { Args: { p_agency: string }; Returns: number };
+      agency_service_save: { Args: { p_agency: string; p_id: string | null; p_data: Json }; Returns: string };
+      agency_services_restore: { Args: { p_agency: string }; Returns: number };
+      agency_member_sectors_set: { Args: { p_agency: string; p_user: string; p_sectors: string[] }; Returns: string[] };
+      agency_deal_open: { Args: { p_agency: string; p_data: Json }; Returns: string };
+      deal_roadmap_start: { Args: { p_deal: string; p_service: string; p_start?: string | null; p_replace?: boolean }; Returns: number };
+      deal_client_set: { Args: { p_deal: string; p_talent: string | null }; Returns: undefined };
+      roadmap_recalc: { Args: { p_deal: string }; Returns: number };
+      roadmap_task_can_work: { Args: { p_task: string }; Returns: boolean };
+      roadmap_task_set: { Args: { p_task: string; p_done: boolean }; Returns: undefined };
+      roadmap_task_assign: { Args: { p_task: string; p_assignee: string | null; p_sector: string }; Returns: undefined };
+      deal_roadmap: { Args: { p_deal: string }; Returns: Json };
+      roadmap_today: { Args: { p_agency: string; p_scope?: string }; Returns: Json };
+      roadmap_indicators: { Args: { p_agency: string; p_days?: number }; Returns: Json };
+      client_projects: { Args: Record<PropertyKey, never>; Returns: Json };
+      roadmap_alert_scan: { Args: Record<PropertyKey, never>; Returns: Json };
       brand_request_cancel: {
         Args: { p_id: string; p_note: string };
         Returns: undefined;

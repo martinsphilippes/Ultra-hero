@@ -44,6 +44,8 @@ const ICON: Partial<Record<string, LucideIcon>> = {
   payment_reviewed: Wallet,
   payment_due: Wallet,
   payment_plan: Wallet,
+  roadmap_due_soon: CalendarDays,
+  roadmap_overdue: CalendarDays,
 };
 
 // Tokens que os textos dos avisos podem usar: sempre presentes (vazio quando o aviso não traz).

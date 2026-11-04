@@ -129,7 +129,7 @@ export default async function PipelinePage({ searchParams }: Props) {
                         data-testid="deal-card"
                       >
                         <span className="text-sm font-semibold text-fg">{deal.title}</span>
-                        <span className="type-caption text-fg-muted">{deal.brand.name}</span>
+                        <span className="type-caption text-fg-muted">{deal.clientLabel}{deal.service ? ` · ${deal.service.name}` : ""}</span>
                         <span className="flex flex-wrap items-center gap-1.5 type-caption text-fg-muted">
                           {closed ? <StageBadge stage={deal.stage} outcome={deal.outcome} /> : null}
                           <span>{deal.ownerId ? (names.get(deal.ownerId) ?? t("ownerUnknown")) : t("noOwner")}</span>

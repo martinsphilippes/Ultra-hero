@@ -1,5 +1,10 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // roteiros de entrega (0107)
+  "roadmap_started",
+  "roadmap_exists",
+  "client_required",
+  "talent_agency_mismatch",
   // modelo de valor e montador de elenco (0096): o mais específico primeiro (a busca é por trecho da mensagem)
   "max_heroes_required",
   "value_per_hero_required",

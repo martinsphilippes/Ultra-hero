@@ -214,6 +214,14 @@
     "payment_plan": {
       "title": "Payment installments",
       "body": "The agency split the payment for {deal} into {step} installment(s). See the due dates."
+    },
+    "roadmap_due_soon": {
+      "title": "Step due next business day",
+      "body": "{title} · {deal} is due on {date}."
+    },
+    "roadmap_overdue": {
+      "title": "Step overdue",
+      "body": "{title} · {deal} was due on {date}."
     }
   }
 }

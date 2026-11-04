@@ -29,7 +29,9 @@
     "history": "Histórico",
     "sponsorships": "Oportunidades de patrocínio",
     "sponsorship": "Oportunidade de patrocínio",
-    "newSponsorship": "Nova oportunidade"
+    "newSponsorship": "Nova oportunidade",
+    "dealRoadmap": "Roteiro do negócio",
+    "services": "Serviços e roteiros"
   },
   "demoBanner": {
     "tag": "Exemplo",
@@ -373,7 +375,11 @@
     "invites_disabled": "Convites desativados no momento.",
     "brand_already_owned": "Você já é Dono de uma marca.",
     "rate_limited": "Muitas tentativas. Tente de novo mais tarde.",
-    "experiment_closed": "Os cadastros estão pausados no momento."
+    "experiment_closed": "Os cadastros estão pausados no momento.",
+    "roadmap_started": "Já há etapas concluídas: o serviço não pode mais ser trocado.",
+    "roadmap_exists": "Este negócio já tem roteiro.",
+    "client_required": "Escolha a marca, o herói ou os dois.",
+    "talent_agency_mismatch": "Esse herói não é do casting desta agência."
   },
   "casting": {
     "title": "Casting",
@@ -635,7 +641,8 @@
       "messages": "Conversa",
       "documents": "Documentos",
       "terms": "Termos",
-      "tasks": "Tarefas"
+      "tasks": "Tarefas",
+      "roadmap": "Roteiro"
     },
     "sections": {
       "request": "Proposta da marca",
@@ -659,7 +666,8 @@
       "brief_updated": "Briefing atualizado.",
       "offer_accepted": "{param, select, brand {A marca aceitou a contraproposta. Termos acordados.} other {A agência aceitou a proposta da marca. Termos acordados.}}",
       "offer_countered": "{param, select, brand {A marca fez uma contraproposta.} other {A agência fez uma contraproposta.}}",
-      "offer_declined": "A marca recusou a contraproposta."
+      "offer_declined": "A marca recusou a contraproposta.",
+      "roadmap_started": "Roteiro gerado: {param}."
     },
     "stageHint": "Mover de etapa é manual; voltar pede uma nota. Proposta, confirmação e contrato têm ação própria.",
     "form": {

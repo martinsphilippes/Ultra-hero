@@ -22,6 +22,13 @@ export type DealListItem = {
   requestId: string | null;
   talentCount: number;
   isDemo: boolean;
+  /** 0107: herói-cliente (ficha do casting), quando o cliente é (também) o herói */
+  clientTalent: { id: string; name: string } | null;
+  /** 0107: quem é o cliente para mostrar: "Marca", "Herói" ou "Marca · Herói" */
+  clientLabel: string;
+  /** 0107: serviço do catálogo e início do roteiro */
+  service: { id: string; name: string } | null;
+  roadmapStartedOn: string | null;
 };
 
 export type DealDetail = DealListItem & {
@@ -105,9 +112,13 @@ type DealRow = {
   is_demo: boolean;
   brand: { id: string; name: string; logo_url: string | null } | null;
   deal_talents: { id: string; status: string }[] | null;
+  client_talent: { id: string; display_name: string } | null;
+  service: { id: string; name: string } | null;
+  roadmap_started_on: string | null;
 };
 
-const DEAL_SELECT = "id, title, stage, outcome, stage_changed_at, owner_id, expected_start, expected_end, request_id, is_demo, brand:brands!deals_brand_fk(id, name, logo_url), deal_talents(id, status)";
+const DEAL_SELECT =
+  "id, title, stage, outcome, stage_changed_at, owner_id, expected_start, expected_end, request_id, is_demo, roadmap_started_on, brand:brands!deals_brand_fk(id, name, logo_url), deal_talents(id, status), client_talent:talent_profiles!deals_client_talent_fk(id, display_name), service:agency_services!deals_service_fk(id, name)";
 
 function toDeal(r: DealRow): DealListItem {
   return {
@@ -123,6 +134,10 @@ function toDeal(r: DealRow): DealListItem {
     requestId: r.request_id,
     talentCount: (r.deal_talents ?? []).filter((t) => !["declined", "removed"].includes(t.status)).length,
     isDemo: r.is_demo,
+    clientTalent: r.client_talent ? { id: r.client_talent.id, name: r.client_talent.display_name } : null,
+    clientLabel: [r.brand?.name, r.client_talent?.display_name].filter(Boolean).join(" · "),
+    service: r.service ? { id: r.service.id, name: r.service.name } : null,
+    roadmapStartedOn: r.roadmap_started_on ?? null,
   };
 }
 

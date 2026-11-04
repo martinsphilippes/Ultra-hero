@@ -214,6 +214,14 @@
     "payment_plan": {
       "title": "Parcelas do pagamento",
       "body": "A agência dividiu o pagamento de {deal} em {step} parcela(s). Veja os vencimentos."
+    },
+    "roadmap_due_soon": {
+      "title": "Etapa vence no próximo dia útil",
+      "body": "{title} · {deal} vence em {date}."
+    },
+    "roadmap_overdue": {
+      "title": "Etapa atrasada",
+      "body": "{title} · {deal} venceu em {date}."
     }
   }
 }

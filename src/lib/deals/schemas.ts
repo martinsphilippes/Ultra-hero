@@ -92,15 +92,21 @@ export const brandRequestSchema = z.object({
 });
 export type BrandRequestInput = z.input<typeof brandRequestSchema>;
 
-export const dealCreateSchema = z.object({
-  brandId: uuid,
-  title: z.string().trim().min(3).max(120),
-  talentBrief: z.string().trim().max(3000),
-  expectedStart: optionalDate,
-  expectedEnd: optionalDate,
-  ownerId: z.union([z.literal(""), uuid]),
-  notes: z.string().trim().max(2000),
-});
+// 0107: cliente = marca e/ou herói (ficha do casting) e, opcionalmente, o serviço (gera o roteiro a partir de startOn)
+export const dealCreateSchema = z
+  .object({
+    brandId: z.union([z.literal(""), uuid]),
+    clientTalentId: z.union([z.literal(""), uuid]).default(""),
+    serviceId: z.union([z.literal(""), uuid]).default(""),
+    startOn: optionalDate.default(""),
+    title: z.string().trim().min(3).max(120),
+    talentBrief: z.string().trim().max(3000),
+    expectedStart: optionalDate,
+    expectedEnd: optionalDate,
+    ownerId: z.union([z.literal(""), uuid]),
+    notes: z.string().trim().max(2000),
+  })
+  .refine((d) => d.brandId !== "" || d.clientTalentId !== "", { path: ["brandId"], message: "client_required" });
 
 export const dealUpdateSchema = z.object({
   dealId: uuid,

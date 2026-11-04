@@ -91,7 +91,7 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
   const dealSet = new Set(dealIds);
   const formOptions = {
     // colaborador: só os negócios em que pode criar
-    deals: deals.items.filter((d) => dealSet.has(d.id)).map((d) => ({ id: d.id, name: d.title, brand: d.brand.name, logoUrl: d.brand.logoUrl })),
+    deals: deals.items.filter((d) => dealSet.has(d.id)).map((d) => ({ id: d.id, name: d.title, brand: d.clientLabel, logoUrl: d.brand.logoUrl })),
     talents: talents.items.map((x) => ({ id: x.id, name: x.name, city: x.city, state: x.state, hasLogin: x.hasLogin, avatarUrl: x.hero?.avatarUrl ?? null })),
     brands: brands.map((b) => ({ id: b.brand.id, name: b.brand.name, logoUrl: b.brand.logoUrl })),
     canPublishCommercialDate: isManager,

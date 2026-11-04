@@ -61,6 +61,9 @@ export const INBOX_KINDS = [
   "payment_reviewed",
   "payment_due",
   "payment_plan",
+  // roteiros de entrega (0107): etapa vence no próximo dia útil (responsável/setor) e etapa atrasada (Gestor)
+  "roadmap_due_soon",
+  "roadmap_overdue",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 

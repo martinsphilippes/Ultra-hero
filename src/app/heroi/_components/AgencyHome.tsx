@@ -14,6 +14,8 @@ import { listOpportunities } from "@/lib/deals/queries";
 import { formatCents } from "@/lib/deals/schemas";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { listTasks } from "@/lib/execution/queries";
+import { ClientProjectCard } from "@/components/roadmap/ClientProjectCard";
+import { getClientProjects } from "@/lib/roadmap/queries";
 import { payStep } from "@/lib/finance/earnings";
 import { myPayouts } from "@/lib/finance/queries";
 import { listInbox } from "@/lib/inbox/queries";
@@ -38,14 +40,18 @@ export async function AgencyHome() {
     listInbox({ limit: 5 }),
     listOpportunities(),
   ]);
-  const [tasks, summary, payouts, tc, todayData, te] = await Promise.all([
+  const [tasks, summary, payouts, tc, todayData, te, projects, tr] = await Promise.all([
     listTasks({ talentOnly: true, open: true }),
     officeSummaryData(),
     myPayouts(),
     getTranslations("commercial"),
     getTalentToday(),
     getTranslations("talent.earnings"),
+    // 0107: projetos em que o herói é cliente da agência (só as etapas visíveis ao cliente)
+    getClientProjects(),
+    getTranslations("roadmap.hero"),
   ]);
+  const openProjects = projects.items.filter((p) => !p.closed);
   // "Hoje" (0078): o que depende do herói, do mais urgente para o menos, com link direto
   const today = todayData.available ? todayData.data : null;
   const now = new Date();
@@ -78,6 +84,21 @@ export async function AgencyHome() {
               </span>
               <ArrowRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
             </Link>
+          ))}
+        </section>
+      ) : null}
+      {openProjects.length > 0 ? (
+        <section className="flex flex-col gap-3" aria-labelledby="office-projects" data-testid="office-projects">
+          <div className="flex items-center justify-between gap-2">
+            <h2 id="office-projects" className="text-sm font-semibold text-fg">
+              {tr("title")}
+            </h2>
+            <Link href="/heroi/projetos" className="text-sm font-medium text-accent-text underline-offset-2 hover:underline">
+              {tr("seeAll")}
+            </Link>
+          </div>
+          {openProjects.slice(0, 2).map((p) => (
+            <ClientProjectCard key={p.dealId} project={p} limit={3} />
           ))}
         </section>
       ) : null}

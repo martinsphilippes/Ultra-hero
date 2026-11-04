@@ -7,6 +7,8 @@ import { AgencySwitcher } from "@/components/agency/AgencySwitcher";
 import { SelfForm } from "@/components/agency/SettingsForms";
 import { RoleBadge } from "@/components/agency/RoleBadge";
 import { FinanceKpis } from "@/components/finance/FinanceKpis";
+import { RoadmapIndicatorsCard } from "@/components/roadmap/RoadmapIndicatorsCard";
+import { SectorTodayPanel } from "@/components/roadmap/SectorTodayPanel";
 import { PageHeader } from "@/components/ui";
 import { agencyDashboardData } from "@/lib/agency/dashboards";
 import { agencyDashboard } from "@/lib/agency/queries";
@@ -17,6 +19,8 @@ import { getUser } from "@/lib/auth/session";
 import { upcomingCount } from "@/lib/calendar/queries";
 import { dealCounts } from "@/lib/deals/queries";
 import { taskCounts } from "@/lib/execution/queries";
+import { getRoadmapIndicators, getSectorToday } from "@/lib/roadmap/queries";
+import { isTodayScope } from "@/lib/roadmap/vocab";
 
 export const dynamic = "force-dynamic";
 
@@ -27,12 +31,18 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Início da agência (os atalhos ficam na Agenda, pedido do responsável 04/11): casting, equipe, marcas atendidas, convites pendentes e avisos; os próximos
 // módulos aparecem como "em breve" (pipeline, agenda e, só para o Adm, financeiro).
-export default async function AgencyDashboardPage() {
+// 0107: "Hoje no meu setor" (etapas dos roteiros atrasadas / vencendo, ?setor=sector|mine|all) e, para gestor+, os
+// indicadores dos roteiros (% no prazo, tempo médio por etapa, setor com mais atraso).
+type Props = { searchParams: Promise<{ setor?: string }> };
+
+export default async function AgencyDashboardPage({ searchParams }: Props) {
   const ctx = await getAgencyContext();
   if (ctx.state !== "ok") return null;
   const isAdmin = agencyCan(ctx.role, "admin", ctx.platformAdmin);
-  const user = await getUser();
-  const [t, data, casting, deals, upcoming, tasks, panel] = await Promise.all([
+  const isManager = agencyCan(ctx.role, "manager", ctx.platformAdmin);
+  const [user, sp] = await Promise.all([getUser(), searchParams]);
+  const asked = isTodayScope(sp.setor) ? sp.setor : null;
+  const [t, data, casting, deals, upcoming, tasks, panel, firstToday, indicators] = await Promise.all([
     getTranslations("agency.dashboard"),
     agencyDashboard(ctx.agency.id, isAdmin),
     castingCounts(ctx.agency.id),
@@ -40,7 +50,14 @@ export default async function AgencyDashboardPage() {
     upcomingCount(14, { agencyId: ctx.agency.id }),
     taskCounts(ctx.agency.id, user?.id ?? null),
     agencyDashboardData(ctx.agency.id),
+    getSectorToday(ctx.agency.id, asked ?? "sector"),
+    isManager ? getRoadmapIndicators(ctx.agency.id) : Promise.resolve(null),
   ]);
+  // sem setor e sem filtro escolhido: o gestor vê todos os setores; o colaborador, as etapas dele
+  const sectorToday =
+    !asked && firstToday.data && firstToday.data.sectors.length === 0
+      ? (await getSectorToday(ctx.agency.id, isManager ? "all" : "mine")).data
+      : firstToday.data;
   // painel executivo (0069): entregas atrasadas, aprovações da marca, creators sem contato, ganhos/perdidos; finanças só Adm
   const exec = panel.available ? panel.data : null;
   const finance = exec?.finance ?? null;
@@ -71,6 +88,8 @@ export default async function AgencyDashboardPage() {
         {isAdmin ? <KpiCard label={t("kpi.invites")} value={data.pendingInvites} /> : null}
         <KpiCard label={t("kpi.unread")} value={data.unread} />
       </div>
+      {sectorToday ? <SectorTodayPanel data={sectorToday} /> : null}
+      {indicators?.data ? <RoadmapIndicatorsCard data={indicators.data} /> : null}
       {finance ? (
         <section aria-labelledby="agency-finance-home" className="flex flex-col gap-3" data-testid="agency-finance-home">
           <div className="flex flex-wrap items-center justify-between gap-2">

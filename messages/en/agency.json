@@ -29,7 +29,9 @@
     "history": "History",
     "sponsorships": "Sponsorship opportunities",
     "sponsorship": "Sponsorship opportunity",
-    "newSponsorship": "New opportunity"
+    "newSponsorship": "New opportunity",
+    "dealRoadmap": "Deal delivery plan",
+    "services": "Services and delivery plans"
   },
   "demoBanner": {
     "tag": "Example",
@@ -373,7 +375,11 @@
     "invites_disabled": "Invitations are turned off right now.",
     "brand_already_owned": "You already own a brand.",
     "rate_limited": "Too many attempts. Try again later.",
-    "experiment_closed": "Sign-ups are paused right now."
+    "experiment_closed": "Sign-ups are paused right now.",
+    "roadmap_started": "Steps are already done: the service can no longer be changed.",
+    "roadmap_exists": "This deal already has a plan.",
+    "client_required": "Choose the brand, the hero or both.",
+    "talent_agency_mismatch": "This hero isn't in this agency's casting."
   },
   "casting": {
     "title": "Roster",
@@ -635,7 +641,8 @@
       "messages": "Conversation",
       "documents": "Documents",
       "terms": "Terms",
-      "tasks": "Tasks"
+      "tasks": "Tasks",
+      "roadmap": "Plan"
     },
     "sections": {
       "request": "Brand proposal",
@@ -659,7 +666,8 @@
       "brief_updated": "Brief updated.",
       "offer_accepted": "{param, select, brand {The brand accepted the counteroffer. Terms agreed.} other {The agency accepted the brand's proposal. Terms agreed.}}",
       "offer_countered": "{param, select, brand {The brand made a counteroffer.} other {The agency made a counteroffer.}}",
-      "offer_declined": "The brand declined the counteroffer."
+      "offer_declined": "The brand declined the counteroffer.",
+      "roadmap_started": "Delivery plan created: {param}."
     },
     "stageHint": "Moving stages is manual; going back needs a note. Proposal, confirmation and contract have their own action.",
     "form": {

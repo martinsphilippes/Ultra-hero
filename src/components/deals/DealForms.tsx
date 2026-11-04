@@ -5,25 +5,55 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
 import { addActivityAction, confirmDealAction, createDealAction, moveDealAction, setDealTeamAction, updateDealAction } from "@/app/agencia/negocios/actions";
-import { Button, Checkbox, DateRangePicker, Dialog, EntitySelect, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, DateRangePicker, Dialog, EntitySelect, FormField, Input, SegmentedControl, Select, Textarea, useToast } from "@/components/ui";
 import { canConfirm, DEAL_OUTCOMES, moveNeedsNote, nextStages, type DealOutcome, type DealStage } from "@/lib/deals/stages";
 import { ACTIVITY_KINDS, type ActivityKind } from "@/lib/deals/vocab";
-import { brandOption, memberOption } from "@/lib/ui/entity";
+import { serviceFitsClient, type ClientKind } from "@/lib/roadmap/vocab";
+import { brandOption, memberOption, talentOption } from "@/lib/ui/entity";
 
 /** Membro da agência para as listas; `role` (admin|manager|staff) e `jobTitle` vêm de listTeam. */
 export type Member = { userId: string; name: string; role?: string | null; jobTitle?: string | null };
 
 // ---------------------------------------------------------------- criar / editar
 type DealValues = { title: string; talentBrief: string; expectedStart: string; expectedEnd: string; ownerId: string; notes: string; brandId: string };
+/** Herói do casting que pode ser cliente do negócio (0107). */
+export type ClientTalent = { id: string; name: string; city?: string | null; state?: string | null; avatarUrl?: string | null };
+/** Serviço do catálogo (0107): ao escolher, o roteiro nasce junto com o negócio. */
+export type ServiceOption = { id: string; name: string; clientKind: ClientKind; slaDays: number };
 
-export function DealForm({ initial, dealId, brands, members, canEdit, canSetOwner }: { initial: DealValues; dealId: string | null; brands: { id: string; name: string; logoUrl?: string | null }[]; members: Member[]; canEdit: boolean; canSetOwner: boolean }) {
+export function DealForm({
+  initial,
+  dealId,
+  brands,
+  members,
+  canEdit,
+  canSetOwner,
+  talents = [],
+  services = [],
+}: {
+  initial: DealValues;
+  dealId: string | null;
+  brands: { id: string; name: string; logoUrl?: string | null }[];
+  members: Member[];
+  canEdit: boolean;
+  canSetOwner: boolean;
+  talents?: ClientTalent[];
+  services?: ServiceOption[];
+}) {
   const t = useTranslations("agency.deal.form");
+  const tr = useTranslations("roadmap.newDeal");
   const tdp = useTranslations("common.datePicker");
   const tp = useTranslations("pickers");
   const memberOptions = members.map((m) => memberOption(tp, m));
   const router = useRouter();
   const { toast } = useToast();
   const [v, setV] = useState(initial);
+  // 0107: cliente = marca, herói ou os dois; serviço opcional (gera o roteiro) e início do roteiro (vazio = hoje)
+  const [client, setClient] = useState<ClientKind>(brands.length > 0 || talents.length === 0 ? "brand" : "talent");
+  const [talentId, setTalentId] = useState("");
+  const [serviceId, setServiceId] = useState("");
+  const [startOn, setStartOn] = useState("");
+  const fitting = services.filter((x) => serviceFitsClient(x.clientKind, client));
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const set = <K extends keyof DealValues>(k: K, value: DealValues[K]) => setV((cur) => ({ ...cur, [k]: value }));
@@ -35,7 +65,18 @@ export function DealForm({ initial, dealId, brands, members, canEdit, canSetOwne
     start(async () => {
       const result = dealId
         ? await updateDealAction({ dealId, title: v.title, talentBrief: v.talentBrief, expectedStart: v.expectedStart, expectedEnd: v.expectedEnd, ...(canSetOwner ? { ownerId: v.ownerId } : {}) })
-        : await createDealAction({ brandId: v.brandId, title: v.title, talentBrief: v.talentBrief, expectedStart: v.expectedStart, expectedEnd: v.expectedEnd, ownerId: v.ownerId, notes: v.notes });
+        : await createDealAction({
+            brandId: client === "talent" ? "" : v.brandId,
+            clientTalentId: client === "brand" ? "" : talentId,
+            serviceId: fitting.some((x) => x.id === serviceId) ? serviceId : "",
+            startOn,
+            title: v.title,
+            talentBrief: v.talentBrief,
+            expectedStart: v.expectedStart,
+            expectedEnd: v.expectedEnd,
+            ownerId: v.ownerId,
+            notes: v.notes,
+          });
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });
       if (!dealId && result.id) router.push(`/agencia/negocios/${result.id}`);
@@ -45,6 +86,20 @@ export function DealForm({ initial, dealId, brands, members, canEdit, canSetOwne
   return (
     <form onSubmit={submit} className="flex flex-col gap-4" noValidate data-testid="deal-form">
       {!dealId ? (
+        <FormField label={tr("client")} hint={tr("clientHint")}>
+          <SegmentedControl<ClientKind>
+            aria-label={tr("client")}
+            value={client}
+            onValueChange={setClient}
+            options={[
+              { value: "brand", label: tr("clientKinds.brand"), disabled: brands.length === 0 },
+              { value: "talent", label: tr("clientKinds.talent"), disabled: talents.length === 0 },
+              { value: "both", label: tr("clientKinds.both"), disabled: brands.length === 0 || talents.length === 0 },
+            ]}
+          />
+        </FormField>
+      ) : null}
+      {!dealId && client !== "talent" ? (
         <FormField label={t("brand")} hint={tp("hints.dealBrand")} required>
           <EntitySelect
             value={v.brandId}
@@ -54,6 +109,28 @@ export function DealForm({ initial, dealId, brands, members, canEdit, canSetOwne
             roleInOption={false}
             options={brands.map((b) => brandOption(tp, b))}
           />
+        </FormField>
+      ) : null}
+      {!dealId && client !== "brand" ? (
+        <FormField label={tr("hero")} hint={tr("heroHint")} required>
+          <EntitySelect value={talentId} onChange={(e) => setTalentId(e.target.value)} disabled={disabled} emptyLabel="—" options={talents.map((x) => talentOption(tp, x))} data-testid="deal-client-hero" />
+        </FormField>
+      ) : null}
+      {!dealId && services.length > 0 ? (
+        <FormField label={tr("service")} hint={tr("serviceHint")}>
+          <Select value={fitting.some((x) => x.id === serviceId) ? serviceId : ""} onChange={(e) => setServiceId(e.target.value)} disabled={disabled} data-testid="deal-service">
+            <option value="">{tr("serviceLater")}</option>
+            {fitting.map((x) => (
+              <option key={x.id} value={x.id}>
+                {tr("serviceOption", { name: x.name, days: x.slaDays })}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+      ) : null}
+      {!dealId && fitting.some((x) => x.id === serviceId) ? (
+        <FormField label={tr("startOn")} hint={tr("startOnHint")}>
+          <DatePicker value={startOn} onChange={setStartOn} disabled={disabled} data-testid="deal-start-on" />
         </FormField>
       ) : null}
       <FormField label={t("title")} required>

@@ -9,11 +9,14 @@ import { loadDeal } from "./_lib";
 
 type Props = { children: ReactNode; params: Promise<{ id: string }> };
 
-// Ficha do negócio com abas por rota (Visão geral, Creators, Entregas, Conversa, Documentos).
+// Ficha do negócio com abas por rota (Visão geral, Roteiro, Creators, Entregas, Conversa, Documentos).
+// 0107: aba Roteiro (serviço, etapas por setor e prazos em dias úteis); negócio só do herói (sem marca) esconde as abas
+// que dependem da marca (heróis do elenco, termos, entregas e conversa com a marca).
 export default async function DealLayout({ children, params }: Props) {
   const { id } = await params;
   const [{ deal }, t, locale] = await Promise.all([loadDeal(id), getTranslations("agency.deal"), getLocale() as Promise<Locale>]);
   const base = `/agencia/negocios/${deal.id}`;
+  const hasBrand = deal.brand.id !== "";
   return (
     <div className="flex flex-col gap-5" data-testid="deal-page">
       <PageHeader
@@ -23,7 +26,12 @@ export default async function DealLayout({ children, params }: Props) {
         description={
           <span className="flex flex-wrap items-center gap-2">
             <StageBadge stage={deal.stage} outcome={deal.outcome} size="md" />
-            <span className="text-fg">{deal.brand.name}</span>
+            <span className="text-fg">{deal.clientLabel}</span>
+            {deal.service ? (
+              <Badge variant="info" size="sm">
+                {deal.service.name}
+              </Badge>
+            ) : null}
             {deal.isDemo ? (
               <Badge variant="neutral" size="sm">
                 {t("demoTag")}
@@ -39,11 +47,20 @@ export default async function DealLayout({ children, params }: Props) {
         label={t("tabsLabel")}
         tabs={[
           { href: base, label: t("tabs.overview"), exact: true },
-          { href: `${base}/herois`, label: t("tabs.talents") },
-          { href: `${base}/termos`, label: t("tabs.terms") },
+          { href: `${base}/roteiro`, label: t("tabs.roadmap") },
+          ...(hasBrand
+            ? [
+                { href: `${base}/herois`, label: t("tabs.talents") },
+                { href: `${base}/termos`, label: t("tabs.terms") },
+              ]
+            : []),
           { href: `${base}/tarefas`, label: t("tabs.tasks") },
-          { href: `${base}/entregas`, label: t("tabs.deliverables") },
-          { href: `${base}/conversa`, label: t("tabs.messages") },
+          ...(hasBrand
+            ? [
+                { href: `${base}/entregas`, label: t("tabs.deliverables") },
+                { href: `${base}/conversa`, label: t("tabs.messages") },
+              ]
+            : []),
           { href: `${base}/documentos`, label: t("tabs.documents") },
         ]}
       />

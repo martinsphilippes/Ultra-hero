@@ -3,6 +3,8 @@ import { getTranslations } from "next-intl/server";
 import { AgencySettingsForm } from "@/components/agency/SettingsForms";
 import { PaymentSettingsForm } from "@/components/finance/PaymentSettingsForm";
 import { RateForm } from "@/components/finance/RateForm";
+import { ChevronRight, ListChecks } from "lucide-react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
@@ -20,8 +22,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AgencySettingsPage() {
   const ctx = await requireAgency("manager");
   const isAdmin = agencyCan(ctx.role, "admin", ctx.platformAdmin);
-  const [t, tf, tp, rate, payment] = await Promise.all([
+  const [t, tr, tf, tp, rate, payment] = await Promise.all([
     getTranslations("agency.settings"),
+    getTranslations("roadmap.catalog"),
     getTranslations("agency.finance"),
     getTranslations("payments.settings"),
     isAdmin ? agencyRates(ctx.agency.id) : Promise.resolve(null),
@@ -30,6 +33,21 @@ export default async function AgencySettingsPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={t("title")} description={t("description")} />
+      {/* 0107: catálogo de serviços e roteiros de entrega (Adm edita; gestor consulta) */}
+      <Link
+        href="/agencia/configuracoes/servicos"
+        className="flex min-h-16 items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-4 transition-colors hover:bg-surface-hover"
+        data-testid="settings-services"
+      >
+        <span className="flex items-start gap-3">
+          <ListChecks className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden="true" />
+          <span className="flex flex-col gap-0.5">
+            <span className="text-sm font-semibold text-fg">{tr("title")}</span>
+            <span className="type-caption text-fg-muted">{tr("settingsHint")}</span>
+          </span>
+        </span>
+        <ChevronRight className="size-5 shrink-0 text-fg-muted" aria-hidden="true" />
+      </Link>
       <section aria-labelledby="agency-data" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
         <h2 id="agency-data" className="type-h3 text-fg">
           {t("dataTitle")}
