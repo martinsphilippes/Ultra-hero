@@ -732,7 +732,8 @@
         "license": "Licencia: elige una licencia compatible con el video que agregaste.",
         "stream": "Video: el envío anterior ya no es válido. Súbelo de nuevo o quítalo."
       }
-    }
+    },
+    "campaignNote": "Después de publicar la receta, vuelve a la campaña y envía su enlace como entrega."
   },
   "preview": {
     "metaTitle": "Vista previa",

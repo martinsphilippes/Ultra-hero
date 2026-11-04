@@ -352,7 +352,8 @@
         "notePlaceholder": "E.g.: Start with week 1 and go at your own pace.",
         "counter": "{count}/{max}"
       }
-    }
+    },
+    "backToCampaign": "Back to the campaign"
   },
   "reviews": {
     "title": "Review history",
@@ -537,7 +538,10 @@
         "cta": "Open the recipe editor"
       }
     },
-    "publishAfterApproval": "Your hero is still waiting for approval: the draft is kept and you publish as soon as it is approved."
+    "publishAfterApproval": "Your hero is still waiting for approval: the draft is kept and you publish as soon as it is approved.",
+    "campaignProgramNote": "Pick the program in the Program block below.",
+    "campaignPublishNote": "After publishing, send the link as a deliverable in the campaign.",
+    "campaignSend": "Send as a campaign deliverable"
   },
   "pending": {
     "notice": "Your hero is waiting for Ultra approval. You can already prepare posts and content: they show to the public as soon as the hero is approved."

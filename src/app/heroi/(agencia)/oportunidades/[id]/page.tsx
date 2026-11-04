@@ -7,6 +7,8 @@ import { DeliverableStatusBadge, TalentStatusBadge } from "@/components/deals/St
 import { DeliverablesBoard } from "@/components/execution/DeliverablesBoard";
 import { TaskList } from "@/components/execution/TaskList";
 import { TermsPanel } from "@/components/execution/TermsPanel";
+import { CampaignCreate } from "@/components/hero-work/CampaignCreate";
+import { CampaignPublishedToast } from "@/components/hero-work/CampaignPublishedToast";
 import { MusicPanel } from "@/components/media/MusicPanel";
 import { TrackingPanel } from "@/components/media/TrackingPanel";
 import { ConflictAlert } from "@/components/offer/ConflictAlert";
@@ -21,6 +23,7 @@ import { listMessages, listOpportunities, myFee } from "@/lib/deals/queries";
 import { formatCents } from "@/lib/deals/schemas";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { getDealExecution } from "@/lib/execution/queries";
+import { canCreateForCampaign, deliverablesAwaitingLink, parsePublishedSlug, publishedContentUrl } from "@/lib/hero-work/campaign";
 import { getDealMedia } from "@/lib/media/queries";
 import { youTubeConfigured } from "@/lib/media/youtube-collect";
 import { proposedDateRange } from "@/lib/offer/counteroffer";
@@ -35,15 +38,19 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("opportunity") };
 }
 
-type Props = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ publicado?: string }> };
 
 // Detalhe da oportunidade: a oferta numa tela só (o quê, quando, quanto — só na web —, direitos e prazo de
 // resposta), alerta de exclusividade, resposta (aceitar, recusar, conversar), contraproposta de data ou valor,
 // briefing, termos, execução e conversa com a agência.
-export default async function OpportunityPage({ params }: Props) {
+// Pedido do responsável (04/11): confirmado na campanha, "Criar para esta campanha" no topo (post rápido, vídeo, fotos,
+// estruturado, treino, programa, receita) e, de volta da criação (?publicado=<slug>), o aviso e o link público pronto
+// para "Enviar como entrega" no quadro de entregas.
+export default async function OpportunityPage({ params, searchParams }: Props) {
   const ctx = await getTalentContext();
   if (ctx.state !== "ok") return null;
   const { id } = await params;
+  const sp = await searchParams;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const [t, tc, tn, locale, list] = await Promise.all([getTranslations("talent.opportunities"), getTranslations("commercial"), getTranslations("mediaKit.networks"), getLocale() as Promise<Locale>, listOpportunities(id)]);
   const o = list.items[0];
@@ -89,6 +96,11 @@ export default async function OpportunityPage({ params }: Props) {
     return at ? localDay(new Date(at), tz) : null;
   };
   const dates = o.deliverables.map((d) => d.publishAt ?? d.dueAt).filter((x): x is string => Boolean(x)).sort();
+  const canCreate = canCreateForCampaign({ status: o.status, dealStatus: o.deal.status });
+  const publishedSlug = canCreate ? parsePublishedSlug(sp.publicado) : null;
+  const inProduction = Boolean(execution && (execution.stage === "production" || execution.stage === "closed"));
+  const prefillUrl = publishedSlug ? publishedContentUrl(origin, publishedSlug) : null;
+  const canSendPublished = Boolean(prefillUrl) && inProduction && !closed && deliverablesAwaitingLink(myDeliverables).length > 0;
   const period = o.deal.expectedStart ? `${formatPlainDate(o.deal.expectedStart, locale)}${o.deal.expectedEnd && o.deal.expectedEnd !== o.deal.expectedStart ? ` – ${formatPlainDate(o.deal.expectedEnd, locale)}` : ""}` : null;
 
   return (
@@ -108,6 +120,8 @@ export default async function OpportunityPage({ params }: Props) {
         }
       />
       {offer && offer.conflicts.length > 0 && !closed ? <ConflictAlert conflicts={offer.conflicts} side="talent" /> : null}
+      {publishedSlug ? <CampaignPublishedToast slug={publishedSlug} canSend={canSendPublished} /> : null}
+      {canCreate ? <CampaignCreate campaignId={o.id} /> : null}
       <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:p-5" aria-labelledby="opp-offer" data-testid="offer-card">
         <h2 id="opp-offer" className="text-base font-semibold text-fg">
           {to("card.title")}
@@ -210,7 +224,7 @@ export default async function OpportunityPage({ params }: Props) {
             {r?.notes ? <p className="whitespace-pre-wrap type-body-sm text-fg-muted">{r.notes}</p> : null}
             {r ? <BriefView brief={r.brief} /> : null}
           </section>
-          {execution && (execution.stage === "production" || execution.stage === "closed") ? (
+          {execution && inProduction ? (
             <>
               <section className={card} aria-labelledby="opp-tasks" data-testid="opportunity-tasks">
                 <h3 id="opp-tasks" className="text-base font-semibold text-fg">
@@ -225,7 +239,7 @@ export default async function OpportunityPage({ params }: Props) {
                   </div>
                 ) : null}
               </section>
-              <section className={card} aria-labelledby="opp-execution" data-testid="opportunity-execution">
+              <section id="entregas" className={`${card} scroll-mt-20`} aria-labelledby="opp-execution" data-testid="opportunity-execution">
                 <h3 id="opp-execution" className="text-base font-semibold text-fg">
                   {tx("deliverablesTitle")}
                 </h3>
@@ -239,6 +253,7 @@ export default async function OpportunityPage({ params }: Props) {
                   canAct={!closed}
                   emptyText={t("deliverablesNone")}
                   media={mediaData ? { readings: mediaData.metrics, comments: mediaData.comments, youtubeConfigured: youTubeConfigured(), today } : null}
+                  prefillUrl={canSendPublished ? prefillUrl : null}
                 />
               </section>
             </>

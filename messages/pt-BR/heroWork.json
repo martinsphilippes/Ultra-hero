@@ -189,5 +189,38 @@
       "save": "Salvar"
     },
     "ownTitle": "Serviços de {name}"
+  },
+  "campaign": {
+    "create": {
+      "title": "Criar para esta campanha",
+      "hint": "Escolha o formato. As hashtags e @ obrigatórias já vão no texto.",
+      "itemTitle": "{kind} para esta campanha",
+      "kinds": {
+        "quick": "Post rápido",
+        "video": "Vídeo",
+        "photo": "Fotos",
+        "structured": "Estruturado",
+        "workout": "Treino",
+        "program": "Programa",
+        "recipe": "Receita"
+      }
+    },
+    "banner": {
+      "title": "Para a campanha {title} · {brand}",
+      "hint": "Publicou? Você volta para a campanha com o link pronto para enviar como entrega.",
+      "tags": "Hashtags e @ obrigatórias",
+      "coupon": "Cupom",
+      "links": "Link",
+      "donts": "O que não fazer",
+      "copy": "Copiar hashtags e @",
+      "copied": "Copiado",
+      "copyFailed": "Não deu para copiar. Selecione o texto e copie.",
+      "back": "Voltar para a campanha"
+    },
+    "published": {
+      "title": "Publicado!",
+      "send": "Agora envie o link como entrega da campanha.",
+      "noPending": "Nenhuma entrega esperando link agora."
+    }
   }
 }

@@ -732,7 +732,8 @@
         "license": "License: pick a license that matches the video you added.",
         "stream": "Video: the previous upload is no longer valid. Upload it again or remove it."
       }
-    }
+    },
+    "campaignNote": "After publishing the recipe, go back to the campaign and send its link as a deliverable."
   },
   "preview": {
     "metaTitle": "Preview",

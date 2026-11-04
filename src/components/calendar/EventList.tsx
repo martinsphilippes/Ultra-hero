@@ -34,12 +34,14 @@ type Props = {
   /** 0094 (agenda do herói): conteúdo extra abaixo do item (checklist) e ações à direita (editar/excluir). */
   renderExtra?: (event: CalendarEvent) => ReactNode;
   renderActions?: (event: CalendarEvent) => ReactNode;
+  /** Agenda do herói (campanha clicável): id do evento → tela que o cartão inteiro abre. Sem ele, nada muda. */
+  ownHrefs?: Record<string, string>;
 };
 
 // Lista agrupada por dia (serve aos três portais): tipo, horário ou "dia inteiro", título, de quem é,
 // local; na agência, link para o negócio e as ações (0086: editar e remover os manuais que a pessoa pode mexer,
 // pelo EventEditorProvider da página; oportunidade de patrocínio abre a tela dela). Nunca valores.
-export function EventList({ events, timeZone, portal, emptyTitle, emptyHint, flat = false, renderExtra, renderActions }: Props) {
+export function EventList({ events, timeZone, portal, emptyTitle, emptyHint, flat = false, renderExtra, renderActions, ownHrefs }: Props) {
   const t = useTranslations("commercial.agenda");
   const tk = useTranslations("commercial.eventKinds");
   const tg = useTranslations("groscoveCalendar");
@@ -95,60 +97,84 @@ export function EventList({ events, timeZone, portal, emptyTitle, emptyHint, fla
       </li>
     );
   };
-  const renderOwn = (e: CalendarEvent) => (
-    <li key={e.id} className="flex flex-wrap items-start gap-3 p-3" data-testid="event-item" data-kind={e.kind}>
-      <span className="w-24 shrink-0 font-mono text-sm text-fg-muted">
-        {e.allDay ? t("allDay") : `${timeOf(e.startsAt)}${e.endsAt !== e.startsAt ? `–${timeOf(e.endsAt)}` : ""}`}
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="flex flex-wrap items-center gap-2">
-          <Badge size="sm" variant={KIND_VARIANT[e.kind]}>
-            {tk(e.kind)}
-          </Badge>
-          {portal === "agency" && e.dealId ? (
-            <Link href={`/agencia/negocios/${e.dealId}`} className="text-sm font-semibold text-fg underline-offset-2 hover:underline">
-              {e.title}
-            </Link>
-          ) : e.brandCallId && portal === "agency" ? (
-            // 0089: chamada da marca abre o pedido (a proposta da agência)
-            <Link href={`/agencia/oportunidades/pedidos/${e.brandCallId}`} className="text-sm font-semibold text-fg underline-offset-2 hover:underline">
-              {e.title}
-            </Link>
-          ) : e.sponsorshipId && portal !== "office" ? (
-            // 0085: a oportunidade de patrocínio abre a ficha dela (agência) ou a resposta (marca)
-            <Link
-              href={`${portal === "agency" ? "/agencia" : "/marca"}/oportunidades/${e.sponsorshipId}`}
-              className="text-sm font-semibold text-fg underline-offset-2 hover:underline"
-            >
-              {e.title}
-            </Link>
-          ) : (
-            <span className="text-sm font-semibold text-fg">{e.title}</span>
-          )}
+  // Agenda do herói: o cartão da campanha inteiro abre a tela dela (mesmo padrão do Calendário Groscove: o link do
+  // título se estende por cima do cartão; ações e conteúdo extra ficam por cima dele com relative z-10)
+  const renderOwn = (e: CalendarEvent) => {
+    const href = portal === "agency" ? null : (ownHrefs?.[e.id] ?? null);
+    return (
+      <li
+        key={e.id}
+        className={href ? "relative flex flex-wrap items-start gap-3 p-3 transition-colors first:rounded-t-2xl last:rounded-b-2xl hover:bg-surface-hover has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-focus" : "flex flex-wrap items-start gap-3 p-3"}
+        data-testid="event-item"
+        data-kind={e.kind}
+        data-linked={href ? "true" : undefined}
+      >
+        <span className="w-24 shrink-0 font-mono text-sm text-fg-muted">
+          {e.allDay ? t("allDay") : `${timeOf(e.startsAt)}${e.endsAt !== e.startsAt ? `–${timeOf(e.endsAt)}` : ""}`}
         </span>
-        {e.subtitle ? <span className="type-caption text-fg-muted">{e.subtitle}</span> : null}
-        {e.description ? <span className="whitespace-pre-wrap type-body-sm text-fg-muted">{e.description}</span> : null}
-        {e.location ? (
-          <span className="flex items-center gap-1 type-caption text-fg-muted">
-            <MapPin className="size-3.5" aria-hidden="true" />
-            {e.location}
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="flex flex-wrap items-center gap-2">
+            <Badge size="sm" variant={KIND_VARIANT[e.kind]}>
+              {tk(e.kind)}
+            </Badge>
+            {href ? (
+              <Link href={href} data-testid="event-open" aria-label={t("openLabel", { title: e.title })} className="min-h-6 text-sm font-semibold text-fg underline-offset-2 outline-none after:absolute after:inset-0 after:content-[''] hover:underline">
+                {e.title}
+              </Link>
+            ) : portal === "agency" && e.dealId ? (
+              <Link href={`/agencia/negocios/${e.dealId}`} className="text-sm font-semibold text-fg underline-offset-2 hover:underline">
+                {e.title}
+              </Link>
+            ) : e.brandCallId && portal === "agency" ? (
+              // 0089: chamada da marca abre o pedido (a proposta da agência)
+              <Link href={`/agencia/oportunidades/pedidos/${e.brandCallId}`} className="text-sm font-semibold text-fg underline-offset-2 hover:underline">
+                {e.title}
+              </Link>
+            ) : e.sponsorshipId && portal !== "office" ? (
+              // 0085: a oportunidade de patrocínio abre a ficha dela (agência) ou a resposta (marca)
+              <Link
+                href={`${portal === "agency" ? "/agencia" : "/marca"}/oportunidades/${e.sponsorshipId}`}
+                className="text-sm font-semibold text-fg underline-offset-2 hover:underline"
+              >
+                {e.title}
+              </Link>
+            ) : (
+              <span className="text-sm font-semibold text-fg">{e.title}</span>
+            )}
           </span>
-        ) : null}
+          {e.subtitle ? <span className="type-caption text-fg-muted">{e.subtitle}</span> : null}
+          {e.description ? <span className="whitespace-pre-wrap type-body-sm text-fg-muted">{e.description}</span> : null}
+          {e.location ? (
+            <span className="flex items-center gap-1 type-caption text-fg-muted">
+              <MapPin className="size-3.5" aria-hidden="true" />
+              {e.location}
+            </span>
+          ) : null}
+          {portal === "agency" ? (
+            <span className="type-caption text-fg-subtle">
+              {e.source === "system" ? t("system") : t("manual")}
+              {e.visibleToBrand ? ` · ${t("visibleBrand")}` : ""}
+              {e.visibleToTalent ? ` · ${t("visibleTalent")}` : ""}
+            </span>
+          ) : null}
+          {/* bloco 9: evento de vários dias (aparece em cada dia da grade) diz até quando vai, nos três portais */}
+          {spanDays(e) > 1 ? <span className="type-caption text-fg-subtle">{t("until", { date: formatDate(new Date(new Date(e.endsAt).getTime() - 60_000), locale, undefined, timeZone) })}</span> : null}
+        </span>
         {portal === "agency" ? (
-          <span className="type-caption text-fg-subtle">
-            {e.source === "system" ? t("system") : t("manual")}
-            {e.visibleToBrand ? ` · ${t("visibleBrand")}` : ""}
-            {e.visibleToTalent ? ` · ${t("visibleTalent")}` : ""}
-          </span>
-        ) : null}
-        {/* bloco 9: evento de vários dias (aparece em cada dia da grade) diz até quando vai, nos três portais */}
-        {spanDays(e) > 1 ? <span className="type-caption text-fg-subtle">{t("until", { date: formatDate(new Date(new Date(e.endsAt).getTime() - 60_000), locale, undefined, timeZone) })}</span> : null}
-      </span>
-      {portal === "agency" ? <EventActions event={e} /> : (renderActions?.(e) ?? null)}
-      {/* 0094: o que executar (checklist) ocupa a linha inteira, abaixo do horário, do título e das ações */}
-      {renderExtra ? <div className="flex basis-full flex-col gap-1 empty:hidden">{renderExtra(e)}</div> : null}
-    </li>
-  );
+          <EventActions event={e} />
+        ) : href ? (
+          <>
+            {renderActions ? <span className="relative z-10">{renderActions(e)}</span> : null}
+            <ChevronRight className="size-4 self-center text-fg-muted" aria-hidden="true" />
+          </>
+        ) : (
+          (renderActions?.(e) ?? null)
+        )}
+        {/* 0094: o que executar (checklist) ocupa a linha inteira, abaixo do horário, do título e das ações */}
+        {renderExtra ? <div className={href ? "relative z-10 flex basis-full flex-col gap-1 empty:hidden" : "flex basis-full flex-col gap-1 empty:hidden"}>{renderExtra(e)}</div> : null}
+      </li>
+    );
+  };
   if (flat) {
     return (
       <ul className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-surface" data-testid="event-list">

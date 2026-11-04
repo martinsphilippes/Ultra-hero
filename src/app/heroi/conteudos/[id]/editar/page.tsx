@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CircleCheck, Clock, ExternalLink, Info, ShieldAlert, XCircle } from "lucide-react";
+import { CircleCheck, Clock, ExternalLink, Info, Send, ShieldAlert, XCircle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -7,12 +7,15 @@ import { z } from "zod";
 import { ContentStatusBadges } from "@/components/creator/ContentStatusBadges";
 import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { CreatorContentEditor } from "@/components/creator/content/CreatorContentEditor";
+import { CampaignBanner } from "@/components/hero-work/CampaignBanner";
 import { ArchiveContentButton, PublishButton, SubmitReviewButton, UnpublishButton, WithdrawReviewButton } from "@/components/creator/PublishButtons";
 import { ReviewTimeline, type ReviewRow } from "@/components/creator/ReviewTimeline";
 import { contentChecklist } from "@/components/editors/content/schema";
 import type { ContentFormValues } from "@/components/editors/types";
 import { Badge, Button, PageHeader, PillarBadge, Section } from "@/components/ui";
 import { hasRole } from "@/lib/auth/session";
+import { campaignReturnHref } from "@/lib/hero-work/campaign";
+import { loadHeroCampaign } from "@/lib/hero-work/campaign-server";
 import { creatorCanEdit, creatorPublishStep } from "@/lib/creator-content/rules";
 import { loadComposerOptions, loadPostBlocks } from "@/lib/post-blocks/queries";
 import { draftsFromBlocks } from "@/lib/post-blocks/schema";
@@ -21,7 +24,7 @@ import type { ContentType, Enums, LocaleCode, Pillar } from "@/lib/supabase/help
 import { cn } from "@/lib/utils";
 import { getContentWorkspace, getManagedCreator } from "../../../_lib/creator";
 
-type Params = { params: Promise<{ id: string }> };
+type Params = { params: Promise<{ id: string }>; searchParams: Promise<{ campanha?: string }> };
 
 const CONTENT_SELECT =
   "id, slug, title, summary, cover_url, pillar, type, source_locale, duration_minutes, difficulty, tags, has_captions, disclaimer_kind, status, review_status, published_at, creator_id, media_license_kind";
@@ -63,8 +66,11 @@ const TONE: Record<string, string> = {
 // Conteúdo do creator (0092): editor por blocos (só leitura fora do rascunho), Publicar ou Enviar para revisão
 // (regra do tipo), Retirar da revisão, Tirar do ar e Arquivar (o que já esteve no ar só o titular) e o histórico.
 // Receita segue no Portal do Chef. O admin continua no módulo de conteúdo do admin (sem mudança).
-export default async function EditContentPage({ params }: Params) {
+// ?campanha= (pedido do responsável, 04/11): rascunho criado a partir da campanha mostra a faixa dela e, publicado, o
+// atalho "Enviar como entrega" (volta para a campanha com o link público pronto).
+export default async function EditContentPage({ params, searchParams }: Params) {
   const { id } = await params;
+  const sp = await searchParams;
   if (!z.uuid().safeParse(id).success) notFound();
 
   if (await hasRole("admin")) {
@@ -94,7 +100,7 @@ export default async function EditContentPage({ params }: Params) {
   if (!content || content.creator_id !== ctx.creatorId) notFound();
   if (content.type === "recipe") redirect(`/heroi/receitas/${id}/editar`);
 
-  const [{ data: bodyRow }, { data: reviews }, { data: setting }, blocks, linksRes, coverState, options] = await Promise.all([
+  const [{ data: bodyRow }, { data: reviews }, { data: setting }, blocks, linksRes, coverState, options, campaign] = await Promise.all([
     supabase.from("content_bodies").select("body, media_provider, media_ref, captions_url").eq("content_id", id).maybeSingle(),
     supabase.from("content_reviews").select("id, round, decision, feedback, submitted_at, decided_at").eq("content_id", id).order("round", { ascending: false }),
     supabase.from("content_type_settings").select("review_required").eq("type", content.type).maybeSingle(),
@@ -103,6 +109,7 @@ export default async function EditContentPage({ params }: Params) {
     supabase.from("content_product_links").select("product_id, status").eq("content_id", id).in("status", ["validated", "suggested"]),
     getPostPhotoState(),
     loadComposerOptions(supabase, ctx.creatorId),
+    loadHeroCampaign(sp.campanha),
   ]);
   const reviewRows = (reviews ?? []) as ReviewRow[];
   const latest = reviewRows[0] ?? null;
@@ -189,6 +196,13 @@ export default async function EditContentPage({ params }: Params) {
           <Badge>{tcat(`types.${content.type}`)}</Badge>
         </div>
       </PageHeader>
+
+      {campaign ? <CampaignBanner campaign={campaign} note={step === "published" ? null : tnc("campaignPublishNote")} /> : null}
+      {campaign && step === "published" ? (
+        <Button asChild size="lg" block leadingIcon={<Send />} className="min-h-14" data-testid="content-send-campaign">
+          <Link href={campaignReturnHref(campaign.id, content.slug)}>{tnc("campaignSend")}</Link>
+        </Button>
+      ) : null}
 
       <div role="status" className={cn("flex items-start gap-3 rounded-xl border px-4 py-3 text-sm", TONE[situation.tone])}>
         <SituationIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />

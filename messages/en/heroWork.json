@@ -189,5 +189,38 @@
       "save": "Save"
     },
     "ownTitle": "{name} services"
+  },
+  "campaign": {
+    "create": {
+      "title": "Create for this campaign",
+      "hint": "Pick a format. The required hashtags and @ are already in the text.",
+      "itemTitle": "{kind} for this campaign",
+      "kinds": {
+        "quick": "Quick post",
+        "video": "Video",
+        "photo": "Photos",
+        "structured": "Structured",
+        "workout": "Workout",
+        "program": "Program",
+        "recipe": "Recipe"
+      }
+    },
+    "banner": {
+      "title": "For the campaign {title} · {brand}",
+      "hint": "Once published, you go back to the campaign with the link ready to send as a deliverable.",
+      "tags": "Required hashtags and @",
+      "coupon": "Coupon",
+      "links": "Link",
+      "donts": "What not to do",
+      "copy": "Copy hashtags and @",
+      "copied": "Copied",
+      "copyFailed": "Could not copy. Select the text and copy it.",
+      "back": "Back to the campaign"
+    },
+    "published": {
+      "title": "Published!",
+      "send": "Now send the link as a campaign deliverable.",
+      "noPending": "No deliverable is waiting for a link right now."
+    }
   }
 }

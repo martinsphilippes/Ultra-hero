@@ -13,6 +13,7 @@ import { parseMonth } from "@/lib/calendar/ics";
 import { listEvents, myFeedState } from "@/lib/calendar/queries";
 import { listTalentSponsorships } from "@/lib/sponsorship/queries";
 import { getTalentContext } from "@/lib/talent/server";
+import { campaignHrefByDeal } from "@/lib/hero-work/campaign-server";
 import type { CalendarEvent } from "@/lib/calendar/queries";
 import { mergeWithGroscove } from "@/lib/platform-calendar/agenda";
 import { agendaFilterParams, type AgendaFilters } from "@/lib/platform-calendar/vocab";
@@ -26,7 +27,7 @@ export async function AgencyAgenda({ sp, groscove, filters }: { sp: { mes?: stri
   const { year, month } = parseMonth(sp.mes, tz);
   // bloco 9: a grade cobre também os dias dos meses vizinhos e os eventos de vários dias em curso
   const { from, to } = queryRange(year, month);
-  const [t, tsp, locale, list, feed, origin, sponsorships] = await Promise.all([
+  const [t, tsp, locale, list, feed, origin, sponsorships, campaigns] = await Promise.all([
     getTranslations("talent.agenda"),
     getTranslations("sponsorship.talent"),
     getLocale() as Promise<Locale>,
@@ -34,6 +35,7 @@ export async function AgencyAgenda({ sp, groscove, filters }: { sp: { mes?: stri
     myFeedState(),
     getOrigin(),
     listTalentSponsorships(),
+    campaignHrefByDeal(),
   ]);
   if (!list.available) {
     return (
@@ -41,6 +43,12 @@ export async function AgencyAgenda({ sp, groscove, filters }: { sp: { mes?: stri
         <EmptyState icon={<CalendarDays />} title={t("unavailable")} />
       </div>
     );
+  }
+  // pedido do responsável (04/11): o cartão da campanha na agenda abre a campanha (lá ele cria e entrega)
+  const ownHrefs: Record<string, string> = {};
+  for (const e of list.items) {
+    const href = e.dealId ? campaigns.get(e.dealId) : undefined;
+    if (href) ownHrefs[e.id] = href;
   }
   return (
     <div className="flex flex-col gap-5" data-testid="office-agenda">
@@ -54,6 +62,7 @@ export async function AgencyAgenda({ sp, groscove, filters }: { sp: { mes?: stri
         today={zonedDayKey(new Date(), tz)}
         base="/heroi/agenda"
         extraParams={agendaFilterParams(filters)}
+        ownHrefs={ownHrefs}
         requestedDay={sp.dia} emptyTitle={t("empty")} emptyHint={t("emptyHint")} />
       {/* 0085: situações suas que a agência ofereceu às marcas; se patrocinada, por quem (nunca quem recusou); 0088: + público e o combinado */}
       {sponsorships.items.length > 0 ? (

@@ -152,7 +152,8 @@
     "dayCount": "{count, plural, =0 {no events} =1 {1 event} other {# events}}",
     "more": "+{count}",
     "legend": "Event types",
-    "dayEmpty": "Nothing on this day."
+    "dayEmpty": "Nothing on this day.",
+    "openLabel": "Open {title}"
   },
   "feed": {
     "title": "Subscribe in your calendar",
@@ -353,6 +354,13 @@
     "closed": {
       "done": "Deliverable completed.",
       "cancelled": "Deliverable cancelled."
+    },
+    "prefill": {
+      "title": "Send as a campaign deliverable",
+      "one": "The link to what you published is already filled in.",
+      "pick": "Choose the deliverable. The link to what you published is already filled in.",
+      "submit": "Send as: {title}",
+      "publish": "Record publication: {title}"
     }
   },
   "finance": {

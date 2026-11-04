@@ -24,13 +24,15 @@ type Props = {
   coverState: "ready" | "disabled" | "not_configured";
   options: ComposerOptions;
   initialBlocks?: { drafts: BlockDrafts; products: string[] };
+  /** Criado a partir da campanha (?campanha=, validado no servidor): o rascunho abre no editor com o mesmo contexto. */
+  campaignId?: string | null;
 };
 
 const BLOCK_HREFS = { newRecipe: "/heroi/receitas/nova", links: "/heroi/vinculos", newProgram: null };
 
 // Novo conteúdo do creator (0092): o MESMO editor por blocos do admin (ContentKindPicker + ContentForm), com o herói
 // fixo e sem os campos só do admin (licença, conclusão, autor, criar programa; ver lib/creator-content/rules).
-export function CreatorContentEditor({ mode, initial, readOnly = false, heroId, heroes, defaultHero, coverState, options, initialBlocks }: Props) {
+export function CreatorContentEditor({ mode, initial, readOnly = false, heroId, heroes, defaultHero, coverState, options, initialBlocks, campaignId = null }: Props) {
   const t = useTranslations("creator.newContent");
   const router = useRouter();
   const [kind, setKind] = useState<ContentKind>("structured");
@@ -40,12 +42,12 @@ export function CreatorContentEditor({ mode, initial, readOnly = false, heroId, 
     async (values: ContentFormValues) => {
       const result = mode === "create" ? await createContent(values) : await updateContent(values);
       if (result.ok) {
-        if (mode === "create" && result.id) router.push(`/heroi/conteudos/${result.id}/editar`);
+        if (mode === "create" && result.id) router.push(`/heroi/conteudos/${result.id}/editar${campaignId ? `?campanha=${encodeURIComponent(campaignId)}` : ""}`);
         else router.refresh();
       }
       return result;
     },
-    [mode, router],
+    [mode, router, campaignId],
   );
 
   return (

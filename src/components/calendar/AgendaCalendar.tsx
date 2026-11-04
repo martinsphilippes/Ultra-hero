@@ -37,6 +37,8 @@ type Props = {
   /** 0094: conteúdo extra e ações de cada item da lista do dia (checklist, editar/excluir). */
   renderExtra?: (event: CalendarEvent) => ReactNode;
   renderActions?: (event: CalendarEvent) => ReactNode;
+  /** Agenda do herói: id do evento → tela que o cartão inteiro abre (campanha). */
+  ownHrefs?: Record<string, string>;
   /** 0094: avisa o dia selecionado na grade (o "Novo compromisso" do topo abre nele). */
   onDayChange?: (day: string) => void;
 };
@@ -47,7 +49,7 @@ type Props = {
 // reaproveitando a EventList (ações de editar/remover continuam lá). As consultas e filtros são os de cada página.
 // 0086: na agência (dentro do EventEditorProvider), o dia selecionado vai para o editor — "Novo compromisso" abre
 // nesse dia — e o cabeçalho da lista do dia ganha o atalho "Compromisso neste dia" (só para quem pode criar).
-export function AgendaCalendar({ events, timeZone, portal, year, month, today, base, extraParams = {}, requestedDay, emptyTitle, emptyHint, dayAction, renderExtra, renderActions, onDayChange }: Props) {
+export function AgendaCalendar({ events, timeZone, portal, year, month, today, base, extraParams = {}, requestedDay, emptyTitle, emptyHint, dayAction, renderExtra, renderActions, ownHrefs, onDayChange }: Props) {
   const t = useTranslations("commercial.agenda");
   const tk = useTranslations("commercial.eventKinds");
   const tg = useTranslations("groscoveCalendar");
@@ -265,7 +267,7 @@ export function AgendaCalendar({ events, timeZone, portal, year, month, today, b
           {portal === "agency" ? <EventNewOnDayButton day={selected} dateLabel={fullDate(selected)} /> : (dayAction?.(selected, fullDate(selected)) ?? null)}
         </div>
         {selectedEvents.length > 0 ? (
-          <EventList events={selectedEvents} timeZone={timeZone} portal={portal} emptyTitle={emptyTitle} flat renderExtra={renderExtra} renderActions={renderActions} />
+          <EventList events={selectedEvents} timeZone={timeZone} portal={portal} emptyTitle={emptyTitle} flat renderExtra={renderExtra} renderActions={renderActions} ownHrefs={ownHrefs} />
         ) : (
           <div className="rounded-2xl border border-border bg-surface">
             <EmptyState icon={<CalendarDays />} title={monthHasEvents ? t("dayEmpty") : emptyTitle} description={monthHasEvents ? undefined : emptyHint} size="sm" />

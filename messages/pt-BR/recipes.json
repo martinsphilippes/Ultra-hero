@@ -732,7 +732,8 @@
         "license": "Licença: escolha uma licença compatível com o vídeo que você colocou.",
         "stream": "Vídeo: o envio anterior não vale mais. Envie o vídeo de novo ou remova."
       }
-    }
+    },
+    "campaignNote": "Depois de publicar a receita, volte para a campanha e envie o link dela como entrega."
   },
   "preview": {
     "metaTitle": "Pré-visualização",

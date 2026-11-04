@@ -1,8 +1,9 @@
 "use client";
 
-import { Camera, CircleCheck, ExternalLink, Images, LoaderCircle, Plus, RotateCcw, Send, Trash2, TriangleAlert, Video } from "lucide-react";
+import { ArrowLeft, Camera, CircleCheck, ExternalLink, Images, LoaderCircle, Plus, RotateCcw, Send, Trash2, TriangleAlert, Video } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState, type ChangeEvent, type ReactNode, type Ref } from "react";
 import type { Upload } from "tus-js-client";
 import { discardVideoPost, publishVideoPost, startVideoPost } from "@/app/heroi/post/actions";
@@ -14,6 +15,7 @@ import { mediaKindOf, pickOptions, validatePhotoSource, type MediaKind } from "@
 import { draftToBlock, emptyDrafts, type BlockDrafts } from "@/lib/post-blocks/schema";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
 import { UPLOAD_RIGHTS_REQUIRED } from "@/lib/partner-terms/version";
+import { campaignReturnHref } from "@/lib/hero-work/campaign";
 import { cn } from "@/lib/utils";
 import { UploadRightsDialog } from "../UploadRightsDialog";
 import { PillarBlockEditor, type PillarBlockOptions } from "./PillarBlockEditor";
@@ -27,6 +29,12 @@ type Props = {
   blockOptions: PillarBlockOptions;
   /** Atalhos de cadastro quando a lista está vazia. */
   blockHrefs: { newRecipe: string; links: string };
+  /**
+   * Criar para a campanha (?campanha=, validado no servidor): legenda já com as marcas obrigatórias do briefing,
+   * vídeo ou foto em destaque na primeira etapa (atalhos Vídeo/Fotos) e, publicado, a volta para a campanha com o
+   * link pronto para a entrega. Sem ele, nada muda.
+   */
+  campaign?: { id: string; caption: string; mode: "video" | "photo" | null } | null;
 };
 type PickSource = "photoCamera" | "videoCamera" | "gallery";
 
@@ -96,7 +104,7 @@ function leavingLink(event: MouseEvent): boolean {
 // Composer de post do herói, pensado para o celular: escolher → enviar e escrever → publicado.
 // Vídeo: o envio (tus, direto para o Cloudflare) roda em segundo plano enquanto a pessoa escreve.
 // Foto (0043): reduzida no aparelho e enviada pelo servidor ao bucket post-photos; não depende do Stream.
-export function PostComposer({ configured, photoState, defaultPillar, blockOptions, blockHrefs }: Props) {
+export function PostComposer({ configured, photoState, defaultPillar, blockOptions, blockHrefs, campaign = null }: Props) {
   const t = useTranslations("creator.post");
   const te = useTranslations("creator.post.errors");
   const tpe = useTranslations("creator.post.photo.errors");
@@ -104,6 +112,7 @@ export function PostComposer({ configured, photoState, defaultPillar, blockOptio
   const tc = useTranslations("common.actions");
   const tsteps = useTranslations("creator.post.steps");
   const { toast } = useToast();
+  const router = useRouter();
   const titleId = useId();
 
   const photoCameraRef = useRef<HTMLInputElement>(null);
@@ -139,7 +148,7 @@ export function PostComposer({ configured, photoState, defaultPillar, blockOptio
   const [rightsOpen, setRightsOpen] = useState(false);
   const [publish, setPublish] = useState<PublishState>({ state: "idle" });
   const [title, setTitle] = useState("");
-  const [caption, setCaption] = useState("");
+  const [caption, setCaption] = useState(campaign?.caption ?? "");
   const [pillar, setPillar] = useState<Pillar>(defaultPillar);
   // bloco do pilar (0075): um rascunho por pilar, para trocar de pilar e voltar sem perder o texto
   const [drafts, setDrafts] = useState<BlockDrafts>(() => emptyDrafts());
@@ -267,6 +276,30 @@ export function PostComposer({ configured, photoState, defaultPillar, blockOptio
       window.history.back();
     }
   }, [guarding]);
+
+  // Campanha: publicado, volta para a campanha (lá a entrega já vem com o link). Espera a guarda do "voltar" ser
+  // consumida (o history.back() acima é assíncrono) para não desfazer a navegação; o botão da tela final cobre o resto.
+  useEffect(() => {
+    if (step !== "done" || !campaign || !slug) return;
+    const href = campaignReturnHref(campaign.id, slug);
+    let gone = false;
+    const go = () => {
+      if (gone) return;
+      gone = true;
+      window.removeEventListener("popstate", onPop);
+      window.clearTimeout(timer);
+      router.replace(href);
+    };
+    const onPop = () => window.setTimeout(go, 0);
+    const timer = window.setTimeout(go, 1500);
+    if (guardRef.current.ignorePop) window.addEventListener("popstate", onPop);
+    else go();
+    return () => {
+      gone = true;
+      window.removeEventListener("popstate", onPop);
+      window.clearTimeout(timer);
+    };
+  }, [step, campaign, slug, router]);
 
   // Fechar/recarregar (beforeunload) e links internos do app (clique em captura, antes do roteador).
   useEffect(() => {
@@ -536,7 +569,7 @@ export function PostComposer({ configured, photoState, defaultPillar, blockOptio
     setUpload({ state: "idle" });
     setPublish({ state: "idle" });
     setTitle("");
-    setCaption("");
+    setCaption(campaign?.caption ?? "");
     setPillar(defaultPillar);
     setDrafts(emptyDrafts());
     setBlockError(null);
@@ -653,8 +686,15 @@ export function PostComposer({ configured, photoState, defaultPillar, blockOptio
           <p className="type-body-sm text-fg-muted">{t("doneDescription")}</p>
         </div>
         <div className="flex flex-col gap-3">
+          {campaign && slug ? (
+            <Button asChild size="lg" block leadingIcon={<ArrowLeft />} className="min-h-14">
+              <Link href={campaignReturnHref(campaign.id, slug)} data-testid="post-back-campaign">
+                {t("backToCampaign")}
+              </Link>
+            </Button>
+          ) : null}
           {slug && (
-            <Button asChild size="lg" block trailingIcon={<ExternalLink />} className="min-h-14">
+            <Button asChild size="lg" block variant={campaign ? "secondary" : undefined} trailingIcon={<ExternalLink />} className="min-h-14">
               <Link href={`/content/${slug}`}>{t("viewPost")}</Link>
             </Button>
           )}
@@ -675,19 +715,20 @@ export function PostComposer({ configured, photoState, defaultPillar, blockOptio
           {tsteps("pick")}
         </StepHeading>
         {/* Avisos independentes: sem o Stream a foto continua funcionando, e vice-versa. */}
-        {!configured && (
+        {!configured && campaign?.mode !== "photo" && (
           <div role="status" data-testid="video-not-configured" className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-fg">
             <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
             <p>{t("notConfigured")}</p>
           </div>
         )}
-        {photoState !== "ready" && (
+        {photoState !== "ready" && campaign?.mode !== "video" && (
           <div role="status" data-testid="photo-unavailable" className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-fg">
             <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
             <p>{photoState === "disabled" ? t("photo.disabled") : t("photo.unavailable")}</p>
           </div>
         )}
         <div className="flex flex-col gap-3">
+          {campaign?.mode === "video" ? null : (
           <BigChoice
             icon={<Camera />}
             label={t("photo.take")}
@@ -695,6 +736,8 @@ export function PostComposer({ configured, photoState, defaultPillar, blockOptio
             disabled={!options.takePhoto || checking}
             onClick={() => photoCameraRef.current?.click()}
           />
+          )}
+          {campaign?.mode === "photo" ? null : (
           <BigChoice
             icon={<Video />}
             label={t("record")}
@@ -702,6 +745,7 @@ export function PostComposer({ configured, photoState, defaultPillar, blockOptio
             disabled={!options.recordVideo || checking}
             onClick={() => cameraRef.current?.click()}
           />
+          )}
           <BigChoice
             icon={<Images />}
             label={t("gallery")}
@@ -712,7 +756,7 @@ export function PostComposer({ configured, photoState, defaultPillar, blockOptio
           {/* Inputs escondidos: o botão grande é o alvo de toque; capture abre a câmera traseira no celular. */}
           <input ref={photoCameraRef} type="file" accept="image/*" capture="environment" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={(e) => void onFile(e, "photoCamera")} data-testid="post-photo-camera-input" />
           <input ref={cameraRef} type="file" accept="video/*" capture="environment" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={(e) => void onFile(e, "videoCamera")} data-testid="post-camera-input" />
-          <input ref={galleryRef} type="file" accept="image/*,video/*" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={(e) => void onFile(e, "gallery")} data-testid="post-gallery-input" />
+          <input ref={galleryRef} type="file" accept={campaign?.mode === "photo" ? "image/*" : campaign?.mode === "video" ? "video/*" : "image/*,video/*"} className="sr-only" tabIndex={-1} aria-hidden="true" onChange={(e) => void onFile(e, "gallery")} data-testid="post-gallery-input" />
         </div>
         <p className="type-caption text-center text-fg-muted">{t("limits")}</p>
         {checking && (

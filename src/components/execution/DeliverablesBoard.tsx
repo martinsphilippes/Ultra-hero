@@ -13,6 +13,7 @@ import { checkedKeys, checkItems, EMPTY_BRIEF, missingChecks, type Brief } from 
 import { closeDeliverableAction, decideDeliverableAction, proofDeliverableAction, publishDeliverableAction, submitDeliverableAction } from "@/lib/execution/actions";
 import type { ExecDeliverable } from "@/lib/execution/queries";
 import { deliverableNextAction } from "@/lib/execution/vocab";
+import { deliverablesAwaitingLink } from "@/lib/hero-work/campaign";
 
 type Portal = "agency" | "brand" | "office";
 type Props = {
@@ -29,22 +30,43 @@ type Props = {
   brief?: Brief;
   /** Métricas e comentários no segundo (0083): leituras e comentários do negócio inteiro (filtrados por entregável aqui). */
   media?: DeliverableMediaData | null;
+  /**
+   * Herói voltando da criação para a campanha (?publicado=): link público do que publicou. Aparece o quadro
+   * "Enviar como entrega" com as entregas que esperam um link (enviar ou publicar) e o diálogo já abre com ele.
+   */
+  prefillUrl?: string | null;
 };
 
 type Mode = "submit" | "decide" | "publish" | "proof" | "close";
 
 // Entregas com versões: cada envio é uma versão nova (nunca herda aprovação); a marca aprova ou pede ajustes com
 // feedback; publicar registra a URL; comprovar fecha o ciclo; a agência conclui ou cancela. Sem valores.
-export function DeliverablesBoard({ portal, dealId, requestId, dealTalentId, deliverables, canAct = false, documents = [], emptyText, brief = EMPTY_BRIEF, media = null }: Props) {
+export function DeliverablesBoard({ portal, dealId, requestId, dealTalentId, deliverables, canAct = false, documents = [], emptyText, brief = EMPTY_BRIEF, media = null, prefillUrl = null }: Props) {
   const t = useTranslations("commercial.deliverables");
   const tk = useTranslations("commercial.deliverableKinds");
   const tn = useTranslations("mediaKit.networks");
   const locale = useLocale() as Locale;
   const [dialog, setDialog] = useState<{ mode: Mode; item: ExecDeliverable } | null>(null);
   const side = portal === "office" ? "talent" : portal;
+  const sendable = canAct && prefillUrl && portal === "office" ? deliverablesAwaitingLink(deliverables) : [];
 
   return (
     <div className="flex flex-col gap-3" data-testid="deliverables-board">
+      {prefillUrl && sendable.length > 0 ? (
+        <div className="flex flex-col gap-2 rounded-2xl border border-accent/40 bg-accent-soft/40 p-4" data-testid="deliverable-prefill">
+          <p className="text-sm font-semibold text-fg">{t("prefill.title")}</p>
+          <a href={prefillUrl} target="_blank" rel="noopener noreferrer" className="inline-flex w-fit items-center gap-1 break-all text-sm font-medium text-accent-text underline-offset-2 hover:underline">
+            <ExternalLink className="size-4 shrink-0" aria-hidden="true" />
+            {prefillUrl}
+          </a>
+          <p className="type-caption text-fg-muted">{sendable.length > 1 ? t("prefill.pick") : t("prefill.one")}</p>
+          {sendable.map((d) => (
+            <Button key={d.id} type="button" block leadingIcon={d.action === "publish" ? <Send /> : <Upload />} className="min-h-11" onClick={() => setDialog({ mode: d.action, item: d })} data-testid="deliverable-prefill-send">
+              {t(`prefill.${d.action}`, { title: d.title || tk(d.kind) })}
+            </Button>
+          ))}
+        </div>
+      ) : null}
       {deliverables.length === 0 ? <p className="rounded-2xl border border-border bg-surface p-4 type-body-sm text-fg-muted">{emptyText}</p> : null}
       {deliverables.map((d) => {
         const next = canAct ? deliverableNextAction(d.status, side) : null;
@@ -127,15 +149,28 @@ export function DeliverablesBoard({ portal, dealId, requestId, dealTalentId, del
           </article>
         );
       })}
-      {dialog ? <ActionDialog portal={portal} mode={dialog.mode} item={dialog.item} dealId={dealId} requestId={requestId} dealTalentId={dealTalentId} documents={documents} brief={brief} onClose={() => setDialog(null)} /> : null}
+      {dialog ? (
+        <ActionDialog
+          portal={portal}
+          mode={dialog.mode}
+          item={dialog.item}
+          dealId={dealId}
+          requestId={requestId}
+          dealTalentId={dealTalentId}
+          documents={documents}
+          brief={brief}
+          initialUrl={prefillUrl && (dialog.mode === "submit" || dialog.mode === "publish") ? prefillUrl : ""}
+          onClose={() => setDialog(null)}
+        />
+      ) : null}
     </div>
   );
 }
 
-function ActionDialog({ portal, mode, item, dealId, requestId, dealTalentId, documents, brief, onClose }: { portal: Portal; mode: Mode; item: ExecDeliverable; dealId: string; requestId?: string | null; dealTalentId?: string | null; documents: { id: string; title: string }[]; brief: Brief; onClose: () => void }) {
+function ActionDialog({ portal, mode, item, dealId, requestId, dealTalentId, documents, brief, initialUrl = "", onClose }: { portal: Portal; mode: Mode; item: ExecDeliverable; dealId: string; requestId?: string | null; dealTalentId?: string | null; documents: { id: string; title: string }[]; brief: Brief; initialUrl?: string; onClose: () => void }) {
   const t = useTranslations("commercial.deliverables");
   const { toast } = useToast();
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(initialUrl);
   const [documentId, setDocumentId] = useState("");
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);

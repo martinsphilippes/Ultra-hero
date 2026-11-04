@@ -152,7 +152,8 @@
     "dayCount": "{count, plural, =0 {ningún compromiso} =1 {1 compromiso} other {# compromisos}}",
     "more": "+{count}",
     "legend": "Tipos de compromiso",
-    "dayEmpty": "Nada este día."
+    "dayEmpty": "Nada este día.",
+    "openLabel": "Abrir {title}"
   },
   "feed": {
     "title": "Suscribir en tu calendario",
@@ -353,6 +354,13 @@
     "closed": {
       "done": "Entrega completada.",
       "cancelled": "Entrega cancelada."
+    },
+    "prefill": {
+      "title": "Enviar como entrega de la campaña",
+      "one": "El enlace de lo que publicaste ya va completado.",
+      "pick": "Elige la entrega. El enlace de lo que publicaste ya va completado.",
+      "submit": "Enviar como: {title}",
+      "publish": "Registrar publicación: {title}"
     }
   },
   "finance": {

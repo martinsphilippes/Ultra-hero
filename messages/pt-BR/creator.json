@@ -352,7 +352,8 @@
         "notePlaceholder": "Ex.: Comece pela semana 1 e siga no seu ritmo.",
         "counter": "{count}/{max}"
       }
-    }
+    },
+    "backToCampaign": "Voltar para a campanha"
   },
   "reviews": {
     "title": "Histórico de revisões",
@@ -537,7 +538,10 @@
         "cta": "Abrir o editor de receitas"
       }
     },
-    "publishAfterApproval": "Seu herói ainda aguarda aprovação: o rascunho fica guardado e você publica assim que ele for aprovado."
+    "publishAfterApproval": "Seu herói ainda aguarda aprovação: o rascunho fica guardado e você publica assim que ele for aprovado.",
+    "campaignProgramNote": "Escolha o programa no bloco Programa, mais abaixo.",
+    "campaignPublishNote": "Depois de publicar, envie o link como entrega na campanha.",
+    "campaignSend": "Enviar como entrega da campanha"
   },
   "pending": {
     "notice": "Seu herói está aguardando aprovação do Ultra. Você já pode preparar posts e conteúdos: eles aparecem para o público assim que o herói for aprovado."
