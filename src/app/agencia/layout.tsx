@@ -8,6 +8,7 @@ import { agencyNavKeys } from "@/lib/agency/roles";
 import { getAgencyContext } from "@/lib/agency/server";
 import { requireRole } from "@/lib/auth/session";
 import { unreadInboxCount } from "@/lib/inbox/queries";
+import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
 
 // Portal da agência (6.2, só web): papel no servidor (admin geral também passa), menu pelo nível
 // (Adm > Gestor > Colaborador) e o sino. Sem loading.tsx na raiz: os layouts de segmento restrito
@@ -37,6 +38,7 @@ export default async function AgencyLayout({ children }: { children: ReactNode }
           {t("demoBanner.text")}
         </p>
       ) : null}
+      <SeasonalTheme area="portals" />
       {children}
     </PortalShell>
   );

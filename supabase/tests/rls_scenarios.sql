@@ -15218,5 +15218,198 @@ delete from public.role_assignments where user_id::text like 'a1050000-%';
 delete from auth.users where id::text like 'a1050000-%';
 drop table t_s105;
 
+-- ================================================================ S106 · Layout dinâmico: temas sazonais (0100)
+-- Só o admin geral escreve (RPCs auditadas); agência, herói e visitante não. Rascunho invisível para todos; leitura
+-- pública (anon e authenticated) só das linhas publicadas em vigor (ou começando nos próximos 10 min) e só das colunas
+-- de apresentação (nome, notas, evento, estado e autores ficam de fora). Janela: por data ou N dias antes do evento até
+-- o fim dele (fuso do tema), recalculada quando o evento muda; evento cancelado tira o tema; evento excluído congela a
+-- janela. Interruptor global e "restaurar padrão". Validação de cores, URLs (bucket theme-assets) e link da faixa.
+-- Sem função nova para anon (S14 segue 18), sem sobrecarga, search_path fixo.
+\ir ../migrations/0100_temas_sazonais.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1060000-0000-4000-8000-000000000001','s106-admin@test.local'),('a1060000-0000-4000-8000-000000000002','s106-gestor@test.local'),
+  ('a1060000-0000-4000-8000-000000000003','s106-heroi@test.local'),('a1060000-0000-4000-8000-000000000004','s106-consumidor@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values ('a1060000-0000-4000-8000-000000000001','admin','global');
+insert into public.agencies (id, slug, name) values ('a1060000-0000-4000-8000-0000000000a1','s106-agencia','Agência S106');
+insert into public.agency_members (agency_id, user_id, role, display_name) values ('a1060000-0000-4000-8000-0000000000a1','a1060000-0000-4000-8000-000000000002','manager','Gil S106');
+insert into public.creator_profiles (id, slug, name, status, user_id) values ('a1060000-0000-4000-8000-0000000000c1','s106-heroi','Herói S106','active','a1060000-0000-4000-8000-000000000003');
+create temp table t_s106 (k text primary key, v text);
+grant all on t_s106 to anon, authenticated, service_role;
+-- o banco local pode ter temas de outro teste: o cenário só conta os dele
+update public.seasonal_theme_settings set enabled = true where id;
+
+select tests.ok('S106 estrutura: RLS nas duas tabelas, só colunas de apresentação para anon/authenticated, sem escrita direta, funções fora do anon, search_path fixo, sem sobrecarga; S14 segue 18',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.seasonal_themes'::regclass, 'public.seasonal_theme_settings'::regclass))
+  and has_column_privilege('anon', 'public.seasonal_themes', 'tokens', 'select') and has_column_privilege('anon', 'public.seasonal_themes', 'window_end', 'select')
+  and not has_column_privilege('anon', 'public.seasonal_themes', 'name', 'select') and not has_column_privilege('anon', 'public.seasonal_themes', 'notes', 'select')
+  and not has_column_privilege('anon', 'public.seasonal_themes', 'event_id', 'select') and not has_column_privilege('anon', 'public.seasonal_themes', 'status', 'select')
+  and not has_column_privilege('authenticated', 'public.seasonal_themes', 'updated_by', 'select') and not has_column_privilege('authenticated', 'public.seasonal_themes', 'name', 'select')
+  and not has_table_privilege('authenticated', 'public.seasonal_themes', 'insert') and not has_table_privilege('authenticated', 'public.seasonal_themes', 'update')
+  and not has_table_privilege('authenticated', 'public.seasonal_themes', 'delete') and not has_table_privilege('authenticated', 'public.seasonal_theme_settings', 'update')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('seasonal_theme_color_ok','seasonal_theme_asset_ok','seasonal_theme_tokens_ok',
+       'seasonal_theme_background_ok','seasonal_theme_decorations_ok','seasonal_theme_banner_ok','seasonal_themes_before_write','calendar_events_sync_seasonal_themes',
+       'seasonal_theme_require_admin','seasonal_theme_json','seasonal_theme_save','seasonal_theme_set_status','seasonal_theme_delete','seasonal_theme_restore_default',
+       'seasonal_themes_set_enabled','seasonal_themes_admin')) = 16
+  and (select bool_and(p.proconfig is not null) from pg_proc p where p.pronamespace = 'public'::regnamespace and (p.proname like 'seasonal_theme%' or p.proname = 'calendar_events_sync_seasonal_themes'))
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and (p.proname like 'seasonal_theme%' or p.proname = 'calendar_events_sync_seasonal_themes') and has_function_privilege('anon', p.oid, 'execute'))
+  and not has_function_privilege('authenticated', 'public.seasonal_theme_require_admin()', 'execute')
+  and not has_function_privilege('authenticated', 'public.calendar_events_sync_seasonal_themes()', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- quem não é admin não escreve nem lê o painel
+select tests.anon();
+select tests.expect_error('S106 visitante não salva tema', $q$select public.seasonal_theme_save(null, '{"name":"x"}')$q$, 'permission denied');
+select tests.expect_error('S106 visitante não lê o painel', $q$select public.seasonal_themes_admin(null)$q$, 'permission denied');
+select tests.expect_error('S106 visitante não desliga o interruptor', $q$select public.seasonal_themes_set_enabled(false)$q$, 'permission denied');
+select tests.login('a1060000-0000-4000-8000-000000000002','s106-gestor@test.local');
+select tests.expect_error('S106 gestor de agência não salva tema', $q$select public.seasonal_theme_save(null, '{"name":"x","starts_at":"2026-12-01T00:00:00Z","ends_at":"2026-12-02T00:00:00Z","areas":["app"]}')$q$, 'forbidden');
+select tests.expect_error('S106 gestor não lê o painel', $q$select public.seasonal_themes_admin(null)$q$, 'forbidden');
+select tests.expect_error('S106 gestor não restaura o padrão', $q$select public.seasonal_theme_restore_default()$q$, 'forbidden');
+select tests.expect_error('S106 gestor não escreve direto na tabela', $q$insert into public.seasonal_themes (name) values ('x')$q$, 'permission denied');
+select tests.login('a1060000-0000-4000-8000-000000000003','s106-heroi@test.local');
+select tests.expect_error('S106 herói não liga/desliga o interruptor', $q$select public.seasonal_themes_set_enabled(false)$q$, 'forbidden');
+
+-- admin: rascunho em vigor, publicado em vigor, publicado futuro, publicado começando em 5 min
+select tests.login('a1060000-0000-4000-8000-000000000001','s106-admin@test.local');
+insert into t_s106 values ('draft', public.seasonal_theme_save(null, jsonb_build_object('name','Rascunho S106','starts_at', now() - interval '1 day','ends_at', now() + interval '2 days',
+  'areas', jsonb_build_array('app'),'tokens', '{"light":{"accent":"#c41e3a"}}'::jsonb))::text);
+insert into t_s106 values ('live', public.seasonal_theme_save(null, jsonb_build_object('name','Natal S106','notes','referência do responsável','starts_at', now() - interval '1 day','ends_at', now() + interval '5 days',
+  'priority', 300, 'areas', jsonb_build_array('app','portals'),'tokens', '{"light":{"accent":"#c41e3a","bg":"#fff8f0"},"dark":{"accent":"#ff6b6b"}}'::jsonb,
+  'background', '{"type":"gradient","from":"#ffffff","to":"#c41e3a","angle":180,"intensity":20}'::jsonb,
+  'decorations', '[{"url":"https://abc.supabase.co/storage/v1/object/public/theme-assets/123e4567-e89b-42d3-a456-426614174000.webp","position":"top-right","size":"md"}]'::jsonb,
+  'animations', true, 'banner', '{"text":{"pt-BR":"Boas festas","en":"Happy holidays"},"href":"/explore"}'::jsonb))::text);
+insert into t_s106 values ('future', public.seasonal_theme_save(null, jsonb_build_object('name','Futuro S106','starts_at', now() + interval '2 days','ends_at', now() + interval '9 days','areas', jsonb_build_array('app')))::text);
+insert into t_s106 values ('soon', public.seasonal_theme_save(null, jsonb_build_object('name','Em 5 min S106','starts_at', now() + interval '5 minutes','ends_at', now() + interval '1 day','priority', 10,'areas', jsonb_build_array('institutional')))::text);
+select public.seasonal_theme_set_status((select v::uuid from t_s106 where k = k2), 'published') from (values ('live'), ('future'), ('soon')) x(k2);
+select tests.su();
+select tests.ok('S106 admin cria e publica: nasce rascunho, janela por data, published_at, autor; lê tudo pelo painel (com nome e notas)',
+  (select status = 'draft' and window_start is not null and created_by = 'a1060000-0000-4000-8000-000000000001' from public.seasonal_themes where id = (select v::uuid from t_s106 where k = 'draft'))
+  and (select status = 'published' and published_at = now() and window_end > window_start from public.seasonal_themes where id = (select v::uuid from t_s106 where k = 'live'))
+);
+select tests.login('a1060000-0000-4000-8000-000000000001','s106-admin@test.local');
+select tests.ok('S106 admin lê tudo pelo painel (nome, notas, interruptor), inclusive rascunho',
+  (select count(*) from jsonb_array_elements(public.seasonal_themes_admin(null) -> 'themes') x where x ->> 'name' like '%S106') = 4
+  and (public.seasonal_themes_admin((select v::uuid from t_s106 where k = 'live')) #>> '{themes,0,notes}') = 'referência do responsável'
+  and (public.seasonal_themes_admin(null) ->> 'enabled')::boolean);
+
+select tests.expect_error('S106 cor fora do formato é recusada', $q$select public.seasonal_theme_save(null, '{"name":"x","starts_at":"2026-12-01T00:00:00Z","ends_at":"2026-12-02T00:00:00Z","areas":["app"],"tokens":{"light":{"accent":"red"}}}')$q$, 'invalid_input');
+select tests.expect_error('S106 token fora da lista fechada é recusado', $q$select public.seasonal_theme_save(null, '{"name":"x","starts_at":"2026-12-01T00:00:00Z","ends_at":"2026-12-02T00:00:00Z","areas":["app"],"tokens":{"light":{"fg":"#000000"}}}')$q$, 'invalid_input');
+select tests.expect_error('S106 imagem fora do bucket theme-assets é recusada', $q$select public.seasonal_theme_save(null, '{"name":"x","starts_at":"2026-12-01T00:00:00Z","ends_at":"2026-12-02T00:00:00Z","areas":["app"],"decorations":[{"url":"https://evil.example/a.png","position":"top-left","size":"sm"}]}')$q$, 'invalid_input');
+select tests.expect_error('S106 intensidade do fundo acima de 40 é recusada', $q$select public.seasonal_theme_save(null, '{"name":"x","starts_at":"2026-12-01T00:00:00Z","ends_at":"2026-12-02T00:00:00Z","areas":["app"],"background":{"type":"gradient","from":"#ffffff","to":"#000000","angle":0,"intensity":80}}')$q$, 'invalid_input');
+select tests.expect_error('S106 link da faixa javascript: é recusado', $q$select public.seasonal_theme_save(null, '{"name":"x","starts_at":"2026-12-01T00:00:00Z","ends_at":"2026-12-02T00:00:00Z","areas":["app"],"banner":{"text":{"pt-BR":"Oi"},"href":"javascript:alert(1)"}}')$q$, 'invalid_input');
+select tests.expect_error('S106 área admin/checkout não existe', $q$select public.seasonal_theme_save(null, '{"name":"x","starts_at":"2026-12-01T00:00:00Z","ends_at":"2026-12-02T00:00:00Z","areas":["checkout"]}')$q$, 'invalid_input');
+select tests.expect_error('S106 dias antes sem evento é recusado', $q$select public.seasonal_theme_save(null, '{"name":"x","start_mode":"lead_days","lead_days":5,"ends_at":"2026-12-02T00:00:00Z","areas":["app"]}')$q$, 'invalid_input');
+select tests.expect_error('S106 janela acima de 400 dias é recusada', $q$select public.seasonal_theme_save(null, '{"name":"x","starts_at":"2026-01-01T00:00:00Z","ends_at":"2027-06-01T00:00:00Z","areas":["app"]}')$q$, 'invalid_input');
+select tests.expect_error('S106 fuso inválido é recusado', $q$select public.seasonal_theme_save(null, '{"name":"x","starts_at":"2026-12-01T00:00:00Z","ends_at":"2026-12-02T00:00:00Z","areas":["app"],"timezone":"Marte/Base"}')$q$, 'invalid_input');
+insert into t_s106 values ('nowin', public.seasonal_theme_save(null, '{"name":"Sem fim S106","starts_at":"2026-12-01T00:00:00Z","ends_at":"2026-11-01T00:00:00Z","areas":["app"]}')::text);
+select tests.expect_error('S106 rascunho sem janela válida não publica', $q$select public.seasonal_theme_set_status((select v::uuid from t_s106 where k = 'nowin'), 'published')$q$, 'invalid_state');
+select tests.expect_error('S106 tema já encerrado não publica', $q$select public.seasonal_theme_set_status(public.seasonal_theme_save(null, jsonb_build_object('name','Velho S106','starts_at', now() - interval '9 days','ends_at', now() - interval '1 day','areas', jsonb_build_array('app'))), 'published')$q$, 'invalid_state');
+
+-- leitura pública: visitante, consumidor e herói veem só os publicados em vigor (ou começando em até 10 min), só colunas de apresentação
+select tests.anon();
+select tests.ok('S106 visitante vê o publicado em vigor e o que começa em 5 min; não vê rascunho nem futuro',
+  (select count(*) from public.seasonal_themes where id in (select v::uuid from t_s106)) = 2
+  and exists (select 1 from public.seasonal_themes where id = (select v::uuid from t_s106 where k = 'live') and priority = 300 and areas = array['app','portals']
+              and tokens #>> '{light,accent}' = '#c41e3a' and banner #>> '{text,pt-BR}' = 'Boas festas' and animations)
+  and exists (select 1 from public.seasonal_themes where id = (select v::uuid from t_s106 where k = 'soon'))
+  and (select enabled from public.seasonal_theme_settings));
+select tests.expect_error('S106 visitante não lê o nome interno', $q$select name from public.seasonal_themes$q$, 'permission denied');
+select tests.expect_error('S106 visitante não lê o evento ligado nem o estado', $q$select event_id, status from public.seasonal_themes$q$, 'permission denied');
+select tests.login('a1060000-0000-4000-8000-000000000004','s106-consumidor@test.local');
+select tests.ok('S106 consumidor logado vê o mesmo que o visitante', (select count(*) from public.seasonal_themes where id in (select v::uuid from t_s106)) = 2);
+select tests.expect_error('S106 consumidor não lê notas', $q$select notes from public.seasonal_themes$q$, 'permission denied');
+
+-- interruptor global
+select tests.login('a1060000-0000-4000-8000-000000000001','s106-admin@test.local');
+select public.seasonal_themes_set_enabled(false);
+select tests.anon();
+select tests.ok('S106 interruptor desligado: ninguém vê tema', (select count(*) from public.seasonal_themes) = 0 and not (select enabled from public.seasonal_theme_settings));
+select tests.login('a1060000-0000-4000-8000-000000000001','s106-admin@test.local');
+select public.seasonal_themes_set_enabled(true);
+select tests.anon();
+select tests.ok('S106 interruptor religado: volta sozinho', (select count(*) from public.seasonal_themes where id in (select v::uuid from t_s106)) = 2);
+
+-- tema ligado a evento: N dias antes até o fim do evento, no fuso do tema; o evento muda → janela muda; cancelado → sai
+select tests.login('a1060000-0000-4000-8000-000000000001','s106-admin@test.local');
+insert into t_s106 values ('ev', public.platform_event_save(null, '{"title":"Natal Groscove S106","start_date":"2027-12-25","status":"published"}')::text);
+insert into t_s106 values ('evt', public.seasonal_theme_save(null, jsonb_build_object('name','Natal ligado S106','event_id', (select v from t_s106 where k = 'ev'),'start_mode','lead_days','lead_days', 10,
+  'end_mode','event_end','timezone','America/Sao_Paulo','areas', jsonb_build_array('app')))::text);
+select tests.su();
+select tests.ok('S106 dias antes: começa à meia-noite (SP) de 15/12 e termina no fim do evento (26/12 00:00 SP)',
+  (select window_start = timestamptz '2027-12-15 00:00:00-03' and window_end = timestamptz '2027-12-26 00:00:00-03' and not event_cancelled
+   from public.seasonal_themes where id = (select v::uuid from t_s106 where k = 'evt')));
+select tests.login('a1060000-0000-4000-8000-000000000001','s106-admin@test.local');
+select public.seasonal_theme_set_status((select v::uuid from t_s106 where k = 'evt'), 'published');
+select public.platform_event_save((select v::uuid from t_s106 where k = 'ev'), '{"title":"Natal Groscove S106","start_date":"2027-12-24","end_date":"2027-12-25","status":"published"}');
+select tests.su();
+select tests.ok('S106 o evento mudou de data: a janela acompanha sozinha',
+  (select window_start = timestamptz '2027-12-14 00:00:00-03' and window_end = timestamptz '2027-12-26 00:00:00-03' and status = 'published'
+   from public.seasonal_themes where id = (select v::uuid from t_s106 where k = 'evt')));
+select tests.login('a1060000-0000-4000-8000-000000000001','s106-admin@test.local');
+-- em vigor agora para testar o cancelamento: evento de hoje, tema 0 dias antes
+insert into t_s106 values ('evnow', public.platform_event_save(null, jsonb_build_object('title','Hoje S106','start_date', to_char(now() at time zone 'America/Sao_Paulo', 'YYYY-MM-DD'),'end_date', to_char((now() at time zone 'America/Sao_Paulo') + interval '2 days', 'YYYY-MM-DD'),'status','published'))::text);
+insert into t_s106 values ('evtnow', public.seasonal_theme_save(null, jsonb_build_object('name','Hoje ligado S106','event_id', (select v from t_s106 where k = 'evnow'),'start_mode','lead_days','lead_days', 0,
+  'end_mode','event_end','areas', jsonb_build_array('app')))::text);
+select public.seasonal_theme_set_status((select v::uuid from t_s106 where k = 'evtnow'), 'published');
+select tests.anon();
+select tests.ok('S106 tema ligado ao evento de hoje está no ar', exists (select 1 from public.seasonal_themes where id = (select v::uuid from t_s106 where k = 'evtnow')));
+select tests.login('a1060000-0000-4000-8000-000000000001','s106-admin@test.local');
+select public.platform_event_cancel((select v::uuid from t_s106 where k = 'evnow'), 'adiado');
+select tests.anon();
+select tests.ok('S106 evento cancelado: o tema sai do ar (continua publicado, marcado)', not exists (select 1 from public.seasonal_themes where id = (select v::uuid from t_s106 where k = 'evtnow')));
+select tests.su();
+select tests.ok('S106 tema do evento cancelado marcado', (select event_cancelled and status = 'published' from public.seasonal_themes where id = (select v::uuid from t_s106 where k = 'evtnow')));
+-- evento excluído (rascunho da agenda): o tema congela a última janela como datas
+select tests.login('a1060000-0000-4000-8000-000000000001','s106-admin@test.local');
+insert into t_s106 values ('evdraft', public.platform_event_save(null, '{"title":"Rascunho agenda S106","start_date":"2027-06-10","end_date":"2027-06-12"}')::text);
+insert into t_s106 values ('evtdraft', public.seasonal_theme_save(null, jsonb_build_object('name','Ligado a rascunho S106','event_id', (select v from t_s106 where k = 'evdraft'),'start_mode','lead_days','lead_days', 3,
+  'end_mode','event_end','areas', jsonb_build_array('app')))::text);
+select public.platform_event_delete((select v::uuid from t_s106 where k = 'evdraft'));
+select tests.su();
+select tests.ok('S106 evento excluído: tema fica sem evento, por datas, com a mesma janela',
+  (select event_id is null and start_mode = 'date' and end_mode = 'date' and starts_at = timestamptz '2027-06-07 00:00:00-03' and ends_at = timestamptz '2027-06-13 00:00:00-03'
+          and window_start = starts_at and window_end = ends_at
+   from public.seasonal_themes where id = (select v::uuid from t_s106 where k = 'evtdraft')));
+select tests.login('a1060000-0000-4000-8000-000000000001','s106-admin@test.local');
+select tests.expect_error('S106 evento inexistente é recusado', $q$select public.seasonal_theme_save(null, '{"name":"x","event_id":"a1060000-0000-4000-8000-0000000000ff","start_mode":"lead_days","end_mode":"event_end","areas":["app"]}')$q$, 'not_found');
+
+-- restaurar padrão: o que está em vigor (ou começando em 10 min) volta a rascunho; o futuro fica
+insert into t_s106 values ('restored', public.seasonal_theme_restore_default()::text);
+select tests.su();
+select tests.ok('S106 restaurar padrão despublica os 2 em vigor deste cenário',
+  (select v::int from t_s106 where k = 'restored') >= 2
+  and (select status from public.seasonal_themes where id = (select v::uuid from t_s106 where k = 'live')) = 'draft'
+  and (select status from public.seasonal_themes where id = (select v::uuid from t_s106 where k = 'soon')) = 'draft'
+  and (select status from public.seasonal_themes where id = (select v::uuid from t_s106 where k = 'future')) = 'published'
+  and (select status from public.seasonal_themes where id = (select v::uuid from t_s106 where k = 'evt')) = 'published');
+select tests.login('a1060000-0000-4000-8000-000000000001','s106-admin@test.local');
+select tests.anon();
+select tests.ok('S106 depois de restaurar: identidade padrão para o visitante', (select count(*) from public.seasonal_themes where id in (select v::uuid from t_s106)) = 0);
+
+-- excluir e auditoria
+select tests.login('a1060000-0000-4000-8000-000000000001','s106-admin@test.local');
+select public.seasonal_theme_delete((select v::uuid from t_s106 where k = 'draft'));
+select tests.expect_error('S106 excluir de novo: não encontrado', $q$select public.seasonal_theme_delete((select v::uuid from t_s106 where k = 'draft'))$q$, 'not_found');
+select tests.su();
+select tests.ok('S106 auditoria: salvar, publicar, interruptor, restaurar e excluir registrados pelo admin',
+  (select count(distinct action) from public.admin_audit where actor_id = 'a1060000-0000-4000-8000-000000000001'
+     and action in ('seasonal_theme.save','seasonal_theme.status','seasonal_theme.enabled','seasonal_theme.restore_default','seasonal_theme.delete')) = 5);
+select tests.ok('S106 bucket theme-assets público (2 MiB, png/jpeg/webp) com envio e exclusão só do admin (quando há schema storage)',
+  to_regclass('storage.buckets') is null
+  or ((select public and file_size_limit = 2097152 and allowed_mime_types = array['image/png','image/jpeg','image/webp'] from storage.buckets where id = 'theme-assets')
+      and (select count(*) from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname in ('theme_assets_admin_insert','theme_assets_admin_delete','theme_assets_admin_select')) = 3));
+
+-- limpeza
+select tests.su();
+delete from public.seasonal_themes where name like '%S106';
+delete from public.calendar_events where title like '%S106';
+delete from public.creator_profiles where id::text like 'a1060000-%';
+delete from public.agency_members where agency_id = 'a1060000-0000-4000-8000-0000000000a1';
+delete from public.agencies where id = 'a1060000-0000-4000-8000-0000000000a1';
+delete from public.role_assignments where user_id::text like 'a1060000-%';
+delete from auth.users where id::text like 'a1060000-%';
+drop table t_s106;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

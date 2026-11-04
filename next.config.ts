@@ -15,12 +15,14 @@ const HERO_SLUG_REDIRECTS: Record<string, string> = {
 
 const nextConfig: NextConfig = {
   images: {
-    // Só as fotos de perfil (0031), as capas de herói (0042) e as fotos de post (0043) dos buckets
+    // Só as fotos de perfil (0031), as capas de herói (0042), as fotos de post (0043) e as imagens dos temas (0100) dos buckets
     // públicos: o otimizador não serve outros objetos do projeto.
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co", pathname: "/storage/v1/object/public/avatars/**" },
       { protocol: "https", hostname: "**.supabase.co", pathname: "/storage/v1/object/public/hero-covers/**" },
       { protocol: "https", hostname: "**.supabase.co", pathname: "/storage/v1/object/public/post-photos/**" },
+      // imagens dos temas sazonais (0100): decorativos e fundo, enviados só pelo admin
+      { protocol: "https", hostname: "**.supabase.co", pathname: "/storage/v1/object/public/theme-assets/**" },
     ],
   },
   experimental: {

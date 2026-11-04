@@ -9882,6 +9882,116 @@ export type Database = {
           },
         ];
       };
+      seasonal_themes: {
+        Row: {
+          animations: boolean;
+          areas: string[];
+          background: Json;
+          banner: Json;
+          created_at: string;
+          created_by: string | null;
+          decorations: Json;
+          end_mode: string;
+          ends_at: string | null;
+          event_cancelled: boolean;
+          event_id: string | null;
+          id: string;
+          lead_days: number;
+          name: string;
+          notes: string;
+          priority: number;
+          published_at: string | null;
+          start_mode: string;
+          starts_at: string | null;
+          status: string;
+          timezone: string;
+          tokens: Json;
+          updated_at: string;
+          updated_by: string | null;
+          window_end: string | null;
+          window_start: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          animations?: boolean;
+          areas?: string[];
+          background?: Json;
+          banner?: Json;
+          created_at?: string;
+          created_by?: string | null;
+          decorations?: Json;
+          end_mode?: string;
+          ends_at?: string | null;
+          event_cancelled?: boolean;
+          event_id?: string | null;
+          id?: string;
+          lead_days?: number;
+          name: string;
+          notes?: string;
+          priority?: number;
+          published_at?: string | null;
+          start_mode?: string;
+          starts_at?: string | null;
+          status?: string;
+          timezone?: string;
+          tokens?: Json;
+          updated_at?: string;
+          updated_by?: string | null;
+          window_end?: string | null;
+          window_start?: string | null;
+        };
+        Update: {
+          animations?: boolean;
+          areas?: string[];
+          background?: Json;
+          banner?: Json;
+          created_at?: string;
+          created_by?: string | null;
+          decorations?: Json;
+          end_mode?: string;
+          ends_at?: string | null;
+          event_cancelled?: boolean;
+          event_id?: string | null;
+          id?: string;
+          lead_days?: number;
+          name?: string;
+          notes?: string;
+          priority?: number;
+          published_at?: string | null;
+          start_mode?: string;
+          starts_at?: string | null;
+          status?: string;
+          timezone?: string;
+          tokens?: Json;
+          updated_at?: string;
+          updated_by?: string | null;
+          window_end?: string | null;
+          window_start?: string | null;
+        };
+        Relationships: [];
+      };
+      seasonal_theme_settings: {
+        Row: {
+          enabled: boolean;
+          id: boolean;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          enabled?: boolean;
+          id?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          enabled?: boolean;
+          id?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
       calendar_imports: {
         Row: {
           counts: Json;
@@ -10930,6 +11040,12 @@ isOneToOne: false
       admin_set_platform_calendar_editor: { Args: { p_agency: string; p_on: boolean }; Returns: undefined };
       platform_event_set_interest: { Args: { p_event: string; p_interested: boolean; p_owner: string; p_party: string }; Returns: string };
       platform_event_interest_summary: { Args: { p_event: string }; Returns: Json };
+      seasonal_theme_save: { Args: { p_data: Json; p_id: string | null }; Returns: string };
+      seasonal_theme_set_status: { Args: { p_id: string; p_status: string }; Returns: undefined };
+      seasonal_theme_delete: { Args: { p_id: string }; Returns: undefined };
+      seasonal_theme_restore_default: { Args: Record<PropertyKey, never>; Returns: number };
+      seasonal_themes_set_enabled: { Args: { p_enabled: boolean }; Returns: undefined };
+      seasonal_themes_admin: { Args: { p_id?: string | null }; Returns: Json };
       calendar_feed_revoke: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;

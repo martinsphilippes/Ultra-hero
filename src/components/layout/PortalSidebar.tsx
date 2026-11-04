@@ -47,6 +47,7 @@ import {
   Sparkles,
   Globe,
   House,
+  Palette,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -100,6 +101,7 @@ const ICONS: Record<string, LucideIcon> = {
   library: Library,
   catalog: Search,
   agenda: CalendarDays,
+  seasonalThemes: Palette,
   sponsorships: Handshake,
   tasks: ClipboardList,
   finance: Wallet,

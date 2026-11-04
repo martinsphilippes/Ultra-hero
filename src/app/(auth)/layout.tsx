@@ -6,6 +6,7 @@ import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { Logo } from "@/components/layout/Logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
+import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
 
 // Telas de autenticação: cartão centralizado com a marca e seletores de tema/idioma.
 export default async function AuthLayout({ children }: { children: ReactNode }) {
@@ -26,7 +27,10 @@ export default async function AuthLayout({ children }: { children: ReactNode }) 
         </div>
       </header>
       <main id="main" tabIndex={-1} className="relative flex flex-1 flex-col items-center justify-center px-gutter py-8 outline-none">
-        <div className="w-full max-w-md animate-slide-up">{children}</div>
+        <div className="w-full max-w-md animate-slide-up">
+          <SeasonalTheme area="institutional" />
+          {children}
+        </div>
       </main>
       <footer className="relative px-gutter pb-4 safe-bottom">
         <LegalLinks align="center" />

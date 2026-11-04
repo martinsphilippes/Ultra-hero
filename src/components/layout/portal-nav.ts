@@ -43,6 +43,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "agency", href: "/admin/agencia" },
     // Calendário Groscove (0098): agenda central da plataforma, vista por todos os portais; importação do cronograma
     { key: "agenda", href: "/admin/agenda" },
+    // Layout dinâmico (0100): temas visuais temporários ligados a eventos do Calendário Groscove
+    { key: "seasonalThemes", href: "/admin/temas" },
     { key: "content", href: "/admin/content" },
     { key: "programs", href: "/admin/programs" },
     { key: "featured", href: "/admin/featured" },
