@@ -2,7 +2,8 @@
 
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import {
   addMonthsToDay,
   canShowMonth,
@@ -191,15 +192,17 @@ function PickerField({
       ) : name ? (
         <input type="hidden" name={name} value={current} />
       ) : null}
-      {kind === "dialog" ? (
-        <Dialog open={open} onOpenChange={setOpen} title={dialogTitle} size="sm">
-          {panel}
-        </Dialog>
-      ) : (
-        <Sheet open={open} onOpenChange={setOpen} title={dialogTitle}>
-          {panel}
-        </Sheet>
-      )}
+      <PickerLayer>
+        {kind === "dialog" ? (
+          <Dialog open={open} onOpenChange={setOpen} title={dialogTitle} size="sm">
+            {panel}
+          </Dialog>
+        ) : (
+          <Sheet open={open} onOpenChange={setOpen} title={dialogTitle}>
+            {panel}
+          </Sheet>
+        )}
+      </PickerLayer>
     </span>
   );
 }
@@ -582,15 +585,26 @@ export function DateRangePicker({
       ) : null}
       {startName ? <input type="hidden" name={startName} value={s} /> : null}
       {endName ? <input type="hidden" name={endName} value={e} /> : null}
-      {kind === "dialog" ? (
-        <Dialog open={open} onOpenChange={setOpen} title={dialogTitle} size="sm">
-          {panel}
-        </Dialog>
-      ) : (
-        <Sheet open={open} onOpenChange={setOpen} title={dialogTitle}>
-          {panel}
-        </Sheet>
-      )}
+      <PickerLayer>
+        {kind === "dialog" ? (
+          <Dialog open={open} onOpenChange={setOpen} title={dialogTitle} size="sm">
+            {panel}
+          </Dialog>
+        ) : (
+          <Sheet open={open} onOpenChange={setOpen} title={dialogTitle}>
+            {panel}
+          </Sheet>
+        )}
+      </PickerLayer>
     </span>
   );
+}
+
+// O calendário vai direto para o <body>: aberto de dentro de outra caixa (ex.: "Novo compromisso"), um <dialog>
+// dentro de outro <dialog> não abria ou não recebia toques no Safari do iPhone. No <body>, ele vira a caixa do
+// topo e a de baixo fica inerte, como manda o navegador.
+function PickerLayer({ children }: { children: ReactNode }) {
+  const [body, setBody] = useState<HTMLElement | null>(null);
+  useEffect(() => setBody(document.body), []);
+  return body ? createPortal(children, body) : null;
 }
