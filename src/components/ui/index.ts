@@ -14,6 +14,7 @@ export { FormField } from "./form-field";
 export { IconButton } from "./icon-button";
 export { Input, fieldBase } from "./input";
 export { Label } from "./label";
+export { FilePicker } from "./file-picker";
 export { MoneyInput } from "./money-input";
 export { NumberInput } from "./number-input";
 export { QuantityInput } from "./quantity-input";

@@ -3,7 +3,7 @@
 import { Check, Copy, Eye, FileUp, Plus, Split, Trash2, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState, useTransition } from "react";
-import { Badge, Button, DatePicker, Dialog, FormField, Input, MoneyInput, Textarea, useToast, type BadgeVariant } from "@/components/ui";
+import { Badge, Button, DatePicker, Dialog, FilePicker, FormField, Input, MoneyInput, Textarea, useToast, type BadgeVariant } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { formatCents } from "@/lib/deals/schemas";
@@ -261,13 +261,7 @@ function ReportDialog({ receivable, installment, today, onClose }: { receivable:
           <MoneyInput value={amount} maxCents={10_000_000_000} onValueChange={(v) => setAmount(v)} disabled={pending} />
         </FormField>
         <FormField label={t("file")} hint={t("fileHint")}>
-          <input
-            ref={fileRef}
-            type="file"
-            accept={DOCUMENT_MIME_TYPES.join(",")}
-            disabled={pending}
-            className="block w-full text-sm text-fg file:mr-3 file:min-h-11 file:rounded-lg file:border-0 file:bg-accent-soft file:px-3 file:text-sm file:font-semibold file:text-accent-text"
-          />
+          <FilePicker ref={fileRef} accept={DOCUMENT_MIME_TYPES.join(",")} disabled={pending} />
         </FormField>
         <FormField label={t("note")}>
           <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} maxLength={500} disabled={pending} />

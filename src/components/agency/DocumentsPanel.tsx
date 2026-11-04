@@ -3,7 +3,7 @@
 import { Archive, Eye, FileText, Lock, Upload } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState, useTransition, type FormEvent } from "react";
-import { Badge, Button, Checkbox, FormField, Input, Select, useToast } from "@/components/ui";
+import { Badge, Button, Checkbox, FilePicker, FormField, Input, Select, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { archiveDocumentAction, confirmDocumentAction, reserveDocumentAction, signedUrlAction } from "@/lib/documents/actions";
@@ -31,6 +31,8 @@ export function DocumentsPanel({ agencyId, scope, documents, canUpload, canContr
   const locale = useLocale() as Locale;
   const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
+  // trocar a key limpa o seletor de arquivo depois de enviar
+  const [fileKey, setFileKey] = useState(0);
   const [title, setTitle] = useState("");
   const [kind, setKind] = useState<"other" | "contract" | "brief_attachment" | "report" | "media">("other");
   const [shareTalent, setShareTalent] = useState(false);
@@ -65,7 +67,7 @@ export function DocumentsPanel({ agencyId, scope, documents, canUpload, canContr
       setTitle("");
       setShareTalent(false);
       setKind("other");
-      if (fileRef.current) fileRef.current.value = "";
+      setFileKey((k) => k + 1);
     });
   }
 
@@ -134,13 +136,7 @@ export function DocumentsPanel({ agencyId, scope, documents, canUpload, canContr
         <form onSubmit={upload} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4" noValidate data-testid="document-upload">
           <h3 className="text-sm font-semibold text-fg">{t("uploadTitle")}</h3>
           <FormField label={t("file")} hint={t("fileHint")} required>
-            <input
-              ref={fileRef}
-              type="file"
-              accept={DOCUMENT_MIME_TYPES.join(",")}
-              disabled={pending}
-              className="block w-full text-sm text-fg file:mr-3 file:rounded-lg file:border-0 file:bg-surface-hover file:px-3 file:py-2 file:text-sm file:font-medium"
-            />
+            <FilePicker key={fileKey} ref={fileRef} accept={DOCUMENT_MIME_TYPES.join(",")} disabled={pending} />
           </FormField>
           <div className="grid gap-3 sm:grid-cols-2">
             <FormField label={t("title")}>

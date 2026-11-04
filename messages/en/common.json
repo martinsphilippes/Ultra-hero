@@ -155,5 +155,11 @@
   "quantity": {
     "decrease": "Decrease",
     "increase": "Increase"
+  },
+  "filePicker": {
+    "choose": "Choose file",
+    "change": "Change",
+    "remove": "Remove file",
+    "selected": "Chosen file: {name}"
   }
 }

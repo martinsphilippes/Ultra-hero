@@ -3,7 +3,7 @@
 import { Eye, FileUp } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState, useTransition, type FormEvent } from "react";
-import { Badge, Button, FormField, useToast, type BadgeVariant } from "@/components/ui";
+import { Badge, Button, FilePicker, FormField, useToast, type BadgeVariant } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { formatCents } from "@/lib/deals/schemas";
@@ -137,13 +137,7 @@ function InvoiceForm({ earning, onDone }: { earning: Earning; onDone: () => void
   return (
     <form onSubmit={submit} className="flex flex-col gap-3 rounded-xl border border-border p-3" noValidate data-testid="invoice-form">
       <FormField label={t("file")} hint={t("fileHint")} required error={error}>
-        <input
-          ref={fileRef}
-          type="file"
-          accept={DOCUMENT_MIME_TYPES.join(",")}
-          disabled={pending}
-          className="block w-full text-sm text-fg file:mr-3 file:min-h-11 file:rounded-lg file:border-0 file:bg-accent-soft file:px-3 file:text-sm file:font-semibold file:text-accent-text"
-        />
+        <FilePicker ref={fileRef} accept={DOCUMENT_MIME_TYPES.join(",")} disabled={pending} />
       </FormField>
       <div className="flex flex-wrap gap-2">
         <Button type="submit" loading={pending} leadingIcon={<FileUp />} data-testid="invoice-submit">
