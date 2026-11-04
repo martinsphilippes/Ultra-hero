@@ -109,5 +109,39 @@
         "cta": "Ver pagos"
       }
     }
+  },
+  "access": {
+    "greeting": "¡Hola!",
+    "ignore": "Si no esperabas este mensaje, ignóralo.",
+    "signature": "Groscove Ultra · el puente entre marcas y héroes",
+    "expires": "El enlace vale {days} días y solo funciona con este e-mail.",
+    "hero": {
+      "invited": {
+        "subject": "{agency} creó tu acceso de héroe en Groscove Ultra",
+        "body": "{agency} te registró como héroe, {name}, en Groscove Ultra.",
+        "how": "Para acceder a tu cuenta, abre el enlace, entra con este e-mail y crea tu contraseña.",
+        "cta": "Crear mi contraseña"
+      },
+      "linked": {
+        "subject": "{agency} vinculó {name} a tu cuenta",
+        "body": "{agency} registró al héroe {name} en Groscove Ultra y lo vinculó a tu cuenta.",
+        "how": "Entra con tu e-mail y contraseña de siempre para abrir el Portal del Héroe.",
+        "cta": "Abrir el Portal del Héroe"
+      }
+    },
+    "brand": {
+      "invited": {
+        "subject": "{agency} creó el acceso de {name} en Groscove Ultra",
+        "body": "{agency} registró la marca {name} en Groscove Ultra y te invitó como Dueño.",
+        "how": "Para entrar, abre el enlace, entra con este e-mail y crea tu contraseña.",
+        "cta": "Crear mi contraseña"
+      },
+      "linked": {
+        "subject": "Eres Dueño de {name} en Groscove Ultra",
+        "body": "{agency} registró la marca {name} en Groscove Ultra y te dio el acceso de Dueño.",
+        "how": "Entra con tu e-mail y contraseña de siempre para abrir el portal de la marca.",
+        "cta": "Abrir el portal de la marca"
+      }
+    }
   }
 }

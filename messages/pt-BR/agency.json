@@ -241,7 +241,9 @@
     "linked": "Marca vinculada à agência.",
     "archived": "Vínculo arquivado.",
     "inviteCreated": "Convite criado. Copie o link e envie para a pessoa.",
-    "memberRemoved": "Pessoa removida da marca."
+    "memberRemoved": "Pessoa removida da marca.",
+    "accessTitle": "Acesso da marca",
+    "accessHint": "Quem da marca recebe o acesso de Dono. E-mail e celular só a agência vê."
   },
   "settings": {
     "title": "Configurações",
@@ -385,7 +387,11 @@
     "plan_locked": "A contratação já foi confirmada: ajuste as parcelas em Financeiro › Pagamentos da marca.",
     "nda_required": "Assine o NDA para entrar na sala.",
     "room_archived": "A sala do projeto está arquivada.",
-    "no_recurring_steps": "O roteiro deste negócio não tem etapas recorrentes (semanais, quinzenais ou mensais)."
+    "no_recurring_steps": "O roteiro deste negócio não tem etapas recorrentes (semanais, quinzenais ou mensais).",
+    "invalid_phone": "Confira o celular: DDD + 9 dígitos, ex.: (11) 91234-5678.",
+    "hero_email_taken": "Este e-mail já é de outro herói. Use outro e-mail.",
+    "hero_email_mismatch": "Este herói tem outro e-mail de acesso cadastrado. Corrija o e-mail na ficha.",
+    "contact_missing": "Cadastre o e-mail e o celular antes de enviar o convite."
   },
   "casting": {
     "title": "Casting",
@@ -554,7 +560,41 @@
     "hasLoginAs": "Tem login ({email}) e usa o Portal do Herói.",
     "heroNoLogin": "O herói ainda não tem login. Convide-o para entrar no Portal do Herói.",
     "inviteCreator": "Convidar herói",
-    "resendInvite": "Reenviar"
+    "resendInvite": "Reenviar",
+    "accountTitle": "Conta do herói",
+    "noPageHint": "Sem página pública. Crie agora (já ligada a esta ficha) ou ligue uma página que já existe.",
+    "newHero": {
+      "description": "Cadastre quem a agência representa. O herói recebe um convite no e-mail para acessar a conta.",
+      "name": "Nome",
+      "nameHint": "Nome artístico, como aparece para a agência e as marcas.",
+      "email": "E-mail do herói",
+      "emailHint": "Vira o login do herói. Se já tiver conta, ela é ligada na hora.",
+      "manager": "Gestor",
+      "noManager": "Sem gestor",
+      "segments": "Segmentos (até 5)",
+      "withPage": "Criar página pública agora",
+      "withPageHint": "A página fica em /personalities e já nasce ligada a esta ficha. Dá para criar depois.",
+      "slug": "Endereço da página",
+      "slugHint": "A página fica em /personalities/{slug}. Não muda depois.",
+      "pillars": "Pilares",
+      "headline": "Chamada",
+      "bio": "Biografia",
+      "optional": "opcional",
+      "accessNote": "Crie só perfis de quem tem contrato com a agência. O herói recebe um convite no e-mail para acessar a conta.",
+      "submit": "Criar herói",
+      "nameRequired": "Informe o nome (mínimo 2 letras).",
+      "emailInvalid": "Confira o e-mail do herói.",
+      "phoneInvalid": "Confira o celular: DDD + 9 dígitos, ex.: (11) 91234-5678.",
+      "pillarsRequired": "Escolha ao menos um pilar para a página.",
+      "created": "{name} entrou no casting.",
+      "createdWithPage": "{name} entrou no casting com a página pública.",
+      "openTalent": "Abrir a ficha",
+      "createPage": "Criar página pública",
+      "createPageTitle": "Página pública do herói",
+      "createPageHint": "A página nasce no ar e já ligada a esta ficha. Foto e capa você troca depois em Heróis.",
+      "cancel": "Cancelar",
+      "pageCreated": "Página pública criada e ligada à ficha."
+    }
   },
   "documents": {
     "uploaded": "Documento enviado.",
@@ -1070,7 +1110,7 @@
     "suspended": "Suspenso",
     "demoLocked": "A agência de exemplo não cria heróis.",
     "createTitle": "Novo herói",
-    "createHint": "Crie só perfis de quem tem contrato com a agência. O perfil fica público na hora.",
+    "createHint": "Crie só perfis de quem tem contrato com a agência. O perfil fica público na hora. O herói recebe um convite no e-mail para acessar a conta.",
     "heroDescription": "Você publica em nome deste herói. Foto, capa e posts aparecem na página pública dele.",
     "newPost": "Novo post",
     "viewPage": "Ver página pública",
@@ -1090,7 +1130,11 @@
       "save": "Salvar perfil",
       "created": "Herói criado",
       "saved": "Perfil salvo"
-    }
+    },
+    "newHero": "Novo herói",
+    "castingRecord": "Ficha no casting",
+    "accountTitle": "Conta do herói",
+    "accountDescription": "Acesso do herói ao Portal do Herói. E-mail e celular só a agência vê."
   },
   "finance": {
     "title": "Financeiro",
@@ -1212,6 +1256,54 @@
       "seller": "lojista",
       "admin": "equipe",
       "system": "sistema"
+    }
+  },
+  "access": {
+    "active": "Conta ativa",
+    "pending": "Convite enviado · aguardando",
+    "expired": "Expirado",
+    "none": "Sem conta vinculada",
+    "noneBrand": "Sem acesso",
+    "validUntil": "Vale até {date}",
+    "contactName": "Nome do contato",
+    "noName": "Sem nome",
+    "email": "E-mail",
+    "phone": "Celular",
+    "phoneLabel": "Celular",
+    "phoneHint": "Com DDD, ex.: (11) 91234-5678. Só a agência vê.",
+    "phoneInvalid": "Confira o celular: DDD + 9 dígitos, ex.: (11) 91234-5678.",
+    "noEmail": "Sem e-mail",
+    "noPhone": "Sem celular",
+    "noneHint": "Cadastre e-mail e celular para enviar o convite de acesso.",
+    "noneResendHint": "O convite foi cancelado. Envie de novo quando quiser.",
+    "sendInvite": "Enviar convite",
+    "resend": "Reenviar",
+    "addContact": "Adicionar e-mail e celular",
+    "editContact": "Editar contato",
+    "fixEmail": "Corrigir e-mail",
+    "link": "Link do convite",
+    "emailSent": "O e-mail saiu agora.",
+    "emailNotSent": "O e-mail não saiu: copie o link e mande por outro canal.",
+    "savedActive": "Contato salvo. O acesso já está ativo.",
+    "savedPending": "Contato salvo. O convite continua valendo.",
+    "dialogTitle": "Contato de acesso",
+    "dialogHint": "Trocar o e-mail cancela o convite anterior e manda um link novo.",
+    "cancel": "Cancelar",
+    "save": "Salvar e enviar",
+    "hero": {
+      "invitedMessage": "Convite enviado para {email}. O herói cria a senha pelo link (vale 14 dias).",
+      "linkedMessage": "{email} já tinha conta: o herói foi ligado a ela e avisado.",
+      "emailHint": "Vira o login do herói. Se já tiver conta, ela é ligada na hora."
+    },
+    "brand": {
+      "invitedMessage": "Convite enviado para {email}. O contato cria a senha pelo link e vira Dono da marca (vale 14 dias).",
+      "linkedMessage": "{email} já tinha conta: virou Dono da marca e foi avisado.",
+      "emailHint": "Vira o login do Dono da marca. Se já tiver conta, o acesso sai na hora.",
+      "contactTitle": "Acesso da marca",
+      "contactHint": "Quem da marca vai entrar no app como Dono. Recebe um convite no e-mail.",
+      "nameRequired": "Informe o nome do contato da marca.",
+      "emailInvalid": "Confira o e-mail do contato da marca.",
+      "openBrand": "Abrir a marca"
     }
   }
 }

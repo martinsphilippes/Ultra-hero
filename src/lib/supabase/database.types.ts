@@ -6639,6 +6639,46 @@ export type Database = {
           },
         ];
       };
+      access_contacts: {
+        Row: {
+          brand_id: string | null;
+          contact_name: string | null;
+          created_at: string;
+          created_by: string | null;
+          email: string;
+          id: string;
+          phone_e164: string;
+          talent_id: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          brand_id?: string | null;
+          contact_name?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          email: string;
+          id?: string;
+          phone_e164: string;
+          talent_id?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          brand_id?: string | null;
+          contact_name?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          email?: string;
+          id?: string;
+          phone_e164?: string;
+          talent_id?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
       account_onboardings: {
         Row: {
           agency_id: string | null;
@@ -12504,9 +12544,27 @@ isOneToOne: false
       };
       report_content: { Args: { p_content: string | null; p_creator: string | null; p_details: string; p_reason: string }; Returns: string };
       agency_act_as_hero: { Args: { p_creator: string }; Returns: Json };
-      agency_create_hero: {
-        Args: { p_agency: string; p_bio: string; p_headline: string; p_name: string; p_pillars: Database["public"]["Enums"]["pillar"][]; p_slug: string };
-        Returns: string;
+      agency_hero_create: {
+        Args: { p_agency: string; p_talent: Json; p_email: string; p_phone: string; p_segment_ids?: string[] | null; p_page?: Json | null };
+        Returns: Json;
+      };
+      agency_talent_create_page: { Args: { p_talent: string; p_page: Json }; Returns: string };
+      agency_brand_create_with_access: { Args: { p_agency: string; p_data: Json; p_contact_name: string; p_email: string; p_phone: string }; Returns: Json };
+      access_contact_save: { Args: { p_kind: string; p_target: string; p_email: string; p_phone: string; p_name?: string | null }; Returns: Json };
+      access_invite_resend: { Args: { p_kind: string; p_target: string }; Returns: Json };
+      access_contact_valid: { Args: { p_email: string; p_phone: string }; Returns: boolean };
+      agency_access_status: {
+        Args: { p_agency: string; p_kind: string };
+        Returns: {
+          target_id: string;
+          creator_id: string | null;
+          contact_name: string | null;
+          email: string | null;
+          phone_e164: string | null;
+          account: string;
+          invite_expires_at: string | null;
+          login_email: string | null;
+        }[];
       };
       agency_hero_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
       agency_update_hero: {

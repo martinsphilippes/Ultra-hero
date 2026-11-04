@@ -241,7 +241,9 @@
     "linked": "Marca vinculada a la agencia.",
     "archived": "Vínculo archivado.",
     "inviteCreated": "Invitación creada. Copia el enlace y envíalo a la persona.",
-    "memberRemoved": "Persona quitada de la marca."
+    "memberRemoved": "Persona quitada de la marca.",
+    "accessTitle": "Acceso de la marca",
+    "accessHint": "Quién de la marca recibe el acceso de Dueño. El e-mail y el celular solo los ve la agencia."
   },
   "settings": {
     "title": "Configuración",
@@ -385,7 +387,11 @@
     "plan_locked": "La contratación ya fue confirmada: ajusta las cuotas en Finanzas › Pagos de la marca.",
     "nda_required": "Firma el NDA para entrar a la sala.",
     "room_archived": "La sala del proyecto está archivada.",
-    "no_recurring_steps": "El plan de este negocio no tiene etapas recurrentes (semanales, quincenales o mensuales)."
+    "no_recurring_steps": "El plan de este negocio no tiene etapas recurrentes (semanales, quincenales o mensuales).",
+    "invalid_phone": "Revisa el celular: código de área + 9 dígitos, ej.: (11) 91234-5678.",
+    "hero_email_taken": "Este e-mail ya es de otro héroe. Usa otro e-mail.",
+    "hero_email_mismatch": "Este héroe tiene otro e-mail de acceso registrado. Corrige el e-mail en la ficha.",
+    "contact_missing": "Registra el e-mail y el celular antes de enviar la invitación."
   },
   "casting": {
     "title": "Casting",
@@ -554,7 +560,41 @@
     "hasLoginAs": "Tiene acceso ({email}) y usa el Portal del Héroe.",
     "heroNoLogin": "El héroe aún no tiene acceso. Invítalo a entrar en el Portal del Héroe.",
     "inviteCreator": "Invitar héroe",
-    "resendInvite": "Reenviar"
+    "resendInvite": "Reenviar",
+    "accountTitle": "Cuenta del héroe",
+    "noPageHint": "Sin página pública. Créala ahora (ya vinculada a esta ficha) o vincula una página que ya existe.",
+    "newHero": {
+      "description": "Registra a quien la agencia representa. El héroe recibe una invitación por e-mail para acceder a la cuenta.",
+      "name": "Nombre",
+      "nameHint": "Nombre artístico, como lo ven la agencia y las marcas.",
+      "email": "E-mail del héroe",
+      "emailHint": "Será el login del héroe. Si ya tiene cuenta, se vincula al instante.",
+      "manager": "Gestor",
+      "noManager": "Sin gestor",
+      "segments": "Segmentos (hasta 5)",
+      "withPage": "Crear página pública ahora",
+      "withPageHint": "La página queda en /personalities y nace vinculada a esta ficha. Puedes crearla después.",
+      "slug": "Dirección de la página",
+      "slugHint": "La página queda en /personalities/{slug}. No cambia después.",
+      "pillars": "Pilares",
+      "headline": "Titular",
+      "bio": "Biografía",
+      "optional": "opcional",
+      "accessNote": "Crea solo perfiles de personas con contrato con la agencia. El héroe recibe una invitación por e-mail para acceder a la cuenta.",
+      "submit": "Crear héroe",
+      "nameRequired": "Escribe el nombre (mínimo 2 letras).",
+      "emailInvalid": "Revisa el e-mail del héroe.",
+      "phoneInvalid": "Revisa el celular: código de área + 9 dígitos, ej.: (11) 91234-5678.",
+      "pillarsRequired": "Elige al menos un pilar para la página.",
+      "created": "{name} entró al casting.",
+      "createdWithPage": "{name} entró al casting con página pública.",
+      "openTalent": "Abrir la ficha",
+      "createPage": "Crear página pública",
+      "createPageTitle": "Página pública del héroe",
+      "createPageHint": "La página sale al aire ya vinculada a esta ficha. Cambia foto y portada después en Héroes.",
+      "cancel": "Cancelar",
+      "pageCreated": "Página pública creada y vinculada a la ficha."
+    }
   },
   "documents": {
     "uploaded": "Documento enviado.",
@@ -1070,7 +1110,7 @@
     "suspended": "Suspendido",
     "demoLocked": "La agencia de ejemplo no crea héroes.",
     "createTitle": "Nuevo héroe",
-    "createHint": "Crea solo perfiles de personas con contrato con la agencia. El perfil queda público al instante.",
+    "createHint": "Crea solo perfiles de personas con contrato con la agencia. El perfil queda público al instante. El héroe recibe una invitación por e-mail para acceder a la cuenta.",
     "heroDescription": "Publicas en nombre de este héroe. La foto, la portada y los posts aparecen en su página pública.",
     "newPost": "Nuevo post",
     "viewPage": "Ver página pública",
@@ -1090,7 +1130,11 @@
       "save": "Guardar perfil",
       "created": "Héroe creado",
       "saved": "Perfil guardado"
-    }
+    },
+    "newHero": "Nuevo héroe",
+    "castingRecord": "Ficha en el casting",
+    "accountTitle": "Cuenta del héroe",
+    "accountDescription": "Acceso del héroe al Portal del Héroe. El e-mail y el celular solo los ve la agencia."
   },
   "finance": {
     "title": "Finanzas",
@@ -1212,6 +1256,54 @@
       "seller": "vendedor",
       "admin": "equipo",
       "system": "sistema"
+    }
+  },
+  "access": {
+    "active": "Cuenta activa",
+    "pending": "Invitación enviada · esperando",
+    "expired": "Vencida",
+    "none": "Sin cuenta vinculada",
+    "noneBrand": "Sin acceso",
+    "validUntil": "Válida hasta {date}",
+    "contactName": "Nombre del contacto",
+    "noName": "Sin nombre",
+    "email": "E-mail",
+    "phone": "Celular",
+    "phoneLabel": "Celular",
+    "phoneHint": "Con código de área, ej.: (11) 91234-5678. Solo lo ve la agencia.",
+    "phoneInvalid": "Revisa el celular: código de área + 9 dígitos, ej.: (11) 91234-5678.",
+    "noEmail": "Sin e-mail",
+    "noPhone": "Sin celular",
+    "noneHint": "Registra e-mail y celular para enviar la invitación de acceso.",
+    "noneResendHint": "La invitación fue cancelada. Envíala de nuevo cuando quieras.",
+    "sendInvite": "Enviar invitación",
+    "resend": "Reenviar",
+    "addContact": "Agregar e-mail y celular",
+    "editContact": "Editar contacto",
+    "fixEmail": "Corregir e-mail",
+    "link": "Enlace de la invitación",
+    "emailSent": "El e-mail se envió.",
+    "emailNotSent": "El e-mail no se envió: copia el enlace y compártelo por otro canal.",
+    "savedActive": "Contacto guardado. El acceso ya está activo.",
+    "savedPending": "Contacto guardado. La invitación sigue válida.",
+    "dialogTitle": "Contacto de acceso",
+    "dialogHint": "Cambiar el e-mail cancela la invitación anterior y envía un enlace nuevo.",
+    "cancel": "Cancelar",
+    "save": "Guardar y enviar",
+    "hero": {
+      "invitedMessage": "Invitación enviada a {email}. El héroe crea la contraseña con el enlace (válido 14 días).",
+      "linkedMessage": "{email} ya tenía cuenta: el héroe se vinculó a ella y fue avisado.",
+      "emailHint": "Será el login del héroe. Si ya tiene cuenta, se vincula al instante."
+    },
+    "brand": {
+      "invitedMessage": "Invitación enviada a {email}. El contacto crea la contraseña con el enlace y pasa a ser Dueño de la marca (válido 14 días).",
+      "linkedMessage": "{email} ya tenía cuenta: pasó a ser Dueño de la marca y fue avisado.",
+      "emailHint": "Será el login del Dueño de la marca. Si ya tiene cuenta, el acceso sale al instante.",
+      "contactTitle": "Acceso de la marca",
+      "contactHint": "Quién de la marca entrará a la app como Dueño. Recibe una invitación por e-mail.",
+      "nameRequired": "Escribe el nombre del contacto de la marca.",
+      "emailInvalid": "Revisa el e-mail del contacto de la marca.",
+      "openBrand": "Abrir la marca"
     }
   }
 }

@@ -1,5 +1,10 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // acesso do herói e da marca criados pela agência (0112)
+  "hero_email_mismatch",
+  "hero_email_taken",
+  "invalid_phone",
+  "contact_missing",
   // roteiros fase 3 (0111): contrato recorrente sem etapa recorrente no roteiro
   "no_recurring_steps",
   // sala do projeto (0110)

@@ -109,5 +109,39 @@
         "cta": "Ver pagamentos"
       }
     }
+  },
+  "access": {
+    "greeting": "Olá!",
+    "ignore": "Se não esperava esta mensagem, ignore.",
+    "signature": "Groscove Ultra · a ponte entre marcas e heróis",
+    "expires": "O link vale por {days} dias e só funciona com este e-mail.",
+    "hero": {
+      "invited": {
+        "subject": "{agency} criou seu acesso de herói no Groscove Ultra",
+        "body": "{agency} cadastrou você como herói, {name}, no Groscove Ultra.",
+        "how": "Para acessar a sua conta, abra o link, entre com este e-mail e crie a sua senha.",
+        "cta": "Criar minha senha"
+      },
+      "linked": {
+        "subject": "{agency} ligou {name} à sua conta",
+        "body": "{agency} cadastrou o herói {name} no Groscove Ultra e ligou à sua conta.",
+        "how": "Entre com o seu e-mail e senha de sempre para abrir o Portal do Herói.",
+        "cta": "Abrir o Portal do Herói"
+      }
+    },
+    "brand": {
+      "invited": {
+        "subject": "{agency} criou o acesso de {name} no Groscove Ultra",
+        "body": "{agency} cadastrou a marca {name} no Groscove Ultra e convidou você como Dono.",
+        "how": "Para acessar, abra o link, entre com este e-mail e crie a sua senha.",
+        "cta": "Criar minha senha"
+      },
+      "linked": {
+        "subject": "Você é Dono de {name} no Groscove Ultra",
+        "body": "{agency} cadastrou a marca {name} no Groscove Ultra e deu a você o acesso de Dono.",
+        "how": "Entre com o seu e-mail e senha de sempre para abrir o portal da marca.",
+        "cta": "Abrir o portal da marca"
+      }
+    }
   }
 }

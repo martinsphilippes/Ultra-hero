@@ -226,6 +226,14 @@
     "payout_due": {
       "title": "{status, select, late {Payout overdue} today {Payout due today} other {Payout due soon}}",
       "body": "{status, select, late {The payout for {deal} ({talent}) is overdue.} today {The payout for {deal} ({talent}) is due today.} other {The payout for {deal} ({talent}) is due within 3 days.}}"
+    },
+    "hero_account_linked": {
+      "title": "Your hero account is ready",
+      "body": "{name} registered {talent} and linked it to your account. Open the Hero Portal."
+    },
+    "brand_access_granted": {
+      "title": "You are the Owner of {brand}",
+      "body": "{name} registered {brand} and gave you Owner access. Open the brand portal."
     }
   }
 }

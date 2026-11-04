@@ -17575,5 +17575,292 @@ delete from public.talent_profiles where agency_id = 'a1170000-0000-4000-8000-00
 delete from public.agencies where id = 'a1170000-0000-4000-8000-0000000000a1';
 delete from auth.users where id::text like 'a1170000-%';
 
+-- ================================================================ S118 · Acesso nasce junto: herói pelo Casting e marca criada pela agência (0112)
+-- Um só "Novo herói" (talento + contato + página pública opcional já ligada) com e-mail e celular obrigatórios; conta
+-- existente → liga na hora e avisa; sem conta → convite 'agency_hero' de 14 dias que funciona com os convites pausados;
+-- só o MESMO e-mail reivindica; token de uso único; corrigir e reenviar trocam o link; situação active/pending/expired/
+-- none; um herói por e-mail; página depois pela ficha (login passa ao herói sem perder o consentimento). Marca nova com
+-- o acesso do contato (Dono na hora ou por convite 'agency_brand'; ao reivindicar vira self_managed). Contato (celular)
+-- só gestor+ e admin geral; colaborador, outra agência, marca e visitante nada. S14 segue 18.
+\ir ../migrations/0112_heroi_conta_vinculada.sql
+select tests.su();
+update public.app_settings set value = 'false'::jsonb where key = 'invites.enabled';
+insert into auth.users (id, email) values
+  ('a1180000-0000-4000-8000-000000000001', 's118-gestor@test.local'),
+  ('a1180000-0000-4000-8000-000000000002', 's118-colab@test.local'),
+  ('a1180000-0000-4000-8000-000000000003', 's118-existe@test.local'),
+  ('a1180000-0000-4000-8000-000000000004', 's118-dono@test.local'),
+  ('a1180000-0000-4000-8000-000000000005', 's118-fora@test.local'),
+  ('a1180000-0000-4000-8000-000000000006', 's118-marca@test.local'),
+  ('a1180000-0000-4000-8000-000000000007', 's118-intruso@test.local'),
+  ('a1180000-0000-4000-8000-000000000009', 's118-adm-geral@test.local'),
+  ('a1180000-0000-4000-8000-000000000010', 's118-dona-existe@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values ('a1180000-0000-4000-8000-000000000009', 'admin', 'global');
+insert into public.agencies (id, slug, name) values
+  ('a1180000-0000-4000-8000-0000000000a1', 's118-agencia', 'Agência S118'),
+  ('a1180000-0000-4000-8000-0000000000a2', 's118-outra', 'Outra S118');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1180000-0000-4000-8000-0000000000a1', 'a1180000-0000-4000-8000-000000000001', 'manager', 'Gil Gestor S118'),
+  ('a1180000-0000-4000-8000-0000000000a1', 'a1180000-0000-4000-8000-000000000002', 'staff', 'Caio Colab S118'),
+  ('a1180000-0000-4000-8000-0000000000a2', 'a1180000-0000-4000-8000-000000000005', 'manager', 'Fora S118');
+insert into public.brands (id, slug, name, site_url) values ('a1180000-0000-4000-8000-0000000000b1', 's118-marca', 'Marca S118', 'https://m.s118.test');
+insert into public.agency_brands (agency_id, brand_id) values ('a1180000-0000-4000-8000-0000000000a1', 'a1180000-0000-4000-8000-0000000000b1');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1180000-0000-4000-8000-0000000000b1', 'a1180000-0000-4000-8000-000000000006', 'owner', 'Dona S118');
+-- talento antigo (sem contato) e herói de quem já é titular
+insert into public.creator_profiles (id, slug, name, status, user_id) values
+  ('a1180000-0000-4000-8000-0000000000c2', 's118-do-dono', 'Herói do Dono S118', 'active', 'a1180000-0000-4000-8000-000000000004');
+insert into public.talent_profiles (id, agency_id, display_name) values
+  ('a1180000-0000-4000-8000-0000000000d1', 'a1180000-0000-4000-8000-0000000000a1', 'Talento Antigo S118');
+create table tests.s118 (k text primary key, v text);
+grant all on tests.s118 to anon, authenticated;
+
+select tests.ok('S118 estrutura: RLS em access_contacts, só leitura, nada para visitante, núcleo interno, assinatura antiga removida, search_path fixo; S14 segue 18',
+  (select c.relrowsecurity from pg_class c where c.oid = 'public.access_contacts'::regclass)
+  and not has_table_privilege('anon', 'public.access_contacts', 'select')
+  and not has_table_privilege('authenticated', 'public.access_contacts', 'insert')
+  and not has_table_privilege('authenticated', 'public.access_contacts', 'update')
+  and not has_table_privilege('authenticated', 'public.access_contacts', 'delete')
+  and to_regprocedure('public.agency_create_hero(uuid, text, text, public.pillar[], text, text)') is null
+  and has_function_privilege('authenticated', 'public.agency_hero_create(uuid, jsonb, text, text, uuid[], jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.agency_hero_create(uuid, jsonb, text, text, uuid[], jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.agency_brand_create_with_access(uuid, jsonb, text, text, text)', 'execute')
+  and not has_function_privilege('anon', 'public.agency_talent_create_page(uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.access_contact_save(text, uuid, text, text, text)', 'execute')
+  and not has_function_privilege('anon', 'public.access_invite_resend(text, uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.agency_access_status(uuid, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.access_provision(text, uuid, uuid, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.access_target_agency(text, uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.access_contact_check(text, uuid, text, text, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.talent_page_create(uuid, uuid, jsonb)', 'execute')
+  and not has_function_privilege('authenticated', 'public.invitations_access_contact_guard()', 'execute')
+  and not has_function_privilege('authenticated', 'public.invitations_brand_claimed()', 'execute')
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and p.proconfig is null
+                  and p.proname in ('agency_hero_create', 'agency_brand_create_with_access', 'agency_talent_create_page', 'access_contact_save',
+                                    'access_invite_resend', 'agency_access_status', 'access_provision', 'access_target_agency', 'access_contact_check',
+                                    'talent_page_create', 'invitations_access_contact_guard', 'invitations_brand_claimed', 'invitations_flag_guard', 'talent_login_changed'))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- ---------------------------------------------------------------- validação (e-mail e celular obrigatórios)
+select tests.login('a1180000-0000-4000-8000-000000000001', 's118-gestor@test.local');
+select tests.expect_error('S118 sem e-mail recusa', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Novo S118"}', '', '+5511912345678')$q$, 'invalid_email');
+select tests.expect_error('S118 sem celular recusa', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Novo S118"}', 'novo.s118@test.local', '')$q$, 'invalid_phone');
+select tests.expect_error('S118 fixo (sem 9) recusa', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Novo S118"}', 'novo.s118@test.local', '+551132345678')$q$, 'invalid_phone');
+select tests.expect_error('S118 celular fora do E.164 recusa', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Novo S118"}', 'novo.s118@test.local', '(11) 91234-5678')$q$, 'invalid_phone');
+
+-- ---------------------------------------------------------------- Novo herói com página: convite mesmo com convites pausados
+insert into tests.s118 select 'novo', public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Novo S118","commercial_status":"active"}',
+  '  Novo.S118@Test.Local ', '+5511912345678', null, '{"slug":"s118-novo","pillars":["routine"],"headline":"Chamada S118"}')::text;
+select tests.ok('S118 sem conta: convite gerado com os convites pausados (token de 64) e página já ligada',
+  (select v::jsonb ->> 'account' from tests.s118 where k = 'novo') = 'invited'
+  and char_length((select v::jsonb ->> 'token' from tests.s118 where k = 'novo')) = 64
+  and (select v::jsonb ? 'creator_id' from tests.s118 where k = 'novo')
+  and not public.invites_enabled());
+select tests.su();
+select tests.ok('S118 talento, página, convite e contato gravados (kind agency_hero, 14 dias, e-mail normalizado; contato fora da ficha)',
+  (select t.creator_id = ((select v from tests.s118 where k = 'novo')::jsonb ->> 'creator_id')::uuid and t.contact_email is null and t.contact_phone is null
+          and t.commercial_status = 'active'
+   from public.talent_profiles t where t.id = ((select v from tests.s118 where k = 'novo')::jsonb ->> 'talent_id')::uuid)
+  and (select c.slug = 's118-novo' and c.status = 'active' and c.user_id is null and c.headline = 'Chamada S118'
+       from public.creator_profiles c where c.id = ((select v from tests.s118 where k = 'novo')::jsonb ->> 'creator_id')::uuid)
+  and (select i.kind = 'agency_hero' and i.email::text = 'novo.s118@test.local' and i.status = 'pending' and i.role::text = 'creator'
+          and i.expires_at between now() + interval '13 days 23 hours' and now() + interval '14 days 1 hour'
+          and i.talent_id = ((select v from tests.s118 where k = 'novo')::jsonb ->> 'talent_id')::uuid
+       from public.invitations i where i.id = ((select v from tests.s118 where k = 'novo')::jsonb ->> 'invitation_id')::uuid)
+  and (select c.email = 'novo.s118@test.local' and c.phone_e164 = '+5511912345678' from public.access_contacts c
+       where c.talent_id = ((select v from tests.s118 where k = 'novo')::jsonb ->> 'talent_id')::uuid));
+
+-- ---------------------------------------------------------------- um herói por e-mail
+select tests.login('a1180000-0000-4000-8000-000000000001', 's118-gestor@test.local');
+select tests.expect_error('S118 e-mail de outro herói recusa (mesmo com outra caixa)', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Dois S118"}', 'NOVO.s118@test.local', '+5511912345679')$q$, 'hero_email_taken');
+select tests.expect_error('S118 e-mail de quem já é titular de outro herói recusa', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Dois S118"}', 's118-dono@test.local', '+5511912345679')$q$, 'hero_email_taken');
+select tests.expect_error('S118 endereço de página repetido recusa', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Dois S118"}', 'dois.s118@test.local', '+5511912345679', null, '{"slug":"s118-novo","pillars":["routine"]}')$q$, 'duplicate_slug');
+select tests.ok('S118 as recusas não deixam talento pela metade', not exists (select 1 from public.talent_profiles where display_name = 'Dois S118'));
+
+-- ---------------------------------------------------------------- conta existente, sem página: liga o talento na hora e avisa
+insert into tests.s118 select 'existe', public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Existe S118"}',
+  'S118-Existe@test.local', '+5521987654321')::text;
+select tests.su();
+select tests.ok('S118 conta existente: login do talento (papel creator escopo talento) e aviso no sino',
+  (select v::jsonb ->> 'account' from tests.s118 where k = 'existe') = 'linked'
+  and (select user_id from public.talent_profiles where id = ((select v from tests.s118 where k = 'existe')::jsonb ->> 'talent_id')::uuid) = 'a1180000-0000-4000-8000-000000000003'
+  and exists (select 1 from public.role_assignments r where r.user_id = 'a1180000-0000-4000-8000-000000000003' and r.role = 'creator'
+              and r.scope_type = 'talent' and r.revoked_at is null)
+  and exists (select 1 from public.inbox_notifications n where n.user_id = 'a1180000-0000-4000-8000-000000000003' and n.kind = 'hero_account_linked'
+              and n.link = '/heroi' and n.params ->> 'talent' = 'Existe S118' and n.params ->> 'name' = 'Agência S118')
+  and not exists (select 1 from public.invitations i where i.talent_id = ((select v from tests.s118 where k = 'existe')::jsonb ->> 'talent_id')::uuid));
+select tests.login('a1180000-0000-4000-8000-000000000003', 's118-existe@test.local');
+select tests.ok('S118 a pessoa ligada vê o aviso dela', (select count(*) from public.inbox_notifications where kind = 'hero_account_linked') = 1);
+-- página depois, pela ficha: a pessoa vira titular do herói sem perder o consentimento
+select tests.su();
+update public.talent_profiles set consent_at = now() - interval '1 day', consent_version = 'v1' where id = ((select v from tests.s118 where k = 'existe')::jsonb ->> 'talent_id')::uuid;
+select tests.login('a1180000-0000-4000-8000-000000000002', 's118-colab@test.local');
+select tests.expect_error('S118 colaborador não cria página', format($q$select public.agency_talent_create_page(%L, '{"pillars":["training"]}')$q$, (select v::jsonb ->> 'talent_id' from tests.s118 where k = 'existe')), 'forbidden');
+select tests.login('a1180000-0000-4000-8000-000000000001', 's118-gestor@test.local');
+insert into tests.s118 select 'pagina', public.agency_talent_create_page(((select v from tests.s118 where k = 'existe')::jsonb ->> 'talent_id')::uuid, '{"pillars":["training"]}')::text;
+select tests.expect_error('S118 talento que já tem página não ganha outra', format($q$select public.agency_talent_create_page(%L, '{"pillars":["training"]}')$q$, (select v::jsonb ->> 'talent_id' from tests.s118 where k = 'existe')), 'talent_has_creator');
+select tests.su();
+select tests.ok('S118 página depois: ligada ao talento, a pessoa é titular, login passa ao herói e o consentimento fica',
+  (select t.creator_id = (select v::uuid from tests.s118 where k = 'pagina') and t.user_id is null and t.consent_at is not null and t.consent_revoked_at is null
+   from public.talent_profiles t where t.id = ((select v from tests.s118 where k = 'existe')::jsonb ->> 'talent_id')::uuid)
+  and (select c.user_id = 'a1180000-0000-4000-8000-000000000003' and c.slug like 'existe-s118%' and c.status = 'active'
+       from public.creator_profiles c where c.id = (select v::uuid from tests.s118 where k = 'pagina'))
+  and exists (select 1 from public.role_assignments r where r.user_id = 'a1180000-0000-4000-8000-000000000003' and r.scope_type = 'creator'
+              and r.scope_id = (select v::uuid from tests.s118 where k = 'pagina') and r.revoked_at is null)
+  and not exists (select 1 from public.role_assignments r where r.user_id = 'a1180000-0000-4000-8000-000000000003' and r.scope_type = 'talent' and r.revoked_at is null));
+
+-- ---------------------------------------------------------------- situação, celular só para gestor+ e admin geral
+select tests.login('a1180000-0000-4000-8000-000000000001', 's118-gestor@test.local');
+select tests.ok('S118 situação: ativa, convite aguardando (com prazo) e sem conta (antigo sem contato); gestor vê o celular',
+  (select account from public.agency_access_status('a1180000-0000-4000-8000-0000000000a1', 'talent') where target_id = ((select v from tests.s118 where k = 'existe')::jsonb ->> 'talent_id')::uuid) = 'active'
+  and (select account = 'pending' and invite_expires_at is not null and phone_e164 = '+5511912345678' and email = 'novo.s118@test.local'
+       from public.agency_access_status('a1180000-0000-4000-8000-0000000000a1', 'talent') where target_id = ((select v from tests.s118 where k = 'novo')::jsonb ->> 'talent_id')::uuid)
+  and (select account = 'none' and email is null from public.agency_access_status('a1180000-0000-4000-8000-0000000000a1', 'talent') where target_id = 'a1180000-0000-4000-8000-0000000000d1')
+  and (select count(*) from public.access_contacts) = 2);
+select tests.login('a1180000-0000-4000-8000-000000000009', 's118-adm-geral@test.local');
+select tests.ok('S118 admin geral vê a situação e o contato',
+  (select count(*) from public.agency_access_status('a1180000-0000-4000-8000-0000000000a1', 'talent')) = 3
+  and (select count(*) from public.access_contacts where email like '%s118%') = 2);
+select tests.login('a1180000-0000-4000-8000-000000000002', 's118-colab@test.local');
+select tests.ok('S118 colaborador não lê contato', (select count(*) from public.access_contacts) = 0);
+select tests.expect_error('S118 colaborador não vê a situação com celular', $q$select * from public.agency_access_status('a1180000-0000-4000-8000-0000000000a1', 'talent')$q$, 'not_found');
+select tests.expect_error('S118 colaborador não cria herói', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"X S118"}', 'x.s118@test.local', '+5511912345670')$q$, 'forbidden');
+select tests.expect_error('S118 colaborador não corrige contato', $q$select public.access_contact_save('talent', 'a1180000-0000-4000-8000-0000000000d1', 'x.s118@test.local', '+5511912345670')$q$, 'forbidden');
+select tests.login('a1180000-0000-4000-8000-000000000005', 's118-fora@test.local');
+select tests.ok('S118 outra agência não lê contato', (select count(*) from public.access_contacts) = 0);
+select tests.expect_error('S118 outra agência não corrige contato (not_found)', $q$select public.access_contact_save('talent', 'a1180000-0000-4000-8000-0000000000d1', 'x.s118@test.local', '+5511912345670')$q$, 'not_found');
+select tests.expect_error('S118 outra agência não reenvia', $q$select public.access_invite_resend('talent', 'a1180000-0000-4000-8000-0000000000d1')$q$, 'not_found');
+select tests.expect_error('S118 outra agência não vê a situação', $q$select * from public.agency_access_status('a1180000-0000-4000-8000-0000000000a1', 'talent')$q$, 'not_found');
+select tests.login('a1180000-0000-4000-8000-000000000006', 's118-marca@test.local');
+select tests.ok('S118 marca não lê contato do herói', (select count(*) from public.access_contacts) = 0);
+select tests.anon();
+select tests.expect_error('S118 visitante não lê contato', $q$select count(*) from public.access_contacts$q$, 'permission denied');
+select tests.expect_error('S118 visitante não cria herói', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"X S118"}', 'x.s118@test.local', '+5511912345670')$q$, 'permission denied');
+
+-- ---------------------------------------------------------------- reivindicar: só o mesmo e-mail, uma vez
+select tests.su();
+insert into auth.users (id, email) values ('a1180000-0000-4000-8000-000000000008', 'novo.s118@test.local');
+select tests.login('a1180000-0000-4000-8000-000000000007', 's118-intruso@test.local');
+select tests.expect_error('S118 outro e-mail não reivindica pelo link', format($q$select public.accept_invitation(%L)$q$, (select v::jsonb ->> 'token' from tests.s118 where k = 'novo')), 'invitation_email_mismatch');
+select tests.ok('S118 outro e-mail: o aceite do login não pega o convite', jsonb_array_length(public.accept_my_invitations()) = 0);
+select tests.login('a1180000-0000-4000-8000-000000000008', 'novo.s118@test.local');
+select tests.ok('S118 mesmo e-mail: entrar/cadastrar liga a conta ao herói (aceite do login)',
+  (select bool_or(x ->> 'scope_type' = 'creator' and x ? 'talent_id') from jsonb_array_elements(public.accept_my_invitations()) x));
+select tests.expect_error('S118 token de uso único', format($q$select public.accept_invitation(%L)$q$, (select v::jsonb ->> 'token' from tests.s118 where k = 'novo')), 'invitation_invalid');
+select tests.su();
+select tests.ok('S118 conta ligada ao herói com o papel de herói',
+  (select user_id from public.creator_profiles where id = ((select v from tests.s118 where k = 'novo')::jsonb ->> 'creator_id')::uuid) = 'a1180000-0000-4000-8000-000000000008'
+  and exists (select 1 from public.role_assignments r where r.user_id = 'a1180000-0000-4000-8000-000000000008' and r.role = 'creator' and r.scope_type = 'creator'));
+select tests.login('a1180000-0000-4000-8000-000000000001', 's118-gestor@test.local');
+select tests.ok('S118 situação vira "Conta ativa" e reenviar não gera convite',
+  (select account from public.agency_access_status('a1180000-0000-4000-8000-0000000000a1', 'talent') where target_id = ((select v from tests.s118 where k = 'novo')::jsonb ->> 'talent_id')::uuid) = 'active'
+  and public.access_invite_resend('talent', ((select v from tests.s118 where k = 'novo')::jsonb ->> 'talent_id')::uuid) ->> 'account' = 'active');
+
+-- ---------------------------------------------------------------- talento antigo: cadastrar contato, corrigir e-mail, reenviar, expirar
+select tests.expect_error('S118 reenviar sem contato recusa', $q$select public.access_invite_resend('talent', 'a1180000-0000-4000-8000-0000000000d1')$q$, 'contact_missing');
+insert into tests.s118 select 'a1', public.access_contact_save('talent', 'a1180000-0000-4000-8000-0000000000d1', 'antigo.s118@test.local', '+5531998765432')::text;
+select tests.ok('S118 talento antigo: contato cadastrado gera o convite', (select v::jsonb ->> 'account' from tests.s118 where k = 'a1') = 'invited');
+select tests.ok('S118 só o celular mudou: convite segue (sem link novo)',
+  public.access_contact_save('talent', 'a1180000-0000-4000-8000-0000000000d1', 'antigo.s118@test.local', '+5531998765433') ->> 'account' = 'pending');
+insert into tests.s118 select 'a2', public.access_contact_save('talent', 'a1180000-0000-4000-8000-0000000000d1', 'corrigido.s118@test.local', '+5531998765433')::text;
+select tests.expect_error('S118 e-mail já usado por outro herói não serve na correção', $q$select public.access_contact_save('talent', 'a1180000-0000-4000-8000-0000000000d1', 'novo.s118@test.local', '+5531998765433')$q$, 'hero_email_taken');
+insert into tests.s118 select 'a3', public.access_invite_resend('talent', 'a1180000-0000-4000-8000-0000000000d1')::text;
+select tests.su();
+select tests.ok('S118 corrigir e reenviar: só o último convite fica pendente, com o e-mail corrigido; os antigos caem',
+  (select count(*) from public.invitations where talent_id = 'a1180000-0000-4000-8000-0000000000d1' and status = 'pending') = 1
+  and (select email::text from public.invitations where talent_id = 'a1180000-0000-4000-8000-0000000000d1' and status = 'pending') = 'corrigido.s118@test.local'
+  and (select status::text from public.invitations where id = ((select v from tests.s118 where k = 'a1')::jsonb ->> 'invitation_id')::uuid) = 'revoked'
+  and (select status::text from public.invitations where id = ((select v from tests.s118 where k = 'a2')::jsonb ->> 'invitation_id')::uuid) = 'revoked'
+  and (select v::jsonb ->> 'token' from tests.s118 where k = 'a2') <> (select v::jsonb ->> 'token' from tests.s118 where k = 'a3'));
+select tests.login('a1180000-0000-4000-8000-000000000007', 'antigo.s118@test.local');
+select tests.expect_error('S118 link antigo (e-mail anterior) não vale mais', format($q$select public.accept_invitation(%L)$q$, (select v::jsonb ->> 'token' from tests.s118 where k = 'a1')), 'invitation_invalid');
+-- convite de titular pelo casting com outro e-mail: recusa (a correção é pela ficha)
+select tests.su();
+update public.app_settings set value = 'true'::jsonb where key = 'invites.enabled';
+select tests.login('a1180000-0000-4000-8000-000000000001', 's118-gestor@test.local');
+select tests.expect_error('S118 convite do casting com e-mail diferente do contato recusa', $q$select * from public.agency_invite_talent('a1180000-0000-4000-8000-0000000000d1', 'outro.s118@test.local')$q$, 'hero_email_mismatch');
+select tests.su();
+update public.app_settings set value = 'false'::jsonb where key = 'invites.enabled';
+update public.invitations set expires_at = now() - interval '1 minute' where talent_id = 'a1180000-0000-4000-8000-0000000000d1' and status = 'pending';
+select tests.login('a1180000-0000-4000-8000-000000000001', 's118-gestor@test.local');
+select tests.ok('S118 convite vencido aparece como Expirado (sem prazo)',
+  (select account = 'expired' and invite_expires_at is null from public.agency_access_status('a1180000-0000-4000-8000-0000000000a1', 'talent') where target_id = 'a1180000-0000-4000-8000-0000000000d1'));
+select tests.ok('S118 reenviar o vencido gera convite novo', public.access_invite_resend('talent', 'a1180000-0000-4000-8000-0000000000d1') ->> 'account' = 'invited');
+select tests.ok('S118 reenviado volta a aguardar',
+  (select account from public.agency_access_status('a1180000-0000-4000-8000-0000000000a1', 'talent') where target_id = 'a1180000-0000-4000-8000-0000000000d1') = 'pending');
+
+-- ---------------------------------------------------------------- marca nova com o acesso do contato
+select tests.expect_error('S118 marca sem nome do contato recusa', $q$select public.agency_brand_create_with_access('a1180000-0000-4000-8000-0000000000a1', '{"name":"Nova S118","slug":"s118-nova","site_url":"https://n.s118.test"}', '', 'contato.s118@test.local', '+5511912340000')$q$, 'name_required');
+select tests.expect_error('S118 marca sem celular recusa', $q$select public.agency_brand_create_with_access('a1180000-0000-4000-8000-0000000000a1', '{"name":"Nova S118","slug":"s118-nova","site_url":"https://n.s118.test"}', 'Ana Contato', 'contato.s118@test.local', '')$q$, 'invalid_phone');
+insert into tests.s118 select 'marca_nova', public.agency_brand_create_with_access('a1180000-0000-4000-8000-0000000000a1',
+  '{"name":"Nova S118","slug":"s118-nova","site_url":"https://n.s118.test"}', 'Ana Contato', 'Contato.S118@test.local', '+5511912340000')::text;
+insert into tests.s118 select 'marca_existe', public.agency_brand_create_with_access('a1180000-0000-4000-8000-0000000000a1',
+  '{"name":"Existe Marca S118","slug":"s118-existe-marca","site_url":"https://e.s118.test"}', 'Dora Existe', 's118-dona-existe@test.local', '+5511912340001')::text;
+select tests.su();
+select tests.ok('S118 marca: sem conta → convite agency_brand (Dono, 14 dias, pausa ignorada); marca nasce fora do app',
+  (select v::jsonb ->> 'account' from tests.s118 where k = 'marca_nova') = 'invited'
+  and (select i.kind = 'agency_brand' and i.member_role = 'owner' and i.role::text = 'brand' and i.email::text = 'contato.s118@test.local' and i.status = 'pending'
+       from public.invitations i where i.id = ((select v from tests.s118 where k = 'marca_nova')::jsonb ->> 'invitation_id')::uuid)
+  and (select b.status = 'inactive' and not b.self_managed from public.brands b where b.id = ((select v from tests.s118 where k = 'marca_nova')::jsonb ->> 'brand_id')::uuid));
+select tests.ok('S118 marca: conta existente vira Dona na hora, marca fica com ela (self_managed) e aviso no sino',
+  (select v::jsonb ->> 'account' from tests.s118 where k = 'marca_existe') = 'linked'
+  and exists (select 1 from public.brand_members bm where bm.brand_id = ((select v from tests.s118 where k = 'marca_existe')::jsonb ->> 'brand_id')::uuid
+              and bm.user_id = 'a1180000-0000-4000-8000-000000000010' and bm.role = 'owner' and bm.revoked_at is null)
+  and exists (select 1 from public.role_assignments r where r.user_id = 'a1180000-0000-4000-8000-000000000010' and r.role = 'brand' and r.scope_type = 'brand')
+  and (select b.self_managed from public.brands b where b.id = ((select v from tests.s118 where k = 'marca_existe')::jsonb ->> 'brand_id')::uuid)
+  and exists (select 1 from public.inbox_notifications n where n.user_id = 'a1180000-0000-4000-8000-000000000010' and n.kind = 'brand_access_granted'
+              and n.link = '/marca' and n.params ->> 'brand' = 'Existe Marca S118'));
+insert into auth.users (id, email) values ('a1180000-0000-4000-8000-000000000011', 'contato.s118@test.local');
+select tests.login('a1180000-0000-4000-8000-000000000007', 's118-intruso@test.local');
+select tests.expect_error('S118 marca: outro e-mail não reivindica', format($q$select public.accept_invitation(%L)$q$, (select v::jsonb ->> 'token' from tests.s118 where k = 'marca_nova')), 'invitation_email_mismatch');
+select tests.login('a1180000-0000-4000-8000-000000000011', 'contato.s118@test.local');
+select tests.ok('S118 marca: mesmo e-mail reivindica pelo link e vira Dono',
+  public.accept_invitation((select v::jsonb ->> 'token' from tests.s118 where k = 'marca_nova')) ->> 'scope_type' = 'brand');
+select tests.ok('S118 marca: o Dono abre o portal da marca', public.brand_member_of(((select v from tests.s118 where k = 'marca_nova')::jsonb ->> 'brand_id')::uuid) = 'owner');
+select tests.su();
+select tests.ok('S118 marca reivindicada fica com o Dono (self_managed)',
+  (select b.self_managed from public.brands b where b.id = ((select v from tests.s118 where k = 'marca_nova')::jsonb ->> 'brand_id')::uuid));
+select tests.login('a1180000-0000-4000-8000-000000000001', 's118-gestor@test.local');
+select tests.ok('S118 marca: situação ativa para as duas, sem acesso para a marca antiga sem contato (que já tem Dona: ativa)',
+  (select count(*) from public.agency_access_status('a1180000-0000-4000-8000-0000000000a1', 'brand') where account = 'active') = 3
+  and (select contact_name = 'Ana Contato' and phone_e164 = '+5511912340000' from public.agency_access_status('a1180000-0000-4000-8000-0000000000a1', 'brand')
+       where target_id = ((select v from tests.s118 where k = 'marca_nova')::jsonb ->> 'brand_id')::uuid)
+  and (select count(*) from public.access_contacts where brand_id is not null) = 2);
+select tests.login('a1180000-0000-4000-8000-000000000002', 's118-colab@test.local');
+select tests.ok('S118 marca: colaborador não lê o contato da marca', (select count(*) from public.access_contacts where brand_id is not null) = 0);
+select tests.expect_error('S118 marca: colaborador não cria com acesso', $q$select public.agency_brand_create_with_access('a1180000-0000-4000-8000-0000000000a1', '{"name":"Y S118","slug":"s118-y","site_url":"https://y.s118.test"}', 'Yara', 'y.s118@test.local', '+5511912340002')$q$, 'forbidden');
+select tests.login('a1180000-0000-4000-8000-000000000011', 'contato.s118@test.local');
+select tests.ok('S118 marca: o Dono não lê o contato guardado pela agência', (select count(*) from public.access_contacts) = 0);
+
+-- ---------------------------------------------------------------- limpeza
+select tests.su();
+update public.app_settings set value = 'true'::jsonb where key = 'invites.enabled';
+drop table tests.s118;
+delete from public.inbox_notifications where user_id::text like 'a1180000-%';
+delete from public.invitations where agency_id::text like 'a1180000-%';
+delete from public.role_assignments where user_id::text like 'a1180000-%';
+delete from public.access_contacts where talent_id in (select id from public.talent_profiles where agency_id::text like 'a1180000-%')
+   or brand_id in (select brand_id from public.agency_brands where agency_id::text like 'a1180000-%');
+delete from public.talent_profiles where agency_id::text like 'a1180000-%';
+delete from public.creator_profiles where slug like 's118-%' or slug like 'existe-s118%';
+delete from public.brand_members where brand_id in (select brand_id from public.agency_brands where agency_id::text like 'a1180000-%');
+create temp table s118_brands as select brand_id from public.agency_brands where agency_id::text like 'a1180000-%';
+delete from public.agency_brands where agency_id::text like 'a1180000-%';
+delete from public.brands where id in (select brand_id from s118_brands);
+drop table s118_brands;
+delete from public.agency_members where agency_id::text like 'a1180000-%';
+delete from public.agencies where id::text like 'a1180000-%';
+delete from auth.users where id::text like 'a1180000-%';
+
+delete from public.calendar_events where agency_id = 'a1200000-0000-4000-8000-0000000000a1';
+delete from public.deals where agency_id = 'a1200000-0000-4000-8000-0000000000a1';
+delete from public.talent_profiles where agency_id = 'a1200000-0000-4000-8000-0000000000a1';
+delete from public.campaign_requests where agency_id = 'a1200000-0000-4000-8000-0000000000a1';
+delete from public.agency_brands where agency_id = 'a1200000-0000-4000-8000-0000000000a1';
+delete from public.brand_members where brand_id = 'a1200000-0000-4000-8000-0000000000b1';
+delete from public.brands where id = 'a1200000-0000-4000-8000-0000000000b1';
+delete from public.agencies where id = 'a1200000-0000-4000-8000-0000000000a1';
+delete from auth.users where id::text like 'a1200000-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

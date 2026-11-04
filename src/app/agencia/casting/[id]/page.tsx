@@ -2,17 +2,21 @@ import type { Metadata } from "next";
 import { ExternalLink } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ArchiveTalentButton, CatalogSwitch, HeroLinkForm, RecordConsentForm, SegmentPicker, TalentForm } from "@/components/agency/CastingForms";
+import { AccessPanel } from "@/components/agency/AccessPanel";
 import { InviteDialog } from "@/components/agency/InviteDialog";
+import { CreateTalentPageButton } from "@/components/agency/NewHeroForm";
 import { RevokeInviteButton } from "@/components/agency/RevokeInviteButton";
 import { TalentAccessBadge } from "@/components/agency/TalentAccessBadge";
 import type { Locale } from "@/i18n/config";
 import { formatDate, formatDateTime } from "@/i18n/format";
+import { loadAccessStatus } from "@/lib/agency/access-status";
 import { agencyCan } from "@/lib/agency/roles";
 import { canInviteCreator, resolveTalentAccess } from "@/lib/talent/access";
 import { listHeroOptions, listManagers, listSegments, listTalentAccess, listTalentDocuments, listTalentInvites } from "@/lib/talent/queries";
 import { loadTalent } from "./_lib";
 import { InvitesGate } from "@/components/invites/InvitesGate";
 import { getInvitesEnabled } from "@/lib/invitations/flag";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +53,8 @@ export default async function TalentSummaryPage({ params }: Props) {
     canEdit && !hasLogin ? listTalentDocuments(talent.id) : Promise.resolve([]),
     isManager && !hasLogin ? listTalentInvites(talent.id) : Promise.resolve([]),
   ]);
+  // 0112: acesso do herói (situação, e-mail e celular — só gestor+ e admin geral)
+  const accessStatus = isManager && !talent.archived ? ((await loadAccessStatus(await createClient(), ctx.agency.id, "talent")).get(talent.id) ?? null) : null;
   const consentOk = talent.consent === "active";
   const card = "flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5";
 
@@ -111,6 +117,18 @@ export default async function TalentSummaryPage({ params }: Props) {
                 </p>
               )}
               <HeroLinkForm talentId={talent.id} heroes={[]} currentId={talent.creatorId} canEdit={canEdit} locked={locked} />
+            </div>
+          ) : null}
+          {accessStatus && !locked ? (
+            <div className="flex flex-col gap-2 rounded-xl border border-border p-3" data-testid="talent-account">
+              <h3 className="text-sm font-semibold text-fg">{t("accountTitle")}</h3>
+              <AccessPanel kind="talent" targetId={talent.id} status={accessStatus} />
+            </div>
+          ) : null}
+          {!talent.creatorId && canEdit && !locked ? (
+            <div className="flex flex-col gap-2">
+              <p className="type-caption text-fg-muted">{t("noPageHint")}</p>
+              <CreateTalentPageButton talentId={talent.id} talentName={talent.name} />
             </div>
           ) : null}
           {/* login do creator (0087): com ou sem herói, a agência convida quem ainda não tem conta */}

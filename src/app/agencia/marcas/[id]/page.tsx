@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ExternalLink } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { AccessPanel } from "@/components/agency/AccessPanel";
 import { BrandArchiveButton } from "@/components/agency/BrandForms";
 import { BrandMemberRemove } from "@/components/agency/BrandMemberRemove";
 import { InviteDialog } from "@/components/agency/InviteDialog";
@@ -10,10 +11,12 @@ import { RoleBadge } from "@/components/agency/RoleBadge";
 import { Avatar, Badge, EmptyState, PageHeader, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
+import { loadAccessStatus } from "@/lib/agency/access-status";
 import { getAgencyBrand, listBrandInvites, listBrandMembers } from "@/lib/agency/queries";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
 import { InvitesGate } from "@/components/invites/InvitesGate";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +43,8 @@ export default async function AgencyBrandPage({ params }: Props) {
     canEdit ? listBrandInvites(id) : Promise.resolve([]),
   ]);
   const locked = ctx.agency.isDemo;
+  // 0112: acesso do contato da marca (situação, nome, e-mail e celular — só gestor+ e admin geral)
+  const access = canEdit && active && !locked ? ((await loadAccessStatus(await createClient(), ctx.agency.id, "brand")).get(id) ?? null) : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -64,6 +69,14 @@ export default async function AgencyBrandPage({ params }: Props) {
           </a>
         }
       />
+
+      {access ? (
+        <Section title={t("accessTitle")} description={t("accessHint")}>
+          <div className="rounded-2xl border border-border bg-surface p-4">
+            <AccessPanel kind="brand" targetId={id} status={access} />
+          </div>
+        </Section>
+      ) : null}
 
       <Section
         title={t("membersTitle")}

@@ -226,6 +226,14 @@
     "payout_due": {
       "title": "{status, select, late {Repasse vencido} today {Repasse vence hoje} other {Repasse a vencer}}",
       "body": "{status, select, late {O repasse de {deal} ({talent}) está vencido.} today {O repasse de {deal} ({talent}) vence hoje.} other {O repasse de {deal} ({talent}) vence em até 3 dias.}}"
+    },
+    "hero_account_linked": {
+      "title": "Sua conta de herói está pronta",
+      "body": "{name} cadastrou {talent} e ligou à sua conta. Abra o Portal do Herói."
+    },
+    "brand_access_granted": {
+      "title": "Você é Dono de {brand}",
+      "body": "{name} cadastrou {brand} e deu a você o acesso de Dono. Abra o portal da marca."
     }
   }
 }

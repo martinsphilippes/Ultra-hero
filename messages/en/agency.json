@@ -241,7 +241,9 @@
     "linked": "Brand linked to the agency.",
     "archived": "Link archived.",
     "inviteCreated": "Invitation created. Copy the link and send it to the person.",
-    "memberRemoved": "Person removed from the brand."
+    "memberRemoved": "Person removed from the brand.",
+    "accessTitle": "Brand access",
+    "accessHint": "Who from the brand gets Owner access. Only the agency sees e-mail and mobile."
   },
   "settings": {
     "title": "Settings",
@@ -385,7 +387,11 @@
     "plan_locked": "The contract is already confirmed: adjust the installments in Finance › Brand payments.",
     "nda_required": "Sign the NDA to enter the room.",
     "room_archived": "The project room is archived.",
-    "no_recurring_steps": "This deal's roadmap has no recurring steps (weekly, biweekly or monthly)."
+    "no_recurring_steps": "This deal's roadmap has no recurring steps (weekly, biweekly or monthly).",
+    "invalid_phone": "Check the mobile: area code + 9 digits, e.g. (11) 91234-5678.",
+    "hero_email_taken": "This e-mail already belongs to another hero. Use a different e-mail.",
+    "hero_email_mismatch": "This hero has a different access e-mail on file. Fix the e-mail on the record.",
+    "contact_missing": "Add the e-mail and mobile before sending the invitation."
   },
   "casting": {
     "title": "Roster",
@@ -554,7 +560,41 @@
     "hasLoginAs": "Has a login ({email}) and uses the Hero Portal.",
     "heroNoLogin": "The hero has no login yet. Invite them to enter the Hero Portal.",
     "inviteCreator": "Invite hero",
-    "resendInvite": "Resend"
+    "resendInvite": "Resend",
+    "accountTitle": "Hero account",
+    "noPageHint": "No public page. Create one now (already linked to this record) or link a page that already exists.",
+    "newHero": {
+      "description": "Register who the agency represents. The hero gets an e-mail invitation to access the account.",
+      "name": "Name",
+      "nameHint": "Stage name, as the agency and brands see it.",
+      "email": "Hero e-mail",
+      "emailHint": "Becomes the hero login. If they already have an account, it is linked right away.",
+      "manager": "Manager",
+      "noManager": "No manager",
+      "segments": "Segments (up to 5)",
+      "withPage": "Create public page now",
+      "withPageHint": "The page lives under /personalities and is born linked to this record. You can create it later.",
+      "slug": "Page address",
+      "slugHint": "The page lives at /personalities/{slug}. It cannot change later.",
+      "pillars": "Pillars",
+      "headline": "Headline",
+      "bio": "Bio",
+      "optional": "optional",
+      "accessNote": "Only create profiles of people under contract with the agency. The hero gets an e-mail invitation to access the account.",
+      "submit": "Create hero",
+      "nameRequired": "Enter the name (at least 2 letters).",
+      "emailInvalid": "Check the hero e-mail.",
+      "phoneInvalid": "Check the mobile: area code + 9 digits, e.g. (11) 91234-5678.",
+      "pillarsRequired": "Pick at least one pillar for the page.",
+      "created": "{name} joined the casting.",
+      "createdWithPage": "{name} joined the casting with a public page.",
+      "openTalent": "Open record",
+      "createPage": "Create public page",
+      "createPageTitle": "Hero public page",
+      "createPageHint": "The page goes live already linked to this record. Change photo and cover later in Heroes.",
+      "cancel": "Cancel",
+      "pageCreated": "Public page created and linked to the record."
+    }
   },
   "documents": {
     "uploaded": "Document uploaded.",
@@ -1070,7 +1110,7 @@
     "suspended": "Suspended",
     "demoLocked": "The example agency does not create heroes.",
     "createTitle": "New hero",
-    "createHint": "Only create profiles of people under contract with the agency. The profile goes public right away.",
+    "createHint": "Only create profiles of people under contract with the agency. The profile goes public right away. The hero gets an e-mail invitation to access the account.",
     "heroDescription": "You are publishing on behalf of this hero. Photo, cover and posts appear on their public page.",
     "newPost": "New post",
     "viewPage": "View public page",
@@ -1090,7 +1130,11 @@
       "save": "Save profile",
       "created": "Hero created",
       "saved": "Profile saved"
-    }
+    },
+    "newHero": "New hero",
+    "castingRecord": "Casting record",
+    "accountTitle": "Hero account",
+    "accountDescription": "The hero access to the Hero Portal. Only the agency sees e-mail and mobile."
   },
   "finance": {
     "title": "Finance",
@@ -1212,6 +1256,54 @@
       "seller": "seller",
       "admin": "team",
       "system": "system"
+    }
+  },
+  "access": {
+    "active": "Active account",
+    "pending": "Invitation sent · waiting",
+    "expired": "Expired",
+    "none": "No linked account",
+    "noneBrand": "No access",
+    "validUntil": "Valid until {date}",
+    "contactName": "Contact name",
+    "noName": "No name",
+    "email": "E-mail",
+    "phone": "Mobile",
+    "phoneLabel": "Mobile",
+    "phoneHint": "With area code, e.g. (11) 91234-5678. Only the agency sees it.",
+    "phoneInvalid": "Check the mobile: area code + 9 digits, e.g. (11) 91234-5678.",
+    "noEmail": "No e-mail",
+    "noPhone": "No mobile",
+    "noneHint": "Add e-mail and mobile to send the access invitation.",
+    "noneResendHint": "The invitation was cancelled. Send it again whenever you want.",
+    "sendInvite": "Send invitation",
+    "resend": "Resend",
+    "addContact": "Add e-mail and mobile",
+    "editContact": "Edit contact",
+    "fixEmail": "Fix e-mail",
+    "link": "Invitation link",
+    "emailSent": "The e-mail was sent.",
+    "emailNotSent": "The e-mail was not sent: copy the link and share it another way.",
+    "savedActive": "Contact saved. Access is already active.",
+    "savedPending": "Contact saved. The invitation is still valid.",
+    "dialogTitle": "Access contact",
+    "dialogHint": "Changing the e-mail cancels the previous invitation and sends a new link.",
+    "cancel": "Cancel",
+    "save": "Save and send",
+    "hero": {
+      "invitedMessage": "Invitation sent to {email}. The hero creates the password through the link (valid for 14 days).",
+      "linkedMessage": "{email} already had an account: the hero was linked to it and notified.",
+      "emailHint": "Becomes the hero login. If they already have an account, it is linked right away."
+    },
+    "brand": {
+      "invitedMessage": "Invitation sent to {email}. The contact creates the password through the link and becomes the brand Owner (valid for 14 days).",
+      "linkedMessage": "{email} already had an account: they became the brand Owner and were notified.",
+      "emailHint": "Becomes the brand Owner login. If they already have an account, access is granted right away.",
+      "contactTitle": "Brand access",
+      "contactHint": "Who from the brand joins the app as Owner. They get an e-mail invitation.",
+      "nameRequired": "Enter the brand contact name.",
+      "emailInvalid": "Check the brand contact e-mail.",
+      "openBrand": "Open brand"
     }
   }
 }

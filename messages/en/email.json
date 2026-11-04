@@ -109,5 +109,39 @@
         "cta": "See payments"
       }
     }
+  },
+  "access": {
+    "greeting": "Hello!",
+    "ignore": "If you were not expecting this message, ignore it.",
+    "signature": "Groscove Ultra · the bridge between brands and heroes",
+    "expires": "The link is valid for {days} days and only works with this e-mail.",
+    "hero": {
+      "invited": {
+        "subject": "{agency} created your hero access on Groscove Ultra",
+        "body": "{agency} registered you as a hero, {name}, on Groscove Ultra.",
+        "how": "To access your account, open the link, sign in with this e-mail and create your password.",
+        "cta": "Create my password"
+      },
+      "linked": {
+        "subject": "{agency} linked {name} to your account",
+        "body": "{agency} registered the hero {name} on Groscove Ultra and linked it to your account.",
+        "how": "Sign in with your usual e-mail and password to open the Hero Portal.",
+        "cta": "Open the Hero Portal"
+      }
+    },
+    "brand": {
+      "invited": {
+        "subject": "{agency} created access to {name} on Groscove Ultra",
+        "body": "{agency} registered the brand {name} on Groscove Ultra and invited you as Owner.",
+        "how": "To get in, open the link, sign in with this e-mail and create your password.",
+        "cta": "Create my password"
+      },
+      "linked": {
+        "subject": "You are the Owner of {name} on Groscove Ultra",
+        "body": "{agency} registered the brand {name} on Groscove Ultra and gave you Owner access.",
+        "how": "Sign in with your usual e-mail and password to open the brand portal.",
+        "cta": "Open the brand portal"
+      }
+    }
   }
 }

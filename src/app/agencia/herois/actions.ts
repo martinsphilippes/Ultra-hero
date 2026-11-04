@@ -43,27 +43,8 @@ function revalidateHeroes(slug?: string) {
   if (slug) revalidatePath(`/personalities/${slug}`);
 }
 
-export async function createHeroAction(input: z.input<typeof heroSchema>): Promise<Result<{ id: string }>> {
-  const ctx = await requireAgency("manager");
-  const parsed = heroSchema.safeParse(input);
-  if (!parsed.success) return agencyFail("invalid_input");
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase.rpc("agency_create_hero", {
-      p_agency: ctx.agency.id,
-      p_name: parsed.data.name,
-      p_slug: parsed.data.slug,
-      p_pillars: parsed.data.pillars,
-      p_headline: parsed.data.headline,
-      p_bio: parsed.data.bio,
-    });
-    if (error || typeof data !== "string") return agencyFail(error ?? "generic");
-    revalidateHeroes(parsed.data.slug);
-    return { ok: true, id: data };
-  } catch (error) {
-    return agencyFail(error);
-  }
-}
+// 0112: criar herói saiu daqui — o herói nasce só pelo Casting ("Novo herói": createHeroAction em
+// src/app/agencia/casting/actions.ts, com o acesso e a página opcional). Aqui fica editar, escolher e trocar a foto.
 
 const updateSchema = heroSchema.omit({ slug: true }).extend({ id: z.uuid() });
 

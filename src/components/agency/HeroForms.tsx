@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
-import { chooseHeroAction, createHeroAction, updateHeroAction } from "@/app/agencia/herois/actions";
+import { chooseHeroAction, updateHeroAction } from "@/app/agencia/herois/actions";
 import { Button, Checkbox, FormField, Input, Textarea, useToast } from "@/components/ui";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
 
@@ -45,18 +45,14 @@ export function HeroProfileForm({ heroId, initial }: { heroId?: string; initial?
     event.preventDefault();
     setError(null);
     startTransition(async () => {
-      const result = heroId ? await updateHeroAction({ id: heroId, ...values }) : await createHeroAction(values);
+      // 0112: criar é só pelo Casting ("Novo herói"); aqui o formulário edita a página
+      if (!heroId) return;
+      const result = await updateHeroAction({ id: heroId, ...values });
       if (!result.ok) {
         setError(result.error);
         return;
       }
-      toast({ title: editing ? t("saved") : t("created"), variant: "success" });
-      const createdId = "id" in result && typeof result.id === "string" ? result.id : null;
-      if (!heroId && createdId) {
-        const chosen = await chooseHeroAction(createdId);
-        router.push(chosen.ok ? `/agencia/herois/${createdId}` : "/agencia/herois");
-        return;
-      }
+      toast({ title: t("saved"), variant: "success" });
       router.refresh();
     });
   }

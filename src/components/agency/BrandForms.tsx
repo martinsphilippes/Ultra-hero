@@ -3,8 +3,11 @@
 import { Link2, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { createBrandAction, linkBrandAction } from "@/app/agencia/marcas/actions";
+import { createBrandAction, linkBrandAction, type BrandCreateResult } from "@/app/agencia/marcas/actions";
+import { AccessContactFields, AccessOutcomeNote } from "@/components/agency/AccessPanel";
 import { Button, EntitySelect, FormField, Input } from "@/components/ui";
+import { normalizeAccessEmail } from "@/lib/agency/access-contact";
+import { normalizeBrMobile } from "@/lib/auth/phone";
 import { slugFromName } from "@/lib/agency/schemas";
 import { brandOption } from "@/lib/ui/entity";
 
@@ -16,20 +19,52 @@ export function BrandCreateForm({ demo }: { demo: boolean }) {
   const [slugTouched, setSlugTouched] = useState(false);
   const [siteUrl, setSiteUrl] = useState("https://");
   const [logoUrl, setLogoUrl] = useState("");
+  // 0112: o acesso do contato da marca nasce junto (fora da agência de exemplo)
+  const [contactName, setContactName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [done, setDone] = useState<Extract<BrandCreateResult, { ok: true }> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const ta = useTranslations("agency.access");
 
   function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+    if (!demo) {
+      if (contactName.trim().length < 2) return setError(ta("brand.nameRequired"));
+      if (!normalizeAccessEmail(email)) return setError(ta("brand.emailInvalid"));
+      if (!normalizeBrMobile(phone)) return setError(ta("phoneInvalid"));
+    }
     start(async () => {
-      const result = await createBrandAction({ name: name.trim(), slug: slug || slugFromName(name), siteUrl: siteUrl.trim(), logoUrl: logoUrl.trim() });
+      const result = await createBrandAction({
+        name: name.trim(),
+        slug: slug || slugFromName(name),
+        siteUrl: siteUrl.trim(),
+        logoUrl: logoUrl.trim(),
+        ...(demo ? {} : { contactName, email, phone }),
+      });
       if (!result.ok) {
         setError(result.error);
         return;
       }
+      // com acesso: mostra o que aconteceu (e o link, se o e-mail não saiu) antes de abrir a marca
+      if (result.account) return setDone(result);
       if (result.id) window.location.assign(`/agencia/marcas/${result.id}`);
     });
+  }
+
+  if (done && done.account) {
+    return (
+      <div className="flex flex-col gap-4" data-testid="brand-created">
+        <AccessOutcomeNote outcome={{ account: done.account, link: done.link ?? null, emailed: done.emailed ?? false, message: done.message }} />
+        {done.id ? (
+          <Button type="button" className="w-fit" onClick={() => window.location.assign(`/agencia/marcas/${done.id}`)}>
+            {ta("brand.openBrand")}
+          </Button>
+        ) : null}
+      </div>
+    );
   }
 
   return (
@@ -63,6 +98,16 @@ export function BrandCreateForm({ demo }: { demo: boolean }) {
       <FormField label={t("logo")} hint={t("logoHint")}>
         <Input type="url" inputMode="url" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} disabled={pending} placeholder="https://" />
       </FormField>
+      {demo ? null : (
+        <fieldset className="flex flex-col gap-4 rounded-xl border border-border p-3">
+          <legend className="px-1 text-sm font-semibold text-fg">{ta("brand.contactTitle")}</legend>
+          <p className="type-caption text-fg-muted">{ta("brand.contactHint")}</p>
+          <FormField label={ta("contactName")} required>
+            <Input value={contactName} maxLength={80} autoComplete="off" onChange={(e) => setContactName(e.target.value)} disabled={pending} data-testid="brand-contact-name" />
+          </FormField>
+          <AccessContactFields email={email} phone={phone} onEmail={setEmail} onPhone={setPhone} disabled={pending} emailLabel={ta("email")} emailHint={ta("brand.emailHint")} />
+        </fieldset>
+      )}
       <p className="type-caption text-fg-muted">{t("privacyNote")}</p>
       {error ? (
         <p role="alert" className="type-body-sm text-danger">

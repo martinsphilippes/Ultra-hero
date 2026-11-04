@@ -5,6 +5,8 @@ import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { getOrigin } from "@/lib/auth/origin";
 import { sendInviteEmail } from "@/lib/email/invite";
+import { accessEmailSchema, accessErrorCode, accessPhoneSchema, contactNameSchema, parseAccessProvision } from "@/lib/agency/access-contact";
+import { deliverAccess, type AccessOutcome } from "@/lib/agency/access-deliver";
 import { agencyFail } from "@/lib/agency/errors";
 import { brandCreateSchema, brandInviteSchema } from "@/lib/agency/schemas";
 import { requireAgency } from "@/lib/agency/server";
@@ -14,20 +16,50 @@ import { createClient } from "@/lib/supabase/server";
 
 export type BrandResult = { ok: true; message: string; id?: string; link?: string; emailed?: boolean } | { ok: false; error: string };
 
-export async function createBrandAction(input: { name: string; slug: string; siteUrl: string; logoUrl?: string }): Promise<BrandResult> {
+// 0112: fora da agência de exemplo, a marca nasce com o acesso do contato (nome, e-mail e celular obrigatórios):
+// conta existente vira Dona na hora; senão convite de 14 dias. A de exemplo segue sem contato (não convida ninguém).
+const brandContactSchema = z.object({ contactName: contactNameSchema, email: accessEmailSchema, phone: accessPhoneSchema });
+
+export type BrandCreateResult = ({ ok: true; message: string; id?: string } & Partial<AccessOutcome>) | { ok: false; error: string };
+
+export async function createBrandAction(input: {
+  name: string;
+  slug: string;
+  siteUrl: string;
+  logoUrl?: string;
+  contactName?: string;
+  email?: string;
+  phone?: string;
+}): Promise<BrandCreateResult> {
   const ctx = await requireAgency("manager");
   const parsed = brandCreateSchema.safeParse(input);
   if (!parsed.success) return agencyFail("invalid_input");
+  const p_data = { name: parsed.data.name, slug: parsed.data.slug, site_url: parsed.data.siteUrl, logo_url: parsed.data.logoUrl ?? "" };
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("agency_brand_create", {
+    const t = await getTranslations("agency.brands");
+    if (ctx.agency.isDemo) {
+      const { data, error } = await supabase.rpc("agency_brand_create", { p_agency: ctx.agency.id, p_data });
+      if (error) return agencyFail(error);
+      revalidatePath("/agencia", "layout");
+      return { ok: true, message: t("created"), id: data ?? undefined };
+    }
+    const contact = brandContactSchema.safeParse({ contactName: input.contactName ?? "", email: input.email ?? "", phone: input.phone ?? "" });
+    if (!contact.success) return agencyFail(accessErrorCode(contact.error));
+    const { data, error } = await supabase.rpc("agency_brand_create_with_access", {
       p_agency: ctx.agency.id,
-      p_data: { name: parsed.data.name, slug: parsed.data.slug, site_url: parsed.data.siteUrl, logo_url: parsed.data.logoUrl ?? "" },
+      p_data,
+      p_contact_name: contact.data.contactName,
+      p_email: contact.data.email,
+      p_phone: contact.data.phone,
     });
     if (error) return agencyFail(error);
+    const id = (data as { brand_id?: unknown } | null)?.brand_id;
+    const result = parseAccessProvision(data);
+    if (typeof id !== "string" || !result) return agencyFail("generic");
     revalidatePath("/agencia", "layout");
-    const t = await getTranslations("agency.brands");
-    return { ok: true, message: t("created"), id: data ?? undefined };
+    const outcome = await deliverAccess({ kind: "brand", result, email: contact.data.email, name: parsed.data.name, agencyName: ctx.agency.name });
+    return { ok: true, id, ...outcome, message: `${t("created")} ${outcome.message}` };
   } catch (error) {
     return agencyFail(error);
   }

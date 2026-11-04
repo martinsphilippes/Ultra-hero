@@ -66,6 +66,9 @@ export const INBOX_KINDS = [
   "roadmap_overdue",
   // condições de pagamento (0108): repasse ao herói a vencer, no dia e vencido (herói e Adm; só no sino)
   "payout_due",
+  // acesso criado pela agência (0112): conta existente ligada ao herói / virou Dono da marca (sino + e-mail do app)
+  "hero_account_linked",
+  "brand_access_granted",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 

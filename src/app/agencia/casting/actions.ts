@@ -3,11 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
+import { accessEmailSchema, accessErrorCode, accessPhoneSchema, parseAccessProvision } from "@/lib/agency/access-contact";
+import { deliverAccess, type AccessOutcome } from "@/lib/agency/access-deliver";
 import { agencyFail } from "@/lib/agency/errors";
 import { daysSchema, emailSchema, justificationSchema } from "@/lib/agency/schemas";
 import { requireAgency } from "@/lib/agency/server";
 import { getOrigin } from "@/lib/auth/origin";
 import { sendInviteEmail } from "@/lib/email/invite";
+import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { talentSchema, type TalentInput } from "@/lib/talent/schemas";
 import { CONSENT_VERSION } from "@/lib/talent/vocab";
@@ -155,6 +158,82 @@ export async function recordConsentAction(input: { talentId: string; documentId:
     revalidateTalent(parsed.data.talentId);
     const t = await getTranslations("agency.casting");
     return { ok: true, message: t("consentRecorded") };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
+
+// ---------------------------------------------------------------- 0112: um só "Novo herói"
+// Talento + e-mail e celular obrigatórios (acesso: conta existente ligada na hora ou convite de 14 dias) + gestor e
+// segmentos + página pública opcional já ligada ao talento. Tudo numa transação no banco (agency_hero_create).
+const pageSchema = z.object({
+  slug: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^([a-z0-9]+(-[a-z0-9]+)*)?$/)
+    .max(60),
+  pillars: z.array(z.enum(PILLARS as [Pillar, ...Pillar[]])).min(1).max(4),
+  headline: z.string().trim().max(160),
+  bio: z.string().trim().max(2000),
+});
+const newHeroSchema = z.object({
+  displayName: z.string().trim().min(2).max(80),
+  email: accessEmailSchema,
+  phone: accessPhoneSchema,
+  managerId: z.union([z.literal(""), uuid]),
+  segmentIds: z.array(uuid).max(5),
+  page: pageSchema.nullable(),
+});
+
+export type NewHeroResult = ({ ok: true; talentId: string; creatorId: string | null } & AccessOutcome) | { ok: false; error: string };
+
+export async function createHeroAction(input: z.input<typeof newHeroSchema>): Promise<NewHeroResult> {
+  const ctx = await requireAgency("manager");
+  const parsed = newHeroSchema.safeParse(input);
+  if (!parsed.success) return agencyFail(accessErrorCode(parsed.error));
+  const d = parsed.data;
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("agency_hero_create", {
+      p_agency: ctx.agency.id,
+      p_talent: { display_name: d.displayName, manager_id: d.managerId, commercial_status: "active" },
+      p_email: d.email,
+      p_phone: d.phone,
+      p_segment_ids: d.segmentIds,
+      p_page: d.page ? { slug: d.page.slug, pillars: d.page.pillars, headline: d.page.headline, bio: d.page.bio } : null,
+    });
+    if (error) return agencyFail(error);
+    const row = (data ?? {}) as { talent_id?: unknown; creator_id?: unknown };
+    const result = parseAccessProvision(data);
+    if (typeof row.talent_id !== "string" || !result) return agencyFail("generic");
+    revalidateTalent(row.talent_id);
+    revalidatePath("/agencia/herois");
+    if (d.page) revalidatePath("/personalities");
+    const outcome = await deliverAccess({ kind: "talent", result, email: d.email, name: d.displayName, agencyName: ctx.agency.name });
+    return { ok: true, talentId: row.talent_id, creatorId: typeof row.creator_id === "string" ? row.creator_id : null, ...outcome };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
+
+/** Página pública depois, pela ficha: já nasce ligada ao talento (sem passar pelo "Ligar herói"). */
+export async function createTalentPageAction(input: { talentId: string } & z.input<typeof pageSchema>): Promise<CastingResult> {
+  await requireAgency("manager");
+  const parsed = pageSchema.extend({ talentId: uuid }).safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_input");
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("agency_talent_create_page", {
+      p_talent: parsed.data.talentId,
+      p_page: { slug: parsed.data.slug, pillars: parsed.data.pillars, headline: parsed.data.headline, bio: parsed.data.bio },
+    });
+    if (error) return agencyFail(error);
+    revalidateTalent(parsed.data.talentId);
+    revalidatePath("/agencia/herois");
+    revalidatePath("/personalities");
+    const t = await getTranslations("agency.casting.newHero");
+    return { ok: true, message: t("pageCreated"), id: data ?? undefined };
   } catch (error) {
     return agencyFail(error);
   }
