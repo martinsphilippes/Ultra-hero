@@ -35,6 +35,9 @@ test.describe("cadastro rápido na tela inicial", () => {
     const havePassword = page.getByTestId("have-password");
     await expect(havePassword.locator('input[type="password"]')).toBeHidden();
     await havePassword.locator("summary").click();
+    // período sem senha (passwordless.ts): o formulário de senha abre pelo botão; depois do prazo já vem aberto
+    const usePassword = havePassword.getByTestId("use-password");
+    if (await usePassword.count()) await usePassword.click();
     await expect(havePassword.locator('input[name="password"]')).toBeVisible();
     await expect(havePassword.getByRole("button", { name: "Entrar com senha" })).toBeVisible();
     await expect(havePassword.getByRole("link", { name: "Esqueci minha senha" })).toBeVisible();
