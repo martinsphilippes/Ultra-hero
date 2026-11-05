@@ -6,6 +6,7 @@ import localFont from "next/font/local";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 import { STARTUP_IMAGES } from "@/lib/pwa/startup-images";
+import { NativeGestures } from "@/components/native-app/NativeGestures";
 import { AppIntro } from "@/components/layout/AppIntro";
 import { AppearanceSync } from "@/components/layout/AppearanceSync";
 import { NavHistory } from "@/components/layout/NavHistory";
@@ -71,15 +72,20 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  viewportFit: "cover",
-  themeColor: [
-    // O app abre no escuro independentemente do tema do aparelho.
-    { color: "#0B0B0B" },
-  ],
-};
+export async function generateViewport(): Promise<Viewport> {
+  const nativeApp = await getNativeApp();
+  return {
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
+    // App das lojas: sem zoom, como um app. Na web o zoom continua.
+    ...(nativeApp ? { maximumScale: 1, userScalable: false } : {}),
+    themeColor: [
+      // O app abre no escuro independentemente do tema do aparelho.
+      { color: "#0B0B0B" },
+    ],
+  };
+}
 
 // Layout raiz: idioma do request, tema do cookie (sem flash) e provedores globais.
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
@@ -106,6 +112,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         </NextIntlClientProvider>
         <ServiceWorkerRegister />
         <AppearanceSync />
+        {nativeApp ? <NativeGestures /> : null}
         <NavHistory />
         <Suspense fallback={null}>
           <NavigationProgress />

@@ -4,6 +4,33 @@
    lá não existe (comércio e planos simulados); a trava de verdade é a rota, no middleware. */
 @custom-variant native (&:where([data-native-app] *));
 /* listas e favoritos misturam itens: a célula inteira do produto sai, não só o card */
+/* App das lojas: sem zoom (pinça nem toque duplo), barra de baixo mais baixa e as abas rolando num contêiner próprio.
+   Com a rolagem no documento, o iOS gasta o primeiro toque em parar a inércia; fora do contêiner, a barra recebe o toque
+   na hora. O bottom é a altura da barra: --uh-native-nav. Na web nada disso vale. */
+[data-native-app] {
+  --spacing-bottomnav: 3.25rem;
+  --uh-native-nav: calc(var(--spacing-bottomnav) + env(safe-area-inset-bottom, 0px) * 0.5);
+  touch-action: pan-x pan-y;
+}
+[data-native-app] .uh-bottomnav {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) * 0.5);
+}
+[data-native-app] .uh-native-scroller {
+  position: fixed;
+  inset-inline: 0;
+  top: calc(var(--spacing-topbar) + 1px + env(safe-area-inset-top, 0px));
+  bottom: var(--uh-native-nav);
+  overflow-x: clip;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 1.5rem;
+}
+@media (min-width: 48rem) {
+  [data-native-app] .uh-native-scroller {
+    bottom: 0;
+  }
+}
+
 [data-native-app] [data-kind="product"] {
   display: none;
 }

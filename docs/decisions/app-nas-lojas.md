@@ -71,6 +71,18 @@ Decisão do responsável (05/11/2026), vale para iOS e Android e substitui a ant
   reprovar por isso, a saída é reabrir a navegação sem conta no app (`isOpenToNativeVisitor` e o middleware).
 - **A loja continua fora do app** (tabela abaixo) até existir checkout real.
 
+## Gestos e domínio no app
+
+Pedidos do responsável (05/11/2026), só no app (`data-native-app`) e sem novo binário:
+
+- **Domínio**: `getOriginFromRequest` não usa `NEXT_PUBLIC_SITE_URL` para quem vem do app. Em outro domínio a casca abre o
+  navegador, e o Sair e a volta do login caíam no site.
+- **Abas rolam em `.uh-native-scroller`**: com a rolagem no documento, o iOS gasta o primeiro toque em parar a inércia e
+  a aba não recebe nem `touchstart`. Testado no simulador: fora de um contêiner próprio, o toque chega na hora.
+- **`NativeGestures`**: puxar para atualizar (a casca não mostra o dela, porque o documento não tem elástico), arrastar
+  de lado entre as abas (só na raiz de uma aba; bordas ficam para o voltar do sistema) e posição da rolagem ao voltar.
+- **Sem zoom** (`userScalable: false` e `touch-action`) e **barra de baixo mais baixa** (3,25rem + metade da área segura).
+
 ## Portais de marca e agência no app
 
 Decisão do responsável (05/11/2026), desfaz a anterior ("portais comerciais só na web"): `/marca` e `/agencia` abrem no

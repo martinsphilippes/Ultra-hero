@@ -65,14 +65,15 @@ export function ReadingTracker({ contentId, targetId, alreadyCompleted = false, 
       requestAnimationFrame(measure);
     }
     measure();
-    window.addEventListener("scroll", onScroll, { passive: true });
+    // capture: no app das lojas a página rola num contêiner próprio, e a rolagem dele não chega ao window
+    document.addEventListener("scroll", onScroll, { capture: true, passive: true });
     window.addEventListener("resize", onScroll);
     function onHide() {
       if (document.visibilityState === "hidden" && pctRef.current > 0) void report(Math.min(pctRef.current, 99));
     }
     document.addEventListener("visibilitychange", onHide);
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("scroll", onScroll, { capture: true });
       window.removeEventListener("resize", onScroll);
       document.removeEventListener("visibilitychange", onHide);
     };
