@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isLibraryKey, legacyLibraryTarget } from "@/lib/catalog/creator-libraries";
 import { legacyHeroPortalTarget } from "@/lib/hero-portal/routes";
-import { EXPLORE_COOKIE, rootDestination, rootNeedsSessionCheck } from "@/lib/institutional/root";
+import { ABOUT_PATH, EXPLORE_COOKIE, rootDestination, rootNeedsSessionCheck } from "@/lib/institutional/root";
 import { isMarketingHost, marketingDecision, parseMarketingHosts, requestHost } from "@/lib/marketing-host";
 import { isBlockedInNativeApp, NATIVE_BLOCKED_FALLBACK, parseNativeApp } from "@/lib/native-app/surface";
 import { updateSession } from "@/lib/supabase/middleware";
@@ -68,14 +68,20 @@ function legacyHeroPortalResponse(request: NextRequest): NextResponse | null {
 // App das lojas: comércio simulado não existe lá (docs/decisions/app-nas-lojas.md).
 // A trava é aqui, e não só no botão escondido: link antigo, histórico ou digitação não abrem a rota.
 function nativeAppResponse(request: NextRequest): NextResponse | null {
-  if (!parseNativeApp(request.headers.get("user-agent"))) return null;
-  if (!isBlockedInNativeApp(request.nextUrl.pathname, request.nextUrl.searchParams)) return null;
+  const app = parseNativeApp(request.headers.get("user-agent"));
+  if (!app) return null;
+  if (!isBlockedInNativeApp(request.nextUrl.pathname, request.nextUrl.searchParams, app.platform)) return null;
   const target = request.nextUrl.clone();
   target.pathname = NATIVE_BLOCKED_FALLBACK;
   target.search = "";
   return NextResponse.redirect(target, 307);
 }
 
+
+/** Carregamento da página inteira (não a troca de tela do roteador do Next nem o pré-carregamento). */
+function isDocumentRequest(request: NextRequest): boolean {
+  return request.headers.get("rsc") === null && request.headers.get("next-router-prefetch") === null;
+}
 
 // Endereço principal "/" (etapa 7, antes um redirect fixo do next.config para /personalities): com sessão, app das
 // lojas ou "Pular e explorar" → aba Hero, como sempre; visitante sem sessão → apresentação (/conheca). 307 com a query.
@@ -121,6 +127,19 @@ export async function middleware(request: NextRequest) {
     const root = await rootResponse(request, signedIn);
     for (const cookie of response.cookies.getAll()) root.cookies.set(cookie);
     return root;
+  }
+  // App Android (Play Store) aberto sem login: a casca abre direto em /personalities; quem ainda não entrou nem
+  // escolheu "Pular e explorar" vê primeiro a apresentação (/sobre). Só no carregamento da página (não nas trocas
+  // de tela dentro do app), para não prender ninguém.
+  if (pathname === "/personalities" && !signedIn && request.cookies.get(EXPLORE_COOKIE)?.value !== "1" && isDocumentRequest(request)) {
+    if (parseNativeApp(request.headers.get("user-agent"))?.platform === "android") {
+      const about = request.nextUrl.clone();
+      about.pathname = ABOUT_PATH;
+      about.search = "";
+      const redirect = NextResponse.redirect(about, 307);
+      for (const cookie of response.cookies.getAll()) redirect.cookies.set(cookie);
+      return redirect;
+    }
   }
   if (!isProtected(pathname)) return response;
 

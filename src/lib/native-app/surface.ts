@@ -31,7 +31,14 @@ export function parseNativeApp(userAgent: string | null | undefined): NativeApp 
 const BLOCKED_PREFIXES = ["/shop", "/cart", "/checkout", "/orders", "/profissional", "/agencia", "/marca", "/conheca", "/sobre"];
 const BLOCKED_HERO_LIBRARY = /^\/personalities\/[^/]+\/produtos\/?$/;
 
-export function isBlockedInNativeApp(pathname: string, search?: URLSearchParams): boolean {
+/** Android (Play Store): a apresentação /sobre abre no app (pedido do responsável, 05/11/2026), com o "Pular e
+ *  explorar" (/conheca/explorar) que leva à aba Hero. O iOS segue sem ela (análise da App Store em andamento). */
+export function androidAllowsAbout(pathname: string): boolean {
+  return pathname === "/sobre" || pathname.startsWith("/sobre/") || pathname === "/conheca/explorar";
+}
+
+export function isBlockedInNativeApp(pathname: string, search?: URLSearchParams, platform?: NativePlatform): boolean {
+  if (platform === "android" && androidAllowsAbout(pathname)) return false;
   if (BLOCKED_HERO_LIBRARY.test(pathname)) return true;
   // aba Produtos do Explorar (as páginas fazem streaming: redirect lá dentro chegaria com 200)
   if (pathname === "/explore" && search?.get("tab") === "produtos") return true;

@@ -33,6 +33,7 @@ const { GET: exploreGet } = await import("@/app/conheca/explorar/route");
 
 const BROWSER_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148";
 const NATIVE_UA = `${BROWSER_UA} GCHeroApp/1.4.0 (ios)`;
+const ANDROID_UA = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Mobile GCHeroApp/1.4.0 (android)";
 
 function request(url: string, { ua = BROWSER_UA, cookie }: { ua?: string; cookie?: string } = {}) {
   const headers = new Headers({ "user-agent": ua });
@@ -307,5 +308,32 @@ describe("/sobre · Conheça o Groscove Ultra (apresentação clássica)", () =>
     const settings = readFileSync(path.join(root, "src/app/(app)/configuracoes/page.tsx"), "utf8");
     expect(settings).toContain("href={ABOUT_PATH}");
     expect(settings).not.toMatch(/["'`]\/conheca/);
+  });
+});
+
+describe("app Android (Play Store) abre a apresentação /sobre", () => {
+  it("sem login nem \"Pular e explorar\": a abertura do app (/personalities) vai para /sobre", async () => {
+    const res = await middleware(request("/personalities", { ua: ANDROID_UA }));
+    expect(res.status).toBe(307);
+    expect(location(res)?.pathname).toBe("/sobre");
+  });
+  it("/sobre e o \"Pular e explorar\" ficam liberados no Android", async () => {
+    expect((await middleware(request("/sobre", { ua: ANDROID_UA }))).headers.get("location")).toBeNull();
+    expect(isBlockedInNativeApp("/sobre", undefined, "android")).toBe(false);
+    expect(isBlockedInNativeApp("/conheca/explorar", undefined, "android")).toBe(false);
+    expect(isBlockedInNativeApp("/conheca", undefined, "android")).toBe(true);
+  });
+  it("logado, depois de \"Pular e explorar\" ou trocando de tela dentro do app: segue na aba Hero", async () => {
+    session.signedIn = true;
+    expect((await middleware(request("/personalities", { ua: ANDROID_UA }))).headers.get("location")).toBeNull();
+    session.signedIn = false;
+    expect((await middleware(request("/personalities", { ua: ANDROID_UA, cookie: `${EXPLORE_COOKIE}=1` }))).headers.get("location")).toBeNull();
+    const rsc = new NextRequest(new URL("/personalities", "https://ultra.example"), { headers: new Headers({ "user-agent": ANDROID_UA, rsc: "1" }) });
+    expect((await middleware(rsc)).headers.get("location")).toBeNull();
+  });
+  it("iOS e navegador não mudam: iOS abre a aba Hero e não vê /sobre", async () => {
+    expect((await middleware(request("/personalities", { ua: NATIVE_UA }))).headers.get("location")).toBeNull();
+    expect(location(await middleware(request("/sobre", { ua: NATIVE_UA })))?.pathname).toBe("/personalities");
+    expect((await middleware(request("/personalities"))).headers.get("location")).toBeNull();
   });
 });
