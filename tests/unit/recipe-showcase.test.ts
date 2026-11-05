@@ -34,19 +34,19 @@ describe("quem assina", () => {
 describe("linha de assinatura", () => {
   it("receita do próprio chef na vitrine dele: só 'Receita de'", () => {
     expect(recipeSignature({ author: jacquin, signer: undefined, showcaseHero: jacquin })).toEqual({ kind: "chef", chef: jacquin, hero: null });
-    // sem vitrine na URL, o herói é o autor
+    // sem vitrine na URL, o Hero é o autor
     expect(recipeSignature({ author: jacquin, signer: undefined }).kind).toBe("chef");
   });
-  it("receita de um chef na vitrine de outro herói: 'Receita de · indicada por'", () => {
+  it("receita de um chef na vitrine de outro Hero: 'Receita de · indicada por'", () => {
     expect(recipeSignature({ author: jacquin, signer: undefined, showcaseHero: anitta })).toEqual({ kind: "chefIndicated", chef: jacquin, hero: anitta });
   });
   it("autor que não é chef e chef escolhido pelo admin: indicada pelo autor", () => {
     expect(recipeSignature({ author: neymar, signer: { chef: jacquin } })).toEqual({ kind: "chefIndicated", chef: jacquin, hero: neymar });
   });
-  it("chef escolhido = herói da vitrine: só 'Receita de'", () => {
+  it("chef escolhido = Hero da vitrine: só 'Receita de'", () => {
     expect(recipeSignature({ author: neymar, signer: { chef: jacquin }, showcaseHero: jacquin }).kind).toBe("chef");
   });
-  it("sem chef: 'Indicada por' o herói da vitrine (ou o autor)", () => {
+  it("sem chef: 'Indicada por' o Hero da vitrine (ou o autor)", () => {
     expect(recipeSignature({ author: neymar, signer: { chef: null } })).toEqual({ kind: "indicated", chef: null, hero: neymar });
     expect(recipeSignature({ author: neymar, signer: { chef: null }, showcaseHero: anitta })).toEqual({ kind: "indicated", chef: null, hero: anitta });
   });
@@ -124,7 +124,7 @@ describe("contador de toques: validação", () => {
 });
 
 describe("vitrine na URL e escolha do admin", () => {
-  it("slug do herói: só formato de slug", () => {
+  it("slug do Hero: só formato de slug", () => {
     expect(parseShowcaseSlug("neymar")).toBe("neymar");
     expect(parseShowcaseSlug(["Erick-Jacquin"])).toBe("erick-jacquin");
     expect(parseShowcaseSlug("../admin")).toBeNull();

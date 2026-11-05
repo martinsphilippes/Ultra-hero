@@ -25,11 +25,11 @@ type Props = {
   cancelled?: boolean;
   /** id de teste da barra (a marca já tinha "campaign-steps") */
   stepsTestId?: string;
-  /** nível do título (a oportunidade do herói já usa h2 no cabeçalho) */
+  /** nível do título (a oportunidade do Hero já usa h2 no cabeçalho) */
   headingLevel?: "h2" | "h3";
 };
 
-// "Próximo passo" no topo das três telas (ficha do negócio, campanha da marca, oportunidade do herói): um botão grande
+// "Próximo passo" no topo das três telas (ficha do negócio, campanha da marca, oportunidade do Hero): um botão grande
 // quando é a vez de quem lê, uma espera calma dizendo por quem, e a barra do andamento com a fase atual destacada.
 export function NextStepCard({ party, step, flow, href, dealId, timeZone = "America/Sao_Paulo", cancelled = false, stepsTestId = "next-step-steps", headingLevel = "h2" }: Props) {
   const Heading = headingLevel;

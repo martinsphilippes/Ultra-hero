@@ -1,22 +1,22 @@
 -- =============================================================================
 -- Groscove Ultra · 0110 · Roteiros de entrega — FASE 2: sala do projeto e fechamento do ciclo · cenário S116
 -- Fonte: PDF "Nosso processo de entrega 2027" + especificação aprovada (a sala SUBSTITUI o grupo de WhatsApp do staff;
--- staff externo entra no app; cliente = marca e/ou herói). Idempotente; nada de drop de tabela/coluna; search_path fixo;
+-- staff externo entra no app; cliente = marca e/ou Hero). Idempotente; nada de drop de tabela/coluna; search_path fixo;
 -- nenhuma função nova executável por anon (S14 segue 18). Só RPCs security definer escrevem.
 --
 -- Decisões (sem perguntar ao responsável):
 --   • D1 Sala = tabela própria (project_rooms + project_room_messages), não um canal novo em deal_messages: aquele é 1:1
---     (marca↔agência, herói↔agência), exige marca (brand_id not null) e alimenta os contadores de "não lidas"/Hoje
+--     (marca↔agência, Hero↔agência), exige marca (brand_id not null) e alimenta os contadores de "não lidas"/Hoje
 --     (0078/0081). A sala é multi-parte com público por mensagem: 'all' (todos da sala) ou 'internal' (agência + staff
---     externo). A marca e os heróis nunca leem 'internal'. Nada de valor passa pela sala (a tela não tem campo de valor).
+--     externo). A marca e os Heros nunca leem 'internal'. Nada de valor passa pela sala (a tela não tem campo de valor).
 --   • D2 Quem está na sala (project_room_side): agência = gestor+ ou responsável/equipe do negócio (lê tudo, inclusive
---     arquivada); staff externo = convidado ativo (project_room_members) DEPOIS de assinar o NDA; herói = herói-cliente
---     (deals.client_talent_id) ou herói contratado no negócio (deal_talents 'contracted') — assina NDA só se a agência
---     marcar "heróis também assinam" (nda_heroes); marca = membros da marca com o negócio visível (brand_visible).
+--     arquivada); staff externo = convidado ativo (project_room_members) DEPOIS de assinar o NDA; Hero = Hero-cliente
+--     (deals.client_talent_id) ou Hero contratado no negócio (deal_talents 'contracted') — assina NDA só se a agência
+--     marcar "Heros também assinam" (nda_heroes); marca = membros da marca com o negócio visível (brand_visible).
 --     Sala arquivada: só a agência lê (somente leitura); para os outros, a sala some (o clipping e o feedback seguem).
 --   • D3 Abertura automática: ao gerar o roteiro (roadmap_started_on) ou quando o negócio chega a "aprovado" (8) ou além;
 --     fechamento: negócio encerrado → sala arquivada, clipping congelado (snapshot), pedido de feedback de fechamento ao
---     cliente (só se ganho) e o acesso de staff/herói/marca termina. A agência pode arquivar/reabrir à mão (gestor+).
+--     cliente (só se ganho) e o acesso de staff/Hero/marca termina. A agência pode arquivar/reabrir à mão (gestor+).
 --   • D4 Staff externo: convite próprio (project_room_members, token com hash como invitations), por negócio, com função
 --     (fotógrafo, maquiador…). NÃO passa pelo interruptor invites_enabled (0103): o convite não dá papel nenhum na
 --     plataforma, só a sala daquele negócio (decisão do responsável: "convite de staff pela agência deve funcionar").
@@ -36,7 +36,7 @@
 --   • D8 Ficha da diária (project_shoot_days + project_shoot_crew): data/hora, local + link do mapa (https), estacionamento,
 --     alimentação, limite de pessoas, observações e equipe com função (só quem está na sala). Vira compromisso na agenda
 --     (calendar_events kind 'recording', origem manual — o sincronizador de negócios apaga eventos 'system' que ele não
---     gerou): a marca e o herói-cliente veem pelas regras da agenda; a equipe da diária (staff/heróis contratados) recebe
+--     gerou): a marca e o Hero-cliente veem pelas regras da agenda; a equipe da diária (staff/Heros contratados) recebe
 --     pelo feed .ics (calendar_events_for_user ganha a equipe da diária). "Cheguei ao local": cada pessoa da equipe marca
 --     a própria chegada; a agência vê quem chegou.
 --   • D9 Prévia (o "Demo" do PDF; a palavra "demonstração" saiu do sistema) e guia de uso: versão do entregável marcada
@@ -44,8 +44,8 @@
 --     de sempre. Guia de uso = um PDF enviado na sala (público 'all') e marcado como guia (project_rooms.usage_guide_message_id):
 --     fixado na sala e no clipping, visível ao cliente.
 --   • D10 Feedback do cliente: project_feedback (0–10 + comentário) por negócio, momento (dia da produção | fechamento) e
---     parte (marca | herói-cliente). Pedido automático quando a etapa marco "Dia da produção" é concluída e quando o
---     negócio é encerrado como ganho; a agência também pode pedir. Responde: qualquer membro da marca / o herói-cliente.
+--     parte (marca | Hero-cliente). Pedido automático quando a etapa marco "Dia da produção" é concluída e quando o
+--     negócio é encerrado como ganho; a agência também pode pedir. Responde: qualquer membro da marca / o Hero-cliente.
 --     Indicador (gestor+): nota média, NPS (9–10 promotores, 0–6 detratores) e as últimas respostas.
 --   • D12 Avisos no sino com tipos que já existem (ver seção 4): o check de inbox_notifications não muda.
 --   • D11 Clipping: montado do banco (entregas, links publicados, métricas mais recentes da 0083, equipe, prévias
@@ -59,7 +59,7 @@ returns text language sql immutable set search_path = '' as $$
   select E'1. Chegue no horário combinado e confirme a chegada pelo botão "Cheguei ao local".\n'
       || E'2. Tudo o que acontece no projeto é confidencial: nada de fotos, vídeos ou comentários nas redes antes da liberação da agência.\n'
       || E'3. Combinações sobre horários, entregas e qualquer valor são feitas só com a agência, pela sala do projeto.\n'
-      || E'4. Respeite o briefing, a marca, o herói e toda a equipe no set.\n'
+      || E'4. Respeite o briefing, a marca, o Hero e toda a equipe no set.\n'
       || E'5. Dúvidas ou imprevistos: avise na sala do projeto o quanto antes.'
 $$;
 
@@ -302,7 +302,7 @@ returns uuid[] language sql stable security definer set search_path = '' as $$
 $$;
 
 -- salas que a pessoa lê. p_internal: só as que dão acesso às mensagens internas (agência e staff externo).
--- Agência: aberta ou arquivada. Os outros: só aberta, e o staff (e o herói quando nda_heroes) depois do NDA.
+-- Agência: aberta ou arquivada. Os outros: só aberta, e o staff (e o Hero quando nda_heroes) depois do NDA.
 create or replace function public.my_project_room_ids(p_internal boolean default false)
 returns uuid[] language sql stable security definer set search_path = '' as $$
   with me as (select auth.uid() as uid, public.my_talent_id() as talent)
@@ -320,7 +320,7 @@ returns uuid[] language sql stable security definer set search_path = '' as $$
           or (d.brand_id is not null and d.brand_visible and d.brand_id = any (public.my_brand_ids(false))))))))
 $$;
 
--- "negócio:parte" em que a pessoa é cliente (marca: membro da marca; herói: herói-cliente) — feedback e clipping
+-- "negócio:parte" em que a pessoa é cliente (marca: membro da marca; Hero: Hero-cliente) — feedback e clipping
 create or replace function public.my_project_client_keys()
 returns text[] language sql stable security definer set search_path = '' as $$
   select coalesce(array_agg(k), '{}'::text[]) from (
@@ -377,7 +377,7 @@ returns text language sql immutable set search_path = '' as $$
                      when 'talent' then '/heroi/projetos/' || p_deal::text else '/projetos/' || p_deal::text end
 $$;
 
--- quem recebe avisos da sala (agência = responsável + equipe do negócio; staff ativo com NDA; heróis; marca)
+-- quem recebe avisos da sala (agência = responsável + equipe do negócio; staff ativo com NDA; Heros; marca)
 create or replace function public.project_room_recipients(p_deal uuid, p_internal boolean)
 returns table (user_id uuid, side text) language sql stable security definer set search_path = '' as $$
   with d as (select x.*, r.nda_heroes from public.deals x join public.project_rooms r on r.deal_id = x.id where x.id = p_deal and r.status = 'open'),
@@ -468,7 +468,7 @@ end $$;
 revoke execute on function public.project_room_system(uuid, text, text) from public, anon, authenticated;
 grant execute on function public.project_room_system(uuid, text, text) to service_role;
 
--- abre a sala (interna; idempotente). Avisa heróis e marca na primeira abertura.
+-- abre a sala (interna; idempotente). Avisa Heros e marca na primeira abertura.
 create or replace function public.project_room_ensure(p_deal uuid)
 returns boolean language plpgsql security definer set search_path = '' as $$
 declare d public.deals%rowtype; v_rows int; r record;
@@ -579,7 +579,7 @@ end $$;
 revoke execute on function public.project_clipping_build(uuid) from public, anon, authenticated;
 grant execute on function public.project_clipping_build(uuid) to service_role;
 
--- arquiva (interna): clipping congelado; acesso de staff/heróis/marca termina (porteira)
+-- arquiva (interna): clipping congelado; acesso de staff/Heros/marca termina (porteira)
 create or replace function public.project_room_close(p_deal uuid)
 returns boolean language plpgsql security definer set search_path = '' as $$
 declare v_status text;
@@ -712,7 +712,7 @@ end $$;
 revoke execute on function public.project_room_archive(uuid) from public, anon;
 grant execute on function public.project_room_archive(uuid) to authenticated, service_role;
 
--- briefing fixado e "heróis também assinam o NDA"
+-- briefing fixado e "Heros também assinam o NDA"
 create or replace function public.project_room_update(p_deal uuid, p_briefing text, p_nda_heroes boolean)
 returns void language plpgsql security definer set search_path = '' as $$
 declare v_agency uuid; v_brief text := btrim(coalesce(p_briefing, ''));
@@ -1280,7 +1280,7 @@ end $$;
 revoke execute on function public.project_room_view(uuid) from public, anon;
 grant execute on function public.project_room_view(uuid) to authenticated, service_role;
 
--- salas da pessoa fora da agência (staff, herói, marca): "Meus projetos"
+-- salas da pessoa fora da agência (staff, Hero, marca): "Meus projetos"
 create or replace function public.my_project_rooms()
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare v_out jsonb;
@@ -1361,7 +1361,7 @@ end $$;
 revoke execute on function public.deliverable_preview_date_set(uuid, date) from public, anon;
 grant execute on function public.deliverable_preview_date_set(uuid, date) to authenticated, service_role;
 
--- prévias do negócio para quem lê as entregas (agência, marca com o negócio visível, herói do negócio)
+-- prévias do negócio para quem lê as entregas (agência, marca com o negócio visível, Hero do negócio)
 create or replace function public.deal_previews(p_deal uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 begin
@@ -1446,7 +1446,7 @@ revoke execute on function public.project_feedback_indicator(uuid, int) from pub
 grant execute on function public.project_feedback_indicator(uuid, int) to authenticated, service_role;
 
 -- 14) clipping -----------------------------------------------------------------------------------------------------------
--- agência (sala), marca (negócio visível) e herói-cliente; congelado se a sala foi arquivada. + feedback do lado.
+-- agência (sala), marca (negócio visível) e Hero-cliente; congelado se a sala foi arquivada. + feedback do lado.
 create or replace function public.project_clipping(p_deal uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare d public.deals%rowtype; v_side text; v_clip jsonb; v_fb jsonb; v_status text;

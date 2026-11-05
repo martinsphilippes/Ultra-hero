@@ -11,7 +11,7 @@ export type CastingCardProps = {
   photoUrl: string | null;
   /** Texto do selo (ex.: "Musical artist"); sem selo cai no rótulo genérico. */
   category: string | null;
-  /** Os temas do herói (até 3 aparecem, um por linha). */
+  /** Os temas do Hero (até 3 aparecem, um por linha). */
   topics: string[];
   instagram: { handle: string; url: string | null } | null;
   /** Informações de gestão, discretas, no pé do cartão. */

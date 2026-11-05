@@ -1,13 +1,13 @@
 {
   "meta": {
     "terms": "Termos de Uso",
-    "termsDescription": "Regras de uso da plataforma gratuita de conteúdo sobre treino, nutrição e gastronomia com heróis reais, incluindo a loja do site.",
+    "termsDescription": "Regras de uso da plataforma gratuita de conteúdo sobre treino, nutrição e gastronomia com Heros reais, incluindo a loja do site.",
     "privacy": "Política de Privacidade",
     "privacyDescription": "Quais dados tratamos, para quê, por quanto tempo, com quem compartilhamos e como você exerce seus direitos.",
     "deletion": "Excluir conta",
     "deletionDescription": "Como excluir sua conta e o que acontece com os seus dados.",
     "partner": "Termos do Parceiro",
-    "partnerDescription": "Regras para heróis e agências que publicam no Groscove Ultra: direitos sobre fotos e vídeos, licença de uso e moderação."
+    "partnerDescription": "Regras para Heros e agências que publicam no Groscove Ultra: direitos sobre fotos e vídeos, licença de uso e moderação."
   },
   "links": {
     "nav": "Documentos legais",
@@ -40,12 +40,12 @@
   },
   "terms": {
     "title": "Termos de Uso",
-    "intro": "Estes Termos explicam as regras para usar o {app}, no site e no app para iOS e Android. Ao criar uma conta ou usar o serviço, você concorda com eles. Leia também a <privacy>Política de Privacidade</privacy>, que explica como tratamos seus dados. Heróis e agências seguem também os <partner>Termos do Parceiro</partner>.",
+    "intro": "Estes Termos explicam as regras para usar o {app}, no site e no app para iOS e Android. Ao criar uma conta ou usar o serviço, você concorda com eles. Leia também a <privacy>Política de Privacidade</privacy>, que explica como tratamos seus dados. Heros e agências seguem também os <partner>Termos do Parceiro</partner>.",
     "sections": {
       "about": {
         "title": "Sobre o serviço",
         "blocks": {
-          "p1": "O {app} é uma plataforma de conteúdo sobre treino, nutrição, rotina e gastronomia. Ela reúne heróis — atletas, chefs e outras personalidades reais —, conteúdos educativos, programas guiados, receitas, lembretes e recomendações de conteúdo.",
+          "p1": "O {app} é uma plataforma de conteúdo sobre treino, nutrição, rotina e gastronomia. Ela reúne Heros — atletas, chefs e outras personalidades reais —, conteúdos educativos, programas guiados, receitas, lembretes e recomendações de conteúdo.",
           "p2": "O {app} é <strong>gratuito</strong>: não há planos, assinaturas nem conteúdo pago, no site ou no app. O app para iOS e Android não vende nada nem mostra a loja. No site, a loja está em fase de lançamento: nenhum meio de pagamento é pedido, nada é cobrado e nenhum pedido é entregue, como explica a seção sobre a loja abaixo."
         }
       },
@@ -77,9 +77,9 @@
         }
       },
       "personalities": {
-        "title": "Heróis",
+        "title": "Heros",
         "blocks": {
-          "p1": "Os heróis do {app} são personalidades reais que mantêm o próprio perfil, por convite. Cada herói, ou a agência que o representa, aceita os <partner>Termos do Parceiro</partner> e publica as próprias fotos, vídeos e textos, declarando ter os direitos sobre eles.",
+          "p1": "Os Heros do {app} são personalidades reais que mantêm o próprio perfil, por convite. Cada Hero, ou a agência que o representa, aceita os <partner>Termos do Parceiro</partner> e publica as próprias fotos, vídeos e textos, declarando ter os direitos sobre eles.",
           "p2": "Os conteúdos dos perfis são educativos e não substituem orientação profissional individual. Os fornecedores de exemplo da loja do site são fictícios."
         }
       },
@@ -114,9 +114,9 @@
       "partners": {
         "title": "Conteúdo de parceiros",
         "blocks": {
-          "p1": "Heróis, agências e fornecedores participam <strong>somente por convite</strong> da equipe do {app}. Ao aceitar o convite, o parceiro aceita os <partner>Termos do Parceiro</partner>. Cada parceiro usa um portal próprio e só vê e gerencia o que é seu.",
+          "p1": "Heros, agências e fornecedores participam <strong>somente por convite</strong> da equipe do {app}. Ao aceitar o convite, o parceiro aceita os <partner>Termos do Parceiro</partner>. Cada parceiro usa um portal próprio e só vê e gerencia o que é seu.",
           "list1": {
-            "i1": "Conteúdos enviados por heróis passam por revisão editorial antes de serem publicados.",
+            "i1": "Conteúdos enviados por Heros passam por revisão editorial antes de serem publicados.",
             "i2": "Produtos de fornecedores podem ser ocultados ou suspensos pela moderação a qualquer momento. Vínculos entre conteúdos e produtos também podem ser suspensos, inclusive automaticamente quando um produto muda de forma relevante.",
             "i3": "Parceiros respondem pela veracidade e pela legalidade do que enviam, declaram ter os direitos sobre fotos, vídeos e textos e seguem as mesmas regras de conteúdo educativo, sem prescrição individual.",
             "i4": "Parceiros veem apenas o necessário para a operação. Fornecedores, por exemplo, veem os itens e a região de entrega dos pedidos, sem o nome ou o e-mail de quem fez o pedido."
@@ -126,7 +126,7 @@
       "reports": {
         "title": "Denúncias e bloqueio",
         "blocks": {
-          "p1": "<strong>Tolerância zero com conteúdo abusivo.</strong> Conteúdo ofensivo, de assédio, de ódio, enganoso sobre saúde ou que viole direitos de terceiros não é aceito. Em cada conteúdo e em cada página de herói há as opções <strong>Denunciar</strong> e <strong>Bloquear</strong>. A equipe analisa as denúncias em até 24 horas e remove o conteúdo e suspende quem publicou quando houver violação. Quem bloqueia um herói deixa de ver ele e o que ele publica; o desbloqueio fica em Perfil › Heróis."
+          "p1": "<strong>Tolerância zero com conteúdo abusivo.</strong> Conteúdo ofensivo, de assédio, de ódio, enganoso sobre saúde ou que viole direitos de terceiros não é aceito. Em cada conteúdo e em cada página de Hero há as opções <strong>Denunciar</strong> e <strong>Bloquear</strong>. A equipe analisa as denúncias em até 24 horas e remove o conteúdo e suspende quem publicou quando houver violação. Quem bloqueia um Hero deixa de ver ele e o que ele publica; o desbloqueio fica em Perfil › Heros."
         }
       },
       "ip": {
@@ -180,7 +180,7 @@
       "who": {
         "title": "Quem somos e o que esta Política cobre",
         "blocks": {
-          "p1": "O {app} é uma plataforma gratuita de conteúdo sobre treino, nutrição, rotina e gastronomia, com heróis reais, conteúdos educativos e receitas; no site, há também uma loja em fase de lançamento, sem cobrança. Esta Política vale para o site, para o app para iOS e Android e para os portais de parceiros e de administração.",
+          "p1": "O {app} é uma plataforma gratuita de conteúdo sobre treino, nutrição, rotina e gastronomia, com Heros reais, conteúdos educativos e receitas; no site, há também uma loja em fase de lançamento, sem cobrança. Esta Política vale para o site, para o app para iOS e Android e para os portais de parceiros e de administração.",
           "p2": "O controlador dos seus dados pessoais é {company}, inscrita no CNPJ sob o nº {cnpj}, com endereço em {address}. O encarregado pelo tratamento de dados pessoais (DPO) é {dpo}, que atende pelo mesmo canal de contato do serviço: {email}."
         }
       },
@@ -191,23 +191,23 @@
           "list1": {
             "account": "<strong>Conta:</strong> nome completo, e-mail e nome exibido; o celular só se você informar em Perfil › Conta e privacidade (é opcional). No cadastro rápido, o app gera sua senha e guarda uma cópia cifrada (AES-256, com chave que fica só no servidor, fora do banco de dados) para você consultar e trocar em Perfil › Conta e privacidade; ninguém mais, nem a administração, consegue lê-la pelo app. Se você escolher a própria senha pela recuperação por e-mail, ela é tratada só pelo serviço de autenticação e a cópia gerada é apagada. Se você entrar com Google, recebemos do Google seu nome, seu e-mail e, se houver, o endereço da sua foto de perfil. Se você entrar com Apple, no app para iOS, a Apple nos envia o seu e-mail — ou um endereço de retransmissão privado da Apple, se você escolher ocultar o seu — e, só no primeiro login, o seu nome; guardamos esses dados como os das demais contas.",
             "preferences": "<strong>Preferências:</strong> idioma, tema, avatar (a foto que você enviar; sem foto, aparecem as suas iniciais) e fuso horário do dispositivo, usado para contar sua sequência de dias.",
-            "profilePhoto": "<strong>Foto de perfil (opcional):</strong> se você tirar ou escolher uma foto, ela é recortada em quadrado e reduzida no seu aparelho antes do envio, sem dados de localização nem outros metadados da câmera, e fica guardada no Supabase Storage num endereço público que não pode ser listado. Ela aparece no seu avatar no app; se você é herói, aparece também na sua página pública, que qualquer visitante vê. Para limitar envios (até 20 por dia) e apagar fotos sem uso, guardamos a data, o tamanho e o tipo de cada envio.",
-            "heroCover": "<strong>Capa do herói (opcional, só heróis):</strong> se você é herói e tira ou escolhe uma foto de capa, ela é recortada em 16:9 e reduzida no seu aparelho antes do envio, sem dados de localização nem outros metadados da câmera, e fica guardada no Supabase Storage num endereço público que não pode ser listado. Ela aparece no seu card na lista de heróis, que qualquer visitante vê. Para limitar envios (até 20 por dia) e apagar capas sem uso, guardamos a data, o tamanho e o tipo de cada envio.",
-            "notifications": "<strong>Preferências de notificação:</strong> o que você aceita receber (posts dos heróis que você segue, conquistas e programas concluídos, lembretes de sequência, resumo editorial, pedidos) e por quais canais. Os avisos de push só saem para os tipos que você ligou, com o canal Push ligado e a permissão dada no celular. E-mails opcionais ainda não são enviados.",
+            "profilePhoto": "<strong>Foto de perfil (opcional):</strong> se você tirar ou escolher uma foto, ela é recortada em quadrado e reduzida no seu aparelho antes do envio, sem dados de localização nem outros metadados da câmera, e fica guardada no Supabase Storage num endereço público que não pode ser listado. Ela aparece no seu avatar no app; se você é Hero, aparece também na sua página pública, que qualquer visitante vê. Para limitar envios (até 20 por dia) e apagar fotos sem uso, guardamos a data, o tamanho e o tipo de cada envio.",
+            "heroCover": "<strong>Capa do Hero (opcional, só Heros):</strong> se você é Hero e tira ou escolhe uma foto de capa, ela é recortada em 16:9 e reduzida no seu aparelho antes do envio, sem dados de localização nem outros metadados da câmera, e fica guardada no Supabase Storage num endereço público que não pode ser listado. Ela aparece no seu card na lista de Heros, que qualquer visitante vê. Para limitar envios (até 20 por dia) e apagar capas sem uso, guardamos a data, o tamanho e o tipo de cada envio.",
+            "notifications": "<strong>Preferências de notificação:</strong> o que você aceita receber (posts dos Heros que você segue, conquistas e programas concluídos, lembretes de sequência, resumo editorial, pedidos) e por quais canais. Os avisos de push só saem para os tipos que você ligou, com o canal Push ligado e a permissão dada no celular. E-mails opcionais ainda não são enviados.",
             "pushDevice": "<strong>Aparelho para push (só no app):</strong> quando você permite notificações no app {app} para iOS ou Android, guardamos o identificador de envio do aparelho (token do serviço de push), a plataforma (iOS ou Android) e a versão do app, ligados à sua conta, para entregar os avisos que você escolheu. Ao sair da conta pelo app, o aparelho deixa de receber os avisos dela.",
-            "heroFavorites": "<strong>Heróis que você segue:</strong> os heróis que você segue e desde quando, para lembrar quais você segue e, se você aceitar, avisar sobre posts novos deles.",
+            "heroFavorites": "<strong>Heros que você segue:</strong> os Heros que você segue e desde quando, para lembrar quais você segue e, se você aceitar, avisar sobre posts novos deles.",
             "usage": "<strong>Uso do conteúdo:</strong> interesses, itens marcados como “não me interessa”, favoritos, listas, progresso, conclusões, sequência de dias, conquistas, inscrições em programas e certificados simbólicos (o PDF do certificado traz seu nome exibido).",
             "routine": "<strong>Lembretes (itens de rotina):</strong> título, nota, horário, dias da semana e as marcações de “feito hoje”. Desde 23/10/2026 eles ficam em Perfil › Lembretes, fora do Hoje, onde você cria, edita, exclui e marca — os itens que você já tinha voltaram a aparecer ali. O {app} não envia avisos deles. Marcar um lembrete não conta na sequência, que conta conteúdos concluídos e entradas em programas; as marcações antigas continuam guardadas, mas também deixaram de contar.",
             "commerce": "<strong>Loja (só no site):</strong> carrinho, pedidos (itens, valores exibidos e o destino escolhido em uma lista) e registros de interesse em produtos.",
             "events": "<strong>Eventos de uso:</strong> ações no app, como abrir um conteúdo, concluir um programa ou iniciar um pedido, com data, idioma e propriedades técnicas, como o identificador do conteúdo. Quando você está conectado, os eventos ficam vinculados à sua conta; para visitantes sem conta, são registrados sem identificador. O banco de dados recusa propriedades cujos nomes indiquem dados pessoais, como e-mail, telefone, CPF, nome, endereço ou senha.",
             "feedback": "<strong>Feedback opcional:</strong> nota, comentário de até 1.000 caracteres, o conteúdo ou programa de onde foi enviado e o idioma.",
-            "reports": "<strong>Denúncias e bloqueios:</strong> se você denunciar, guardamos o conteúdo ou herói denunciado, o motivo, o detalhe que escrever e a data; se bloquear um herói, guardamos qual herói e desde quando, para escondê-lo de você.",
+            "reports": "<strong>Denúncias e bloqueios:</strong> se você denunciar, guardamos o conteúdo ou Hero denunciado, o motivo, o detalhe que escrever e a data; se bloquear um Hero, guardamos qual Hero e desde quando, para escondê-lo de você.",
             "recommendations": "<strong>Recomendações:</strong> a lista de conteúdos recomendados para você e um registro técnico de cada cálculo (motor usado, tempo, quantidade de itens, custo estimado e erros).",
             "partners": "<strong>Parceiros e administração:</strong> se você for convidado como parceiro, o e-mail para o qual o convite foi enviado, os dados do perfil de parceiro e o que você enviar. As principais ações feitas pelo painel de administração, como mudanças de papéis, convites, moderação e configurações, ficam registradas em auditoria.",
-            "partnerTerms": "<strong>Aceite dos Termos do Parceiro (só heróis e agências):</strong> a versão dos <partner>Termos do Parceiro</partner> que você aceitou ao entrar por convite, a data do aceite e a data em que você confirmou, antes do primeiro envio, ter os direitos sobre as fotos e os vídeos, como prova do aceite.",
+            "partnerTerms": "<strong>Aceite dos Termos do Parceiro (só Heros e agências):</strong> a versão dos <partner>Termos do Parceiro</partner> que você aceitou ao entrar por convite, a data do aceite e a data em que você confirmou, antes do primeiro envio, ter os direitos sobre as fotos e os vídeos, como prova do aceite.",
             "recipeStep": "<strong>Etapa de receitas:</strong> o aceite do aviso e as restrições e alergias que você marcar (de uma lista fixa, sem texto livre). Alergias e restrições são dados sensíveis de saúde: usamos só para lembrar você na página de cada receita, com o seu consentimento, e você pode mudar ou apagar quando quiser.",
-            "heroVideos": "<strong>Vídeos dos heróis:</strong> se você é herói e grava ou envia um vídeo pelo app, o arquivo vai direto do seu aparelho para o Cloudflare Stream. O app guarda só o identificador do vídeo, o conteúdo ao qual ele pertence e as datas de envio e de descarte (para limitar envios e limpar vídeos abandonados).",
-            "recipePhotos": "<strong>Fotos e vídeos de receitas:</strong> se você é herói e envia fotos para uma receita, a foto é reduzida no seu aparelho (perde a localização e os dados da câmera) e fica num espaço privado do armazenamento do Supabase, ligada à receita. Quem vê: as fotos da galeria, todos, quando a receita está no ar; as fotos das etapas, só quem pode abrir a receita; o rascunho, só você e a administração. O vídeo de uma receita segue a regra dos vídeos dos heróis.",
+            "heroVideos": "<strong>Vídeos dos Heros:</strong> se você é Hero e grava ou envia um vídeo pelo app, o arquivo vai direto do seu aparelho para o Cloudflare Stream. O app guarda só o identificador do vídeo, o conteúdo ao qual ele pertence e as datas de envio e de descarte (para limitar envios e limpar vídeos abandonados).",
+            "recipePhotos": "<strong>Fotos e vídeos de receitas:</strong> se você é Hero e envia fotos para uma receita, a foto é reduzida no seu aparelho (perde a localização e os dados da câmera) e fica num espaço privado do armazenamento do Supabase, ligada à receita. Quem vê: as fotos da galeria, todos, quando a receita está no ar; as fotos das etapas, só quem pode abrir a receita; o rascunho, só você e a administração. O vídeo de uma receita segue a regra dos vídeos dos Heros.",
             "recipeHistory": "<strong>Histórico de receitas vistas (opcional):</strong> desligado por padrão. Se você ligar em <recipes>Minha coleção de receitas</recipes>, guardamos só qual receita você abriu e a data do último acesso a cada uma (nada mais), para mostrar a lista a você. Só você vê. Desligar ou usar “Limpar histórico” apaga tudo na hora, e cada registro é apagado depois de 90 dias.",
             "recipeRatings": "<strong>Avaliações de receitas:</strong> se você concluiu uma receita, pode dar de 1 a 5 estrelas. Guardamos a nota, a receita e a data, ligadas à sua conta; ninguém vê a sua nota, só a média da receita (a partir de 3 avaliações). Você pode trocar a nota quando quiser.",
             "shoppingList": "<strong>Lista de compras (opcional):</strong> se você usar “Adicionar à lista de compras” numa receita, guardamos os itens que escolher (nome, quantidade, unidade, a receita de origem, se já comprou e a ordem), ligados à sua conta, para montar a sua <shopping>Lista de compras</shopping>. Só você vê: nem a administração lê a lista. Os itens ficam até você remover, usar “Limpar comprados” ou “Limpar lista”, ou excluir a conta. Comprar o kit da receita usa o carrinho da loja do site, sem cobrança."
@@ -248,7 +248,7 @@
         "blocks": {
           "p1": "Tratamos dados pessoais com base nas hipóteses da Lei Geral de Proteção de Dados (LGPD, Lei nº 13.709/2018):",
           "list1": {
-            "service": "conta (inclusive o login com Google ou Apple), preferências, progresso, lembretes, heróis que você segue, os pedidos da loja do site e o aceite dos Termos do Parceiro: execução do serviço ou do contrato que você aceitou;",
+            "service": "conta (inclusive o login com Google ou Apple), preferências, progresso, lembretes, Heros que você segue, os pedidos da loja do site e o aceite dos Termos do Parceiro: execução do serviço ou do contrato que você aceitou;",
             "interest": "eventos de uso e feedback: legítimo interesse em avaliar e melhorar o serviço;",
             "consent": "histórico de receitas vistas e avisos de push: consentimento, que você dá ao ligar o histórico ou ao permitir notificações e retira quando quiser, desligando o histórico (o que o apaga) ou as notificações;",
             "sensitive": "restrições e alergias da etapa de receitas, que são dados pessoais sensíveis de saúde: consentimento específico, que você dá ao marcá-las e pode retirar a qualquer momento refazendo a etapa;",
@@ -311,10 +311,10 @@
         "blocks": {
           "p1": "Usamos fornecedores de tecnologia que tratam dados por nossa conta, apenas para operar o serviço:",
           "list1": {
-            "supabase": "<strong>Supabase:</strong> banco de dados, autenticação e armazenamento das fotos de perfil e das capas de herói, incluindo o envio dos e-mails de confirmação de cadastro e de redefinição de senha.",
+            "supabase": "<strong>Supabase:</strong> banco de dados, autenticação e armazenamento das fotos de perfil e das capas de Hero, incluindo o envio dos e-mails de confirmação de cadastro e de redefinição de senha.",
             "vercel": "<strong>Vercel:</strong> hospedagem do app e execução das funções do servidor, incluindo as rotinas automáticas diárias, como a de retenção.",
-            "cloudflare": "<strong>Cloudflare (Stream):</strong> recebe, processa, armazena e entrega os vídeos que os heróis gravam ou enviam pelo app, e o player desses vídeos é carregado a partir do Cloudflare. Ele não recebe seu nome nem seu e-mail; o vídeo fica ligado ao conteúdo, não à sua conta.",
-            "expo": "<strong>Expo (serviço de push) e os serviços de push da Apple e do Google:</strong> entregam os avisos ao seu celular. Recebem o identificador de envio do aparelho e o texto do aviso (por exemplo, o nome do herói e o título do post); não recebem seu nome nem seu e-mail.",
+            "cloudflare": "<strong>Cloudflare (Stream):</strong> recebe, processa, armazena e entrega os vídeos que os Heros gravam ou enviam pelo app, e o player desses vídeos é carregado a partir do Cloudflare. Ele não recebe seu nome nem seu e-mail; o vídeo fica ligado ao conteúdo, não à sua conta.",
+            "expo": "<strong>Expo (serviço de push) e os serviços de push da Apple e do Google:</strong> entregam os avisos ao seu celular. Recebem o identificador de envio do aparelho e o texto do aviso (por exemplo, o nome do Hero e o título do post); não recebem seu nome nem seu e-mail.",
             "ai": "<strong>OpenAI ou Google (Gemini), somente se as recomendações por IA estiverem ativadas</strong> pela administração. Na configuração padrão, as recomendações usam um motor próprio, sem IA externa. Quando a IA está ativada, o provedor escolhido recebe apenas: seus interesses (tags), sua afinidade por pilar, seu nível estimado, quantos conteúdos você concluiu, o idioma das justificativas e dados do catálogo (identificadores opacos de conteúdo, pilar, tipo, dificuldade, tags, se o conteúdo está em destaque e há quantos dias foi publicado). <strong>Nunca</strong> recebe seu nome, seu e-mail, o identificador da sua conta ou textos que você escreveu. A IA pode ser desligada a qualquer momento por uma chave de desligamento.",
             "google": "<strong>Google (login):</strong> se você escolher entrar com Google, o Google autentica você e nos envia os dados básicos do seu perfil, conforme a política de privacidade dele.",
             "apple": "<strong>Apple (Sign in with Apple):</strong> no app para iOS, se você escolher entrar com Apple, a Apple autentica você e nos envia o seu e-mail ou um endereço de retransmissão privado e, só no primeiro login, o seu nome, conforme a política de privacidade dela."
@@ -364,10 +364,10 @@
               "profilePhoto": {
                 "data": "Foto de perfil",
                 "period": "Até você trocar ou remover a foto, ou excluir a conta",
-                "details": "A foto trocada ou removida é apagada na hora; cópias guardadas em cache (navegador e rede de entrega) deixam de valer em até 1 hora. Se algo falhar, a rotina diária apaga cópias sem uso e as fotos de contas excluídas, inclusive da página pública do herói. O registro técnico de cada envio (data, tamanho e tipo) é apagado 2 dias depois de a foto sair."
+                "details": "A foto trocada ou removida é apagada na hora; cópias guardadas em cache (navegador e rede de entrega) deixam de valer em até 1 hora. Se algo falhar, a rotina diária apaga cópias sem uso e as fotos de contas excluídas, inclusive da página pública do Hero. O registro técnico de cada envio (data, tamanho e tipo) é apagado 2 dias depois de a foto sair."
               },
               "heroCover": {
-                "data": "Capa do herói",
+                "data": "Capa do Hero",
                 "period": "Até você trocar ou remover a capa, ou excluir a conta",
                 "details": "A capa trocada ou removida é apagada na hora; cópias guardadas em cache (navegador e rede de entrega) deixam de valer em até 1 hora. Se algo falhar, a rotina diária apaga capas sem uso e as de contas excluídas. O registro técnico de cada envio (data, tamanho e tipo) é apagado 2 dias depois de a capa sair."
               },
@@ -417,14 +417,14 @@
                 "details": "Apagadas junto com a conta. Você também pode mudar ou desmarcar tudo refazendo a etapa a partir de qualquer receita."
               },
               "heroVideos": {
-                "data": "Vídeos enviados por heróis",
+                "data": "Vídeos enviados por Heros",
                 "period": "Enquanto o conteúdo existir",
-                "details": "Vídeo de rascunho que você descarta, troca ou abandona (envio vencido sem ir ao ar) é apagado do Cloudflare pela rotina diária. Vídeo de conteúdo que já esteve no ar fica como histórico desse conteúdo; se o herói arquivar e depois excluir de vez uma receita, o vídeo dela também é apagado."
+                "details": "Vídeo de rascunho que você descarta, troca ou abandona (envio vencido sem ir ao ar) é apagado do Cloudflare pela rotina diária. Vídeo de conteúdo que já esteve no ar fica como histórico desse conteúdo; se o Hero arquivar e depois excluir de vez uma receita, o vídeo dela também é apagado."
               },
               "recipePhotos": {
-                "data": "Fotos de receitas enviadas por heróis",
+                "data": "Fotos de receitas enviadas por Heros",
                 "period": "Enquanto a foto fizer parte da receita",
-                "details": "Foto removida no editor ou de rascunho excluído é apagada na hora; se essa exclusão falhar, ou se um envio não chegar a ser registrado, a rotina diária apaga a foto sem receita depois de 24 horas. Fotos de receita que já esteve no ar ficam com a receita enquanto ela existir; se o herói arquivar e depois excluir a receita, as fotos são apagadas na hora."
+                "details": "Foto removida no editor ou de rascunho excluído é apagada na hora; se essa exclusão falhar, ou se um envio não chegar a ser registrado, a rotina diária apaga a foto sem receita depois de 24 horas. Fotos de receita que já esteve no ar ficam com a receita enquanto ela existir; se o Hero arquivar e depois excluir a receita, as fotos são apagadas na hora."
               },
               "recipeHistory": {
                 "data": "Histórico de receitas vistas (opcional)",
@@ -434,7 +434,7 @@
               "recipeRatings": {
                 "data": "Avaliações de receitas (estrelas)",
                 "period": "Enquanto a conta existir",
-                "details": "São apagadas junto com a conta; a média da receita é recalculada na hora. Se o herói excluir de vez uma receita arquivada, as avaliações, os favoritos e o histórico dela saem junto (os itens da sua lista de compras ficam, sem a receita de origem)."
+                "details": "São apagadas junto com a conta; a média da receita é recalculada na hora. Se o Hero excluir de vez uma receita arquivada, as avaliações, os favoritos e o histórico dela saem junto (os itens da sua lista de compras ficam, sem a receita de origem)."
               },
               "shoppingList": {
                 "data": "Lista de compras",
@@ -507,12 +507,12 @@
   },
   "partner": {
     "title": "Termos do Parceiro",
-    "intro": "Estes Termos do Parceiro valem para heróis, agências e integrantes de agências que publicam no {app}. Eles completam os <terms>Termos de Uso</terms> e a <privacy>Política de Privacidade</privacy>. Ao aceitar um convite para o {app}, você concorda com eles.",
+    "intro": "Estes Termos do Parceiro valem para Heros, agências e integrantes de agências que publicam no {app}. Eles completam os <terms>Termos de Uso</terms> e a <privacy>Política de Privacidade</privacy>. Ao aceitar um convite para o {app}, você concorda com eles.",
     "sections": {
       "who": {
         "title": "Quem é parceiro",
         "blocks": {
-          "p1": "Parceiro é quem entra no {app} por convite da equipe para publicar ou gerenciar conteúdo: o <strong>herói</strong> (a personalidade real dona do perfil), a <strong>agência</strong> que representa heróis ou marcas, as pessoas da equipe da agência e as demais pessoas convidadas para um portal de parceiro (marcas, profissionais e fornecedores).",
+          "p1": "Parceiro é quem entra no {app} por convite da equipe para publicar ou gerenciar conteúdo: o <strong>Hero</strong> (a personalidade real dona do perfil), a <strong>agência</strong> que representa Heros ou marcas, as pessoas da equipe da agência e as demais pessoas convidadas para um portal de parceiro (marcas, profissionais e fornecedores).",
           "p2": "O convite é pessoal e ligado ao e-mail para o qual foi enviado. Não compartilhe o acesso ao portal."
         }
       },
@@ -522,7 +522,7 @@
           "p1": "Ao enviar qualquer foto, vídeo, áudio ou texto, você declara que:",
           "list1": {
             "i1": "é o titular dos direitos sobre o material ou tem autorização por escrito de todos os titulares, inclusive do fotógrafo, do produtor e das pessoas que aparecem nele;",
-            "i2": "tem o direito de usar o nome, a imagem e a voz das pessoas que aparecem no material. Se você é agência, declara ter contrato com o herói que autoriza publicar em nome dele;",
+            "i2": "tem o direito de usar o nome, a imagem e a voz das pessoas que aparecem no material. Se você é agência, declara ter contrato com o Hero que autoriza publicar em nome dele;",
             "i3": "o material não viola marcas, direitos autorais, privacidade ou outros direitos de terceiros, nem a lei;",
             "i4": "não envia material de bancos de imagens, de outros perfis ou da internet sem licença que permita este uso."
           },
@@ -532,7 +532,7 @@
       "evidence": {
         "title": "Guarda dos contratos",
         "blocks": {
-          "p1": "<strong>Quem publica guarda as provas.</strong> O parceiro — e, quando publica em nome de um herói, a agência — mantém os contratos e as autorizações que sustentam cada publicação e os apresenta, no prazo pedido, sempre que solicitados pelo {app}, pelo próprio herói, por titulares de direitos ou por autoridades. O {app} é uma plataforma intermediária: não revisa nem guarda esses contratos e, conforme a lei (Marco Civil da Internet, Lei nº 12.965/2014), remove o conteúdo quando houver ordem judicial ou quando ele violar estes Termos."
+          "p1": "<strong>Quem publica guarda as provas.</strong> O parceiro — e, quando publica em nome de um Hero, a agência — mantém os contratos e as autorizações que sustentam cada publicação e os apresenta, no prazo pedido, sempre que solicitados pelo {app}, pelo próprio Hero, por titulares de direitos ou por autoridades. O {app} é uma plataforma intermediária: não revisa nem guarda esses contratos e, conforme a lei (Marco Civil da Internet, Lei nº 12.965/2014), remove o conteúdo quando houver ordem judicial ou quando ele violar estes Termos."
         }
       },
       "license": {
@@ -584,7 +584,7 @@
     "inviteRequired": "Para aceitar o convite, marque a caixa dos Termos do Parceiro.",
     "uploadTitle": "Antes do seu primeiro envio",
     "uploadBody": "Fotos e vídeos ficam públicos no seu perfil. Confirme que você tem os direitos sobre o que vai publicar.",
-    "uploadLabel": "Declaro que sou titular das fotos e dos vídeos que eu enviar, ou que tenho autorização por escrito de todos os titulares e das pessoas que aparecem — inclusive, quando publico em nome de um herói, contrato com ele que autoriza essa publicação —, conforme os <partner>Termos do Parceiro</partner>.",
+    "uploadLabel": "Declaro que sou titular das fotos e dos vídeos que eu enviar, ou que tenho autorização por escrito de todos os titulares e das pessoas que aparecem — inclusive, quando publico em nome de um Hero, contrato com ele que autoriza essa publicação —, conforme os <partner>Termos do Parceiro</partner>.",
     "uploadConfirm": "Confirmar e enviar",
     "cancel": "Cancelar",
     "error": "Não foi possível registrar a confirmação. Tente de novo."

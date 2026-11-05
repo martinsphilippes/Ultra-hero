@@ -7,14 +7,14 @@ type Props = {
   model: ValueModel;
   amountCents: number | null;
   maxHeroes: number | null;
-  /** Quem lê valores (marca, Adm). Gestor e herói veem só o modelo e o máximo, nunca o dinheiro. */
+  /** Quem lê valores (marca, Adm). Gestor e Hero veem só o modelo e o máximo, nunca o dinheiro. */
   canValues?: boolean;
   className?: string;
 };
 
 /**
- * Leitura do valor oferecido (0096). Por herói: "Até R$ X" em destaque e, abaixo, "R$ A por herói · máximo N heróis".
- * Fixo: o valor total e a dica de que se divide entre os heróis. Sem permissão para valores, só o modelo e o máximo.
+ * Leitura do valor oferecido (0096). Por Hero: "Até R$ X" em destaque e, abaixo, "R$ A por Hero · máximo N Heros".
+ * Fixo: o valor total e a dica de que se divide entre os Heros. Sem permissão para valores, só o modelo e o máximo.
  */
 export function ValueTermsView({ model, amountCents, maxHeroes, canValues = true, className }: Props) {
   const t = useTranslations("valueModel.view");

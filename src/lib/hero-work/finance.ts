@@ -1,7 +1,7 @@
 import { plusDays } from "@/lib/calendar/ics";
 import type { HeroServiceStatus, HeroServiceView } from "./vocab";
 
-// Financeiro do herói independente (0094): lógica pura, sem banco (testada em tests/unit/hero-work.test.ts).
+// Financeiro do Hero independente (0094): lógica pura, sem banco (testada em tests/unit/hero-work.test.ts).
 // Tudo é registro/controle simulado: nada aqui movimenta dinheiro.
 //
 // Decisões:
@@ -28,7 +28,7 @@ export type HeroService = {
   proofMime: string | null;
 };
 
-/** Situação mostrada: a gravada, ou "vencido" quando a receber com vencimento antes de hoje (YYYY-MM-DD no fuso do herói). */
+/** Situação mostrada: a gravada, ou "vencido" quando a receber com vencimento antes de hoje (YYYY-MM-DD no fuso do Hero). */
 export function effectiveStatus(s: Pick<HeroService, "status" | "dueOn">, today: string): HeroServiceView {
   if (s.status === "receivable" && s.dueOn && s.dueOn < today) return "overdue";
   return s.status;
@@ -162,7 +162,7 @@ export function toHeroService(r: ServiceRow): HeroService {
   };
 }
 
-/** "A receber este mês" do herói com agência: repasse (cachê) aberto cuja data prevista (agendada, senão vencimento) cai no mês de hoje. */
+/** "A receber este mês" do Hero com agência: repasse (cachê) aberto cuja data prevista (agendada, senão vencimento) cai no mês de hoje. */
 export function earningsDueThisMonth(
   items: readonly { status: string; amountCents: number; scheduledOn: string | null; dueOn: string | null }[],
   today: string,

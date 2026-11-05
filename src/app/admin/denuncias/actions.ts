@@ -5,7 +5,7 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 
-// Triagem de denúncias (0071): dispensar ou agir (arquivar o conteúdo e/ou suspender o herói). Auditado no banco.
+// Triagem de denúncias (0071): dispensar ou agir (arquivar o conteúdo e/ou suspender o Hero). Auditado no banco.
 const schema = z.object({ id: z.uuid(), status: z.enum(["dismissed", "actioned"]), archiveContent: z.boolean(), suspendCreator: z.boolean() });
 
 export async function resolveReportAction(input: z.input<typeof schema>): Promise<{ ok: true } | { ok: false; error: string }> {

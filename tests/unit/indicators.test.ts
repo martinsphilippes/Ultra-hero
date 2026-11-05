@@ -56,7 +56,7 @@ const heroRaw = (over: Record<string, unknown> = {}) => ({
 });
 
 describe("seção e período na URL", () => {
-  it("seção desconhecida vira Por herói; período fora de 7/30/90 vira 30", () => {
+  it("seção desconhecida vira Por Hero; período fora de 7/30/90 vira 30", () => {
     expect(parseIndicatorSection("conversao")).toBe("conversao");
     expect(parseIndicatorSection(["ranking", "x"])).toBe("ranking");
     expect(parseIndicatorSection("nada")).toBe("herois");
@@ -90,7 +90,7 @@ describe("banco sem a 0060", () => {
   });
 });
 
-describe("por herói", () => {
+describe("por Hero", () => {
   it("lê o jsonb com defesa: número em texto vira número, lixo vira 0", () => {
     const d = parseHeroes({ rows: [heroRaw({ followers: "12", content_views: "x", collectible_views: null })], daily_follows: [{ day: "2026-10-30", value: 3 }, { value: 1 }] });
     expect(d.rows[0].followers).toBe(12);
@@ -135,7 +135,7 @@ describe("por atalho", () => {
     expect(parseShortcuts({}).trackingSince).toBeNull();
   });
 
-  it("evento de abertura: herói uuid + fonte conhecida; nada além disso", () => {
+  it("evento de abertura: Hero uuid + fonte conhecida; nada além disso", () => {
     expect(parseShortcutOpen({ creatorId: "533F427B-B2A5-473B-9C6F-73E01501946A", sourceKey: "treinos" })).toEqual({ creatorId: "533f427b-b2a5-473b-9c6f-73e01501946a", sourceKey: "treinos" });
     expect(parseShortcutOpen({ creatorId: "533f427b-b2a5-473b-9c6f-73e01501946a", sourceKey: "rotina" })).toBeNull();
     expect(parseShortcutOpen({ creatorId: "nao-uuid", sourceKey: "treinos" })).toBeNull();
@@ -218,15 +218,15 @@ describe("CSV", () => {
     expect(lines).toContain("hero,anitta,Anitta,followers,10");
     expect(lines).toContain("hero,anitta,Anitta,shortcut_opens,7");
     expect(lines).toContain("daily_follows,2026-10-30,2026-10-30,new_followers,2");
-    // visitas à página do herói (0061): por herói e por dia
+    // visitas à página do Hero (0061): por Hero e por dia
     expect(lines).toContain("hero,anitta,Anitta,page_views,9");
     expect(lines).toContain("daily_page_views,2026-10-30,2026-10-30,page_views,9");
-    // o id do herói não vai para o CSV (só slug e nome públicos)
+    // o id do Hero não vai para o CSV (só slug e nome públicos)
     expect(csv).not.toContain("533f427b");
     expect(lines).toHaveLength(1 + 13 + 1 + 1);
   });
 
-  it("cada seção gera linhas; ranking soma heróis pela mesma regra da tela", () => {
+  it("cada seção gera linhas; ranking soma Heros pela mesma regra da tela", () => {
     const heroes = parseHeroes({ rows: [heroRaw()] });
     const ranking = parseRanking({ recipes: [{ slug: "g1", title: "Bowl", actions: 8 }], programs: [{ slug: "p", title: "Base", enrolled: 2 }], products: [{ slug: "m", title: "Marmita", cart_adds: 3 }] });
     expect(sectionCsvRows("ranking", { ranking, heroes })).toEqual([

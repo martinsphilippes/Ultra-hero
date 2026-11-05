@@ -72,7 +72,7 @@ export function RoadmapStart({
   );
 }
 
-// Herói-cliente do negócio: o herói vê o projeto (só as etapas visíveis ao cliente) no Portal do Herói.
+// Hero-cliente do negócio: o Hero vê o projeto (só as etapas visíveis ao cliente) no Portal do Hero.
 export function DealClientForm({
   dealId,
   talents,

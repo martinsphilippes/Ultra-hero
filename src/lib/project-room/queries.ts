@@ -4,7 +4,7 @@ import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { isRoomSide, isUuid, type FeedbackMoment, type RoomSide } from "./vocab";
 
-// Leituras da sala do projeto (0110). Tudo por RPC: o banco decide o lado (agência, staff externo, herói, marca), o que
+// Leituras da sala do projeto (0110). Tudo por RPC: o banco decide o lado (agência, staff externo, Hero, marca), o que
 // cada um vê (mensagens internas, e-mails, horários de chegada) e se o NDA ainda trava a sala.
 
 const s = (v: unknown) => (typeof v === "string" && v !== "" ? v : null);

@@ -23,7 +23,7 @@ function hero(id: string, over: Partial<CastHeroInput> & { reach?: number; eng?:
   const { reach = 10_000, eng = 300, fee = 100_000, age = { "18-24": 5000 }, states = ["RJ"], asOf = "2026-10-20", ...rest } = over;
   return {
     talent_id: id,
-    name: `Herói ${id}`,
+    name: `Hero ${id}`,
     availability: "available",
     blocked: false,
     consent_ok: true,
@@ -38,7 +38,7 @@ function hero(id: string, over: Partial<CastHeroInput> & { reach?: number; eng?:
   };
 }
 
-describe("métricas por herói", () => {
+describe("métricas por Hero", () => {
   it("alcance vem do alcance médio, depois das visualizações, depois dos seguidores (sinalizado)", () => {
     const base = hero("a");
     base.accounts = [{ network: "instagram", followers: 100_000, avg_views: null, avg_reach: null, engagement_bp: 200, as_of: "2026-10-01", age: null, top_states: null }];
@@ -136,7 +136,7 @@ describe("valor por objetivo", () => {
     const s = scoreHeroes(heroes, CTX, GOAL_WEIGHTS[goal], TODAY);
     return s.reduce((a, b) => (b.value > a.value ? b : a)).id;
   };
-  it("cada objetivo favorece o herói certo", () => {
+  it("cada objetivo favorece o Hero certo", () => {
     expect(best("reach")).toBe("big");
     expect(best("audience")).toBe("fit");
     expect(best("engagement")).toBe("eng");
@@ -222,7 +222,7 @@ describe("combinações sugeridas", () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
-  it("respeita o máximo de heróis", () => {
+  it("respeita o máximo de Heros", () => {
     const s = suggestCasts(metrics, 700_000, { maxHeroes: 2 });
     expect(s.every((x) => x.totals.count <= 2)).toBe(true);
     expect(s.length).toBeGreaterThan(0);
@@ -238,13 +238,13 @@ describe("combinações sugeridas", () => {
     expect(whyNoSuggestion(metrics, 10_000)).toBe("none_fits");
   });
 
-  it("heróis inelegíveis nunca entram", () => {
+  it("Heros inelegíveis nunca entram", () => {
     const blocked = scoreHeroes([...pool, hero("x", { reach: 900_000, fee: 10_000, blocked: true })], CTX, GOAL_WEIGHTS.reach, TODAY);
     const s = suggestCasts(blocked, 700_000);
     expect(s.every((x) => !x.totals.ids.includes("x"))).toBe(true);
   });
 
-  it("com poucos heróis, não repete a mesma combinação", () => {
+  it("com poucos Heros, não repete a mesma combinação", () => {
     const two = scoreHeroes([hero("a", { fee: 50_000 }), hero("b", { fee: 50_000, reach: 5_000 })], CTX, GOAL_WEIGHTS.reach, TODAY);
     const s = suggestCasts(two, 120_000);
     const keys = s.map((x) => [...x.totals.ids].sort().join(","));
@@ -271,11 +271,11 @@ describe("ajuste manual", () => {
     expect(t.costPerThousand).toBeCloseTo((550_000 / 70_000) * 1000, 5);
     expect(t.overBudget).toBe(false);
   });
-  it("passar do orçamento aparece, e herói sem cachê é avisado", () => {
+  it("passar do orçamento aparece, e Hero sem cachê é avisado", () => {
     const t = evaluateCast(metrics, ["a", "b", "c"], 500_000);
     expect(t.overBudget).toBe(true);
     expect(t.leftover).toBeLessThan(0);
-    expect(t.missingFee).toEqual(["Herói c"]);
+    expect(t.missingFee).toEqual(["Hero c"]);
   });
   it("elenco vazio ou id desconhecido não quebra", () => {
     const t = evaluateCast(metrics, ["zzz"], 100);

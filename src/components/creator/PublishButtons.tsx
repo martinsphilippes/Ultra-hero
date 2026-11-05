@@ -16,7 +16,7 @@ function useErrorText() {
   };
 }
 
-// "Publicar": o herói põe o rascunho no ar (creator_publish_content). O checklist é ajuda, não
+// "Publicar": o Hero põe o rascunho no ar (creator_publish_content). O checklist é ajuda, não
 // trava: o banco recusa só o que é obrigatório (título, corpo, mídia do vídeo e licença).
 export function PublishButton({ contentId, checklist }: { contentId: string; checklist: ChecklistItem[] }) {
   const t = useTranslations("creator.publish");

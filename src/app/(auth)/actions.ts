@@ -157,7 +157,7 @@ async function hasOpenOnboarding(supabase: Awaited<ReturnType<typeof createClien
   }
 }
 
-// Ao entrar, todo mundo cai na aba Hero (todos os heróis), mesmo depois de aceitar convite(s): pedido do
+// Ao entrar, todo mundo cai na aba Hero (todos os Heros), mesmo depois de aceitar convite(s): pedido do
 // responsável. Os portais ficam no menu. Vindo do link do convite (que diria "já usado"), também vai para a Hero.
 function afterInvites(next: string, home: string | null): string {
   if (!home) return next;
@@ -327,7 +327,7 @@ export async function resetPasswordAction(_prev: AuthActionState, formData: Form
   return { status: "success" };
 }
 
-// Cadastro por perfil (0103): Herói, Marca ou Agência sem convite. Mesmas regras do cadastro rápido (campo-isca,
+// Cadastro por perfil (0103): Hero, Marca ou Agência sem convite. Mesmas regras do cadastro rápido (campo-isca,
 // limite por IP e por e-mail, kill switch do cadastro no gatilho do banco, e-mail existente nunca entra sem senha),
 // mas a pessoa escolhe a senha. Cria a conta, entra, guarda a escolha (account_onboardings 'self') e abre o passo a
 // passo; se guardar a escolha falhar (ex.: cadastro de perfis fechado), /comecar/<perfil> mostra o motivo.

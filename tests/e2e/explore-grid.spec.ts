@@ -1,13 +1,13 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 // Grade do Explorar (aba Conteúdos, estilo Instagram): 15 quadros por carga, quadrados, variedade de
-// heróis e rolagem infinita. Roda contra o banco remoto (depois da 0044: 38 posts no ar de 6 heróis).
+// Heros e rolagem infinita. Roda contra o banco remoto (depois da 0044: 38 posts no ar de 6 Heros).
 
 // Quadros da primeira carga: filhos diretos da grade (os lotes seguintes chegam dentro de `.contents`).
 const firstPage = (page: Page) => page.getByTestId("explore-grid").locator("> a");
 const allTiles = (page: Page) => page.getByTestId("explore-grid").locator("a");
 
-// Nome acessível do quadro = texto do sr-only: "título · herói · tipo[ · restrição]".
+// Nome acessível do quadro = texto do sr-only: "título · Hero · tipo[ · restrição]".
 async function heroOf(tile: Locator): Promise<string> {
   const label = (await tile.textContent())?.trim() ?? "";
   const parts = label.split(" · ");
@@ -35,7 +35,7 @@ test.describe("grade do Explorar", () => {
     await expect(tiles.first()).toHaveAttribute("href", /^\/content\//);
   });
 
-  test("nos 15 primeiros não há dois quadros consecutivos do mesmo herói", async ({ page }) => {
+  test("nos 15 primeiros não há dois quadros consecutivos do mesmo Hero", async ({ page }) => {
     await page.goto("/explore");
     const tiles = firstPage(page);
     await expect(tiles).toHaveCount(15);
@@ -43,7 +43,7 @@ test.describe("grade do Explorar", () => {
     for (const tile of await tiles.all()) heroes.push(await heroOf(tile));
     expect(heroes.every((name) => name.length > 0)).toBe(true);
     for (let i = 1; i < heroes.length; i++) {
-      expect(heroes[i], `posições ${i} e ${i + 1} com o mesmo herói: ${heroes.join(" | ")}`).not.toBe(heroes[i - 1]);
+      expect(heroes[i], `posições ${i} e ${i + 1} com o mesmo Hero: ${heroes.join(" | ")}`).not.toBe(heroes[i - 1]);
     }
     expect(new Set(heroes).size).toBeGreaterThan(1);
   });

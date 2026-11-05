@@ -100,7 +100,7 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
     if (canValues) {
       const problem = validateTerms({ model, amountCents: send || valueModel === "por_heroi" ? amountCents : null, maxHeroes: max });
       if (problem === "value_per_hero_required" && !send && amountCents === null) {
-        // rascunho por herói pode ficar sem valor; o máximo é obrigatório
+        // rascunho por Hero pode ficar sem valor; o máximo é obrigatório
       } else if (problem === "value_per_hero_required" || problem === "max_heroes_required") return setError(tv(`errors.${problem}`));
     }
     if (model === "por_heroi" && max !== null && order.length > max) return setError(tv("errors.max_heroes", { max }));

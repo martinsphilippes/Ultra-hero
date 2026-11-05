@@ -1,4 +1,4 @@
-// Bibliotecas do hub do herói (RF-004). Regra pura (sem Supabase): classifica os conteúdos
+// Bibliotecas do hub do Hero (RF-004). Regra pura (sem Supabase): classifica os conteúdos
 // publicados por tipo e pilar e junta programas e produtos numa lista em ordem fixa.
 import type { ContentType, Pillar } from "@/lib/supabase/helpers";
 
@@ -49,7 +49,7 @@ const PILLAR_LIBRARY: Record<Pillar, ContentLibraryKey> = {
 /**
  * Cada conteúdo entra numa única biblioteca. Prioridade: receita (qualquer pilar) > treino (só o
  * tipo workout) > pilar. Assim uma receita de nutrição fica só em Alimentação, e um vídeo ou guia do
- * pilar treino (que não foi postado como treino) fica em Dia a dia, com os posts gerais do herói.
+ * pilar treino (que não foi postado como treino) fica em Dia a dia, com os posts gerais do Hero.
  */
 export function contentLibraryKey(content: LibraryContent): ContentLibraryKey {
   if (content.type === "recipe") return "alimentacao";
@@ -61,7 +61,7 @@ type Input<C extends LibraryContent, P, R> = {
   contents?: readonly C[] | null;
   programs?: readonly P[] | null;
   products?: readonly R[] | null;
-  /** Bibliotecas que aparecem mesmo vazias (Alimentação existe em todo herói). */
+  /** Bibliotecas que aparecem mesmo vazias (Alimentação existe em todo Hero). */
   always?: readonly LibraryKey[];
 };
 

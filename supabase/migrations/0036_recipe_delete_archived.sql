@@ -1,12 +1,12 @@
 -- =============================================================================
--- Ultra Hero · 0036 · Receitas fase 6: o herói exclui de vez a receita que ele mesmo arquivou
+-- Ultra Hero · 0036 · Receitas fase 6: o Hero exclui de vez a receita que ele mesmo arquivou
 --   Até aqui só o rascunho que nunca foi ao ar podia ser excluído (creator_delete_recipe_draft): a
---   receita que esteve no ar só podia ser arquivada e ficava para sempre na conta do herói. Isso
+--   receita que esteve no ar só podia ser arquivada e ficava para sempre na conta do Hero. Isso
 --   também impedia a prova de "publicada e encontrada no catálogo" do E2E em produção (P4 da
 --   decisão do módulo), que precisa sair do remoto sem deixar nada.
 --   creator_delete_recipe aceita:
 --     - rascunho (ou devolvido) que nunca foi ao ar e não está em revisão (mesma regra de antes);
---     - receita arquivada PELO PRÓPRIO HERÓI (a que o admin arquivou continua trava dele).
+--     - receita arquivada PELO PRÓPRIO HERO (a que o admin arquivou continua trava dele).
 --   Publicada ou agendada: 'not_deletable' (arquive antes). Rascunho que já esteve no ar:
 --   'already_published' (arquive antes). Em programa ou com conclusões: 'content_in_use' (as FKs
 --   restritivas de program_items/completions). Favoritos, listas, histórico, avaliações, versões e
@@ -36,7 +36,7 @@ begin
   end if;
   select coalesce(array_agg(m.storage_path order by m.storage_path), '{}') into v_paths from public.recipe_media m where m.content_id = p_content;
   select b.media_provider, b.media_ref into v_provider, v_ref from public.content_bodies b where b.content_id = p_content;
-  -- o vídeo do Stream só é descartado se foi este herói que enviou e nenhum outro conteúdo o usa
+  -- o vídeo do Stream só é descartado se foi este Hero que enviou e nenhum outro conteúdo o usa
   if v_provider = 'cloudflare_stream' then
     select s.uid into v_owned from public.stream_uploads s
     where s.uid = v_ref and s.creator_id = v_creator and s.discarded_at is null and (s.content_id is null or s.content_id = p_content)

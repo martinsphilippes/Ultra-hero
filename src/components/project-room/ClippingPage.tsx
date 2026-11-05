@@ -6,7 +6,7 @@ import { getClipping } from "@/lib/project-room/queries";
 import { isUuid } from "@/lib/project-room/vocab";
 import { ClippingView } from "./ClippingView";
 
-// Clipping para o cliente (marca e herói-cliente; 0110): o mesmo da agência, sem o atalho de negócio novo.
+// Clipping para o cliente (marca e Hero-cliente; 0110): o mesmo da agência, sem o atalho de negócio novo.
 export async function ClippingPage({ dealId, backHref }: { dealId: string; backHref: string }) {
   if (!isUuid(dealId)) notFound();
   const [t, clip] = await Promise.all([getTranslations("projectRoom.clipping"), getClipping(dealId)]);

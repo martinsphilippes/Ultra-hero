@@ -63,7 +63,7 @@ export function strategyActions(status: StrategyStatus, flags: StrategyFlags): (
   return out;
 }
 
-/** Link da oportunidade de patrocínio pré-preenchida com a ideia (herói, data/evento, marca). */
+/** Link da oportunidade de patrocínio pré-preenchida com a ideia (Hero, data/evento, marca). */
 export function sendHref(idea: { id: string; talentId: string | null; brandId: string | null; calendarEventId: string | null; ideaOn: string | null }): string {
   const qs = new URLSearchParams();
   if (idea.calendarEventId) qs.set("evento", idea.calendarEventId);

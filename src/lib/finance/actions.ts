@@ -66,7 +66,7 @@ export async function setDealRateAction(input: { dealId: string; rateBp: number 
   }
 }
 
-/** Publica a marca como patrocinadora do herói ligado ao creator contratado (gestor+; ação humana). */
+/** Publica a marca como patrocinadora do Hero ligado ao creator contratado (gestor+; ação humana). */
 export async function publishSponsorshipAction(input: { dealTalentId: string; dealId: string }): Promise<FinanceResult> {
   await requireAgency("manager");
   const parsed = sponsorshipSchema.safeParse(input);

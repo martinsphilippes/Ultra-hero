@@ -12,7 +12,7 @@ import { toCategoryTabRow } from "@/lib/heroes/library-tab-queries";
 import { DEFAULT_LIBRARY_ICON, LIBRARY_ICON_KEYS, LIBRARY_LABEL_MAX, overrideDiff, primaryCategoryId, resolveLibraryConfig, type LibraryLabel } from "@/lib/heroes/library-tabs";
 import { createClient } from "@/lib/supabase/server";
 
-// Categorias dos heróis (0049): escrita direta sob a RLS de admin; cada mudança é auditada pelo
+// Categorias dos Heros (0049): escrita direta sob a RLS de admin; cada mudança é auditada pelo
 // gatilho do banco (admin_audit, resource_type 'hero_category' / 'hero_category_link').
 
 const fail = failWith;
@@ -130,7 +130,7 @@ export async function setHeroCategoryActiveAction(id: string, active: boolean): 
   }
 }
 
-/** Exclui a categoria; os vínculos com heróis saem junto (cascata, auditada). */
+/** Exclui a categoria; os vínculos com Heros saem junto (cascata, auditada). */
 export async function deleteHeroCategoryAction(id: string): Promise<ActionResult> {
   const parsed = uuid.safeParse(id);
   if (!parsed.success) return fail("invalid_input");
@@ -148,7 +148,7 @@ export async function deleteHeroCategoryAction(id: string): Promise<ActionResult
   }
 }
 
-/** Define as categorias do herói (até 2, na ordem dada) numa transação só (RPC invoker). */
+/** Define as categorias do Hero (até 2, na ordem dada) numa transação só (RPC invoker). */
 export async function setCreatorCategoriesAction(creatorId: string, categoryIds: string[]): Promise<ActionResult> {
   const parsed = z.object({ creatorId: uuid, categoryIds: z.array(uuid).max(HERO_CATEGORY_MAX + 1) }).safeParse({ creatorId, categoryIds });
   if (!parsed.success) return fail("invalid_input");
@@ -167,7 +167,7 @@ export async function setCreatorCategoriesAction(creatorId: string, categoryIds:
   }
 }
 
-// ---------------------------------------------------------------- atalhos da página do herói (0050)
+// ---------------------------------------------------------------- atalhos da página do Hero (0050)
 // As fontes são fixas (LIBRARY_KEYS); o admin muda rótulo, ícone, ordem e visibilidade. Trocas
 // atômicas por RPC security invoker (a RLS de admin decide); auditoria pelo gatilho do banco.
 
@@ -199,7 +199,7 @@ function labelFromInput(label: LibraryTabInput["label"]): { ok: true; value: Lib
 
 function revalidateTabs(creatorId?: string) {
   revalidatePath("/admin/hero-categories");
-  // páginas dos heróis (hub e bibliotecas)
+  // páginas dos Heros (hub e bibliotecas)
   revalidatePath("/personalities/[slug]", "page");
   revalidatePath("/personalities/[slug]/[library]", "page");
   if (creatorId) revalidatePath(`/admin/herois/${creatorId}`);
@@ -235,7 +235,7 @@ export async function saveCategoryLibraryTabsAction(categoryId: string, rows: Li
   }
 }
 
-/** Configuração herdada pelo herói (categoria principal ativa, sem a exceção dele). */
+/** Configuração herdada pelo Hero (categoria principal ativa, sem a exceção dele). */
 async function inheritedTabs(supabase: Awaited<ReturnType<typeof createClient>>, creatorId: string) {
   const { data: links, error } = await supabase
     .from("creator_category_links")
@@ -252,7 +252,7 @@ async function inheritedTabs(supabase: Awaited<ReturnType<typeof createClient>>,
 }
 
 /**
- * Exceção do herói: recebe os 7 atalhos como o admin quer vê-los (rótulo vazio = herda) e grava só
+ * Exceção do Hero: recebe os 7 atalhos como o admin quer vê-los (rótulo vazio = herda) e grava só
  * o que difere do herdado da categoria. Sem diferença: sem exceção.
  */
 export async function saveCreatorLibraryOverridesAction(creatorId: string, rows: LibraryTabInput[]): Promise<ActionResult> {

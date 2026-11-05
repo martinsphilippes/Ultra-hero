@@ -14,7 +14,7 @@ type Props = {
   params: RecipeCatalogParams;
   base: string;
   fixed: [string, string][];
-  /** Catálogo dentro de um chef (biblioteca do herói): só as receitas que ele assina. */
+  /** Catálogo dentro de um chef (biblioteca do Hero): só as receitas que ele assina. */
   creator?: { id: string; name: string } | null;
   /** O Explorar põe a busca no cabeçalho; a biblioteca do chef, aqui. */
   showSearch?: boolean;
@@ -22,7 +22,7 @@ type Props = {
   idPrefix: string;
   /** Título visível da seção (na biblioteca do chef, que também lista as indicadas). */
   heading?: string;
-  /** Alimentação do herói (0051): cards com assinatura da vitrine e as ações. */
+  /** Alimentação do Hero (0051): cards com assinatura da vitrine e as ações. */
   showcase?: ShowcaseHeroRef | null;
 };
 

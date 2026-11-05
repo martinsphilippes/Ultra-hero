@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: t("personality", { name: creator.name }), description: creator.headline ?? undefined };
 }
 
-// Perfil do herói no formato do Instagram (RF-004): foto pequena, nome e números, bio em uma linha,
+// Perfil do Hero no formato do Instagram (RF-004): foto pequena, nome e números, bio em uma linha,
 // atalhos (configurados pelo admin por categoria, 0050) como destaques e a grade de posts 3 por linha. A nota de direitos (fictício, em
 // validação ou autorizado) fica discreta no fim. Cada biblioteca tem a sua própria página.
 export default async function PersonalityPage({ params, searchParams }: Props) {
@@ -51,7 +51,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
   if (!creator) notFound();
 
   // RB-05: só "autorizado" com titular documentado e dentro da validade aparece como autorizado. O selo "Perfil
-  // ilustrativo" é só do herói fictício (is_fictional); pessoa real pendente ou vencida fica sem selo público e a
+  // ilustrativo" é só do Hero fictício (is_fictional); pessoa real pendente ou vencida fica sem selo público e a
   // pendência vira aviso interno da agência e do admin ("Registrar autorização de imagem").
   const rights = effectiveRightsStatus(creator.rights_status, creator.rights_valid_until);
   const fictional = showsFictionalBadge(creator.is_fictional);
@@ -64,12 +64,12 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
     loadCreatorHub(creator),
     getFollowContext(),
     loadFollowerCount(supabase, creator.id),
-    // marcas do herói (0062); sem a 0062, nenhuma
+    // marcas do Hero (0062); sem a 0062, nenhuma
     loadCreatorBrandChips(supabase, creator.id),
   ]);
   const hasError = hub.errors.contents || hub.errors.programs || hub.errors.products;
 
-  // Grade de posts: só o que o herói publicou (as receitas que ele indica ficam em Alimentação).
+  // Grade de posts: só o que o Hero publicou (as receitas que ele indica ficam em Alimentação).
   const posts = hub.contents.filter((c) => c.creator?.slug === creator.slug);
   // posts com produtos marcados na foto: ícone discreto no quadro (as marcações abrem no post)
   const tagged = await loadSmartTagsFor(supabase, posts);
@@ -83,16 +83,16 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* visita à página do herói (0061): contador por dia, sem a pessoa */}
+      {/* visita à página do Hero (0061): contador por dia, sem a pessoa */}
       <HeroPageViewTracker creatorId={creator.id} />
-      {/* volta para a tela anterior do app; aberto de fora, cai na lista de heróis */}
+      {/* volta para a tela anterior do app; aberto de fora, cai na lista de Heros */}
       <BackLink href="/personalities">{t("back")}</BackLink>
 
       {/* Cabeçalho no formato do Instagram: foto pequena, nome e números lado a lado; o que importa são os posts. */}
       <header className="flex flex-col gap-3">
         <div className="flex items-center gap-5">
           <span data-testid="hero-page-avatar" className="relative inline-flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-elevated text-2xl font-bold uppercase text-fg-muted sm:size-24 sm:text-3xl">
-            {/* só foto real (enviada pelo herói, 0031, ou a oficial); sem foto ou se não carrega: as iniciais */}
+            {/* só foto real (enviada pelo Hero, 0031, ou a oficial); sem foto ou se não carrega: as iniciais */}
             <AvatarImage src={creator.avatar_url} alt="" fallback={<AvatarInitials name={creator.name} />} fill priority sizes="96px" className="object-cover" />
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -111,7 +111,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
             </ul>
           </div>
         </div>
-        {/* Marcas do herói (0062): logos em chips com o tipo de relação; rolagem lateral quando são muitas */}
+        {/* Marcas do Hero (0062): logos em chips com o tipo de relação; rolagem lateral quando são muitas */}
         <BrandStrip brands={brands} heroName={creator.name} />
         {/* Seguir (hero_favorites, 0054) com a contagem pública de seguidores (0056) */}
         {follow.available ? (
@@ -132,7 +132,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
         <HeroBio headline={creator.headline} bio={creator.bio} />
         {/* perfil do chef: especialidades e credenciais aprovadas pelo admin (P7) */}
         <ChefHighlights creatorId={creator.id} />
-        {/* Colecionáveis do herói ao vivo/agendados (0057); sem item, nada */}
+        {/* Colecionáveis do Hero ao vivo/agendados (0057); sem item, nada */}
         <HeroCollectibleBanner creatorId={creator.id} />
       </header>
 

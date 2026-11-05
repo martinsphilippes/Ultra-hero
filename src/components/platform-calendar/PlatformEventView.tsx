@@ -89,7 +89,7 @@ export async function PlatformEventView({ event: e, showStatus = false, showSour
 
 type ListProps = { items: InterestItem[]; title: string; hint?: string; empty: string };
 
-/** Lista de interessados (heróis e marcas), já filtrada pela RLS para quem vê. */
+/** Lista de interessados (Heros e marcas), já filtrada pela RLS para quem vê. */
 export async function InterestList({ items, title, hint, empty }: ListProps) {
   const [t, locale] = await Promise.all([getTranslations("groscoveCalendar.interest"), getLocale() as Promise<Locale>]);
   const groups: ["hero" | "brand", InterestItem[]][] = [

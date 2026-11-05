@@ -1,6 +1,6 @@
 -- =============================================================================
--- Ultra Hero · 0025 · Publicação direta pelo herói
---   O herói (papel creator) publica o próprio rascunho sem passar pela fila do admin e pode
+-- Ultra Hero · 0025 · Publicação direta pelo Hero
+--   O Hero (papel creator) publica o próprio rascunho sem passar pela fila do admin e pode
 --   despublicá-lo para editar e publicar de novo. O admin continua governando depois (arquivar,
 --   devolver, definir regra de acesso) pelas RPCs que já existem; o fluxo antigo
 --   (submit_content_for_review + admin_review_content) segue intacto para quem quiser revisão.
@@ -9,7 +9,7 @@
 -- app.trusted das demais funções confiáveis (0010) para mudar status/review_status/access_level.
 -- =============================================================================
 
--- Licença × provedor: o vídeo gravado pelo herói é 'own' + 'cloudflare_stream'. A regra de 0017
+-- Licença × provedor: o vídeo gravado pelo Hero é 'own' + 'cloudflare_stream'. A regra de 0017
 -- já aceita (mídia hospedada: platform_demo | own | licensed), então media_license_compatible
 -- fica como está; a checagem continua sendo feita por content_assert_media_license.
 
@@ -26,7 +26,7 @@
 --   * licença coerente com o provedor (content_assert_media_license, igual à aprovação).
 -- Regra de acesso continua sendo do admin: sem regra vira 'free'; premium já definido é
 -- preservado (required_module_id não muda, então o check premium→módulo segue válido).
--- Rodada em revisão aberta (o herói tinha enviado ao admin) é fechada como autoaprovação;
+-- Rodada em revisão aberta (o Hero tinha enviado ao admin) é fechada como autoaprovação;
 -- sem rodada aberta, registra uma nova. content_reviews não tem restrição de unicidade nem
 -- exige decided_by admin, então o histórico mostra quem publicou sem quebrar a fila do admin
 -- (admin_review_content só mexe em rodadas 'in_review').
@@ -34,7 +34,7 @@ create or replace function public.creator_publish_content(p_content uuid)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare c public.content%rowtype; v_uid uuid := auth.uid(); v_creator uuid;
         v_provider public.media_provider; v_ref text; v_round int;
-        v_feedback constant text := 'Publicação direta pelo herói';
+        v_feedback constant text := 'Publicação direta pelo Hero';
 begin
   if v_uid is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
   v_creator := public.my_creator_id();

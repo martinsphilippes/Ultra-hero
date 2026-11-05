@@ -11,12 +11,12 @@
 --   professional_verifications nota do admin sobre a conferência do registro (só o admin lê).
 --   professional_services      serviços com preço (sessão em minutos ou plano em semanas; online,
 --                              presencial ou os dois). O profissional edita; o admin pode desativar.
---   professional_suggestions   "sugeridos" ligados pelo admin a herói, receita ou programa. Chave
+--   professional_suggestions   "sugeridos" ligados pelo admin a Hero, receita ou programa. Chave
 --                              primária própria (id): nada de tabela-ponte na chave (lição da 0055).
 --   service_cart_items         serviços no carrinho (1 de cada; preço visto guardado).
 --   service_orders             pedido de serviço (preço e título congelados), situação e tempos.
 --   service_order_events       histórico: mudanças de situação e recados do profissional ao cliente.
---   professional_tap_counters  indicador agregado (dia, profissional, herói, origem, ação): sem
+--   professional_tap_counters  indicador agregado (dia, profissional, Hero, origem, ação): sem
 --                              pessoa, sem FK (lição da 0055), só o service role soma.
 -- Situação do pedido (mesma regra de src/lib/professionals/rules.ts)
 --   pending → accepted | declined (profissional) · pending → cancelled (cliente)
@@ -597,7 +597,7 @@ end $$;
 revoke execute on function public.admin_professional_service_save(uuid, uuid, jsonb) from public, anon;
 grant execute on function public.admin_professional_service_save(uuid, uuid, jsonb) to authenticated, service_role;
 
--- Liga/desliga um profissional como "sugerido" de um herói, receita ou programa.
+-- Liga/desliga um profissional como "sugerido" de um Hero, receita ou programa.
 create or replace function public.admin_professional_suggestion_set(p_professional uuid, p_target text, p_target_id uuid, p_on boolean)
 returns void language plpgsql security definer set search_path = public as $$
 declare v_rows int;
@@ -723,7 +723,7 @@ revoke execute on function public.accept_invitation(text) from public, anon;
 grant execute on function public.accept_invitation(text) to authenticated, service_role;
 
 -- ---------------------------------------------------------------- 11) indicador (service role)
--- Soma 1 toque por dia (Brasília), profissional aprovado, herói (opcional), origem e ação.
+-- Soma 1 toque por dia (Brasília), profissional aprovado, Hero (opcional), origem e ação.
 create or replace function public.professional_tap_bump(p_professional uuid, p_creator uuid, p_source text, p_action text)
 returns void language plpgsql security definer set search_path = public as $$
 begin
@@ -754,7 +754,7 @@ create trigger trg_service_orders_forget_user after update of anonymized_at on p
   execute function public.service_orders_forget_user();
 
 -- ---------------------------------------------------------------- 13) seed: 2 profissionais de exemplo
--- Nomes inventados, aprovados, com 2–3 serviços e sugeridos a heróis/receitas/programa. Sem conta
+-- Nomes inventados, aprovados, com 2–3 serviços e sugeridos a Heros/receitas/programa. Sem conta
 -- ligada: a conta de acesso rápido é criada pelo admin (docs/decisions/hero-showcase.md, Etapa 3).
 -- Reaplicar não sobrescreve edição do admin (on conflict do nothing).
 insert into public.professionals (id, slug, name, specialty, registry_type, registry_number, registry_uf, bio, cities, online,

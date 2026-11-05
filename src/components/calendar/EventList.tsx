@@ -31,10 +31,10 @@ type Props = {
   emptyHint?: string;
   /** Sem os títulos de dia (a grade da agenda já mostra o dia escolhido). */
   flat?: boolean;
-  /** 0094 (agenda do herói): conteúdo extra abaixo do item (checklist) e ações à direita (editar/excluir). */
+  /** 0094 (agenda do Hero): conteúdo extra abaixo do item (checklist) e ações à direita (editar/excluir). */
   renderExtra?: (event: CalendarEvent) => ReactNode;
   renderActions?: (event: CalendarEvent) => ReactNode;
-  /** Agenda do herói (campanha clicável): id do evento → tela que o cartão inteiro abre. Sem ele, nada muda. */
+  /** Agenda do Hero (campanha clicável): id do evento → tela que o cartão inteiro abre. Sem ele, nada muda. */
   ownHrefs?: Record<string, string>;
 };
 
@@ -97,7 +97,7 @@ export function EventList({ events, timeZone, portal, emptyTitle, emptyHint, fla
       </li>
     );
   };
-  // Agenda do herói: o cartão da campanha inteiro abre a tela dela (mesmo padrão do Calendário Groscove: o link do
+  // Agenda do Hero: o cartão da campanha inteiro abre a tela dela (mesmo padrão do Calendário Groscove: o link do
   // título se estende por cima do cartão; ações e conteúdo extra ficam por cima dele com relative z-10)
   const renderOwn = (e: CalendarEvent) => {
     const href = portal === "agency" ? null : (ownHrefs?.[e.id] ?? null);

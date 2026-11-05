@@ -5,7 +5,7 @@ import { isMissingSchema } from "@/lib/supabase/helpers";
 
 export * from "./geometry";
 
-// ---------------------------------------------------------------- relação herói/conteúdo ↔ marca
+// ---------------------------------------------------------------- relação Hero/conteúdo ↔ marca
 export const RELATIONSHIPS = ["sponsor", "mentioned", "identified"] as const;
 export type Relationship = (typeof RELATIONSHIPS)[number];
 
@@ -191,7 +191,7 @@ export function visibleSmartTags(rows: readonly RawTag[] | null | undefined, cur
 }
 
 /**
- * Faixa de marcas do herói/conteúdo: junta as listas (a primeira que cita a marca define a relação),
+ * Faixa de marcas do Hero/conteúdo: junta as listas (a primeira que cita a marca define a relação),
  * sem repetir marca, ordenada por relação (patrocinador primeiro) e mantendo a ordem do admin.
  */
 export function mergeBrandChips(...lists: readonly (readonly { relationship: unknown; brand: RawBrand }[] | null | undefined)[]): BrandChipView[] {

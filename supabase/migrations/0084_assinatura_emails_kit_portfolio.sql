@@ -38,7 +38,7 @@
 --     como ganho com o influenciador contratado), entregas publicadas, entrega no prazo (primeira versão enviada —
 --     ou a publicação — até o prazo do entregável), nota média de todas as marcas (talent_ratings, 0081),
 --     totais das métricas da 0083 (valor atual de cada métrica = leitura mais recente que a traz, somado),
---     seguidores do herói no app (hero_favorites) e a data da última atualização das redes. Campos novos do kit:
+--     seguidores do Hero no app (hero_favorites) e a data da última atualização das redes. Campos novos do kit:
 --     'stats' (padrão para kits novos; os kits existentes não mudam sozinhos o que é público) e 'portfolio'
 --     (opt-in: expõe marcas e campanhas). media_kit_resolve (mesma assinatura) devolve os dois quando marcados.
 --   • Portfólio (talent_kit_portfolio): campanhas com entregáveis publicados (link https e métricas atuais), da
@@ -634,7 +634,7 @@ begin
   if not exists (select 1 from public.agencies a where a.id = t.agency_id and a.status = 'active' and not a.is_demo) then return null; end if;
   if t.creator_id is not null then
     select * into c from public.creator_profiles where id = t.creator_id and status = 'active';
-    if c.id is null then return null; end if;   -- herói suspenso ou pendente: o kit sai do ar junto
+    if c.id is null then return null; end if;   -- Hero suspenso ou pendente: o kit sai do ar junto
   end if;
   f := k.visible_fields;
   v := jsonb_build_object('name', t.display_name, 'fields', to_jsonb(f), 'expires_at', k.share_expires_at);

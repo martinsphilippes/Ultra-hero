@@ -9,7 +9,7 @@ import { feedFollowProps } from "@/components/discover/home/feed/follow";
 import { getFollowContext } from "@/lib/heroes/follow-context";
 
 // Paginação do feed do Início. A semente vem do cliente para a página seguinte continuar a mesma ordem;
-// no "Seguindo" a lista de heróis é relida aqui (nunca vem do cliente).
+// no "Seguindo" a lista de Heros é relida aqui (nunca vem do cliente).
 const schema = z.object({
   seed: z.number().int().min(0).max(2_147_483_647),
   offset: z.number().int().min(0).max(MAX_OFFSET),

@@ -5,15 +5,15 @@ import { loginAsAdminActing } from "./helpers/acting";
 import { loginAs } from "./helpers/login";
 import { expectNoTestRecipe, purgeTestRecipes } from "./helpers/recipes";
 
-// Receitas fase 2 (Portal do Chef) contra o banco remoto. Desde a 0045 quem gerencia as receitas do herói
-// é o admin, pelo herói escolhido em "Publicar como hero" (o da conta demo do herói); sem a 0045, pulados:
+// Receitas fase 2 (Portal do Chef) contra o banco remoto. Desde a 0045 quem gerencia as receitas do Hero
+// é o admin, pelo Hero escolhido em "Publicar como hero" (o da conta demo do Hero); sem a 0045, pulados:
 // Minhas Receitas com filtros e axe; criar um rascunho e passar pelas 6 etapas (2 ingredientes,
 // reordenar, 2 etapas, "Nenhum alérgeno"), checklist verde com o botão do modo atual, prévia com o
 // RecipeView, recarregar e conferir, perder a rede e "Recuperar", e EXCLUIR o rascunho no fim
 // (nada fica no remoto; sobras de execuções anteriores deste projeto são apagadas no início).
 // Publicar de verdade fica para a fase 6 (P4). Envio real de foto só com E2E_RECIPE_MEDIA_REAL=1.
 // A decisão de credenciais presa ao texto (0032) é coberta no S34 e no Vitest: o remoto ainda não
-// tem a 0032 e a fila não é exercitada aqui (aprovar mexeria no perfil público de um herói).
+// tem a 0032 e a fila não é exercitada aqui (aprovar mexeria no perfil público de um Hero).
 
 const REAL_MEDIA = process.env.E2E_RECIPE_MEDIA_REAL === "1";
 
@@ -34,7 +34,7 @@ async function clickNext(page: Page, step: string) {
 }
 
 test.describe("Portal do Chef: Minhas Receitas", () => {
-  test("lista com filtros por GET, Nova receita e axe; a faixa mostra o herói escolhido pelo admin", async ({ page }) => {
+  test("lista com filtros por GET, Nova receita e axe; a faixa mostra o Hero escolhido pelo admin", async ({ page }) => {
     await loginAsAdminActing(page, "recipes");
     await expect(page.getByRole("heading", { level: 1, name: "Minhas Receitas" })).toBeVisible();
     await expect(page.getByTestId("new-recipe")).toHaveAttribute("href", "/heroi/receitas/nova");
@@ -52,13 +52,13 @@ test.describe("Portal do Chef: Minhas Receitas", () => {
     await expect(panel.locator("summary")).toContainText("1 filtro ativo");
     await axeMain(page);
 
-    // modo do admin: a faixa "Publicando como" com "Trocar hero" (o herói não tem mais esta tela)
+    // modo do admin: a faixa "Publicando como" com "Trocar hero" (o Hero não tem mais esta tela)
     await expect(page.getByTestId("acting-hero-switch")).toHaveAttribute("href", "/admin?heroi=recipes#publicar-como-hero");
   });
 
-  test("perfil do herói mostra especialidades e o pedido de credenciais com o aviso de aprovação", async ({ page }) => {
+  test("perfil do Hero mostra especialidades e o pedido de credenciais com o aviso de aprovação", async ({ page }) => {
     await loginAs(page, "creator");
-    // o perfil do herói (com a parte de chef) mora no /profile, no editor recolhido "Editar perfil"
+    // o perfil do Hero (com a parte de chef) mora no /profile, no editor recolhido "Editar perfil"
     await page.goto("/profile");
     await page.waitForLoadState("networkidle");
     await page.getByRole("button", { name: "Editar perfil", exact: true }).click();
@@ -299,7 +299,7 @@ test.describe("admin: revisão por tipo e fila de credenciais", () => {
       await expect(row.getByRole("button", { name: "Ligar" })).toHaveCount(0);
     }
     await page.goto("/admin/herois");
-    await expect(page.getByRole("heading", { level: 2, name: "Credenciais dos heróis" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Credenciais dos Heros" })).toBeVisible();
   });
 
   test("detalhe de receita estruturada resume pelas tabelas e abre a prévia com o RecipeView", async ({ page }) => {

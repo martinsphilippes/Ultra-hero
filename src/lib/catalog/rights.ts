@@ -29,7 +29,7 @@ export function effectiveRightsStatus(status: string | null | undefined, validUn
   return "fictional";
 }
 
-/** Selo público "Perfil ilustrativo" (e o aviso padrão de perfil criado pela plataforma): só para herói fictício. */
+/** Selo público "Perfil ilustrativo" (e o aviso padrão de perfil criado pela plataforma): só para Hero fictício. */
 export function showsFictionalBadge(isFictional: boolean | null | undefined): boolean {
   return isFictional === true;
 }
@@ -41,7 +41,7 @@ export type HeroRightsFields = {
 };
 
 /** Pessoa real sem autorização de imagem válida (pendente ou vencida): aviso interno "Registrar autorização de
- *  imagem" para a agência e a administração. Herói fictício não precisa de autorização. */
+ *  imagem" para a agência e a administração. Hero fictício não precisa de autorização. */
 export function needsImageAuthorization(hero: HeroRightsFields, today: Date = new Date()): boolean {
   if (hero.is_fictional === true) return false;
   return effectiveRightsStatus(hero.rights_status, hero.rights_valid_until, today) !== "authorized";

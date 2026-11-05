@@ -42,7 +42,7 @@ const applySchema = z.object({
     .max(30),
 });
 
-/** Usa o elenco no negócio: sugere os heróis e, só o Adm, grava a repartição como cachês. */
+/** Usa o elenco no negócio: sugere os Heros e, só o Adm, grava a repartição como cachês. */
 export async function applyCastAction(input: z.input<typeof applySchema>): Promise<CastApplyResult> {
   await requireAgency("manager");
   const parsed = applySchema.safeParse(input);

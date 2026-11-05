@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-// Início como feed do Instagram: posts um abaixo do outro, rolagem infinita, capa grande, herói no topo.
-// Roda contra o banco remoto (depois da 0044: 38 posts no ar de 6 heróis).
+// Início como feed do Instagram: posts um abaixo do outro, rolagem infinita, capa grande, Hero no topo.
+// Roda contra o banco remoto (depois da 0044: 38 posts no ar de 6 Heros).
 
 test.describe("feed do Início", () => {
-  test("mostra posts com herói no topo e capa 4:5, sem faixa de pilares nem seções", async ({ page }, info) => {
+  test("mostra posts com Hero no topo e capa 4:5, sem faixa de pilares nem seções", async ({ page }, info) => {
     await page.goto("/inicio");
     const posts = page.getByTestId("feed-post");
     await expect(posts.first()).toBeVisible();
@@ -37,7 +37,7 @@ test.describe("feed do Início", () => {
     expect(new Set(hrefs).size).toBe(hrefs.length);
   });
 
-  test("tocar no post abre o post isolado e o nome do herói leva ao perfil", async ({ page }) => {
+  test("tocar no post abre o post isolado e o nome do Hero leva ao perfil", async ({ page }) => {
     await page.goto("/inicio");
     const post = page.getByTestId("feed-post").first();
     const heroHref = await post.getByTestId("feed-post-hero").getAttribute("href");

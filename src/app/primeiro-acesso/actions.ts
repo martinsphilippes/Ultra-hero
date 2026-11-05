@@ -106,8 +106,8 @@ export async function createProfessionalAction(input: { name: string; specialty:
   }
 }
 
-// Herói (0103, cadastro por perfil): nasce pendente de aprovação do admin; a pessoa vira titular e já pode preparar
-// posts no Portal do Herói. A RPC aceita o passo 'hero' em aberto no lugar do papel creator.
+// Hero (0103, cadastro por perfil): nasce pendente de aprovação do admin; a pessoa vira titular e já pode preparar
+// posts no Portal do Hero. A RPC aceita o passo 'hero' em aberto no lugar do papel creator.
 export async function createHeroAction(input: { name: string }): Promise<OnboardingResult> {
   await requireUser("/primeiro-acesso");
   const parsed = z.object({ name: name(80) }).safeParse(input);

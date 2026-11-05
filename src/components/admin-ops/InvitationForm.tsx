@@ -23,7 +23,7 @@ import { CopyButton } from "./CopyButton";
 
 export type CreatorOption = { id: string; name: string; linked: boolean; slug?: string | null; avatarUrl?: string | null };
 export type SellerOption = { id: string; name: string };
-/** Pessoa com papel de herói (para entrar na equipe de um herói). */
+/** Pessoa com papel de Hero (para entrar na equipe de um Hero). */
 export type CreatorUserOption = { id: string; name: string; email?: string | null };
 /** Ficha do casting que pode receber o convite de acesso (0097). */
 export type TalentOption = { id: string; name: string; agency: string; hasHero: boolean };
@@ -33,7 +33,7 @@ type Props = {
   creatorUsers: CreatorUserOption[];
   talents?: TalentOption[];
   sellers: SellerOption[];
-  /** Pré-preenchimento (ex.: botão "convidar" no herói ou na organização). */
+  /** Pré-preenchimento (ex.: botão "convidar" no Hero ou na organização). */
   initialRole?: AdminInviteRole;
   initialCreatorId?: string;
   initialSellerId?: string;
@@ -44,8 +44,8 @@ type Props = {
 
 const DAY_CHOICES = [1, 2, 3, 7, 14, 30] as const;
 
-// Convite do admin (0091 + 0097): só e-mail, papel (7) e validade. Herói escolhe: herói novo (pendente, com equipe
-// opcional), entrar na equipe de um herói existente ou herói já no casting de uma agência (acesso à ficha). Admin pede
+// Convite do admin (0091 + 0097): só e-mail, papel (7) e validade. Hero escolhe: Hero novo (pendente, com equipe
+// opcional), entrar na equipe de um Hero existente ou Hero já no casting de uma agência (acesso à ficha). Admin pede
 // confirmação extra e vale no máximo 48h. Os links aparecem UMA vez (o banco só guarda o hash).
 export function InvitationForm({ creators, creatorUsers, talents = [], sellers, initialRole = "hero", initialCreatorId = "", initialSellerId = "", defaultOpen = false, triggerLabel }: Props) {
   const t = useTranslations("invites.admin");

@@ -15,7 +15,7 @@ type Props = {
 };
 
 // Aviso INTERNO (agência e administração) para pessoa real sem autorização de imagem válida (needsImageAuthorization).
-// Substitui o antigo selo público "Perfil ilustrativo" nesses heróis: o público não vê selo nenhum, mas nada é
+// Substitui o antigo selo público "Perfil ilustrativo" nesses Heros: o público não vê selo nenhum, mas nada é
 // apresentado como autorizado até a administração registrar titular e validade (RB-05).
 export async function ImageAuthorizationNotice({
   href,

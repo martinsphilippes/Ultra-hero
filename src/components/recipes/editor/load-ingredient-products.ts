@@ -36,7 +36,7 @@ export async function toIngredientLinks(supabase: Client, rows: Row[]): Promise<
 }
 
 /**
- * Vínculos ingrediente ↔ produto da receita do herói (a RLS da 0027 devolve ao dono todos os
+ * Vínculos ingrediente ↔ produto da receita do Hero (a RLS da 0027 devolve ao dono todos os
  * estados). Sem a tabela ou sem leitura: lista vazia e o campo some (available=false).
  */
 export async function loadIngredientProductLinks(supabase: Client, contentId: string): Promise<{ available: boolean; links: IngredientLink[] }> {

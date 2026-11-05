@@ -24,7 +24,7 @@ import {
 // Oportunidade de patrocínio (0085): lógica pura (testada em tests/unit/patrocinio.test.ts). O banco confere de
 // novo (checks e RPCs); aqui ficam o formulário, as datas no fuso da agência e a leitura das RPCs fechadas.
 
-/** draft = rascunho (0095): só a agência vê; marcas e creator só depois de publicada (exige consentimento do herói). */
+/** draft = rascunho (0095): só a agência vê; marcas e creator só depois de publicada (exige consentimento do Hero). */
 export const SPONSORSHIP_STATUSES = ["draft", "open", "closed", "sponsored", "cancelled"] as const;
 export type SponsorshipStatus = (typeof SPONSORSHIP_STATUSES)[number];
 /** Como a marca vê: aberta, prazo encerrado, patrocinada por ela, encerrada (sem dizer quem venceu), cancelada. */
@@ -59,7 +59,7 @@ const time = z.union([z.literal(""), z.string().regex(/^\d{2}:\d{2}$/)]);
 export const sponsorshipSchema = z
   .object({
     id: z.uuid().nullable(),
-    /** 0095: o herói (ficha do casting, herói da plataforma ou digitado); o consentimento só é exigido para publicar */
+    /** 0095: o Hero (ficha do casting, Hero da plataforma ou digitado); o consentimento só é exigido para publicar */
     hero: heroChoiceSchema,
     /** true = publica às marcas; false = rascunho (ao editar uma aberta, segue aberta) */
     publish: z.boolean(),
@@ -301,7 +301,7 @@ export type AgencyTier = {
 export type AgencySponsorshipRow = Pick<SponsorshipCore, "id" | "title" | "location" | "startsAt" | "endsAt" | "allDay" | "respondBy"> & {
   talentId: string;
   talentName: string;
-  /** 0095: o herói da oportunidade (a ficha do casting e a página ligada) */
+  /** 0095: o Hero da oportunidade (a ficha do casting e a página ligada) */
   hero: HeroInfo;
   status: SponsorshipStatus;
   closedReason: "deadline" | "decision" | null;
@@ -446,7 +446,7 @@ export type BrandSponsorship = SponsorshipCore & {
   agencyName: string;
   timezone: string;
   talent: { id: string; name: string; inCatalog: boolean; photoUrl: string | null };
-  /** 0095: o herói (foto, nome, nicho e endereço da página) — só com consentimento vigente; sem ele, só o nome */
+  /** 0095: o Hero (foto, nome, nicho e endereço da página) — só com consentimento vigente; sem ele, só o nome */
   hero: HeroInfo;
   myResponse: { response: SponsorshipResponse; message: string; respondedLabel: string; respondedAt: string | null; requestId: string | null; outcome: "won" | "lost" | null } | null;
   /** 0088: cotas com o valor PEDIDO e o resumo da própria negociação */

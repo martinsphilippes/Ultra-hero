@@ -35,7 +35,7 @@ export async function markAvatarDeleted(admin: Admin, path: string): Promise<voi
 }
 
 /**
- * Tira a foto do ar: primeiro limpa as referências (perfil e herói), depois apaga o objeto e marca
+ * Tira a foto do ar: primeiro limpa as referências (perfil e Hero), depois apaga o objeto e marca
  * o envio. Referência antes do objeto evita mostrar imagem quebrada; se o Storage falhar, o envio
  * fica pendente sem referência e a limpeza diária tenta de novo.
  * unlinked: nenhum perfil aponta mais para a foto; deleted: o objeto saiu do bucket.
@@ -67,7 +67,7 @@ async function purgeDeletedRows(admin: Admin, now: Date): Promise<number> {
 
 /**
  * Limpeza diária (cron de retenção): envios sem referência há mais de 1 h e envios de conta
- * excluída (avatar_orphan_uploads, 0031). Referências que ainda apontam para eles (herói de conta
+ * excluída (avatar_orphan_uploads, 0031). Referências que ainda apontam para eles (Hero de conta
  * excluída) são limpas antes; os objetos saem em lote; só então os envios são marcados. Por fim,
  * registros já apagados com mais de 2 dias saem da tabela (o caminho traz o id da conta).
  */

@@ -24,8 +24,8 @@
   },
   "clientKinds": {
     "brand": "Marca",
-    "talent": "Herói",
-    "both": "Marca e herói"
+    "talent": "Hero",
+    "both": "Marca e Hero"
   },
   "milestones": {
     "client_entry": "Entrada do cliente",
@@ -88,8 +88,8 @@
     "startOnHint": "Vazio = hoje. Fim de semana e feriado passam para o próximo dia útil.",
     "replace": "Trocar serviço",
     "start": "Gerar roteiro",
-    "heroClient": "Herói cliente (contrata a agência)",
-    "heroClientHint": "Use só quando o próprio herói é o cliente, ex.: assessoria artística (ele vê o projeto no Portal do Herói). Quem trabalha na campanha entra na aba Heróis.",
+    "heroClient": "Hero cliente (contrata a agência)",
+    "heroClientHint": "Use só quando o próprio Hero é o cliente, ex.: assessoria artística (ele vê o projeto no Portal do Hero). Quem trabalha na campanha entra na aba Heros.",
     "noHeroClient": "Nenhum (cliente só a marca)",
     "saveClient": "Salvar cliente",
     "unavailable": "Roteiros em atualização. Volte em instantes.",
@@ -109,26 +109,26 @@
   },
   "newDeal": {
     "client": "Cliente",
-    "clientHint": "Quem contrata a agência: a marca, o próprio herói ou os dois.",
+    "clientHint": "Quem contrata a agência: a marca, o próprio Hero ou os dois.",
     "clientKinds": {
       "brand": "Marca",
-      "talent": "Herói cliente",
+      "talent": "Hero cliente",
       "both": "Os dois"
     },
-    "hero": "Herói cliente (contrata a agência)",
-    "heroHint": "Use só quando o próprio herói é o cliente, ex.: assessoria artística. Para quem vai trabalhar na campanha, use 'Heróis da campanha'.",
+    "hero": "Hero cliente (contrata a agência)",
+    "heroHint": "Use só quando o próprio Hero é o cliente, ex.: assessoria artística. Para quem vai trabalhar na campanha, use 'Heros da campanha'.",
     "service": "Serviço",
     "serviceHint": "Escolher agora já gera o roteiro com os prazos.",
     "serviceLater": "Escolher depois",
     "serviceOption": "{name} · {days} dias úteis",
     "startOn": "Início do roteiro",
     "startOnHint": "Vazio = hoje.",
-    "cast": "Heróis da campanha (opcional)",
-    "castHint": "Quem vai trabalhar na campanha. Entram como sugeridos na aba Heróis do negócio.",
-    "castAdd": "Adicionar herói do casting…",
-    "castChosen": "{count, plural, one {# herói da campanha} other {# heróis da campanha}}",
+    "cast": "Heros da campanha (opcional)",
+    "castHint": "Quem vai trabalhar na campanha. Entram como sugeridos na aba Heros do negócio.",
+    "castAdd": "Adicionar Hero do casting…",
+    "castChosen": "{count, plural, one {# Hero da campanha} other {# Heros da campanha}}",
     "castRemove": "Tirar {name} da campanha",
-    "castFailed": "Negócio criado; não foi possível adicionar {names} — adicione na aba Heróis."
+    "castFailed": "Negócio criado; não foi possível adicionar {names} — adicione na aba Heros."
   },
   "today": {
     "title": "Hoje no meu setor",

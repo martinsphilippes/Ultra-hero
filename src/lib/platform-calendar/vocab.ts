@@ -122,7 +122,7 @@ export function normalizeHashtags(value: unknown): string[] {
   return out;
 }
 
-/** Agenda: "tudo", só o Calendário Groscove ou só os meus (da agência/marca/herói). */
+/** Agenda: "tudo", só o Calendário Groscove ou só os meus (da agência/marca/Hero). */
 export type AgendaMode = "all" | "groscove" | "mine";
 
 export function parseAgendaMode(value: unknown): AgendaMode {

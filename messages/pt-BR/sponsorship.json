@@ -10,7 +10,7 @@
     "cancelled": "Cancelada"
   },
   "facts": {
-    "hero": "Herói",
+    "hero": "Hero",
     "when": "Quando",
     "allDay": "dia inteiro",
     "where": "Onde",
@@ -22,10 +22,10 @@
   },
   "agency": {
     "title": "Oportunidades de patrocínio",
-    "description": "Mostre às marcas um evento de um herói (uma corrida, um show, uma live) para alguma patrocinar.",
+    "description": "Mostre às marcas um evento de um Hero (uma corrida, um show, uma live) para alguma patrocinar.",
     "new": "Nova oportunidade",
     "empty": "Nenhuma oportunidade ainda.",
-    "emptyHint": "Escolha o herói, a data e o que a marca recebe. As marcas são avisadas na hora, ao publicar.",
+    "emptyHint": "Escolha o Hero, a data e o que a marca recebe. As marcas são avisadas na hora, ao publicar.",
     "unavailable": "Oportunidades em atualização",
     "unavailableHint": "Tente de novo em alguns minutos.",
     "counts": "{interested} quiseram · {declined} recusaram · {pending} sem resposta",
@@ -37,7 +37,7 @@
     "published": "Oportunidade publicada. As marcas foram avisadas.",
     "back": "Voltar às oportunidades",
     "newTitle": "Nova oportunidade de patrocínio",
-    "newHint": "O herói para quem o evento acontece (a página pública dele). Aparece na agenda da agência, no Portal do Herói e na agenda das marcas escolhidas, depois de publicada. As marcas veem o valor pedido de cada cota.",
+    "newHint": "O Hero para quem o evento acontece (a página pública dele). Aparece na agenda da agência, no Portal do Hero e na agenda das marcas escolhidas, depois de publicada. As marcas veem o valor pedido de cada cota.",
     "edit": "Editar oportunidade",
     "fromAgenda": "Oportunidade de patrocínio",
     "brandsTitle": "Respostas das marcas",
@@ -97,7 +97,7 @@
       "submitEdit": "Salvar",
       "tiers": {
         "title": "Cotas de patrocínio",
-        "hintAdmin": "De 1 a 3 cotas (ex.: Master, Apoio). O valor pedido é o que o herói precisa; sem valor, a marca vê “Valor a combinar”.",
+        "hintAdmin": "De 1 a 3 cotas (ex.: Master, Apoio). O valor pedido é o que o Hero precisa; sem valor, a marca vê “Valor a combinar”.",
         "hintManager": "De 1 a 3 cotas (ex.: Master, Apoio). O valor pedido fica com o Adm da agência.",
         "name": "Nome da cota",
         "namePlaceholder": "Ex.: Master",
@@ -123,29 +123,29 @@
       "publicHint": "Os mesmos campos da campanha. A marca vê e a campanha nasce com eles preenchidos.",
       "valuesAdmin": "As marcas do público veem o valor pedido de cada cota, nunca as propostas de outras marcas.",
       "valuesManager": "O valor pedido é preenchido pelo Adm da agência.",
-      "hero": "Herói",
-      "heroHint": "O herói é a pessoa (a página pública) para quem este evento acontece. É o evento dele que será oferecido às marcas.",
-      "heroLocked": "Já há respostas: o herói não muda.",
-      "heroRequired": "Escolha o herói.",
-      "consentNotice": "Para publicar às marcas, o herói precisa ter dado consentimento (envie o termo assinado em Documentos ou convide-o para aceitar no Portal do Herói). Você pode salvar como rascunho.",
+      "hero": "Hero",
+      "heroHint": "O Hero é a pessoa (a página pública) para quem este evento acontece. É o evento dele que será oferecido às marcas.",
+      "heroLocked": "Já há respostas: o Hero não muda.",
+      "heroRequired": "Escolha o Hero.",
+      "consentNotice": "Para publicar às marcas, o Hero precisa ter dado consentimento (envie o termo assinado em Documentos ou convide-o para aceitar no Portal do Hero). Você pode salvar como rascunho.",
       "consentNoticeNew": "A ficha dele nasce ao salvar; o atalho para a ficha e os Documentos aparece na oportunidade.",
-      "openFicha": "Abrir a ficha do herói",
+      "openFicha": "Abrir a ficha do Hero",
       "openDocuments": "Enviar o termo em Documentos",
       "saveDraft": "Salvar rascunho",
       "publishDraft": "Salvar e publicar",
       "heroPicker": {
-        "search": "Buscar herói",
-        "searchPlaceholder": "Nome ou endereço do herói",
+        "search": "Buscar Hero",
+        "searchPlaceholder": "Nome ou endereço do Hero",
         "searching": "Buscando…",
-        "empty": "Nenhum herói para esta busca.",
+        "empty": "Nenhum Hero para esta busca.",
         "retry": "Tentar de novo",
-        "loadMore": "Ver mais heróis",
-        "change": "Trocar herói",
-        "keep": "Manter este herói",
+        "loadMore": "Ver mais Heros",
+        "change": "Trocar Hero",
+        "keep": "Manter este Hero",
         "pick": "Escolher {name}",
         "followers": "{count} seguidores",
         "noPage": "Sem página na plataforma",
-        "seePage": "Ver página do herói",
+        "seePage": "Ver página do Hero",
         "scope": {
           "casting": "No seu casting",
           "outside": "Fora do casting",
@@ -157,7 +157,7 @@
           "casting": "Já tem ficha no seu casting.",
           "outside": "A ficha dele no seu casting nasce ao salvar.",
           "other_agency": "Indisponível: já está no casting de outra agência.",
-          "person_in_casting": "Indisponível: a conta deste herói já tem outra ficha no seu casting.",
+          "person_in_casting": "Indisponível: a conta deste Hero já tem outra ficha no seu casting.",
           "typed": "A ficha dele, só com o nome, nasce ao salvar."
         },
         "consent": {
@@ -166,15 +166,15 @@
           "none": "Sem consentimento ainda"
         },
         "typed": {
-          "title": "Herói que não está na plataforma",
-          "open": "Digitar um herói que não está na plataforma",
+          "title": "Hero que não está na plataforma",
+          "open": "Digitar um Hero que não está na plataforma",
           "hint": "Cria no seu casting uma ficha só com o nome. Depois, convide-o para entrar na plataforma.",
           "name": "Nome",
           "profile": "Perfil público ou @ da rede",
           "profileHint": "Opcional. Ex.: @nome ou o link do perfil.",
           "email": "E-mail de contato",
           "emailHint": "Opcional. Serve para convidá-lo depois.",
-          "use": "Usar este herói",
+          "use": "Usar este Hero",
           "cancel": "Cancelar",
           "errors": {
             "name": {
@@ -210,7 +210,7 @@
       "confirmCancel": "Ela sai da agenda, as marcas que responderam são avisadas e os rascunhos delas são cancelados.",
       "back": "Voltar",
       "done": {
-        "sponsor": "Patrocínio confirmado. Marcas e herói avisados.",
+        "sponsor": "Patrocínio confirmado. Marcas e Hero avisados.",
         "close": "Oportunidade encerrada.",
         "cancel": "Oportunidade cancelada."
       },
@@ -231,23 +231,23 @@
     "savedPublished": "Oportunidade salva e publicada. As marcas foram avisadas.",
     "draftSaved": "Rascunho salvo. As marcas ainda não veem.",
     "draftDiscarded": "Rascunho descartado.",
-    "draftNeedsConsent": "Falta o consentimento do herói",
-    "draftLine": "Rascunho: só a agência vê. Publique quando o herói tiver dado o consentimento.",
+    "draftNeedsConsent": "Falta o consentimento do Hero",
+    "draftLine": "Rascunho: só a agência vê. Publique quando o Hero tiver dado o consentimento.",
     "draft": {
       "title": "Rascunho",
-      "hint": "As marcas e o herói ainda não veem esta oportunidade. Para publicar às marcas, o herói precisa ter dado consentimento.",
+      "hint": "As marcas e o Hero ainda não veem esta oportunidade. Para publicar às marcas, o Hero precisa ter dado consentimento.",
       "publish": "Publicar para as marcas",
       "discard": "Descartar rascunho",
       "confirmTitle": "Descartar o rascunho?",
       "confirm": "A oportunidade é cancelada. Ninguém é avisado, porque ninguém chegou a ver.",
       "back": "Voltar",
-      "inactive": "A página deste herói não está ativa agora; não dá para publicar às marcas."
+      "inactive": "A página deste Hero não está ativa agora; não dá para publicar às marcas."
     }
   },
   "brand": {
     "title": "Oportunidades de patrocínio",
-    "description": "Eventos dos heróis da {agency} que a sua marca pode patrocinar.",
-    "descriptionNoAgency": "Eventos dos heróis que a sua marca pode patrocinar.",
+    "description": "Eventos dos Heros da {agency} que a sua marca pode patrocinar.",
+    "descriptionNoAgency": "Eventos dos Heros que a sua marca pode patrocinar.",
     "empty": "Nenhuma oportunidade agora.",
     "emptyHint": "Quando a agência oferecer um evento para patrocinar, ele aparece aqui e no sino.",
     "unavailable": "Oportunidades em atualização",
@@ -439,7 +439,7 @@
     "waitingBrandAgency": "Esperando a resposta da marca.",
     "adminAnswers": "Esperando o Adm da agência responder.",
     "agencyAccept": "Aceitar",
-    "agencyPrivacy": "Cada marca vê só a própria negociação; o herói vê só o que foi acordado, sem valores.",
+    "agencyPrivacy": "Cada marca vê só a própria negociação; o Hero vê só o que foi acordado, sem valores.",
     "done": {
       "agreed": "Patrocínio acordado. A campanha está pronta.",
       "sent": "Enviado.",
@@ -454,7 +454,7 @@
       "revoked": "Consentimento revogado",
       "none": "Sem consentimento ainda"
     },
-    "seePage": "Ver página do herói",
+    "seePage": "Ver página do Hero",
     "outside": "Fora da plataforma",
     "inactive": "Página fora do ar"
   },

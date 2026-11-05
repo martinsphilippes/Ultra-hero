@@ -6,15 +6,15 @@ import { isBlockedInNativeApp } from "@/lib/native-app/surface";
 import { buildPortalItems, HERO_PORTAL_PATH } from "@/lib/settings/sections";
 import { canInviteCreator, resolveTalentAccess, talentAccessVariant, toTalentAccess } from "@/lib/talent/access";
 
-// Bloco 10 (0087): login do creator com herói ligado e o escritório como portal. As regras do banco
-// (quem convida, recusas, aceite ligando ao herói) são testadas no S94.
+// Bloco 10 (0087): login do creator com Hero ligado e o escritório como portal. As regras do banco
+// (quem convida, recusas, aceite ligando ao Hero) são testadas no S94.
 
 describe("aceite do convite do escritório", () => {
-  it("convite da ficha com herói (escopo creator + talent_id) abre o Portal do Herói", () => {
+  it("convite da ficha com Hero (escopo creator + talent_id) abre o Portal do Hero", () => {
     expect(portalHomeForAccepted([{ role: "creator", scope_type: "creator", scope_id: "c1", talent_id: "t1" }])).toBe(HERO_PORTAL_HOME);
     expect(HERO_PORTAL_HOME).toBe("/heroi");
   });
-  it("convite de herói do admin (sem ficha) e ficha sem herói: sempre o Portal do Herói (0097)", () => {
+  it("convite de Hero do admin (sem ficha) e ficha sem Hero: sempre o Portal do Hero (0097)", () => {
     expect(portalHomeForAccepted([{ role: "creator", scope_type: "creator", scope_id: "c1" }])).toBe(HERO_PORTAL_HOME);
     expect(portalHomeForAccepted([{ role: "creator", scope_type: "talent", scope_id: "t1", talent_id: "t1" }])).toBe(HERO_PORTAL_HOME);
   });
@@ -31,7 +31,7 @@ describe("selo do acesso no casting", () => {
     expect(toTalentAccess("x")).toBe("none");
     expect(toTalentAccess(null)).toBe("none");
   });
-  it("a leitura do banco manda; sem ela, só o login próprio conta (herói desconhecido não ganha selo)", () => {
+  it("a leitura do banco manda; sem ela, só o login próprio conta (Hero desconhecido não ganha selo)", () => {
     expect(resolveTalentAccess({ access: "pending", loginEmail: null, inviteExpiresAt: null }, { userId: null })).toBe("pending");
     expect(resolveTalentAccess({ access: "none", loginEmail: null, inviteExpiresAt: null }, { userId: "u" })).toBe("none");
     expect(resolveTalentAccess(undefined, { userId: "u" })).toBe("login");
@@ -42,7 +42,7 @@ describe("selo do acesso no casting", () => {
     expect(talentAccessVariant("pending")).toBe("warning");
     expect(talentAccessVariant("none")).toBe("neutral");
   });
-  it("convidar: gestor+, agência real, sem login; herói ligado precisa estar no ar e com selo conhecido", () => {
+  it("convidar: gestor+, agência real, sem login; Hero ligado precisa estar no ar e com selo conhecido", () => {
     const base = { canEdit: true, locked: false, heroActive: true, hasHero: true };
     expect(canInviteCreator({ ...base, access: "none" })).toBe(true);
     expect(canInviteCreator({ ...base, access: "pending" })).toBe(true);
@@ -61,7 +61,7 @@ describe("selo do acesso no casting", () => {
   });
 });
 
-describe("Portal do Herói (0097: um portal só)", () => {
+describe("Portal do Hero (0097: um portal só)", () => {
   it("raiz em /heroi e todos os itens dentro dela, em grupos (Conteúdo, Trabalho, Perfil)", () => {
     expect(PORTAL_ROOT.creator).toBe(HERO_PORTAL_PATH);
     expect(PORTAL_LINKS.creator.every((l) => l.href === HERO_PORTAL_PATH || l.href.startsWith(`${HERO_PORTAL_PATH}/`))).toBe(true);
@@ -71,7 +71,7 @@ describe("Portal do Herói (0097: um portal só)", () => {
   it("nada do portal é bloqueado no app das lojas", () => {
     for (const l of PORTAL_LINKS.creator) expect(isBlockedInNativeApp(l.href)).toBe(false);
   });
-  it("itens da agência só no casting; conteúdo só com herói; agenda e financeiro para os dois", () => {
+  it("itens da agência só no casting; conteúdo só com Hero; agenda e financeiro para os dois", () => {
     const hero = heroPortalNavKeys({ hero: true, casting: false });
     expect(hero).toEqual(expect.arrayContaining(["home", "post", "newContent", "content", "recipes", "agenda", "finance", "publicPage", "team", "notifications"]));
     expect(hero).not.toContain("opportunities");
@@ -82,7 +82,7 @@ describe("Portal do Herói (0097: um portal só)", () => {
     expect(heroPortalNavKeys({ hero: true, casting: true })).toEqual(PORTAL_LINKS.creator.map((l) => l.key));
     expect(heroPortalNavKeys({ hero: false, casting: false })).toEqual(["home", "team", "notifications"]);
   });
-  it("um atalho só: Portal do Herói para quem tem herói ou está num casting", () => {
+  it("um atalho só: Portal do Hero para quem tem Hero ou está num casting", () => {
     expect(buildPortalItems(["consumer", "creator"], undefined, { hasTalent: true })).toEqual([{ kind: "portal", key: "creator", href: HERO_PORTAL_PATH, nativeHidden: false }]);
     expect(buildPortalItems(["consumer", "creator"]).map((p) => p.key)).toEqual(["creator"]);
     expect(buildPortalItems(["consumer"], undefined, { hasTalent: true }).map((p) => p.key)).toEqual(["creator"]);

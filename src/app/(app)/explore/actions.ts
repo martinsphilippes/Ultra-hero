@@ -75,7 +75,7 @@ const recipesSchema = z.object({
   creator: z.uuid().nullable(),
   // cursor de recipe_catalog: "rn" (relevância) ou "chave|uuid"; a função recusa o malformado
   cursor: z.string().min(1).max(120),
-  // Alimentação do herói (0051): cards com as ações da vitrine do herói `creator`
+  // Alimentação do Hero (0051): cards com as ações da vitrine do Hero `creator`
   showcase: z.boolean().optional(),
 });
 

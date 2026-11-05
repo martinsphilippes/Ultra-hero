@@ -23,9 +23,9 @@ type PortalShellProps = {
   badge?: string;
 };
 
-// Casca dos portais (admin, herói, fornecedor, profissional, agência, marca): sidebar fixa no tablet/desktop, Sheet
-// no celular, ação à direita (o sino) e "Voltar ao app" no menu. O Portal do Herói (0097) também tem menu: ele juntou
-// a área do herói e o escritório do casting. O gate de papel acontece no layout que chama este componente.
+// Casca dos portais (admin, Hero, fornecedor, profissional, agência, marca): sidebar fixa no tablet/desktop, Sheet
+// no celular, ação à direita (o sino) e "Voltar ao app" no menu. O Portal do Hero (0097) também tem menu: ele juntou
+// a área do Hero e o escritório do casting. O gate de papel acontece no layout que chama este componente.
 export async function PortalShell({ portal, children, navKeys, headerAction, badge }: PortalShellProps) {
   const [session, cookieStore, t, ta] = await Promise.all([
     getSessionSummary(),

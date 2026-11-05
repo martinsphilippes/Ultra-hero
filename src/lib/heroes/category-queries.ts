@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import type { HeroCategory, HeroCategoryLink } from "./categories";
 
-// Leituras das categorias dos heróis (0049). Sem a 0049 no banco (tabelas ausentes) ou com erro de
+// Leituras das categorias dos Heros (0049). Sem a 0049 no banco (tabelas ausentes) ou com erro de
 // leitura, devolve listas vazias: a aba Hero mostra só "Todos" e os cards ficam sem selo.
 
 type Client = SupabaseClient<Database>;

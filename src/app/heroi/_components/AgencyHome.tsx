@@ -26,7 +26,7 @@ import { TALENT_TODAY_KINDS, buildTalentToday } from "@/lib/today/logic";
 import { getTalentToday } from "@/lib/today/queries";
 import { MessagesHomeCard } from "@/components/messaging/MessagesHomeCard";
 
-// Início do Portal do Herói para quem está num casting (0065 + 0097): Hoje, oportunidades, tarefas, entregas, ganhos,
+// Início do Portal do Hero para quem está num casting (0065 + 0097): Hoje, oportunidades, tarefas, entregas, ganhos,
 // disponibilidade, kit, métricas declaradas com fonte e data e os avisos da agência.
 export async function AgencyHome() {
   const ctx = await getTalentContext();
@@ -48,12 +48,12 @@ export async function AgencyHome() {
     getTranslations("commercial"),
     getTalentToday(),
     getTranslations("talent.earnings"),
-    // 0107: projetos em que o herói é cliente da agência (só as etapas visíveis ao cliente)
+    // 0107: projetos em que o Hero é cliente da agência (só as etapas visíveis ao cliente)
     getClientProjects(),
     getTranslations("roadmap.hero"),
   ]);
   const openProjects = projects.items.filter((p) => !p.closed);
-  // "Hoje" (0078): o que depende do herói, do mais urgente para o menos, com link direto
+  // "Hoje" (0078): o que depende do Hero, do mais urgente para o menos, com link direto
   const today = todayData.available ? todayData.data : null;
   const now = new Date();
   const office = summary.available ? summary.data : null;

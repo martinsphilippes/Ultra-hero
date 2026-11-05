@@ -51,12 +51,12 @@ describe("indicadores (creator_recipe_stats)", () => {
 });
 
 describe("ações por situação", () => {
-  it("excluir só rascunho que nunca foi ao ar; restaurar só o que o herói arquivou", () => {
+  it("excluir só rascunho que nunca foi ao ar; restaurar só o que o Hero arquivou", () => {
     expect(recipeActions("draft", { published_at: null, archived_by: null })).toMatchObject({ edit: true, remove: true, unpublish: false, restore: false });
     expect(recipeActions("draft", { published_at: "2026-01-01", archived_by: null }).remove).toBe(false);
     expect(recipeActions("published", { published_at: "2026-01-01", archived_by: null })).toMatchObject({ edit: false, unpublish: true, archive: true });
     expect(recipeActions("in_review", { published_at: null, archived_by: null })).toMatchObject({ withdraw: true, edit: false, remove: false });
-    // 0036: a arquivada pelo próprio herói pode ser excluída de vez; a arquivada pelo admin, não
+    // 0036: a arquivada pelo próprio Hero pode ser excluída de vez; a arquivada pelo admin, não
     expect(recipeActions("archived", { published_at: "2026-01-01", archived_by: "creator" })).toMatchObject({ remove: true, restore: true });
     expect(recipeActions("archived", { published_at: "2026-01-01", archived_by: "admin" })).toMatchObject({ remove: false, restore: false });
     expect(recipeActions("published", { published_at: "2026-01-01", archived_by: null }).remove).toBe(false);
@@ -69,7 +69,7 @@ describe("fotos de receita", () => {
   const C = "a3bb189e-8bf9-4888-9912-ace4e6543002";
   const R = "7c9e6679-7425-40de-944b-e07fc1f90ae7";
   const F = "5d1c6f0e-3f0a-4c1e-9f7a-2b8d4e6a1c33";
-  it("caminho <herói>/<receita>/<uuid>.<ext> no formato da política do Storage", () => {
+  it("caminho <Hero>/<receita>/<uuid>.<ext> no formato da política do Storage", () => {
     expect(recipeMediaPath(C, R, F, "image/webp")).toBe(`${C}/${R}/${F}.webp`);
     expect(parseRecipeMediaPath(`${C}/${R}/${F}.jpg`)).toEqual({ creatorId: C, contentId: R, fileId: F, mime: "image/jpeg" });
     expect(parseRecipeMediaPath(`${C}/${R}/${F}.gif`)).toBeNull();

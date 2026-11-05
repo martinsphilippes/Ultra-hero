@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 import { chooseMyHero } from "@/app/heroi/conteudos/hero-actions";
 import { Button } from "@/components/ui";
 
-// "Trabalhar neste herói" (0092): grava o herói em uso (cookie conferido no servidor e no banco) e recarrega o Perfil.
+// "Trabalhar neste Hero" (0092): grava o Hero em uso (cookie conferido no servidor e no banco) e recarrega o Perfil.
 export function WorkOnHeroButton({ heroId, name }: { heroId: string; name: string }) {
   const t = useTranslations("me.profile.worksFor");
   const router = useRouter();

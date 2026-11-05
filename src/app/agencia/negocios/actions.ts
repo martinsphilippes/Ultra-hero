@@ -16,7 +16,7 @@ import { createClient } from "@/lib/supabase/server";
 // valida a forma. Cachê (agency_fee_set) é a única ação com valor: a RPC exige Adm.
 
 export type DealResult =
-  | { ok: true; message: string; id?: string; count?: number; /** 04/11: negócio criado, mas estes heróis da campanha não entraram */ castFailed?: string[] }
+  | { ok: true; message: string; id?: string; count?: number; /** 04/11: negócio criado, mas estes Heros da campanha não entraram */ castFailed?: string[] }
   | { ok: false; error: string };
 
 const uuid = z.uuid();
@@ -34,7 +34,7 @@ export async function createDealAction(input: z.input<typeof dealCreateSchema>):
   const d = parsed.data;
   try {
     const supabase = await createClient();
-    // 0107: cliente marca e/ou herói + serviço (o roteiro nasce junto); sem a 0107, o caminho antigo (só marca)
+    // 0107: cliente marca e/ou Hero + serviço (o roteiro nasce junto); sem a 0107, o caminho antigo (só marca)
     const { data, error } = await supabase.rpc("agency_deal_open", {
       p_agency: ctx.agency.id,
       p_data: {
@@ -54,9 +54,9 @@ export async function createDealAction(input: z.input<typeof dealCreateSchema>):
     if (!data) return agencyFail("generic");
     // 0111: ligado ao negócio de origem (nova venda); falha aqui não desfaz o negócio criado
     if (d.originDealId) await supabase.rpc("deal_origin_set", { p_deal: data, p_origin: d.originDealId });
-    // 04/11: heróis da campanha escolhidos no formulário entram pela MESMA ação da aba Heróis (RPC atômica
+    // 04/11: Heros da campanha escolhidos no formulário entram pela MESMA ação da aba Heros (RPC atômica
     // agency_deal_suggest_heroes). Sem migração não dá para criar e escalar numa transação só: se falhar, o negócio
-    // fica criado e a tela avisa quais heróis adicionar na aba Heróis. Negócio sem marca não tem aba Heróis: não escala.
+    // fica criado e a tela avisa quais Heros adicionar na aba Heros. Negócio sem marca não tem aba Heros: não escala.
     const cast = d.brandId ? campaignHeroIds(d.campaignTalentIds) : [];
     let castFailed: string[] | undefined;
     if (cast.length > 0) {
@@ -155,8 +155,8 @@ export async function setShortlistAction(input: z.input<typeof shortlistSchema>)
 
 const reasonsSchema = z.array(z.object({ code: z.enum(REASON_CODES), met: z.boolean(), detail: z.array(z.string().max(60)).max(5) })).max(10);
 
-// Sugerir heróis (0093): uma RPC atômica recebe fichas do casting, heróis da plataforma (a ficha nasce ao salvar) e heróis
-// digitados (ficha sem herói). Papel, agência do negócio, herói ativo e limites são conferidos no banco.
+// Sugerir Heros (0093): uma RPC atômica recebe fichas do casting, Heros da plataforma (a ficha nasce ao salvar) e Heros
+// digitados (ficha sem Hero). Papel, agência do negócio, Hero ativo e limites são conferidos no banco.
 const suggestSchema = z.object({
   dealId: uuid,
   items: z
@@ -199,7 +199,7 @@ export async function suggestHeroesAction(input: z.input<typeof suggestSchema>):
 
 export type HeroSearchResult = ({ ok: true } & HeroSearchPage) | { ok: false; error: string };
 
-/** Busca no servidor dos heróis ativos da plataforma que ainda não são do casting (20 por página). */
+/** Busca no servidor dos Heros ativos da plataforma que ainda não são do casting (20 por página). */
 export async function searchHeroesAction(input: { dealId: string; q: string; offset?: number }): Promise<HeroSearchResult> {
   await requireAgency("staff");
   const parsed = z.object({ dealId: uuid, q: z.string().max(200), offset: z.number().int().min(0).max(5000).optional() }).safeParse(input);

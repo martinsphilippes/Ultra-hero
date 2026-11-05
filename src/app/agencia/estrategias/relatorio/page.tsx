@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Props = { searchParams: Promise<{ mes?: string }> };
 
-// Relatório automático do que o casting postou no mês (0111, D3): posts do app (perfil de criador do herói) e entregas
+// Relatório automático do que o casting postou no mês (0111, D3): posts do app (perfil de criador do Hero) e entregas
 // publicadas nas campanhas da agência. Base da reunião de início de mês; imprime/salva como PDF.
 export default async function CastingReportPage({ searchParams }: Props) {
   const [ctx, sp] = await Promise.all([requireAgency(), searchParams]);

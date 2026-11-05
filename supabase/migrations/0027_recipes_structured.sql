@@ -5,7 +5,7 @@
 --   escrita só por RPC e leitura pela RLS. Desenho: docs/decisions/recipes-module.md (seção 3).
 --   Decisões do responsável refletidas aqui: revisão de receitas desligada por padrão (o admin liga
 --   por tipo, auditado); bloqueio da etapa demonstrativa no banco (can_access_content); contas demo
---   sem regra especial de upload, só a cota diária por herói (na 0028).
+--   sem regra especial de upload, só a cota diária por Hero (na 0028).
 -- Ordem: 1) tabelas e índices · 2) grants e RLS · 3) configurações · 4) gatilhos e guardas ·
 --        5) redefinições de funções existentes · 6) RPCs novas · 7) leitura pública (catálogo).
 -- Regras: nada de drop/truncate; create ... if not exists; políticas com (select ...); toda função
@@ -210,7 +210,7 @@ create index if not exists recipe_versions_created_by_idx on public.recipe_versi
 alter table public.content_reviews add column if not exists requested_publish_at timestamptz;
 alter table public.content_reviews add column if not exists version_id uuid references public.recipe_versions (id) on delete set null;
 create index if not exists content_reviews_version_idx on public.content_reviews (version_id) where version_id is not null;
--- quem arquivou: o herói restaura só o que ele arquivou (coluna protegida pela guarda de colunas)
+-- quem arquivou: o Hero restaura só o que ele arquivou (coluna protegida pela guarda de colunas)
 alter table public.content add column if not exists archived_by text;
 do $$ begin
   if not exists (select 1 from pg_constraint where conname = 'content_archived_by_check') then
@@ -396,7 +396,7 @@ grant update (viewed_at) on table public.recipe_view_history to authenticated;
 revoke select on table public.content_localizations from anon, authenticated;
 grant select (content_id, locale, title, summary, status, updated_at) on table public.content_localizations to anon, authenticated;
 
--- Legenda: L(c) = conteúdo no ar (content_is_live), ou do herói dono, ou admin;
+-- Legenda: L(c) = conteúdo no ar (content_is_live), ou do Hero dono, ou admin;
 --          A(c) = can_access_content (plano, módulo e etapa de receitas; dono e admin passam).
 do $$ begin
   if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'recipe_categories' and policyname = 'recipe_categories_select') then
@@ -415,7 +415,7 @@ do $$ begin
                        and (public.content_is_live(c.status, c.publish_at) or c.creator_id = (select public.my_creator_id())))
              or (select public.is_admin()));
   end if;
-  -- galeria: L(c); foto de etapa: A(c); o herói vê todas as próprias
+  -- galeria: L(c); foto de etapa: A(c); o Hero vê todas as próprias
   if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'recipe_media' and policyname = 'recipe_media_select') then
     create policy recipe_media_select on public.recipe_media for select to anon, authenticated
       using ((role = 'gallery' and exists (select 1 from public.content c where c.id = content_id and public.content_is_live(c.status, c.publish_at)))
@@ -456,7 +456,7 @@ end $$;
 insert into public.app_settings (key, value, description) values
   ('recipes.ratings_enabled', 'true'::jsonb, 'Avaliação por estrelas nas receitas (quem concluiu a receita).'),
   ('recipes.comments_enabled', 'false'::jsonb, 'Comentários em receitas (modelados; desligados até haver moderação na interface).'),
-  ('recipes.uploads_enabled', 'true'::jsonb, 'Kill switch do envio de fotos de receitas pelos heróis.')
+  ('recipes.uploads_enabled', 'true'::jsonb, 'Kill switch do envio de fotos de receitas pelos Heros.')
 on conflict (key) do nothing;
 
 -- A regra do tipo falha fechada: tipo sem linha em content_type_settings exige revisão.
@@ -564,7 +564,7 @@ end $$;
 
 -- ================================================================ 4) gatilhos e guardas
 
--- Tipo do ator para a auditoria das RPCs novas (herói aparece como 'creator', não 'consumer').
+-- Tipo do ator para a auditoria das RPCs novas (Hero aparece como 'creator', não 'consumer').
 create or replace function public.audit_actor()
 returns public.actor_type language sql stable set search_path = public as $$
   select (case when auth.uid() is null then 'system'
@@ -593,7 +593,7 @@ create or replace trigger trg_a_content_type_settings_review before update on pu
 
 -- ---------------------------------------------------------------- content: tipo travado para receita
 -- Receita tem tabelas próprias: virar outro tipo (ou outro tipo virar receita) deixaria dados órfãos.
--- Os demais tipos seguem mudando como antes (a 0017 libera no rascunho); para mudar, o herói duplica.
+-- Os demais tipos seguem mudando como antes (a 0017 libera no rascunho); para mudar, o Hero duplica.
 create or replace function public.content_type_lock()
 returns trigger language plpgsql set search_path = public as $$
 begin
@@ -643,7 +643,7 @@ begin
   select b.media_provider, nullif(btrim(coalesce(b.media_ref, '')), '') into v_provider, v_ref
   from public.content_bodies b where b.content_id = p_content;
   if v_provider is not null and not public.media_license_compatible(v_provider, p_license) then v := array_append(v, 'license'); end if;
-  -- vídeo do Stream só com envio do próprio herói, não descartado e sem uso em outro conteúdo (0026)
+  -- vídeo do Stream só com envio do próprio Hero, não descartado e sem uso em outro conteúdo (0026)
   if v_provider = 'cloudflare_stream' and (
        v_ref is null
        or not exists (select 1 from public.stream_uploads s where s.uid = v_ref and s.creator_id = p_creator and s.discarded_at is null
@@ -668,7 +668,7 @@ end $$;
 revoke execute on function public.recipe_assert_publishable(uuid) from public, anon, authenticated;
 grant execute on function public.recipe_assert_publishable(uuid) to service_role;
 
--- Toda entrada no ar de uma receita passa pelo checklist: publicação do herói, aprovação do admin e
+-- Toda entrada no ar de uma receita passa pelo checklist: publicação do Hero, aprovação do admin e
 -- admin_set_content_status (inclusive a conferência do uid do Stream). As 8 receitas que já estão no
 -- ar não são afetadas até serem republicadas.
 create or replace function public.content_recipe_publishable()
@@ -792,8 +792,8 @@ grant execute on function public.content_bodies_recipe_managed() to authenticate
 create or replace trigger trg_d_content_bodies_recipe_managed before insert or update on public.content_bodies
   for each row execute function public.content_bodies_recipe_managed();
 
--- ---------------------------------------------------------------- herói: especialidades e credenciais (P7)
--- O herói edita especialidades; credenciais ele só PEDE (creator_credentials_requests, fora da linha
+-- ---------------------------------------------------------------- Hero: especialidades e credenciais (P7)
+-- O Hero edita especialidades; credenciais ele só PEDE (creator_credentials_requests, fora da linha
 -- pública, como creator_rights_private). creator_profiles.credentials é legível por qualquer visitante,
 -- então só recebe o texto quando o admin aprova (admin_set_creator_credentials, sob app.trusted).
 create or replace trigger trg_a_creator_profiles_guard before update on public.creator_profiles
@@ -1068,7 +1068,7 @@ create or replace trigger trg_user_recipe_prefs_after after update on public.use
 -- ---------------------------------------------------------------- can_access_content (mesma assinatura e grants)
 -- A etapa demonstrativa de receitas (0024) passa a valer no banco: sem linha em recipe_onboarding a
 -- receita não abre (corpo, ingredientes, etapas, extras, nutrição, foto de etapa, lista, avaliação,
--- progresso). Admin e o herói dono são checados antes e não são afetados.
+-- progresso). Admin e o Hero dono são checados antes e não são afetados.
 create or replace function public.can_access_content(p_content uuid)
 returns boolean language plpgsql stable security definer set search_path = public as $$
 declare c public.content%rowtype;
@@ -1093,8 +1093,8 @@ returns jsonb language sql stable security definer set search_path = public as $
                 'transport.minutes_per_step', 'recipes.ratings_enabled', 'recipes.comments_enabled', 'recipes.uploads_enabled')
 $$;
 
--- ---------------------------------------------------------------- publicar pelo herói, agora com agendamento
--- Regras da 0026 mais: regra de revisão do tipo ligada → 'review_required' (o herói envia à revisão);
+-- ---------------------------------------------------------------- publicar pelo Hero, agora com agendamento
+-- Regras da 0026 mais: regra de revisão do tipo ligada → 'review_required' (o Hero envia à revisão);
 -- p_publish_at nulo publica agora, senão precisa estar entre agora + 1 min e agora + 365 dias
 -- ('invalid_publish_at'); a auditoria leva a data. O checklist da receita vem do gatilho
 -- trg_content_recipe_publishable. "Agendada" = published com publish_at no futuro.
@@ -1102,7 +1102,7 @@ create or replace function public.creator_publish_content(p_content uuid, p_publ
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare c public.content%rowtype; v_uid uuid := auth.uid(); v_creator uuid;
         v_provider public.media_provider; v_ref text; v_round int;
-        v_feedback constant text := 'Publicação direta pelo herói';
+        v_feedback constant text := 'Publicação direta pelo Hero';
 begin
   if v_uid is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
   v_creator := public.my_creator_id();
@@ -1285,10 +1285,10 @@ begin
   update public.recipe_comments set moderated_by = null where moderated_by = p_user;
   update public.recipe_nutrition set validated_by_user = null where validated_by_user = p_user;
   update public.recipe_ingredient_products set validated_by = null where validated_by = p_user;
-  -- herói que exclui a própria conta: o perfil público fica (conteúdo assinado), sem usuário. Sem
+  -- Hero que exclui a própria conta: o perfil público fica (conteúdo assinado), sem usuário. Sem
   -- isto o set null da cascata batia na guarda de colunas (user_id é protegida) e a exclusão falhava.
   update public.creator_profiles set user_id = null where user_id = p_user;
-  -- Mesma razão: created_by é protegida em content (herói que criou pelo app ou duplicou receita) e
+  -- Mesma razão: created_by é protegida em content (Hero que criou pelo app ou duplicou receita) e
   -- em products (vendedor que cadastrou). Zerar aqui, ainda sob app.trusted, evita a falha da cascata.
   update public.content set created_by = null where created_by = p_user;
   update public.products set created_by = null where created_by = p_user;
@@ -1297,7 +1297,7 @@ end $$;
 
 -- ---------------------------------------------------------------- limpeza do Stream nunca apaga receita
 -- Mesmas assinaturas e grants da 0026. draft_id só para rascunho de VÍDEO; para outro tipo (receita
--- com vídeo do Stream, rascunho nunca publicado do mesmo herói) o descarte tira só a mídia do corpo.
+-- com vídeo do Stream, rascunho nunca publicado do mesmo Hero) o descarte tira só a mídia do corpo.
 create or replace function public.stream_cleanup_candidates(p_cutoff timestamptz, p_limit int)
 returns table (uid text, draft_id uuid, referenced boolean)
 language sql stable set search_path = public as $$
@@ -1338,7 +1338,7 @@ begin
   end if;
 
   if p_draft is null then
-    -- só sobra corpo de rascunho nunca publicado, do mesmo herói e que não é vídeo (receita): o
+    -- só sobra corpo de rascunho nunca publicado, do mesmo Hero e que não é vídeo (receita): o
     -- conteúdo fica, sem o vídeo (como sistema, sem tocar em body); qualquer outro uso barra
     if exists (select 1 from public.content_bodies b join public.content x on x.id = b.content_id
                where b.media_provider = 'cloudflare_stream' and b.media_ref = p_uid
@@ -1382,7 +1382,7 @@ end $$;
 
 -- ---------------------------------------------------------------- corpo traduzido só com acesso
 -- O select de content_localizations perdeu a coluna body (seção 2); quem pode consumir o conteúdo
--- lê o corpo traduzido publicado por aqui. Admin e herói dono leem também o rascunho da tradução.
+-- lê o corpo traduzido publicado por aqui. Admin e Hero dono leem também o rascunho da tradução.
 create or replace function public.content_localized_body(p_content uuid, p_locale public.locale_code)
 returns jsonb language plpgsql stable security definer set search_path = public as $$
 declare v jsonb;
@@ -1398,7 +1398,7 @@ revoke execute on function public.content_localized_body(uuid, public.locale_cod
 grant execute on function public.content_localized_body(uuid, public.locale_code) to authenticated, service_role;
 
 -- ================================================================ 6) RPCs novas
--- Todas security definer, search_path fixo, sem execute para public/anon. As do herói começam como a
+-- Todas security definer, search_path fixo, sem execute para public/anon. As do Hero começam como a
 -- 0025: uid nulo → 'unauthenticated'; conteúdo alheio ou inexistente → 'forbidden'. Toda escrita em
 -- tabela filha filtra por content_id e confere o resultado.
 
@@ -1489,7 +1489,7 @@ end $$;
 -- Quem: dono com rascunho fora de revisão, ou admin (pode editar a publicada → versão 'admin_edit').
 -- Lock da linha antes de comparar updated_at ('stale_draft'). Ordem: corpo/restore_point →
 -- categorias → ingredientes → etapas → metadados de mídia → detalhes → extras → nutrição → content →
--- vídeo (sem trusted: a guarda do Stream roda como o herói) → marcador do corpo (trusted).
+-- vídeo (sem trusted: a guarda do Stream roda como o Hero) → marcador do corpo (trusted).
 create or replace function public.recipe_save(p_content uuid, p_payload jsonb, p_expected_updated_at timestamptz)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare
@@ -1755,7 +1755,7 @@ begin
       values (p_content, v_kcal, v_prot, v_carb, v_fat, v_fib, v_sod, v_src, v_src_note)
       on conflict (content_id) do update set kcal = excluded.kcal, protein_g = excluded.protein_g, carbs_g = excluded.carbs_g,
         fat_g = excluded.fat_g, fiber_g = excluded.fiber_g, sodium_mg = excluded.sodium_mg, source = excluded.source, source_note = excluded.source_note;
-      -- para o herói o gatilho já derrubou; o admin passa pelo gatilho, então derruba aqui
+      -- para o Hero o gatilho já derrubou; o admin passa pelo gatilho, então derruba aqui
       if v_admin and v_n_changed then
         update public.recipe_nutrition set validated = false, validated_by = null, validated_at = null, validation_note = null, validated_by_user = null
         where content_id = p_content;
@@ -1774,7 +1774,7 @@ begin
   where id = p_content;
 
   -- ---- vídeo: ausente mantém o atual; update separado e SEM trusted (a guarda do Stream da 0026
-  -- roda com o uid do herói: uid alheio dá 'stream_media_forbidden')
+  -- roda com o uid do Hero: uid alheio dá 'stream_media_forbidden')
   if p_payload ? 'video' and jsonb_typeof(p_payload -> 'video') <> 'null' then
     v_v := p_payload -> 'video';
     if jsonb_typeof(v_v) <> 'object' then raise exception 'invalid_payload: video' using errcode = '22023'; end if;
@@ -1808,7 +1808,7 @@ grant execute on function public.recipe_save(uuid, jsonb, timestamptz) to authen
 
 -- ---------------------------------------------------------------- registrar a foto enviada ao Storage
 -- mime e bytes vêm de storage.objects.metadata do objeto do próprio usuário (o cliente não decide);
--- largura e altura são só dica. Cota diária por herói com lock (P3: contas demo seguem só a cota).
+-- largura e altura são só dica. Cota diária por Hero com lock (P3: contas demo seguem só a cota).
 create or replace function public.recipe_register_media(p_content uuid, p_path text, p_role text, p_alt text, p_rights boolean,
   p_width int, p_height int)
 returns uuid language plpgsql security definer set search_path = public as $$
@@ -1884,7 +1884,7 @@ end $$;
 revoke execute on function public.recipe_delete_media(uuid) from public, anon;
 grant execute on function public.recipe_delete_media(uuid) to authenticated, service_role;
 
--- ---------------------------------------------------------------- ciclo de vida pelo herói
+-- ---------------------------------------------------------------- ciclo de vida pelo Hero
 -- Retirar da revisão: fecha a rodada como devolvida e volta a rascunho editável.
 create or replace function public.creator_withdraw_review(p_content uuid)
 returns jsonb language plpgsql security definer set search_path = public as $$
@@ -1895,7 +1895,7 @@ begin
   select * into c from public.content where id = p_content for update;
   if not found or v_creator is null or c.creator_id is distinct from v_creator then raise exception 'forbidden' using errcode = '42501'; end if;
   if c.review_status <> 'in_review' then raise exception 'not_in_review'; end if;
-  update public.content_reviews set decision = 'returned', feedback = 'Retirado pelo herói', decided_by = v_uid, decided_at = now()
+  update public.content_reviews set decision = 'returned', feedback = 'Retirado pelo Hero', decided_by = v_uid, decided_at = now()
   where content_id = p_content and decision = 'in_review';
   perform set_config('app.trusted', 'on', true);
   update public.content set review_status = 'none' where id = p_content;
@@ -1918,7 +1918,7 @@ begin
   if not found or v_creator is null or c.creator_id is distinct from v_creator then raise exception 'forbidden' using errcode = '42501'; end if;
   if c.status = 'archived' then raise exception 'already_archived'; end if;
   if c.review_status = 'in_review' then
-    update public.content_reviews set decision = 'returned', feedback = 'Arquivada pelo herói', decided_by = v_uid, decided_at = now()
+    update public.content_reviews set decision = 'returned', feedback = 'Arquivada pelo Hero', decided_by = v_uid, decided_at = now()
     where content_id = p_content and decision = 'in_review';
   end if;
   perform set_config('app.trusted', 'on', true);
@@ -1935,7 +1935,7 @@ end $$;
 revoke execute on function public.creator_archive_content(uuid, text) from public, anon;
 grant execute on function public.creator_archive_content(uuid, text) to authenticated, service_role;
 
--- Restaurar: só o que o próprio herói arquivou; volta a rascunho. O que o admin arquivou é trava dele.
+-- Restaurar: só o que o próprio Hero arquivou; volta a rascunho. O que o admin arquivou é trava dele.
 create or replace function public.creator_restore_content(p_content uuid)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare c public.content%rowtype; v_creator uuid;
@@ -2115,7 +2115,7 @@ end $$;
 revoke execute on function public.creator_restore_recipe_version(uuid) from public, anon;
 grant execute on function public.creator_restore_recipe_version(uuid) to authenticated, service_role;
 
--- ---------------------------------------------------------------- ingrediente ↔ produto (herói sugere, admin valida)
+-- ---------------------------------------------------------------- ingrediente ↔ produto (Hero sugere, admin valida)
 create or replace function public.creator_suggest_ingredient_product(p_ingredient uuid, p_product uuid, p_note text)
 returns uuid language plpgsql security definer set search_path = public as $$
 declare v_creator uuid; v_content uuid; v_id uuid;
@@ -2150,7 +2150,7 @@ end $$;
 revoke execute on function public.creator_withdraw_ingredient_product(uuid) from public, anon;
 grant execute on function public.creator_withdraw_ingredient_product(uuid) to authenticated, service_role;
 
--- ---------------------------------------------------------------- indicadores do herói (agregados e aproximados)
+-- ---------------------------------------------------------------- indicadores do Hero (agregados e aproximados)
 -- Visitantes distintos por dia em content.view (sem eventos sem pessoa e sem as visitas do próprio
 -- chef), favoritos e nota (sem contas demo). Janela de 1 a 90 dias. A interface rotula "aproximado".
 create or replace function public.creator_recipe_stats(p_days int default 30)
@@ -2290,8 +2290,8 @@ end $$;
 revoke execute on function public.admin_moderate_recipe_comment(uuid, text, text) from public, anon;
 grant execute on function public.admin_moderate_recipe_comment(uuid, text, text) to authenticated, service_role;
 
--- Credenciais do chef (P7): o herói pede em creator_credentials_requests; aprovar copia o texto
--- do pedido para o perfil público; reprovar limpa texto e data do perfil (o pedido fica para o herói).
+-- Credenciais do chef (P7): o Hero pede em creator_credentials_requests; aprovar copia o texto
+-- do pedido para o perfil público; reprovar limpa texto e data do perfil (o pedido fica para o Hero).
 create or replace function public.admin_set_creator_credentials(p_creator uuid, p_approved boolean, p_reason text)
 returns void language plpgsql security definer set search_path = public as $$
 declare cp public.creator_profiles%rowtype; v_text text;

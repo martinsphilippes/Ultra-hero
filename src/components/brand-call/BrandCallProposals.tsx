@@ -51,7 +51,7 @@ export function BrandCallProposals({ detail }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const visible = proposals.filter((p) => p.status !== "closed" || p.endReason === "decided");
-  // 0096: o que se compara é o teto de investimento (por herói = valor × máximo de heróis); o acordo congela o que foi acordado
+  // 0096: o que se compara é o teto de investimento (por Hero = valor × máximo de Heros); o acordo congela o que foi acordado
   const termsOf = (p: CallProposal) =>
     p.status === "agreed" && p.agreedValueModel
       ? { model: p.agreedValueModel, amountCents: p.agreedCents, maxHeroes: p.agreedMaxHeroes }

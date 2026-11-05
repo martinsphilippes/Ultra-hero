@@ -13,9 +13,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("home") };
 }
 
-// Início: feed infinito de posts dos heróis, um abaixo do outro, como no Instagram. No celular a capa
+// Início: feed infinito de posts dos Heros, um abaixo do outro, como no Instagram. No celular a capa
 // vai de borda a borda; no computador o feed fica numa coluna central. Logado, "Seguindo | Todos"
-// no topo (?feed=…); o padrão é "Seguindo" para quem segue ao menos um herói.
+// no topo (?feed=…); o padrão é "Seguindo" para quem segue ao menos um Hero.
 type Props = { searchParams: Promise<{ [FEED_PARAM]?: string | string[] }> };
 
 export default async function HomePage({ searchParams }: Props) {

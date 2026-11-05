@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { hasSeenWelcome, isWelcomeArea, WELCOME_AREAS, WELCOME_STEPS, welcomeAreasFor, welcomeHref, welcomeMetaKey, welcomeStepCount, welcomeSuppressedOn } from "@/lib/welcome/areas";
 
-// Card de boas-vindas por área (app, herói, marca, agência).
+// Card de boas-vindas por área (app, Hero, marca, agência).
 
 type Tree = Record<string, unknown>;
 const LOCALES = ["pt-BR", "en", "es"] as const;
@@ -73,7 +73,7 @@ describe("visto, onde aparece e Como funciona", () => {
     expect(read("src/app/marca/layout.tsx")).toContain('<WelcomeTourMount area="marca" />');
     expect(read("src/app/agencia/layout.tsx")).toContain('<WelcomeTourMount area="agencia" />');
     expect(read("src/app/admin/layout.tsx")).not.toContain("WelcomeTour");
-    // no Portal do Herói, o ramo do admin ("Publicar como hero") não monta o card
+    // no Portal do Hero, o ramo do admin ("Publicar como hero") não monta o card
     const heroi = read("src/app/heroi/layout.tsx");
     expect(heroi.indexOf("WelcomeTourMount area")).toBeGreaterThan(heroi.indexOf('portal="creator"'));
   });

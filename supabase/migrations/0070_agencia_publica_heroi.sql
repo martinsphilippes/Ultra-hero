@@ -1,22 +1,22 @@
--- 0070 · A agência publica pelos heróis que representa.
--- Idempotente (create or replace). Depende da 0045 (agir pelo herói), 0064 (agências) e 0065 (talentos).
+-- 0070 · A agência publica pelos Heros que representa.
+-- Idempotente (create or replace). Depende da 0045 (agir pelo Hero), 0064 (agências) e 0065 (talentos).
 --
 -- Decisão do responsável (31/10/2026): o Groscove Ultra é plataforma intermediária, como uma rede social.
--- A agência se cadastra (convite), aceita os Termos do Parceiro e gerencia os perfis dos heróis com quem
+-- A agência se cadastra (convite), aceita os Termos do Parceiro e gerencia os perfis dos Heros com quem
 -- tem contrato: cria o perfil, troca foto e capa e publica posts em nome deles. Os contratos ficam com a
 -- agência (Termos do Parceiro, "Guarda dos contratos").
 --
 -- Desenho: o mesmo cabeçalho x-acting-hero da 0045. acting_hero_id() passa a honrá-lo também para gestor
--- ou administrador de agência ativa, SÓ para heróis ligados a ela (talent_profiles.agency_id + creator_id,
--- talento não arquivado). Tudo o que já confere "herói dono" via my_creator_id() (posts, rascunhos,
+-- ou administrador de agência ativa, SÓ para Heros ligados a ela (talent_profiles.agency_id + creator_id,
+-- talento não arquivado). Tudo o que já confere "Hero dono" via my_creator_id() (posts, rascunhos,
 -- publicação, vídeos) vale para a agência sem variantes novas. Ficam só do admin: receitas (o Storage não
 -- recebe o cabeçalho; 0045), módulo Conteúdos do admin, direitos, categorias e vínculos com produtos.
 --
 -- Novas RPCs: agency_create_hero (cria perfil + talento ligado), agency_update_hero (nome, chamada, bio,
--- pilares), agency_act_as_hero (escolha auditada), hero_avatar_set (foto do herói escolhido).
--- A capa usa as RPCs da 0042: hero_cover_active_creator passa a devolver primeiro o herói escolhido.
+-- pilares), agency_act_as_hero (escolha auditada), hero_avatar_set (foto do Hero escolhido).
+-- A capa usa as RPCs da 0042: hero_cover_active_creator passa a devolver primeiro o Hero escolhido.
 
--- 1) heróis da agência de quem chama (gestor+) -------------------------------------------------------------
+-- 1) Heros da agência de quem chama (gestor+) -------------------------------------------------------------
 create or replace function public.agency_hero_ids()
 returns uuid[] language sql stable security definer set search_path = '' as $$
   select coalesce(array_agg(t.creator_id), '{}'::uuid[])
@@ -27,7 +27,7 @@ $$;
 revoke execute on function public.agency_hero_ids() from public, anon;
 grant execute on function public.agency_hero_ids() to authenticated, service_role;
 
--- 2) herói em nome de quem se age: admin (qualquer herói ativo) ou agência (só os dela) -------------------
+-- 2) Hero em nome de quem se age: admin (qualquer Hero ativo) ou agência (só os dela) -------------------
 create or replace function public.acting_hero_id()
 returns uuid language plpgsql stable security definer set search_path = public as $$
 declare v_headers text; v_raw text; v_id uuid;
@@ -48,7 +48,7 @@ end $$;
 revoke execute on function public.acting_hero_id() from public, anon;
 grant execute on function public.acting_hero_id() to authenticated, service_role;
 
--- auditoria das escritas em nome do herói: o tipo de ator segue quem age (admin ou agência)
+-- auditoria das escritas em nome do Hero: o tipo de ator segue quem age (admin ou agência)
 create or replace function public.acting_hero_audit()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare v_acting uuid; v_row jsonb; v_old jsonb; v_actor public.actor_type;
@@ -78,7 +78,7 @@ end $$;
 revoke execute on function public.acting_hero_audit() from public, anon;
 grant execute on function public.acting_hero_audit() to authenticated, service_role;
 
--- 3) escolher o herói (agência; o admin segue com admin_act_as_hero) -----------------------------------------
+-- 3) escolher o Hero (agência; o admin segue com admin_act_as_hero) -----------------------------------------
 create or replace function public.agency_act_as_hero(p_creator uuid)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare c public.creator_profiles%rowtype;
@@ -93,7 +93,7 @@ end $$;
 revoke execute on function public.agency_act_as_hero(uuid) from public, anon;
 grant execute on function public.agency_act_as_hero(uuid) to authenticated, service_role;
 
--- 4) criar e editar o perfil do herói (gestor+ da agência, fora da agência de demonstração) ------------------
+-- 4) criar e editar o perfil do Hero (gestor+ da agência, fora da agência de demonstração) ------------------
 create or replace function public.agency_create_hero(p_agency uuid, p_name text, p_slug text, p_pillars public.pillar[], p_headline text, p_bio text)
 returns uuid language plpgsql security definer set search_path = public as $$
 declare v_agency public.agencies%rowtype; v_id uuid;
@@ -140,7 +140,7 @@ end $$;
 revoke execute on function public.agency_update_hero(uuid, text, public.pillar[], text, text) from public, anon;
 grant execute on function public.agency_update_hero(uuid, text, public.pillar[], text, text) to authenticated, service_role;
 
--- 5) capa: o herói escolhido vale primeiro (as RPCs da 0042 chamam esta função por dentro) ------------------
+-- 5) capa: o Hero escolhido vale primeiro (as RPCs da 0042 chamam esta função por dentro) ------------------
 create or replace function public.hero_cover_active_creator(p_uid uuid)
 returns uuid language sql stable set search_path = public as $$
   select coalesce(
@@ -153,7 +153,7 @@ $$;
 revoke execute on function public.hero_cover_active_creator(uuid) from public, anon, authenticated;
 grant execute on function public.hero_cover_active_creator(uuid) to service_role;
 
--- 6) foto do herói escolhido: envio do próprio usuário no bucket avatars (0031), aplicado só no herói ---------
+-- 6) foto do Hero escolhido: envio do próprio usuário no bucket avatars (0031), aplicado só no Hero ---------
 create or replace function public.hero_avatar_set(p_url text)
 returns text language plpgsql security definer set search_path = public as $$
 declare v_uid uuid := auth.uid(); v_creator uuid; v_path text; v_prev text; v_stored boolean := true;
@@ -182,7 +182,7 @@ end $$;
 revoke execute on function public.hero_avatar_set(text) from public, anon;
 grant execute on function public.hero_avatar_set(text) to authenticated, service_role;
 
--- tirar a foto do herói escolhido (o objeto sem referência sai na limpeza diária da 0031)
+-- tirar a foto do Hero escolhido (o objeto sem referência sai na limpeza diária da 0031)
 create or replace function public.hero_avatar_clear()
 returns text language plpgsql security definer set search_path = public as $$
 declare v_creator uuid; v_prev text;

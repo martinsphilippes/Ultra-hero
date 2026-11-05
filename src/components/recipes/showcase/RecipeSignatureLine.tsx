@@ -7,7 +7,7 @@ import type { RecipeSignature, ShowcasePerson } from "@/lib/recipes/showcase";
 const LINK = "font-semibold text-fg underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
 // Assinatura da receita na página (0051): "Receita de {chef}", "Receita de {chef} · indicada por
-// {herói}" ou "Indicada por {herói}", com a foto de quem assina (ou de quem indica, sem chef).
+// {Hero}" ou "Indicada por {Hero}", com a foto de quem assina (ou de quem indica, sem chef).
 export async function RecipeSignatureLine({ signature }: { signature: RecipeSignature }) {
   if (signature.kind === "none") return null;
   const t = await getTranslations("recipes.showcase.signature");

@@ -1,7 +1,7 @@
 import { Apple, BookOpen, Camera, ChefHat, Dumbbell, Heart, Layers, Mic, Music, Palette, Salad, ShoppingBag, Star, Sunrise, Trophy, UtensilsCrossed, type LucideIcon } from "lucide-react";
 import type { LibraryIconKey } from "@/lib/heroes/library-tabs";
 
-/** Ícones que o admin pode escolher para os atalhos do herói (0050), em lucide. */
+/** Ícones que o admin pode escolher para os atalhos do Hero (0050), em lucide. */
 export const LIBRARY_ICONS: Record<LibraryIconKey, LucideIcon> = {
   sunrise: Sunrise,
   camera: Camera,

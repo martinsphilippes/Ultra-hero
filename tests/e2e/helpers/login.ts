@@ -8,8 +8,8 @@ export type DemoKind = "creator" | "admin" | "premium" | "free" | "agency" | "ag
 /** Todo login chega na aba Hero. */
 export const LOGIN_LANDING = /\/personalities$/;
 
-/** Área de cada conta demo (o portal ou a tela que os specs usam depois do login). O herói não tem mais
- *  painel (0045: só o admin gerencia conteúdo pelos heróis): a área dele é o Perfil, com o Novo post. */
+/** Área de cada conta demo (o portal ou a tela que os specs usam depois do login). O Hero não tem mais
+ *  painel (0045: só o admin gerencia conteúdo pelos Heros): a área dele é o Perfil, com o Novo post. */
 export const DEMO_HOME: Record<DemoKind, RegExp> = {
   creator: /\/profile$/,
   admin: /\/admin$/,

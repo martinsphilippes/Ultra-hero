@@ -1,5 +1,5 @@
 -- =============================================================================
--- Ultra Hero · 0061 · Aviso de lance superado (push + pop-up no app) e visitas à página do herói
+-- Ultra Hero · 0061 · Aviso de lance superado (push + pop-up no app) e visitas à página do Hero
 --   Docs: docs/decisions/push-notifications.md, docs/decisions/colecionaveis.md,
 --   docs/decisions/hero-showcase.md (indicadores). Cenário S71 em supabase/tests/rls_scenarios.sql.
 --
@@ -13,8 +13,8 @@
 --      Gatilho em collectibles (troca de leading_bid_id), dentro da transação do place_bid, que já
 --      trava a linha do item (FOR UPDATE): os lances do mesmo item são serializados.
 --      Quem volta à frente tem o aviso pendente daquele item dado como visto.
---   2) hero_page_view_counters: visitas à página do herói (/personalities/<slug>) somadas por dia
---      (Brasília) e herói. Sem pessoa, sem IP, sem FK (lição da 0055). Só o service role soma
+--   2) hero_page_view_counters: visitas à página do Hero (/personalities/<slug>) somadas por dia
+--      (Brasília) e Hero. Sem pessoa, sem IP, sem FK (lição da 0055). Só o service role soma
 --      (POST /api/hero-page-views → hero_page_view_bump). Entra em admin_indicators_heroes.
 -- Regras gerais: idempotente; search_path fixo; grants explícitos; RLS ligada; nada de drop de tabela.
 -- Nenhuma função nova executável pelo visitante (S14 segue com 17).
@@ -148,7 +148,7 @@ begin
   end if;
 end $$;
 
--- ---------------------------------------------------------------- 5) visitas à página do herói
+-- ---------------------------------------------------------------- 5) visitas à página do Hero
 create table if not exists public.hero_page_view_counters (
   id bigint generated always as identity primary key,
   day date not null,
@@ -164,7 +164,7 @@ grant all on table public.hero_page_view_counters to service_role;
 alter table public.hero_page_view_counters enable row level security;
 -- nenhuma política: só o service role (que ignora a RLS) lê e soma
 
--- Soma 1 visita no dia (Brasília). Só herói ativo; fora disso não faz nada. Security invoker: quem
+-- Soma 1 visita no dia (Brasília). Só Hero ativo; fora disso não faz nada. Security invoker: quem
 -- executa é o service role; anon e authenticated não executam.
 create or replace function public.hero_page_view_bump(p_creator uuid)
 returns boolean language plpgsql security invoker set search_path = public as $$
@@ -180,7 +180,7 @@ end $$;
 revoke execute on function public.hero_page_view_bump(uuid) from public, anon, authenticated;
 grant execute on function public.hero_page_view_bump(uuid) to service_role;
 
--- ---------------------------------------------------------------- 6) indicadores por herói (0060 + visitas)
+-- ---------------------------------------------------------------- 6) indicadores por Hero (0060 + visitas)
 create or replace function public.admin_indicators_heroes(p_days int default 30)
 returns jsonb language plpgsql stable security definer set search_path = public as $$
 declare w record; v jsonb;
@@ -235,12 +235,12 @@ begin
                       where r.status = 'active' or r.followers + r.new_followers + r.content_views + r.program_views
                         + r.recipe_fazer + r.recipe_comprar_pronto + r.recipe_lista_compras + r.pro_ver_perfil
                         + r.pro_contratar + r.shortcut_opens + r.collectible_bids + r.collectible_views + r.page_views > 0), '[]'::jsonb),
-    -- novos seguidores por dia (Brasília), somados entre heróis; quem deixou de seguir não aparece
+    -- novos seguidores por dia (Brasília), somados entre Heros; quem deixou de seguir não aparece
     'daily_follows', (select coalesce(jsonb_agg(jsonb_build_object('day', d.day, 'value', coalesce(f.n, 0)) order by d.day), '[]'::jsonb)
                       from days d
                       left join (select (created_at at time zone 'America/Sao_Paulo')::date as day, count(*) n
                                  from public.hero_favorites where created_at >= w.since group by 1) f on f.day = d.day),
-    -- visitas à página do herói por dia (Brasília), somadas entre heróis
+    -- visitas à página do Hero por dia (Brasília), somadas entre Heros
     'daily_page_views', (select coalesce(jsonb_agg(jsonb_build_object('day', d.day, 'value', coalesce(s.n, 0)) order by d.day), '[]'::jsonb)
                          from days d
                          left join (select day, sum(count) n from public.hero_page_view_counters where day >= w.since_day group by 1) s on s.day = d.day),

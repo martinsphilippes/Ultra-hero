@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("badge") };
 }
 
-// Evento do Calendário Groscove no Portal do Herói (0098): detalhe e "Tenho interesse". Só o TITULAR de herói ativo
+// Evento do Calendário Groscove no Portal do Hero (0098): detalhe e "Tenho interesse". Só o TITULAR de Hero ativo
 // manifesta; a equipe vê o estado. Interesse é um sinal para a agência/Groscove, não um contrato.
 export default async function HeroGroscoveEventPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -52,7 +52,7 @@ export default async function HeroGroscoveEventPage({ params }: { params: Promis
           <InterestCounts counts={counts} />
           <p className="type-caption text-fg-subtle">{t("interest.notContract")}</p>
         </section>
-        {/* 0101: notícias/dicas do evento e o que envolve o herói (negócio em que foi consultado, patrocínio dele) */}
+        {/* 0101: notícias/dicas do evento e o que envolve o Hero (negócio em que foi consultado, patrocínio dele) */}
         <EventPosts posts={posts.items} portal="hero" />
         {history.length > 0 ? <EventCommercialPanel items={history} /> : null}
       </PlatformEventView>

@@ -18,7 +18,7 @@ type Props = {
   ready: { product: ReadyMealProduct; isLoggedIn: boolean; inCart: number; nextPath: string } | null;
 };
 
-// Ações do card na Alimentação do herói (0051): Fazer (Modo Cozinha), Lista de compras (abre a
+// Ações do card na Alimentação do Hero (0051): Fazer (Modo Cozinha), Lista de compras (abre a
 // receita no botão da lista) e, com produto ligado, Comprar pronto. A cozinha e a receita pedem a
 // etapa demonstrativa sozinhas. Cada toque conta no indicador da vitrine (sem dados da pessoa).
 export function RecipeCardActions({ slug, title, heroSlug, track, ready }: Props) {

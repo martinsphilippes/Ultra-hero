@@ -3,23 +3,23 @@ import { expect, test } from "@playwright/test";
 import { loginAs } from "./helpers/login";
 
 // Portais: voltaram para o topo do Perfil ("bem em cima", pedido do responsável) e seguem também na
-// seção "Portais" das Configurações. O herói sem outro papel segue com o Novo post como primeira opção
+// seção "Portais" das Configurações. O Hero sem outro papel segue com o Novo post como primeira opção
 // do Perfil. Consumidor não vê portais. Só leitura: nenhum dado é gravado.
 
 const NATIVE_UA = "Mozilla/5.0 (Linux; Android 14) GCHeroApp/1.0.0 (android)";
 
 test.describe("portais no topo do Perfil e nas Configurações", () => {
-  test("herói ativo: sem o cartão Portal do herói; a primeira opção de toque do Perfil é o Novo post", async ({ page }) => {
+  test("Hero ativo: sem o cartão Portal do Hero; a primeira opção de toque do Perfil é o Novo post", async ({ page }) => {
     await loginAs(page, "creator");
     await page.goto("/profile");
     await expect(page.getByTestId("hero-new-post")).toBeVisible();
     await expect(page.getByTestId("profile-portal-creator")).toHaveCount(0);
-    await expect(page.getByText("Portal do herói", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Portal do Hero", { exact: true })).toHaveCount(0);
     // primeira opção de toque: o Novo post (o resto do portal é da administração, 0045)
     await expect(page.locator("main a").first()).toHaveAttribute("data-testid", "hero-new-post");
     await page.goto("/configuracoes");
     await expect(page.getByTestId("settings-section-portals")).toHaveCount(0);
-    await expect(page.getByText("Portal do herói", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Portal do Hero", { exact: true })).toHaveCount(0);
   });
 
   test("agência: portal no topo do Perfil, primeiro link da página, acima da conta e do Hoje", async ({ page }) => {

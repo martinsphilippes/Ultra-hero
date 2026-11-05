@@ -11,7 +11,7 @@ import { ADMIN_INVITE_ROLES, HERO_MODES, TEAM_MODES, adminInviteOptions, validat
 import type { Json } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 
-// Convite do admin (0091 + 0097): e-mail, papel e validade (+ as opções do Herói: novo, equipe ou casting). A RPC admin_invite
+// Convite do admin (0091 + 0097): e-mail, papel e validade (+ as opções do Hero: novo, equipe ou casting). A RPC admin_invite
 // confere tudo de novo (Admin só até 48h e com a confirmação; auditoria própria). O link de cada convite
 // aparece uma única vez (o banco guarda só o hash) e, com e-mail configurado, também vai por e-mail.
 

@@ -4,8 +4,8 @@ import { PARTNER_TERMS_VERSION } from "./version";
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 
-// Herói ou agência só envia foto ou vídeo depois de confirmar os direitos sobre a versão vigente dos
-// Termos do Parceiro (0068). Vale também para o admin agindo em nome de um herói: é a agência que publica
+// Hero ou agência só envia foto ou vídeo depois de confirmar os direitos sobre a versão vigente dos
+// Termos do Parceiro (0068). Vale também para o admin agindo em nome de um Hero: é a agência que publica
 // por ele, e o aceite fica no nome de quem envia.
 export async function hasUploadRights(supabase: Supabase, userId: string): Promise<boolean> {
   const { data, error } = await supabase

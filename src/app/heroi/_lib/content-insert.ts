@@ -4,7 +4,7 @@ import type { createClient } from "@/lib/supabase/server";
 import { failFrom, type ActionFailure } from "./action-utils";
 import { uniqueSlug } from "./slug";
 
-// Inserção do rascunho do herói, compartilhada pelo editor (createContent) e pelo composer de
+// Inserção do rascunho do Hero, compartilhada pelo editor (createContent) e pelo composer de
 // post (startVideoPost): um só lugar para a regra do slug único e da colisão.
 
 export type CreatorSupabase = Awaited<ReturnType<typeof createClient>>;

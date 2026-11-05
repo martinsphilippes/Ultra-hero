@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Props = { params: Promise<{ id: string }> };
 
-// Resumo da ficha: dados (só a agência lê notas e contatos), segmentos, herói e acesso ao escritório,
+// Resumo da ficha: dados (só a agência lê notas e contatos), segmentos, Hero e acesso ao escritório,
 // consentimento e catálogo. Colaborador vê tudo sem editar (a RPC recusa com forbidden).
 export default async function TalentSummaryPage({ params }: Props) {
   const { id } = await params;
@@ -38,7 +38,7 @@ export default async function TalentSummaryPage({ params }: Props) {
   const isAdmin = agencyCan(ctx.role, "admin", ctx.platformAdmin);
   const canEdit = isManager && !talent.archived;
   const locked = ctx.agency.isDemo;
-  // acesso real do creator (0087): login próprio ou do herói ligado; herói sem conta NÃO é login
+  // acesso real do creator (0087): login próprio ou do Hero ligado; Hero sem conta NÃO é login
   const accessMap = talent.archived ? new Map() : await listTalentAccess(ctx.agency.id);
   const accessInfo = accessMap.get(talent.id);
   const access = resolveTalentAccess(accessInfo, talent);
@@ -55,10 +55,10 @@ export default async function TalentSummaryPage({ params }: Props) {
     canEdit && !hasLogin ? listTalentDocuments(talent.id) : Promise.resolve([]),
     isManager && !hasLogin ? listTalentInvites(talent.id) : Promise.resolve([]),
   ]);
-  // 0112: acesso do herói (situação, e-mail e celular — só gestor+ e admin geral)
+  // 0112: acesso do Hero (situação, e-mail e celular — só gestor+ e admin geral)
   const accessStatus = isManager && !talent.archived ? ((await loadAccessStatus(await createClient(), ctx.agency.id, "talent")).get(talent.id) ?? null) : null;
   const consentOk = talent.consent === "active";
-  // herói ligado de pessoa real sem autorização de imagem válida: aviso interno (o público não vê selo nenhum)
+  // Hero ligado de pessoa real sem autorização de imagem válida: aviso interno (o público não vê selo nenhum)
   const { data: heroRights } = talent.creatorId
     ? await (await createClient()).from("creator_profiles").select("is_fictional, rights_status, rights_valid_until").eq("id", talent.creatorId).maybeSingle()
     : { data: null };
@@ -108,7 +108,7 @@ export default async function TalentSummaryPage({ params }: Props) {
             {t("sections.access")}
           </h2>
           {talent.creatorId ? (
-            // herói ligado; suspenso ou pendente, a página dele não é pública e o nome não vem pela RLS
+            // Hero ligado; suspenso ou pendente, a página dele não é pública e o nome não vem pela RLS
             <div className="flex flex-wrap items-center justify-between gap-2">
               {talent.hero ? (
                 <p className="type-body-sm text-fg">
@@ -139,7 +139,7 @@ export default async function TalentSummaryPage({ params }: Props) {
               <CreateTalentPageButton talentId={talent.id} talentName={talent.name} />
             </div>
           ) : null}
-          {/* login do creator (0087): com ou sem herói, a agência convida quem ainda não tem conta */}
+          {/* login do creator (0087): com ou sem Hero, a agência convida quem ainda não tem conta */}
           <div className="flex flex-col gap-3" data-testid="talent-access">
             <div className="flex flex-wrap items-center gap-2">
               <TalentAccessBadge access={access} />

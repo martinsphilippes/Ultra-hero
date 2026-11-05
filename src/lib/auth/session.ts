@@ -61,7 +61,7 @@ export const getRoles = cache(async (): Promise<RoleAssignment[]> => {
   return (data as RoleAssignment[] | null) ?? [];
 });
 
-/** Creator só com escopo de talento (sem página pública de herói): o /heroi leva ao escritório (Etapa B). */
+/** Creator só com escopo de talento (sem página pública de Hero): o /heroi leva ao escritório (Etapa B). */
 
 export async function hasRole(role: AppRole): Promise<boolean> {
   const roles = await getRoles();

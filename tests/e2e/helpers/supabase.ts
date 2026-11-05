@@ -40,7 +40,7 @@ async function rpc(fn: string, args: Record<string, unknown>): Promise<{ status:
 }
 
 /**
- * A função existe no banco? O visitante não tem execute nas RPCs do herói: existir dá 401/403
+ * A função existe no banco? O visitante não tem execute nas RPCs do Hero: existir dá 401/403
  * (permission denied) e não existir dá PGRST202. null quando não há como perguntar.
  */
 export async function rpcExists(fn: string, args: Record<string, unknown>): Promise<boolean | null> {
@@ -89,7 +89,7 @@ export async function publicSetting(key: string): Promise<unknown> {
 
 // ---------------------------------------------------------------- sessão do navegador (testes reais)
 // Os testes reais (E2E_*_REAL=1) gravam no remoto e precisam devolver a conta demo ao estado de antes,
-// inclusive o que a tela não mostra (ex.: os dois avatares do herói). A sessão vem do cookie do
+// inclusive o que a tela não mostra (ex.: os dois avatares do Hero). A sessão vem do cookie do
 // Supabase do próprio navegador do teste: lê e grava só as linhas da própria conta, sob a RLS.
 
 type BrowserSession = { accessToken: string; userId: string };
@@ -125,7 +125,7 @@ async function rest(page: Page, method: "GET" | "POST" | "PATCH" | "DELETE", pat
   return res.json();
 }
 
-/** Os dois avatares da própria conta: o do app (profiles) e o do perfil público (creator_profiles), se herói. */
+/** Os dois avatares da própria conta: o do app (profiles) e o do perfil público (creator_profiles), se Hero. */
 export type OwnAvatars = { profile: string | null; creatorId: string | null; creator: string | null };
 
 export async function readOwnAvatars(page: Page): Promise<OwnAvatars> {
@@ -147,7 +147,7 @@ export async function restoreOwnAvatars(page: Page, original: OwnAvatars) {
   if (original.creatorId && now.creator !== original.creator) await rest(page, "PATCH", `creator_profiles?id=eq.${original.creatorId}`, { avatar_url: original.creator });
 }
 
-/** Capa do perfil de herói da própria conta (creator_profiles.cover_url), ou null sem perfil. */
+/** Capa do perfil de Hero da própria conta (creator_profiles.cover_url), ou null sem perfil. */
 export type OwnCover = { creatorId: string | null; cover: string | null };
 
 export async function readOwnCover(page: Page): Promise<OwnCover> {
@@ -157,7 +157,7 @@ export async function readOwnCover(page: Page): Promise<OwnCover> {
   return { creatorId: rows[0]?.id ?? null, cover: rows[0]?.cover_url ?? null };
 }
 
-/** Devolve a capa ao valor lido antes do teste (só se mudou; a coluna é gravável pelo próprio herói). */
+/** Devolve a capa ao valor lido antes do teste (só se mudou; a coluna é gravável pelo próprio Hero). */
 export async function restoreOwnCover(page: Page, original: OwnCover) {
   if (!original.creatorId) return;
   const now = await readOwnCover(page);
@@ -203,7 +203,7 @@ export async function publicIdBySlug(table: "products" | "programs", slug: strin
 }
 
 // ---------------------------------------------------------------- post com foto (teste real, E2E_POST_PHOTO_REAL=1)
-// O herói não apaga conteúdo que já foi ao ar (nem pela RLS nem pelas RPCs). O teste real de
+// O Hero não apaga conteúdo que já foi ao ar (nem pela RLS nem pelas RPCs). O teste real de
 // publicação limpa o que criou com o service role do .env.local (só no processo do teste, nunca no
 // navegador): apaga o conteúdo, o objeto do bucket post-photos e marca o envio.
 

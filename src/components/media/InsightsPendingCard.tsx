@@ -8,7 +8,7 @@ import { insightMark, isInsightLate } from "@/lib/media/insights";
 import type { InsightItem } from "@/lib/roadmap/phase3-queries";
 
 // Insights do publipost (0111, D1): o que falta enviar 24 h e 7 dias depois da publicação (print + números nas
-// métricas da entrega, 0083). Agência: pendentes e atrasados por negócio; herói: os dele, com o link da oportunidade.
+// métricas da entrega, 0083). Agência: pendentes e atrasados por negócio; Hero: os dele, com o link da oportunidade.
 export async function InsightsPendingCard({ items, side }: { items: InsightItem[]; side: "agency" | "talent" }) {
   if (items.length === 0) return null;
   const [t, tk, locale] = await Promise.all([getTranslations("media.insights"), getTranslations("commercial.deliverableKinds"), getLocale() as Promise<Locale>]);

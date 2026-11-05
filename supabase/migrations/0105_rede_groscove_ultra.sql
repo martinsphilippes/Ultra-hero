@@ -1,5 +1,5 @@
 -- 0105 · "Groscove Ultra" como rede (primeira opção nas listas de redes: campanha, chamada da marca, patrocínio,
--- entregáveis, músicas e contas do herói). Pedido do responsável (04/11).
+-- entregáveis, músicas e contas do Hero). Pedido do responsável (04/11).
 -- A lista fechada de redes vive em vários checks e numa função de validação (0065/0066/0083/0085/0089). Em vez de
 -- reescrever cada um à mão, esta migração acrescenta 'groscove_ultra' em todos os checks que já listam 'kwai' e
 -- 'other' (e sobe o teto de cardinality de 11 para 12 onde existir), e faz o mesmo no corpo de

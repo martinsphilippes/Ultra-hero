@@ -1,15 +1,15 @@
 -- =============================================================================
 -- Groscove Ultra · 0076 · Programa como bloco do conteúdo
 --   Decisão do responsável (01/11/2026): o "Novo conteúdo" passa a ser um conteúdo estruturado,
---   com o bloco do pilar (treino, nutrição ou cardápio; 0075) e, além dele, um programa do herói
+--   com o bloco do pilar (treino, nutrição ou cardápio; 0075) e, além dele, um programa do Hero
 --   "aí dentro". O programa é um bloco à parte: convive com o bloco do pilar (dois slots), aponta para
---   um programa publicado do mesmo herói e a página do conteúdo mostra o cartão com o atalho.
+--   um programa publicado do mesmo Hero e a página do conteúdo mostra o cartão com o atalho.
 --
 --   * post_blocks.kind aceita 'program'; data = {"program_id": uuid, "note": texto ≤ 300}.
 --   * post_block_set: 'program' não apaga o bloco do pilar nem as marcações do treino; o bloco do
 --     pilar continua apagando os outros do pilar, mas preserva o programa. p_kind nulo segue apagando
 --     tudo (post rápido que volta para Rotina). Referência conferida: programa existe, publicado, com
---     versão atual, do mesmo herói do conteúdo.
+--     versão atual, do mesmo Hero do conteúdo.
 -- Regras: nada de drop de tabela/coluna; search_path fixo; grants explícitos; nenhuma função nova com
 -- execute para anon (a lista pública do S14 continua com 18); políticas inalteradas.
 -- =============================================================================
@@ -78,7 +78,7 @@ alter table public.post_blocks add constraint post_blocks_kind_check check (kind
 -- ---------------------------------------------------------------- 3) gravar o bloco (dois slots: pilar e programa)
 -- Pilar (treino, nutrição, cardápio): um por conteúdo, gravar um apaga os outros dois e as marcações do
 -- treino; o programa fica. Programa: não mexe no bloco do pilar nem nas marcações. p_data nulo apaga o
--- tipo; p_kind nulo apaga tudo. Programa: publicado, com versão atual, do mesmo herói do conteúdo.
+-- tipo; p_kind nulo apaga tudo. Programa: publicado, com versão atual, do mesmo Hero do conteúdo.
 create or replace function public.post_block_set(p_content uuid, p_kind text, p_data jsonb)
 returns void language plpgsql security definer set search_path = public as $$
 declare v_uid uuid := auth.uid(); c public.content%rowtype; v jsonb; v_ref uuid;
@@ -88,7 +88,7 @@ begin
   if p_kind is null and p_data is not null then raise exception 'invalid_block'; end if;
   select * into c from public.content where id = p_content for update;
   if not found then raise exception 'not_found'; end if;
-  -- coalesce: sem herói ligado my_creator_id() é nulo, e "nulo = x" não pode virar "pode"
+  -- coalesce: sem Hero ligado my_creator_id() é nulo, e "nulo = x" não pode virar "pode"
   if not (public.is_admin() or coalesce(c.creator_id = public.my_creator_id(), false)) then
     raise exception 'forbidden' using errcode = '42501';
   end if;
@@ -124,7 +124,7 @@ begin
     end loop;
   elsif p_kind = 'program' then
     v_ref := (p_data ->> 'program_id')::uuid;
-    -- coalesce: conteúdo sem herói (creator_id nulo) não aponta para programa de ninguém
+    -- coalesce: conteúdo sem Hero (creator_id nulo) não aponta para programa de ninguém
     if not exists (select 1 from public.programs g where g.id = v_ref and g.status = 'published' and g.current_version_id is not null and coalesce(g.creator_id = c.creator_id, false)) then
       raise exception 'invalid_reference';
     end if;

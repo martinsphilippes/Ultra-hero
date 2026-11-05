@@ -89,7 +89,7 @@ select tests.ok('S0 seed_uuid é determinístico e RFC 4122', public.seed_uuid('
 
 -- ================================================================ S1 · Visitante
 select tests.anon();
--- 0044: g6 e g8 (do herói removido) arquivadas: 38 no ar
+-- 0044: g6 e g8 (do Hero removido) arquivadas: 38 no ar
 select tests.ok('S1 visitante vê catálogo publicado (38)', (select count(*) from public.content where status = 'published') = 38);
 select tests.ok('S1 visitante não lê corpo de conteúdo', (select count(*) from public.content_bodies) = 0);
 select tests.ok('S1 visitante vê personalidades ativas (6; as 2 removidas na 0044 estão suspensas)', (select count(*) from public.creator_profiles) = 6);
@@ -317,7 +317,7 @@ select tests.login('10000000-0000-4000-8000-000000000003', 'consumer2@test.local
 select tests.expect_error('S9 conteúdo arquivado não pode ser consumido', $q$select public.complete_content(public.seed_uuid('content:r7'), 'America/Sao_Paulo')$q$, 'content_forbidden');
 select tests.ok('S9 conclusões antigas de r7 preservadas (consumer1 não tinha; histórico intacto)', (select count(*) from public.completions where content_id = public.seed_uuid('content:r7')) = 0);
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
--- substituto do mesmo herói do programa (0052): r8 (Ronaldinho, etapa opcional da mesma versão);
+-- substituto do mesmo Hero do programa (0052): r8 (Ronaldinho, etapa opcional da mesma versão);
 -- desde a 0069 todo conteúdo é livre
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select public.admin_substitute_program_item(public.seed_uuid('pv:p2:1'), public.seed_uuid('content:r7'), public.seed_uuid('content:r8'), 'r7 arquivado; r8 cobre o tema');
@@ -556,8 +556,8 @@ select tests.ok('S18 atalho de 4 argumentos é security invoker (não amplia a l
 
 -- ================================================================ S19 · explore_feed: feed do Explorar em grade (0020)
 -- Security invoker: a RLS já esconde rascunho e agendado do público; a função repete content_is_live
--- para admin e herói não verem os próprios rascunhos no feed. Ordem determinística por semente, cada
--- rodada com no máximo um post por herói, então paginar por offset não repete nem pula. now() é fixo
+-- para admin e Hero não verem os próprios rascunhos no feed. Ordem determinística por semente, cada
+-- rodada com no máximo um post por Hero, então paginar por offset não repete nem pula. now() é fixo
 -- na transação: "a data chegou" é simulado movendo publish_at para o passado como sistema.
 select tests.su();
 select tests.ok('S19 explore_feed é security invoker, com search_path fixo, executável por anon e authenticated',
@@ -568,8 +568,8 @@ select tests.ok('S19 explore_feed é security invoker, com search_path fixo, exe
 -- Referência medida como sistema (fora da RLS): tudo que está no ar, com os atributos filtráveis.
 create temporary table t_s19_live as
   select id, creator_id, pillar, type, access_level, difficulty from public.content where public.content_is_live(status, publish_at);
-grant select on t_s19_live to anon, authenticated; -- o visitante e o herói comparam o feed com a referência
-select tests.ok('S19 referência: 38 no ar, de 6 heróis, todos com herói', (select count(*) from t_s19_live) = 38
+grant select on t_s19_live to anon, authenticated; -- o visitante e o Hero comparam o feed com a referência
+select tests.ok('S19 referência: 38 no ar, de 6 Heros, todos com Hero', (select count(*) from t_s19_live) = 38
   and (select count(distinct creator_id) from t_s19_live) = 6 and not exists (select 1 from t_s19_live where creator_id is null));
 
 -- 1) visitante recebe exatamente o catálogo no ar
@@ -579,13 +579,13 @@ select tests.ok('S19 visitante executa explore_feed e recebe todo o catálogo no
   and not exists (select id from public.explore_feed(null, null, null, null, 7, 100, 0) except select id from t_s19_live)
   and (select bool_and(status = 'published' and (publish_at is null or publish_at <= now())) from public.explore_feed(null, null, null, null, 7, 100, 0)));
 
--- 3) variedade: a primeira rodada traz um post por herói. Entre rodadas a função não impede que o último
--- de uma e o primeiro da seguinte sejam do mesmo herói (com este seed, as sementes 1 e 6 repetem);
+-- 3) variedade: a primeira rodada traz um post por Hero. Entre rodadas a função não impede que o último
+-- de uma e o primeiro da seguinte sejam do mesmo Hero (com este seed, as sementes 1 e 6 repetem);
 -- a semente 7 dá 15 posições sem repetição seguida. Se o seed de conteúdo mudar, troque a semente.
-select tests.ok('S19 primeira rodada: com p_limit = nº de heróis no ar, nenhum herói se repete',
+select tests.ok('S19 primeira rodada: com p_limit = nº de Heros no ar, nenhum Hero se repete',
   (select count(*) = (select count(distinct creator_id) from t_s19_live) and count(distinct creator_id) = count(*)
    from public.explore_feed(null, null, null, null, 7, (select count(distinct creator_id) from t_s19_live)::int, 0)));
-select tests.ok('S19 15 primeiras posições sem dois posts seguidos do mesmo herói (semente 7)',
+select tests.ok('S19 15 primeiras posições sem dois posts seguidos do mesmo Hero (semente 7)',
   (select count(*) = 15 and not bool_or(same)
    from (select creator_id = lag(creator_id) over (order by ordinality) as same
          from public.explore_feed(null, null, null, null, 7, 15, 0) with ordinality) x));
@@ -674,8 +674,8 @@ select tests.ok('S19 limites: p_limit 0 ou negativo devolve 1 linha; p_limit=100
   and (select string_agg(id::text, ',' order by ordinality) from public.explore_feed(null, null, null, null, 7, 15, -5) with ordinality)
     = (select string_agg(id::text, ',' order by ordinality) from public.explore_feed(null, null, null, null, 7, 15, 0) with ordinality));
 
--- 2) e 8) agendado e rascunho ficam fora do feed para visitante, herói dona e admin; a data chegando basta.
--- Ajustes feitos como sistema sobre o seed (t1 de Camila agendado; r5 de Lia, herói do creator1, em rascunho).
+-- 2) e 8) agendado e rascunho ficam fora do feed para visitante, Hero dona e admin; a data chegando basta.
+-- Ajustes feitos como sistema sobre o seed (t1 de Camila agendado; r5 de Lia, Hero do creator1, em rascunho).
 select tests.su();
 update public.content set publish_at = now() + interval '1 day' where id = public.seed_uuid('content:t1');
 update public.content set status = 'draft' where id = public.seed_uuid('content:r5');
@@ -684,7 +684,7 @@ select tests.ok('S19 visitante: agendado e rascunho fora do feed (catálogo cai 
   (select count(*) from public.explore_feed(null, null, null, null, 7, 100, 0)) = (select count(*) from t_s19_live) - 2
   and not exists (select 1 from public.explore_feed(null, null, null, null, 7, 100, 0) where id in (public.seed_uuid('content:t1'), public.seed_uuid('content:r5'))));
 select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
-select tests.ok('S19 herói vê o próprio rascunho na tabela (RLS) mas não no feed',
+select tests.ok('S19 Hero vê o próprio rascunho na tabela (RLS) mas não no feed',
   (select count(*) from public.content where id = public.seed_uuid('content:r5')) = 1
   and not exists (select 1 from public.explore_feed(null, null, null, null, 7, 100, 0) where id = public.seed_uuid('content:r5'))
   and (select count(*) from public.explore_feed(null, null, null, null, 7, 100, 0)) = (select count(*) from t_s19_live) - 2);
@@ -707,16 +707,16 @@ select tests.ok('S19 estado restaurado: catálogo no ar igual à referência',
   (select count(*) from public.content where public.content_is_live(status, publish_at)) = (select count(*) from t_s19_live)
   and not exists (select id from t_s19_live except select id from public.content where public.content_is_live(status, publish_at)));
 
--- ================================================================ S20 · creator_products: produtos do herói (0021)
--- Alocação direta produto↔herói. Público vê só validated; admin vê tudo; herói vê as próprias linhas em
--- qualquer status. Herói só insere sugestão para si (suggested, created_by = ele) e só exclui a própria
+-- ================================================================ S20 · creator_products: produtos do Hero (0021)
+-- Alocação direta produto↔Hero. Público vê só validated; admin vê tudo; Hero vê as próprias linhas em
+-- qualquer status. Hero só insere sugestão para si (suggested, created_by = ele) e só exclui a própria
 -- sugestão; não há grant de update para authenticated: status muda só pela RPC admin_set_creator_product.
 -- A junção com products herda a RLS de products: produto fora do ar some mesmo com a alocação validada.
 select tests.su();
--- 0) desde a 0052 a alocação em massa da 0021 sai (sobram só as 14 suspensas dos heróis removidos na
+-- 0) desde a 0052 a alocação em massa da 0021 sai (sobram só as 14 suspensas dos Heros removidos na
 --    0044); para exercitar a RLS abaixo, as 42 linhas validadas voltam aqui como dados de teste, iguais
 --    às da 0021 (o S62 confere que reaplicar a 0052 as remove de novo)
-select tests.ok('S20 0052: nenhuma alocação validada do seed; ficam só as 14 suspensas dos heróis removidos',
+select tests.ok('S20 0052: nenhuma alocação validada do seed; ficam só as 14 suspensas dos Heros removidos',
   (select count(*) from public.creator_products) = 14
   and not exists (select 1 from public.creator_products where status = 'validated')
   and (select count(*) from public.creator_products cp join public.creator_profiles h on h.id = cp.creator_id where cp.status = 'suspended' and h.status = 'suspended') = 14);
@@ -729,9 +729,9 @@ from public.creator_profiles c
 cross join public.products p
 where p.seller_org_id = public.seed_uuid('seller:ultrae')
 on conflict (creator_id, product_id) do nothing;
--- 1) seed: 56 linhas, 7 por herói, 8 heróis, ordem fixa da vitrine; desde a 0044 as 14 dos 2 heróis
---    removidos ficam suspensas (42 validadas nos 6 heróis no ar)
-select tests.ok('S20 seed: 56 alocações, 7 por herói em 8 heróis (42 validadas; 14 suspensas dos removidos na 0044), só produtos Ultra.e Life',
+-- 1) seed: 56 linhas, 7 por Hero, 8 Heros, ordem fixa da vitrine; desde a 0044 as 14 dos 2 Heros
+--    removidos ficam suspensas (42 validadas nos 6 Heros no ar)
+select tests.ok('S20 seed: 56 alocações, 7 por Hero em 8 Heros (42 validadas; 14 suspensas dos removidos na 0044), só produtos Ultra.e Life',
   (select count(*) from public.creator_products) = 56
   and (select count(*) from public.creator_products where status = 'validated' and validated_at is not null) = 42
   and (select count(*) from public.creator_products cp join public.creator_profiles h on h.id = cp.creator_id where cp.status = 'suspended' and h.status = 'suspended') = 14
@@ -783,20 +783,20 @@ select tests.ok('S20 republicado: a junção volta a 42',
   (select count(*) from public.creator_products cp join public.products p on p.id = cp.product_id) = 42
   and (select status from public.products where id = public.seed_uuid('product:ue-focus')) = 'published');
 
--- 4) herói (creator1 = Lia): sugere para si; não valida, não sugere para outro, não assina por terceiro
+-- 4) Hero (creator1 = Lia): sugere para si; não valida, não sugere para outro, não assina por terceiro
 select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
 insert into public.creator_products (id, creator_id, product_id, status, created_by, note) values
   ('50000000-0000-4000-8000-000000000001', public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'suggested', '10000000-0000-4000-8000-000000000004', 'Caderno que uso na rotina');
 insert into public.creator_products (id, creator_id, product_id, created_by) values
   ('50000000-0000-4000-8000-000000000002', public.seed_uuid('creator:lia'), public.seed_uuid('product:l2'), '10000000-0000-4000-8000-000000000004'); -- status pelo default
-select tests.ok('S20 herói sugere produto para si (suggested, created_by = ele, sort_order padrão 100)',
+select tests.ok('S20 Hero sugere produto para si (suggested, created_by = ele, sort_order padrão 100)',
   (select count(*) from public.creator_products where id in ('50000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000002')
      and status = 'suggested' and created_by = '10000000-0000-4000-8000-000000000004' and validated_by is null and validated_at is null and sort_order = 100) = 2);
-select tests.expect_error('S20 herói não insere alocação já validada', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'validated', '10000000-0000-4000-8000-000000000004')$q$, '42501');
-select tests.expect_error('S20 herói não sugere para outro herói', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:rafael'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000004')$q$, '42501');
-select tests.expect_error('S20 herói não assina a sugestão com created_by de terceiro', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000002')$q$, '42501');
-select tests.expect_error('S20 herói não insere sem created_by', $q$insert into public.creator_products (creator_id, product_id) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'))$q$, '42501');
-select tests.ok('S20 herói vê as próprias linhas em qualquer status (12 de Lia) e só validated dos outros (47 no total)',
+select tests.expect_error('S20 Hero não insere alocação já validada', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'validated', '10000000-0000-4000-8000-000000000004')$q$, '42501');
+select tests.expect_error('S20 Hero não sugere para outro Hero', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:rafael'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000004')$q$, '42501');
+select tests.expect_error('S20 Hero não assina a sugestão com created_by de terceiro', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000002')$q$, '42501');
+select tests.expect_error('S20 Hero não insere sem created_by', $q$insert into public.creator_products (creator_id, product_id) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'))$q$, '42501');
+select tests.ok('S20 Hero vê as próprias linhas em qualquer status (12 de Lia) e só validated dos outros (47 no total)',
   (select count(*) from public.creator_products where creator_id = public.seed_uuid('creator:lia')) = 12
   and (select count(*) from public.creator_products where creator_id = public.seed_uuid('creator:lia') and status <> 'validated') = 5
   and (select count(*) from public.creator_products) = 47
@@ -806,24 +806,24 @@ declare n int;
 begin
   delete from public.creator_products where creator_id = public.seed_uuid('creator:lia') and product_id = public.seed_uuid('product:ue-focus');
   get diagnostics n = row_count;
-  perform tests.ok('S20 herói não exclui alocação validada (0 linhas)', n = 0);
+  perform tests.ok('S20 Hero não exclui alocação validada (0 linhas)', n = 0);
   delete from public.creator_products where creator_id = public.seed_uuid('creator:rafael') and product_id = public.seed_uuid('product:k2');
   get diagnostics n = row_count;
-  perform tests.ok('S20 herói não exclui sugestão de outro herói (0 linhas)', n = 0);
+  perform tests.ok('S20 Hero não exclui sugestão de outro Hero (0 linhas)', n = 0);
   delete from public.creator_products where id = '50000000-0000-4000-8000-000000000002';
   get diagnostics n = row_count;
-  perform tests.ok('S20 herói exclui a própria sugestão (1 linha)', n = 1);
+  perform tests.ok('S20 Hero exclui a própria sugestão (1 linha)', n = 1);
 end $s20$;
 select tests.ok('S20 após a exclusão a sugestão some e a validada permanece',
   not exists (select 1 from public.creator_products where id = '50000000-0000-4000-8000-000000000002')
   and exists (select 1 from public.creator_products where creator_id = public.seed_uuid('creator:lia') and product_id = public.seed_uuid('product:ue-focus') and status = 'validated'));
-select tests.expect_error('S20 herói não altera alocação (sem grant de update)', $q$update public.creator_products set status = 'validated' where id = '50000000-0000-4000-8000-000000000001'$q$, '42501');
-select tests.expect_error('S20 herói não executa a RPC de status', $q$select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'validated')$q$, 'forbidden');
+select tests.expect_error('S20 Hero não altera alocação (sem grant de update)', $q$update public.creator_products set status = 'validated' where id = '50000000-0000-4000-8000-000000000001'$q$, '42501');
+select tests.expect_error('S20 Hero não executa a RPC de status', $q$select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'validated')$q$, 'forbidden');
 
 -- 5) consumidor: nada de inserir; vê só validated
 select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
-select tests.expect_error('S20 consumidor não sugere alocação (não é herói)', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000002')$q$, '42501');
-select tests.expect_error('S20 consumidor não insere nem fingindo created_by do herói', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000004')$q$, '42501');
+select tests.expect_error('S20 consumidor não sugere alocação (não é Hero)', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000002')$q$, '42501');
+select tests.expect_error('S20 consumidor não insere nem fingindo created_by do Hero', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000004')$q$, '42501');
 select tests.ok('S20 consumidor vê só validated (42)', (select count(*) from public.creator_products) = 42 and not exists (select 1 from public.creator_products where status <> 'validated'));
 select tests.expect_error('S20 consumidor não executa a RPC de status', $q$select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'validated')$q$, 'forbidden');
 
@@ -833,7 +833,7 @@ select tests.expect_error('S20 visitante não executa a RPC de status', $q$selec
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select tests.ok('S20 admin vê tudo (61: 56 validadas + 4 de Lia + 1 de Rafael)', (select count(*) from public.creator_products) = 61);
 create temporary table t_s20_v as select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'validated', 'ok') as id;
-select tests.ok('S20 admin valida a sugestão do herói: mesma linha, validated_by/validated_at preenchidos, created_by preservado, nota gravada',
+select tests.ok('S20 admin valida a sugestão do Hero: mesma linha, validated_by/validated_at preenchidos, created_by preservado, nota gravada',
   (select id from t_s20_v) = '50000000-0000-4000-8000-000000000001'
   and (select status = 'validated' and validated_by = '10000000-0000-4000-8000-000000000001' and validated_at is not null
          and created_by = '10000000-0000-4000-8000-000000000004' and note = 'ok' and sort_order = 100
@@ -853,7 +853,7 @@ select tests.ok('S20 admin rejeita: status rejected e nota nova',
   (select status = 'rejected' and note = 'Fora da linha editorial' from public.creator_products where id = '50000000-0000-4000-8000-000000000001'));
 select tests.expect_error('S20 RPC não aceita suggested', $q$select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'suggested')$q$, 'invalid_status');
 select tests.expect_error('S20 RPC recusa produto inexistente', $q$select public.admin_set_creator_product(public.seed_uuid('creator:lia'), gen_random_uuid(), 'validated')$q$, 'product_not_found');
-select tests.expect_error('S20 RPC recusa herói inexistente', $q$select public.admin_set_creator_product(gen_random_uuid(), public.seed_uuid('product:l1'), 'validated')$q$, 'creator_not_found');
+select tests.expect_error('S20 RPC recusa Hero inexistente', $q$select public.admin_set_creator_product(gen_random_uuid(), public.seed_uuid('product:l1'), 'validated')$q$, 'creator_not_found');
 select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'validated', null, 15);
 select tests.ok('S20 p_sort altera sort_order (15) e revalida', (select status = 'validated' and sort_order = 15 from public.creator_products where id = '50000000-0000-4000-8000-000000000001'));
 select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'validated', '  ');
@@ -885,7 +885,7 @@ select tests.ok('S20 grants: anon só select; authenticated sem update (status m
   has_table_privilege('anon', 'public.creator_products', 'select') and not has_table_privilege('anon', 'public.creator_products', 'insert')
   and has_table_privilege('authenticated', 'public.creator_products', 'insert') and has_table_privilege('authenticated', 'public.creator_products', 'delete')
   and not has_table_privilege('authenticated', 'public.creator_products', 'update'));
-select tests.ok('S20 excluir o produto ou o herói leva a alocação junto (on delete cascade nas duas chaves)',
+select tests.ok('S20 excluir o produto ou o Hero leva a alocação junto (on delete cascade nas duas chaves)',
   (select count(*) from pg_constraint where conrelid = 'public.creator_products'::regclass and contype = 'f' and confdeltype = 'c') = 2);
 
 -- ================================================================ S21 · rotina do dia: routine_items, routine_checks, routine_check, compute_streak (0022)
@@ -1074,16 +1074,16 @@ select tests.ok('S21 RLS ativa nas duas tabelas, gatilhos instalados e chaves: p
   and (select count(*) from pg_constraint where conrelid = 'public.routine_checks'::regclass and contype = 'f' and confdeltype = 'c') = 2
   and (select count(*) from pg_constraint where conrelid = 'public.routine_checks'::regclass and contype = 'p') = 1);
 
--- ================================================================ S22 · receitas por herói e etapa demonstrativa (0024)
--- creator_recipe_links: herói indica receitas assinadas por um chef. Público vê só validados; só o admin
--- escreve (RPC auditada), só receitas e nunca a receita do próprio herói. recipe_onboarding: uma linha por
+-- ================================================================ S22 · receitas por Hero e etapa demonstrativa (0024)
+-- creator_recipe_links: Hero indica receitas assinadas por um chef. Público vê só validados; só o admin
+-- escreve (RPC auditada), só receitas e nunca a receita do próprio Hero. recipe_onboarding: uma linha por
 -- pessoa, só do dono, listas fixas de restrições e alergias; some com a conta.
 select tests.su();
 insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000022', 's22@test.local');
 
--- 1) seed: todo herói ativo indica, validadas, as receitas no ar dos outros chefs; desde a 0044 as indicações
---    dos heróis removidos, das receitas arquivadas e das que viraram próprias (receita movida) ficam suspensas
-select tests.ok('S22 seed: cada herói ativo indica todas as receitas no ar de outros chefs e nenhuma própria',
+-- 1) seed: todo Hero ativo indica, validadas, as receitas no ar dos outros chefs; desde a 0044 as indicações
+--    dos Heros removidos, das receitas arquivadas e das que viraram próprias (receita movida) ficam suspensas
+select tests.ok('S22 seed: cada Hero ativo indica todas as receitas no ar de outros chefs e nenhuma própria',
   (select count(*) from public.creator_recipe_links where status = 'validated') =
     (select count(*) from public.creator_profiles cp join public.content c on c.type = 'recipe' and c.status = 'published' and c.creator_id is not null and c.creator_id <> cp.id
      where cp.status = 'active')
@@ -1117,7 +1117,7 @@ select tests.ok('S22 admin revalida o vínculo pela RPC (status, ordem, validate
      where creator_id = public.seed_uuid('creator:lia') and content_id = (select id from public.content where type = 'recipe' order by slug limit 1))
   and exists (select 1 from public.admin_audit where action = 'creator_recipe.set_status'));
 select tests.expect_error('S22 RPC recusa conteúdo que não é receita', $q$select public.admin_set_creator_recipe(public.seed_uuid('creator:lia'), (select id from public.content where type <> 'recipe' limit 1), 'validated')$q$, 'recipe_not_found');
-select tests.expect_error('S22 RPC recusa ligar o herói à própria receita', $q$select public.admin_set_creator_recipe(c.creator_id, c.id, 'validated') from public.content c where c.type = 'recipe' and c.creator_id is not null limit 1$q$, 'own_recipe');
+select tests.expect_error('S22 RPC recusa ligar o Hero à própria receita', $q$select public.admin_set_creator_recipe(c.creator_id, c.id, 'validated') from public.content c where c.type = 'recipe' and c.creator_id is not null limit 1$q$, 'own_recipe');
 select tests.expect_error('S22 RPC recusa status inválido', $q$select public.admin_set_creator_recipe(public.seed_uuid('creator:lia'), (select id from public.content where type = 'recipe' limit 1), 'suggested')$q$, 'invalid_status');
 
 -- 4) recipe_onboarding: só do dono, listas fixas, aviso obrigatório
@@ -1153,16 +1153,16 @@ select tests.ok('S22 RLS ativa nas duas tabelas e RPC do admin security definer 
   and (select prosecdef and proconfig is not null from pg_proc where oid = 'public.admin_set_creator_recipe(uuid, uuid, public.link_status, int)'::regprocedure)
   and not has_function_privilege('anon', 'public.admin_set_creator_recipe(uuid, uuid, public.link_status, int)', 'execute'));
 
--- ================================================================ S23 · publicação direta pelo herói (0025)
+-- ================================================================ S23 · publicação direta pelo Hero (0025)
 -- creator_publish_content: o dono publica o próprio rascunho sem fila do admin (vídeo do celular =
 -- cloudflare_stream + licença 'own'); sem regra de acesso vira free (desde a 0069 não há premium).
 -- creator_unpublish_content: volta a rascunho editável. O admin segue arquivando depois; o fluxo de
 -- revisão antigo continua. Tudo que este cenário publica termina fora do ar (o S14 conta 40 no ar).
 select tests.su();
 insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
--- segundo herói: vincula o Rafael do seed a um usuário de teste (desfeito no fim do cenário)
+-- segundo Hero: vincula o Rafael do seed a um usuário de teste (desfeito no fim do cenário)
 update public.creator_profiles set user_id = '10000000-0000-4000-8000-000000000023' where id = public.seed_uuid('creator:rafael') and user_id is null;
-select tests.ok('S23 licença own + cloudflare_stream é aceita (vídeo gravado pelo herói)',
+select tests.ok('S23 licença own + cloudflare_stream é aceita (vídeo gravado pelo Hero)',
   public.media_license_compatible('cloudflare_stream', 'own') and not public.media_license_compatible('cloudflare_stream', 'third_party_embed'));
 select tests.ok('S23 RPCs security definer, search_path fixo, executáveis por authenticated e service_role e nunca por anon',
   (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')
@@ -1170,7 +1170,7 @@ select tests.ok('S23 RPCs security definer, search_path fixo, executáveis por a
                    and not has_function_privilege('anon', p.oid, 'execute'))
    from pg_proc p where p.oid in ('public.creator_publish_content(uuid)'::regprocedure, 'public.creator_unpublish_content(uuid)'::regprocedure)));
 
--- 1) rascunhos do herói (creator1 = Lia): vídeo do celular, vídeo que o admin tenta marcar premium,
+-- 1) rascunhos do Hero (creator1 = Lia): vídeo do celular, vídeo que o admin tenta marcar premium,
 --    guia sem corpo, vídeo sem mídia e guia com título em branco. Desde a 0026 o uid do Stream
 --    precisa de vínculo em stream_uploads (gravado pelo servidor no ticket): o sistema registra antes.
 insert into public.stream_uploads (uid, creator_id, expires_at)
@@ -1178,7 +1178,7 @@ select u, public.seed_uuid('creator:lia'), now() + interval '30 minutes'
 from unnest(array['a2300000000000000000000000000001', 'a2300000000000000000000000000002', 'a2300000000000000000000000000004', 'a230000000000000000000000000001b']) as u;
 select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
 insert into public.content (id, slug, creator_id, pillar, type, title, summary, media_license_kind) values
-  ('23000000-0000-4000-8000-000000000001', 's23-video-celular', public.seed_uuid('creator:lia'), 'training', 'video', 'Treino relampago S23 gravado no celular', 'Vídeo curto do herói', 'own'),
+  ('23000000-0000-4000-8000-000000000001', 's23-video-celular', public.seed_uuid('creator:lia'), 'training', 'video', 'Treino relampago S23 gravado no celular', 'Vídeo curto do Hero', 'own'),
   ('23000000-0000-4000-8000-000000000002', 's23-video-premium', public.seed_uuid('creator:lia'), 'training', 'video', 'Video premium S23', null, 'own'),
   ('23000000-0000-4000-8000-000000000003', 's23-guia-sem-corpo', public.seed_uuid('creator:lia'), 'routine', 'guide', 'Guia S23 sem corpo', null, 'platform_demo'),
   ('23000000-0000-4000-8000-000000000004', 's23-video-sem-midia', public.seed_uuid('creator:lia'), 'training', 'video', 'Video S23 sem midia', null, 'own'),
@@ -1192,17 +1192,17 @@ select tests.ok('S23 rascunhos criados sem regra de acesso', (select count(*) fr
 select tests.anon();
 select tests.ok('S23 visitante não vê o rascunho antes de publicar', (select count(*) from public.content where id = '23000000-0000-4000-8000-000000000001') = 0);
 
--- 2) quem não é dono não publica: visitante sem execute, consumidor e outro herói recebem forbidden
+-- 2) quem não é dono não publica: visitante sem execute, consumidor e outro Hero recebem forbidden
 select tests.expect_error('S23 visitante não executa creator_publish_content', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000001')$q$, 'permission denied');
 select tests.expect_error('S23 visitante não executa creator_unpublish_content', $q$select public.creator_unpublish_content('23000000-0000-4000-8000-000000000001')$q$, 'permission denied');
 select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
-select tests.expect_error('S23 consumidor não publica conteúdo do herói', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000001')$q$, 'forbidden');
+select tests.expect_error('S23 consumidor não publica conteúdo do Hero', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000001')$q$, 'forbidden');
 select tests.expect_error('S23 consumidor recebe forbidden também para id inexistente', $q$select public.creator_publish_content(gen_random_uuid())$q$, 'forbidden');
 select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
-select tests.ok('S23 segundo herói está vinculado ao Rafael', public.my_creator_id() = public.seed_uuid('creator:rafael'));
-select tests.expect_error('S23 outro herói não publica rascunho alheio', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000001')$q$, '42501');
+select tests.ok('S23 segundo Hero está vinculado ao Rafael', public.my_creator_id() = public.seed_uuid('creator:rafael'));
+select tests.expect_error('S23 outro Hero não publica rascunho alheio', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000001')$q$, '42501');
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
-select tests.expect_error('S23 admin sem perfil de herói também não usa a RPC do herói (tem as próprias)', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000001')$q$, 'forbidden');
+select tests.expect_error('S23 admin sem perfil de Hero também não usa a RPC do Hero (tem as próprias)', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000001')$q$, 'forbidden');
 select tests.su();
 select tests.ok('S23 tentativas recusadas não mudaram nada nem auditaram', (select status = 'draft' and review_status = 'none' from public.content where id = '23000000-0000-4000-8000-000000000001')
   and not exists (select 1 from public.admin_audit where action = 'content.creator_publish'));
@@ -1215,15 +1215,15 @@ select tests.ok('S23 publicado, aprovado, free, published_at agora, sem agendame
   (select status = 'published' and review_status = 'approved' and access_level = 'free' and required_module_id is null
           and published_at = now() and publish_at is null and public.content_is_live(status, publish_at)
    from public.content where id = '23000000-0000-4000-8000-000000000001'));
-select tests.ok('S23 rodada de autoaprovação registrada (dono decide, feedback padrão) e visível ao herói',
+select tests.ok('S23 rodada de autoaprovação registrada (dono decide, feedback padrão) e visível ao Hero',
   (select count(*) = 1 and bool_and(decision = 'approved' and submitted_by = '10000000-0000-4000-8000-000000000004' and decided_by = '10000000-0000-4000-8000-000000000004'
-                                    and decided_at is not null and feedback = 'Publicação direta pelo herói' and round = 1)
+                                    and decided_at is not null and feedback = 'Publicação direta pelo Hero' and round = 1)
    from public.content_reviews where content_id = '23000000-0000-4000-8000-000000000001'));
 select tests.expect_error('S23 publicar de novo: not_draft', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000001')$q$, 'not_draft');
-select tests.expect_error('S23 publicado não é editável pelo herói (guarda segue ligada)', $q$update public.content set title = 'x' where id = '23000000-0000-4000-8000-000000000001'$q$, 'content_not_editable');
+select tests.expect_error('S23 publicado não é editável pelo Hero (guarda segue ligada)', $q$update public.content set title = 'x' where id = '23000000-0000-4000-8000-000000000001'$q$, 'content_not_editable');
 do $s23$ declare n int; begin
   update public.content_bodies set media_ref = 'outro' where content_id = '23000000-0000-4000-8000-000000000001'; get diagnostics n = row_count;
-  perform tests.ok('S23 herói não altera o corpo publicado (RLS do corpo: 0 linhas)', n = 0
+  perform tests.ok('S23 Hero não altera o corpo publicado (RLS do corpo: 0 linhas)', n = 0
     and (select media_ref from public.content_bodies where content_id = '23000000-0000-4000-8000-000000000001') = 'a2300000000000000000000000000001');
 end $s23$;
 select tests.ok('S23 sinalizador de confiança desligado após a RPC', not public.is_trusted_call());
@@ -1235,37 +1235,37 @@ select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local
 select tests.ok('S23 consumidor logado consome o vídeo free e lê o corpo', public.can_access_content('23000000-0000-4000-8000-000000000001')
   and (select count(*) from public.content_bodies where content_id = '23000000-0000-4000-8000-000000000001') = 1);
 select tests.su();
-select tests.ok('S23 auditoria content.creator_publish com ator herói, antes e depois',
+select tests.ok('S23 auditoria content.creator_publish com ator Hero, antes e depois',
   exists (select 1 from public.admin_audit where action = 'content.creator_publish' and resource_type = 'content'
             and resource_id = '23000000-0000-4000-8000-000000000001' and actor_id = '10000000-0000-4000-8000-000000000004' and actor_type = 'creator'
             and before_data ->> 'status' = 'draft' and before_data -> 'access_level' = 'null'::jsonb
             and after_data ->> 'status' = 'published' and after_data ->> 'access_level' = 'free' and after_data ->> 'media_provider' = 'cloudflare_stream'));
 
--- 4) app gratuito (0069): nem o admin marca premium; o publicado pelo herói fica livre
+-- 4) app gratuito (0069): nem o admin marca premium; o publicado pelo Hero fica livre
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select tests.expect_error('S23 admin não marca premium (content_free_only)',
   $q$update public.content set access_level = 'premium', required_module_id = public.seed_uuid('module:training_full') where id = '23000000-0000-4000-8000-000000000002'$q$, 'content_free_only');
 select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
-select tests.expect_error('S23 outro herói não publica conteúdo alheio', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000002')$q$, 'forbidden');
+select tests.expect_error('S23 outro Hero não publica conteúdo alheio', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000002')$q$, 'forbidden');
 select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
 select public.creator_publish_content('23000000-0000-4000-8000-000000000002');
-select tests.ok('S23 publicado pelo herói fica livre e sem módulo', (select status = 'published' and access_level = 'free' and required_module_id is null
+select tests.ok('S23 publicado pelo Hero fica livre e sem módulo', (select status = 'published' and access_level = 'free' and required_module_id is null
   from public.content where id = '23000000-0000-4000-8000-000000000002'));
 select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
 select tests.ok('S23 consumidor logado consome o segundo vídeo livre', public.can_access_content('23000000-0000-4000-8000-000000000002'));
 select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
-select tests.expect_error('S23 outro herói não despublica conteúdo alheio', $q$select public.creator_unpublish_content('23000000-0000-4000-8000-000000000002')$q$, 'forbidden');
--- o admin continua governando depois: arquiva o publicado pelo herói, que não volta ao ar por conta própria
+select tests.expect_error('S23 outro Hero não despublica conteúdo alheio', $q$select public.creator_unpublish_content('23000000-0000-4000-8000-000000000002')$q$, 'forbidden');
+-- o admin continua governando depois: arquiva o publicado pelo Hero, que não volta ao ar por conta própria
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select public.admin_set_content_status('23000000-0000-4000-8000-000000000002', 'archived', 'Teste S23: admin arquiva publicação direta');
 select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
-select tests.expect_error('S23 arquivado pelo admin: herói não despublica (not_published)', $q$select public.creator_unpublish_content('23000000-0000-4000-8000-000000000002')$q$, 'not_published');
-select tests.expect_error('S23 arquivado pelo admin: herói não republica (not_draft)', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000002')$q$, 'not_draft');
+select tests.expect_error('S23 arquivado pelo admin: Hero não despublica (not_published)', $q$select public.creator_unpublish_content('23000000-0000-4000-8000-000000000002')$q$, 'not_published');
+select tests.expect_error('S23 arquivado pelo admin: Hero não republica (not_draft)', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000002')$q$, 'not_draft');
 
 -- 5) pré-condições: corpo, mídia do vídeo, título e licença
 select tests.expect_error('S23 sem content_bodies: missing_body', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000003')$q$, 'missing_body');
 select tests.expect_error('S23 vídeo sem media_ref e sem corpo: missing_media', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000004')$q$, 'missing_media');
--- uid em branco não passa pelo gatilho da 0026 para o herói; o sistema grava para testar a RPC
+-- uid em branco não passa pelo gatilho da 0026 para o Hero; o sistema grava para testar a RPC
 select tests.su();
 update public.content_bodies set body = '{"kind":"video","intro":"texto"}', media_provider = 'cloudflare_stream', media_ref = '  ' where content_id = '23000000-0000-4000-8000-000000000004';
 select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
@@ -1312,7 +1312,7 @@ select tests.ok('S23 republicar depois de editar abre a 2ª rodada de autoaprova
 select public.creator_unpublish_content('23000000-0000-4000-8000-000000000001');
 select public.creator_unpublish_content('23000000-0000-4000-8000-000000000003');
 select tests.su();
-select tests.ok('S23 auditoria content.creator_unpublish com ator herói', (select count(*) from public.admin_audit where action = 'content.creator_unpublish'
+select tests.ok('S23 auditoria content.creator_unpublish com ator Hero', (select count(*) from public.admin_audit where action = 'content.creator_unpublish'
   and actor_type = 'creator' and actor_id = '10000000-0000-4000-8000-000000000004' and before_data ->> 'status' = 'published' and after_data ->> 'status' = 'draft') = 3);
 
 -- 8) limpeza: nada do S23 fica no ar e o Rafael volta sem usuário (S14/S15 contam o catálogo)
@@ -1320,8 +1320,8 @@ update public.creator_profiles set user_id = null where id = public.seed_uuid('c
 select tests.ok('S23 nada do cenário ficou no ar', not exists (select 1 from public.content where id::text like '23000000-%' and status = 'published'));
 
 -- ================================================================ S24 · dono do vídeo do Stream amarrado no banco (0026)
--- stream_uploads é gravada só pelo servidor (service role) no ticket; o herói lê os próprios.
--- Gatilho em content_bodies: cloudflare_stream exige vínculo do próprio herói (não descartado).
+-- stream_uploads é gravada só pelo servidor (service role) no ticket; o Hero lê os próprios.
+-- Gatilho em content_bodies: cloudflare_stream exige vínculo do próprio Hero (não descartado).
 -- creator_publish_content recusa uid sem vínculo; creator_discard_video_draft apaga só rascunho de
 -- vídeo próprio nunca publicado; creator_set_draft_slug troca o slug do rascunho nunca publicado.
 -- Tudo termina fora do ar (o S14 conta 40 no ar) e o Rafael volta sem usuário.
@@ -1354,13 +1354,13 @@ insert into public.stream_uploads (uid, creator_id, expires_at) values
   ('a24000000000000000000000000000f1', public.seed_uuid('creator:rafael'), now() + interval '30 minutes');
 select tests.expect_error('S24 uid fora do formato do Stream é recusado', $q$insert into public.stream_uploads (uid, creator_id, expires_at) values ('../x', public.seed_uuid('creator:lia'), now())$q$, '23514');
 
--- 1) herói lê só os próprios envios e não escreve na tabela
+-- 1) Hero lê só os próprios envios e não escreve na tabela
 select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
-select tests.ok('S24 herói vê só os próprios envios', (select count(*) from public.stream_uploads where uid like 'a24%') = 3
+select tests.ok('S24 Hero vê só os próprios envios', (select count(*) from public.stream_uploads where uid like 'a24%') = 3
   and not exists (select 1 from public.stream_uploads where uid = 'a24000000000000000000000000000f1'));
-select tests.expect_error('S24 herói não insere em stream_uploads', $q$insert into public.stream_uploads (uid, creator_id, expires_at) values ('a24000000000000000000000000000aa', public.seed_uuid('creator:lia'), now() + interval '1 hour')$q$, 'permission denied');
-select tests.expect_error('S24 herói não reabre envio (update)', $q$update public.stream_uploads set discarded_at = null where uid = 'a2400000000000000000000000000001'$q$, 'permission denied');
-select tests.expect_error('S24 herói não apaga envio', $q$delete from public.stream_uploads where uid = 'a2400000000000000000000000000001'$q$, 'permission denied');
+select tests.expect_error('S24 Hero não insere em stream_uploads', $q$insert into public.stream_uploads (uid, creator_id, expires_at) values ('a24000000000000000000000000000aa', public.seed_uuid('creator:lia'), now() + interval '1 hour')$q$, 'permission denied');
+select tests.expect_error('S24 Hero não reabre envio (update)', $q$update public.stream_uploads set discarded_at = null where uid = 'a2400000000000000000000000000001'$q$, 'permission denied');
+select tests.expect_error('S24 Hero não apaga envio', $q$delete from public.stream_uploads where uid = 'a2400000000000000000000000000001'$q$, 'permission denied');
 select tests.anon();
 select tests.expect_error('S24 visitante não lê stream_uploads', $q$select count(*) from public.stream_uploads$q$, 'permission denied');
 select tests.expect_error('S24 visitante não executa creator_discard_video_draft', $q$select public.creator_discard_video_draft('24000000-0000-4000-8000-000000000001')$q$, 'permission denied');
@@ -1373,27 +1373,27 @@ insert into public.content (id, slug, creator_id, pillar, type, title, media_lic
   ('24000000-0000-4000-8000-000000000002', 'post-em-video-s24b', public.seed_uuid('creator:lia'), 'training', 'video', 'Video S24 descartado', 'own'),
   ('24000000-0000-4000-8000-000000000003', 'post-em-video-s24c', public.seed_uuid('creator:lia'), 'training', 'video', 'Video S24 slug', 'own'),
   ('24000000-0000-4000-8000-000000000004', 's24-guia', public.seed_uuid('creator:lia'), 'routine', 'guide', 'Guia S24', 'platform_demo');
-select tests.expect_error('S24 herói não grava cloudflare_stream sem vínculo', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000001', '{"kind":"video"}', 'cloudflare_stream', 'a24000000000000000000000000000ee')$q$, 'stream_media_forbidden');
-select tests.expect_error('S24 herói não grava o uid de outro herói (público no cover_url)', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000001', '{"kind":"video"}', 'cloudflare_stream', 'a24000000000000000000000000000f1')$q$, 'stream_media_forbidden');
+select tests.expect_error('S24 Hero não grava cloudflare_stream sem vínculo', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000001', '{"kind":"video"}', 'cloudflare_stream', 'a24000000000000000000000000000ee')$q$, 'stream_media_forbidden');
+select tests.expect_error('S24 Hero não grava o uid de outro Hero (público no cover_url)', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000001', '{"kind":"video"}', 'cloudflare_stream', 'a24000000000000000000000000000f1')$q$, 'stream_media_forbidden');
 insert into public.content_bodies (content_id, body, media_provider, media_ref) values
   ('24000000-0000-4000-8000-000000000001', '{"kind":"video","intro":""}', 'cloudflare_stream', 'a2400000000000000000000000000001'),
   ('24000000-0000-4000-8000-000000000002', '{"kind":"video","intro":""}', 'cloudflare_stream', 'a2400000000000000000000000000002'),
   ('24000000-0000-4000-8000-000000000003', '{"kind":"video","intro":""}', 'cloudflare_stream', 'a2400000000000000000000000000003');
 select tests.ok('S24 com vínculo próprio grava', (select count(*) from public.content_bodies where content_id::text like '24000000-%' and media_provider = 'cloudflare_stream') = 3);
-select tests.expect_error('S24 herói não troca o uid por um de outro herói (update)', $q$update public.content_bodies set media_ref = 'a24000000000000000000000000000f1' where content_id = '24000000-0000-4000-8000-000000000001'$q$, 'stream_media_forbidden');
+select tests.expect_error('S24 Hero não troca o uid por um de outro Hero (update)', $q$update public.content_bodies set media_ref = 'a24000000000000000000000000000f1' where content_id = '24000000-0000-4000-8000-000000000001'$q$, 'stream_media_forbidden');
 update public.content_bodies set body = '{"kind":"video","intro":"texto novo"}' where content_id = '24000000-0000-4000-8000-000000000001';
 select tests.ok('S24 editar o texto do corpo sem mexer na mídia continua livre', (select body ->> 'intro' from public.content_bodies where content_id = '24000000-0000-4000-8000-000000000001') = 'texto novo');
 select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
 insert into public.content (id, slug, creator_id, pillar, type, title, media_license_kind) values
   ('24000000-0000-4000-8000-000000000005', 's24-rafael', public.seed_uuid('creator:rafael'), 'training', 'video', 'Video S24 Rafael', 'own');
-select tests.expect_error('S24 outro herói não grava o uid da Lia no próprio rascunho', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000005', '{"kind":"video"}', 'cloudflare_stream', 'a2400000000000000000000000000001')$q$, 'stream_media_forbidden');
+select tests.expect_error('S24 outro Hero não grava o uid da Lia no próprio rascunho', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000005', '{"kind":"video"}', 'cloudflare_stream', 'a2400000000000000000000000000001')$q$, 'stream_media_forbidden');
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000005', '{"kind":"video"}', 'cloudflare_stream', 'a24000000000000000000000000000ee');
 select tests.ok('S24 admin grava sem vínculo (governa o catálogo)', exists (select 1 from public.content_bodies where content_id = '24000000-0000-4000-8000-000000000005'));
 
--- 3) publicar recusa uid sem vínculo do próprio herói (corpo gravado por caminho de sistema ou antigo)
+-- 3) publicar recusa uid sem vínculo do próprio Hero (corpo gravado por caminho de sistema ou antigo)
 select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
-select tests.expect_error('S24 publicar com uid sem vínculo do herói: forbidden', $q$select public.creator_publish_content('24000000-0000-4000-8000-000000000005')$q$, 'forbidden');
+select tests.expect_error('S24 publicar com uid sem vínculo do Hero: forbidden', $q$select public.creator_publish_content('24000000-0000-4000-8000-000000000005')$q$, 'forbidden');
 select tests.su();
 update public.content_bodies set media_ref = 'a24000000000000000000000000000ff' where content_id = '24000000-0000-4000-8000-000000000003';
 select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
@@ -1406,7 +1406,7 @@ select tests.expect_error('S24 publicar com envio descartado: forbidden', $q$sel
 select tests.su();
 select tests.ok('S24 publicações recusadas deixam rascunho', (select count(*) from public.content where id in ('24000000-0000-4000-8000-000000000003', '24000000-0000-4000-8000-000000000005') and status = 'draft') = 2);
 
--- 4) limite: mais de 10 envios do mesmo herói na última hora é recusado; envios antigos não contam
+-- 4) limite: mais de 10 envios do mesmo Hero na última hora é recusado; envios antigos não contam
 select tests.su();
 insert into public.stream_uploads (uid, creator_id, expires_at)
 select md5('s24-rate-' || g), public.seed_uuid('creator:davi'), now() + interval '30 minutes' from generate_series(1, 10) g;
@@ -1414,13 +1414,13 @@ select tests.expect_error('S24 11º envio na mesma hora: too_many_uploads', $q$i
 insert into public.stream_uploads (uid, creator_id, created_at, expires_at)
 select md5('s24-old-' || g), public.seed_uuid('creator:bruna'), now() - interval '2 hours', now() - interval '90 minutes' from generate_series(1, 12) g;
 insert into public.stream_uploads (uid, creator_id, expires_at) values (md5('s24-old-new'), public.seed_uuid('creator:bruna'), now() + interval '30 minutes');
-select tests.ok('S24 limite conta só a última hora (12 antigos + 1 novo aceitos) e é por herói',
+select tests.ok('S24 limite conta só a última hora (12 antigos + 1 novo aceitos) e é por Hero',
   (select count(*) from public.stream_uploads where creator_id = public.seed_uuid('creator:bruna')) = 13
   and (select count(*) from public.stream_uploads where creator_id = public.seed_uuid('creator:davi')) = 10);
 
 -- 5) descartar: só rascunho de vídeo próprio nunca publicado
 select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
-select tests.expect_error('S24 outro herói não descarta rascunho alheio', $q$select public.creator_discard_video_draft('24000000-0000-4000-8000-000000000002')$q$, 'forbidden');
+select tests.expect_error('S24 outro Hero não descarta rascunho alheio', $q$select public.creator_discard_video_draft('24000000-0000-4000-8000-000000000002')$q$, 'forbidden');
 select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
 select tests.expect_error('S24 consumidor não descarta', $q$select public.creator_discard_video_draft('24000000-0000-4000-8000-000000000002')$q$, 'forbidden');
 select tests.expect_error('S24 id inexistente também responde forbidden', $q$select public.creator_discard_video_draft(gen_random_uuid())$q$, 'forbidden');
@@ -1433,7 +1433,7 @@ select tests.ok('S24 descarte apaga conteúdo e corpo e marca o envio (content_i
   not exists (select 1 from public.content where id = '24000000-0000-4000-8000-000000000002')
   and not exists (select 1 from public.content_bodies where content_id = '24000000-0000-4000-8000-000000000002')
   and (select discarded_at = now() and content_id is null and provider_deleted_at is null from public.stream_uploads where uid = 'a2400000000000000000000000000002'));
-select tests.ok('S24 descarte auditado como content.creator_discard (ator herói)',
+select tests.ok('S24 descarte auditado como content.creator_discard (ator Hero)',
   exists (select 1 from public.admin_audit where action = 'content.creator_discard' and resource_id = '24000000-0000-4000-8000-000000000002'
             and actor_type = 'creator' and actor_id = '10000000-0000-4000-8000-000000000004' and before_data ->> 'media_ref' = 'a2400000000000000000000000000002'));
 select tests.ok('S24 sinalizador de confiança desligado', not public.is_trusted_call());
@@ -1459,7 +1459,7 @@ update public.stream_uploads set content_id = '24000000-0000-4000-8000-000000000
 select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
 insert into public.content (id, slug, creator_id, pillar, type, title, media_license_kind) values
   ('24000000-0000-4000-8000-000000000007', 's24-clone', public.seed_uuid('creator:lia'), 'training', 'video', 'Video S24 clone', 'own');
-select tests.expect_error('S24 herói não clona no rascunho o uid de post que já esteve no ar', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000007', '{"kind":"video"}', 'cloudflare_stream', 'a2400000000000000000000000000001')$q$, 'stream_media_forbidden');
+select tests.expect_error('S24 Hero não clona no rascunho o uid de post que já esteve no ar', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000007', '{"kind":"video"}', 'cloudflare_stream', 'a2400000000000000000000000000001')$q$, 'stream_media_forbidden');
 insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000006', '{"kind":"video"}', 'cloudflare_stream', 'a2400000000000000000000000000005');
 select tests.expect_error('S24 envio livre já usado por outro corpo não serve a um segundo rascunho', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000007', '{"kind":"video"}', 'cloudflare_stream', 'a2400000000000000000000000000005')$q$, 'stream_media_forbidden');
 -- (A) corpo clonado gravado por caminho de sistema (ou antes da 0026): o descarte apaga só o rascunho
@@ -1473,12 +1473,12 @@ select tests.ok('S24 descartar rascunho com uid clonado de post já no ar: uid n
   and not exists (select 1 from public.content where id = '24000000-0000-4000-8000-000000000007')
   and (select discarded_at is null and content_id = '24000000-0000-4000-8000-000000000001' from public.stream_uploads where uid = 'a2400000000000000000000000000001')
   and exists (select 1 from public.content_bodies where content_id = '24000000-0000-4000-8000-000000000001' and media_ref = 'a2400000000000000000000000000001'));
--- (B) corpo sem vínculo do herói (uid da Lia no rascunho do Rafael, gravado por caminho de sistema)
+-- (B) corpo sem vínculo do Hero (uid da Lia no rascunho do Rafael, gravado por caminho de sistema)
 update public.content_bodies set media_ref = 'a2400000000000000000000000000004' where content_id = '24000000-0000-4000-8000-000000000005';
 select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
 create temporary table t_s24_foreign as select public.creator_discard_video_draft('24000000-0000-4000-8000-000000000005') as r;
 select tests.su();
-select tests.ok('S24 descartar rascunho com uid sem vínculo do herói: uid nulo e envio da Lia intacto',
+select tests.ok('S24 descartar rascunho com uid sem vínculo do Hero: uid nulo e envio da Lia intacto',
   (select r ->> 'uid' is null from t_s24_foreign)
   and not exists (select 1 from public.content where id = '24000000-0000-4000-8000-000000000005')
   and (select discarded_at is null from public.stream_uploads where uid = 'a2400000000000000000000000000004'));
@@ -1556,7 +1556,7 @@ select tests.ok('S24 stream_cleanup_discard repetido não faz nada',
 
 -- 6) slug do rascunho: dono, formato, duplicado
 select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
-select tests.expect_error('S24 outro herói não troca slug alheio', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', 'treino-s24-roubado')$q$, 'forbidden');
+select tests.expect_error('S24 outro Hero não troca slug alheio', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', 'treino-s24-roubado')$q$, 'forbidden');
 select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
 select tests.expect_error('S24 slug com maiúscula: invalid_slug', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', 'Treino-S24')$q$, 'invalid_slug');
 select tests.expect_error('S24 slug com hífen duplo: invalid_slug', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', 'treino--s24')$q$, 'invalid_slug');
@@ -1564,7 +1564,7 @@ select tests.expect_error('S24 slug com hífen na ponta: invalid_slug', $q$selec
 select tests.expect_error('S24 slug acima de 120: invalid_slug', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', repeat('a', 121))$q$, 'invalid_slug');
 select tests.expect_error('S24 slug de outro conteúdo: slug_taken', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', 's23-video-celular')$q$, 'slug_taken');
 select tests.ok('S24 sinalizador desligado depois do slug_taken', not public.is_trusted_call());
-select tests.expect_error('S24 herói segue sem mudar slug direto (coluna protegida)', $q$update public.content set slug = 'treino-s24-direto' where id = '24000000-0000-4000-8000-000000000003'$q$, 'protected_column');
+select tests.expect_error('S24 Hero segue sem mudar slug direto (coluna protegida)', $q$update public.content set slug = 'treino-s24-direto' where id = '24000000-0000-4000-8000-000000000003'$q$, 'protected_column');
 create temporary table t_s24_slug as select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', 'treino-de-perna-s24-x1y2z3') as r;
 select tests.ok('S24 dono troca o slug do rascunho e recebe {id, slug}',
   (select r = jsonb_build_object('id', '24000000-0000-4000-8000-000000000003'::uuid, 'slug', 'treino-de-perna-s24-x1y2z3') from t_s24_slug)
@@ -1594,7 +1594,7 @@ create or replace function tests.ing(p_id text, p_name text, p_qty numeric defau
 returns jsonb language sql immutable as $$ select jsonb_build_object('id', p_id, 'name', p_name, 'quantity', p_qty, 'unit', p_unit) $$;
 create or replace function tests.step(p_id text, p_text text, p_ings jsonb default '[]')
 returns jsonb language sql immutable as $$ select jsonb_build_object('id', p_id, 'instruction', p_text, 'ingredient_ids', p_ings) $$;
--- updated_at atual do conteúdo, lido com a RLS de quem chama (o herói vê o próprio rascunho)
+-- updated_at atual do conteúdo, lido com a RLS de quem chama (o Hero vê o próprio rascunho)
 create or replace function tests.upd(p_content uuid) returns timestamptz language sql stable as $$ select updated_at from public.content where id = p_content $$;
 grant execute on all functions in schema tests to anon, authenticated;
 
@@ -1789,7 +1789,7 @@ select tests.ok('S25 backfill, literais e dry-run só para o service role',
 
 -- ================================================================ S26 · Permissões da receita (0027)
 -- Visitante lê o público (detalhes, categorias, galeria) e nunca o protegido (extras, ingredientes,
--- etapas, nutrição); consumidor só abre com a etapa e o plano; herói escreve só pela RPC.
+-- etapas, nutrição); consumidor só abre com a etapa e o plano; Hero escreve só pela RPC.
 select tests.anon();
 select tests.ok('S26 visitante lê detalhes, categorias e vínculos de categoria de receita no ar',
   (select count(*) from public.recipe_details where content_id = public.seed_uuid('content:g1')) = 1
@@ -1819,7 +1819,7 @@ select tests.ok('S26 com a etapa: 6 ingredientes de g1, 5 de g5 (livre desde a 0
   and (select count(*) from public.recipe_extras where content_id = public.seed_uuid('content:g1')) = 1);
 select tests.ok('S26 receita que não é do consumidor: versões invisíveis', (select count(*) from public.recipe_versions) = 0);
 
--- herói (Helena): rascunho próprio, escrita só pela RPC
+-- Hero (Helena): rascunho próprio, escrita só pela RPC
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
 select tests.ok('S26 Helena vinculada ao usuário de teste', public.my_creator_id() = public.seed_uuid('creator:helena'));
 insert into public.content (id, slug, creator_id, pillar, type, title, summary) values
@@ -1903,7 +1903,7 @@ select tests.ok('S26 sinalizador de confiança desligado depois da gravação', 
 -- corpo: o body estruturado só muda pela RPC; trocar só o vídeo passa pela guarda do Stream (0026)
 select tests.expect_error('S26 gravar body de receita estruturada: recipe_body_managed',
   $q$update public.content_bodies set body = '{"kind":"recipe","ingredients":[]}' where content_id = '26000000-0000-4000-8000-000000000001'$q$, 'recipe_body_managed');
-select tests.expect_error('S26 vídeo do Stream sem envio do herói: stream_media_forbidden (guarda da 0026)',
+select tests.expect_error('S26 vídeo do Stream sem envio do Hero: stream_media_forbidden (guarda da 0026)',
   $q$update public.content_bodies set media_provider = 'cloudflare_stream', media_ref = 'b2600000000000000000000000000001' where content_id = '26000000-0000-4000-8000-000000000001'$q$, 'stream_media_forbidden');
 select tests.su();
 insert into public.stream_uploads (uid, creator_id, expires_at) values ('b2600000000000000000000000000002', public.seed_uuid('creator:helena'), now() + interval '30 minutes');
@@ -1914,7 +1914,7 @@ select tests.ok('S26 trocar só o vídeo (envio próprio) passa, sem tocar no ma
 update public.content_bodies set media_provider = 'none', media_ref = null where content_id = '26000000-0000-4000-8000-000000000001';
 -- RPC alheia
 select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
-select tests.expect_error('S26 outro herói: recipe_save alheia dá forbidden',
+select tests.expect_error('S26 outro Hero: recipe_save alheia dá forbidden',
   $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('X', '[]', '[]'), now())$q$, 'forbidden');
 select tests.expect_error('S26 recipe_save de conteúdo que não é receita: not_recipe (o dono) / forbidden (outro)',
   $q$select public.recipe_save('20000000-0000-4000-8000-000000000001', tests.rp('X', '[]', '[]'), now())$q$, 'forbidden');
@@ -1936,9 +1936,9 @@ select public.recipe_save('26000000-0000-4000-8000-000000000001',
            jsonb_build_array(tests.step('a2600000-0000-4000-8000-000000000011', 'Misture.')), '["almoco"]',
            '{"nutrition":{"kcal":300,"protein_g":10,"source":"chef"}}'),
   tests.upd('26000000-0000-4000-8000-000000000001'));
-select tests.expect_error('S26 herói não se valida: nutrition_validation_forbidden',
+select tests.expect_error('S26 Hero não se valida: nutrition_validation_forbidden',
   $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('Receita S26', '[]', '[]', '["almoco"]', '{"nutrition":{"kcal":300,"validated":true,"validated_by":"Eu"}}'), tests.upd('26000000-0000-4000-8000-000000000001'))$q$, 'nutrition_validation_forbidden');
-select tests.expect_error('S26 herói não executa a validação do admin',
+select tests.expect_error('S26 Hero não executa a validação do admin',
   $q$select public.admin_validate_recipe_nutrition('26000000-0000-4000-8000-000000000001', true, 'Eu', current_date, null)$q$, 'forbidden');
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select tests.expect_error('S26 validar sem responsável: nutrition_validation_incomplete',
@@ -1992,24 +1992,24 @@ select tests.ok('S26 admin segue gravando traduções (update e insert) e lê o 
   (public.content_localized_body(public.seed_uuid('content:r1'), 'es') ->> 'intro') = 'es'
   and (public.content_localized_body(public.seed_uuid('content:r1'), 'en') ->> 'intro') = 'en 2');
 
--- especialidades e credenciais (P7): o herói pede fora da linha pública; só o texto aprovado aparece
+-- especialidades e credenciais (P7): o Hero pede fora da linha pública; só o texto aprovado aparece
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
 update public.creator_profiles set specialties = '{cozinha de base,molhos}' where id = public.seed_uuid('creator:helena');
 insert into public.creator_credentials_requests (creator_id, text) values (public.seed_uuid('creator:helena'), 'Formada em gastronomia (informado pela heroína)');
-select tests.ok('S26 herói grava especialidades e pede credenciais; o perfil público segue sem texto e sem aprovação',
+select tests.ok('S26 Hero grava especialidades e pede credenciais; o perfil público segue sem texto e sem aprovação',
   (select specialties = '{cozinha de base,molhos}' and credentials is null and credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena'))
   and (select count(*) from public.creator_credentials_requests) = 1);
-select tests.expect_error('S26 herói não grava credentials direto no perfil público (coluna protegida)',
+select tests.expect_error('S26 Hero não grava credentials direto no perfil público (coluna protegida)',
   $q$update public.creator_profiles set credentials = 'Nutricionista CRN-3 99999 (falso)' where id = public.seed_uuid('creator:helena')$q$, 'protected_column');
-select tests.expect_error('S26 herói não aprova as próprias credenciais (coluna protegida)',
+select tests.expect_error('S26 Hero não aprova as próprias credenciais (coluna protegida)',
   $q$update public.creator_profiles set credentials_approved_at = now() where id = public.seed_uuid('creator:helena')$q$, 'protected_column');
-select tests.expect_error('S26 herói não pede credenciais em nome de outro herói (RLS)',
+select tests.expect_error('S26 Hero não pede credenciais em nome de outro Hero (RLS)',
   $q$insert into public.creator_credentials_requests (creator_id, text) values (public.seed_uuid('creator:marcos'), 'falso')$q$, '42501');
 select tests.expect_error('S26 mais de 6 especialidades: check',
   $q$update public.creator_profiles set specialties = '{a,b,c,d,e,f,g}' where id = public.seed_uuid('creator:helena')$q$, '23514');
-select tests.expect_error('S26 herói não executa a RPC de credenciais', $q$select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), true, 'x')$q$, 'forbidden');
+select tests.expect_error('S26 Hero não executa a RPC de credenciais', $q$select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), true, 'x')$q$, 'forbidden');
 select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
-select tests.ok('S26 outro herói não lê o pedido alheio', (select count(*) from public.creator_credentials_requests) = 0);
+select tests.ok('S26 outro Hero não lê o pedido alheio', (select count(*) from public.creator_credentials_requests) = 0);
 select tests.anon();
 select tests.ok('S26 visitante não lê pedido nem texto pendente (API do perfil volta credentials nulo)',
   not has_table_privilege('anon', 'public.creator_credentials_requests', 'select')
@@ -2026,12 +2026,12 @@ select tests.ok('S26 visitante vê só o texto aprovado', (select credentials = 
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
 update public.creator_credentials_requests set text = 'Nutricionista CRN-3 99999 (falso)' where creator_id = public.seed_uuid('creator:helena');
 select tests.anon();
-select tests.ok('S26 herói edita o pedido: texto e aprovação saem do perfil público até nova aprovação',
+select tests.ok('S26 Hero edita o pedido: texto e aprovação saem do perfil público até nova aprovação',
   (select credentials is null and credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena')));
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), true, 'Conferido de novo');
 select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), false, 'Registro não confere');
-select tests.ok('S26 admin reprova: texto e data limpos no perfil; o pedido fica para o herói corrigir',
+select tests.ok('S26 admin reprova: texto e data limpos no perfil; o pedido fica para o Hero corrigir',
   (select credentials is null and credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena'))
   and exists (select 1 from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
 select tests.su();
@@ -2040,7 +2040,7 @@ update public.creator_profiles set specialties = '{}', credentials = null where 
 delete from public.recipe_media where id = 'a2600000-0000-4000-8000-0000000000f1';
 
 -- ================================================================ S27 · Fotos de receita no Storage (0028, shim local)
--- Bucket privado; envio só na pasta do herói, em rascunho próprio de receita, com uploads ligados e
+-- Bucket privado; envio só na pasta do Hero, em rascunho próprio de receita, com uploads ligados e
 -- dentro da cota diária; mime e bytes vêm da metadata do objeto; a visibilidade segue recipe_media.
 select tests.su();
 select tests.ok('S27 bucket recipe-media privado, 5 MB e 3 tipos de imagem',
@@ -2055,9 +2055,9 @@ insert into storage.objects (bucket_id, name, owner_id, metadata) values
    '10000000-0000-4000-8000-000000000026', '{"mimetype":"image/webp","size":120000}'),
   ('recipe-media', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000002.jpg',
    '10000000-0000-4000-8000-000000000026', '{"mimetype":"image/jpeg","size":90000}');
-select tests.ok('S27 herói envia na própria pasta, em rascunho próprio, e vê os próprios objetos',
+select tests.ok('S27 Hero envia na própria pasta, em rascunho próprio, e vê os próprios objetos',
   (select count(*) from storage.objects where bucket_id = 'recipe-media' and name like public.seed_uuid('creator:helena') || '/27000000-%') = 2);
-select tests.expect_error('S27 pasta de outro herói é recusada',
+select tests.expect_error('S27 pasta de outro Hero é recusada',
   $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('recipe-media', public.seed_uuid('creator:marcos') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000009.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
 select tests.expect_error('S27 receita publicada (g1) não recebe envio',
   $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('recipe-media', public.seed_uuid('creator:helena') || '/' || public.seed_uuid('content:g1') || '/a2700000-0000-4000-8000-000000000009.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
@@ -2090,14 +2090,14 @@ select tests.expect_error('S27 acima de 100 MB no dia o envio é recusado',
   $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('recipe-media', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000007.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
 select tests.su();
 delete from storage.objects where name like '%a2700000-0000-4000-8000-0000000000b0.webp';
--- P3: conta demo do herói segue só a cota (o Marcos de teste é demo)
+-- P3: conta demo do Hero segue só a cota (o Marcos de teste é demo)
 select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
 insert into public.content (id, slug, creator_id, pillar, type, title, summary) values
   ('27000000-0000-4000-8000-000000000002', 's27-receita-marcos', public.seed_uuid('creator:marcos'), 'gastronomy', 'recipe', 'Receita S27 do Marcos', 'Resumo');
 insert into storage.objects (bucket_id, name, owner_id, metadata) values
   ('recipe-media', public.seed_uuid('creator:marcos') || '/27000000-0000-4000-8000-000000000002/a2700000-0000-4000-8000-000000000021.png',
    '10000000-0000-4000-8000-000000000027', '{"mimetype":"image/png","size":5000}');
-select tests.ok('S27 conta demo do herói envia no próprio rascunho (P3: só a cota diária)',
+select tests.ok('S27 conta demo do Hero envia no próprio rascunho (P3: só a cota diária)',
   (select count(*) from storage.objects where owner_id = '10000000-0000-4000-8000-000000000027') = 1);
 
 -- registrar: mime e tamanho do Storage, direitos de uso, limites
@@ -2179,14 +2179,14 @@ select tests.su();
 update public.content set publish_at = now() - interval '1 minute' where id = '27000000-0000-4000-8000-000000000001';
 select tests.anon();
 select tests.ok('S27 a data chegou: a galeria aparece sem nova ação', (select count(*) from storage.objects where name like '%a2700000-0000-4000-8000-000000000001.webp') = 1);
--- herói suspenso não enxerga a linha da foto de etapa (RLS), mas o registro é conferido sem a RLS
+-- Hero suspenso não enxerga a linha da foto de etapa (RLS), mas o registro é conferido sem a RLS
 select tests.su();
 update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:helena');
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
 do $s27s$ declare n int; begin
   delete from storage.objects where bucket_id = 'recipe-media'
     and (name like '%a2700000-0000-4000-8000-000000000001.webp' or name like '%a2700000-0000-4000-8000-000000000002.jpg'); get diagnostics n = row_count;
-  perform tests.ok('S27 herói suspenso não apaga foto registrada (galeria e etapa) de receita no ar', n = 0);
+  perform tests.ok('S27 Hero suspenso não apaga foto registrada (galeria e etapa) de receita no ar', n = 0);
 end $s27s$;
 select tests.su();
 update public.creator_profiles set status = 'active' where id = public.seed_uuid('creator:helena');
@@ -2204,10 +2204,10 @@ select tests.ok('S27 recipe_delete_media devolve o caminho e zera a capa (detalh
   and (select cover_media_id is null from public.recipe_details where content_id = '27000000-0000-4000-8000-000000000001')
   and (select cover_url is null from public.content where id = '27000000-0000-4000-8000-000000000001'));
 select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
-select tests.expect_error('S27 outro herói não apaga a foto alheia', $q$select public.recipe_delete_media((select id from t_s27_m2))$q$, 'forbidden');
+select tests.expect_error('S27 outro Hero não apaga a foto alheia', $q$select public.recipe_delete_media((select id from t_s27_m2))$q$, 'forbidden');
 do $s27$ declare n int; begin
   delete from storage.objects where name like '%a2700000-0000-4000-8000-000000000001.webp'; get diagnostics n = row_count;
-  perform tests.ok('S27 outro herói não apaga objeto alheio no Storage (0 linhas)', n = 0);
+  perform tests.ok('S27 outro Hero não apaga objeto alheio no Storage (0 linhas)', n = 0);
 end $s27$;
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
 do $s27b$ declare n int; begin
@@ -2234,7 +2234,7 @@ select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select tests.expect_error('S28 nem o admin muda review_required direto', $q$update public.content_type_settings set review_required = true where type = 'recipe'$q$, 'review_required_protected');
 select tests.expect_error('S28 justificativa curta: justification_required', $q$select public.admin_set_review_required('recipe', true, 'abc')$q$, 'justification_required');
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
-select tests.expect_error('S28 herói não executa admin_set_review_required', $q$select public.admin_set_review_required('recipe', true, 'quero ligar')$q$, 'forbidden');
+select tests.expect_error('S28 Hero não executa admin_set_review_required', $q$select public.admin_set_review_required('recipe', true, 'quero ligar')$q$, 'forbidden');
 insert into public.content (id, slug, creator_id, pillar, type, title, summary, cover_url) values
   ('28000000-0000-4000-8000-000000000001', 's28-completa', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita S28 completa', 'Resumo', '/placeholders/cover-gastronomy-1.svg'),
   ('28000000-0000-4000-8000-000000000002', 's28-incompleta', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita S28 incompleta', 'Resumo', null),
@@ -2255,7 +2255,7 @@ select public.recipe_save('28000000-0000-4000-8000-000000000004',
   tests.upd('28000000-0000-4000-8000-000000000004'));
 -- modo desligado: publica, agenda e recusa datas fora da janela e receita incompleta
 create temporary table t_s28_pub as select public.creator_publish_content('28000000-0000-4000-8000-000000000001') as r;
-select tests.ok('S28 revisão desligada: o herói publica a receita completa e vira a versão 1 (publish)',
+select tests.ok('S28 revisão desligada: o Hero publica a receita completa e vira a versão 1 (publish)',
   (select r ->> 'status' = 'published' and not (r ? 'publish_at') from t_s28_pub)
   and (select status = 'published' and publish_at is null and access_level = 'free' from public.content where id = '28000000-0000-4000-8000-000000000001')
   and (select count(*) = 1 and bool_and(version_no = 1 and reason = 'publish' and created_by = '10000000-0000-4000-8000-000000000026')
@@ -2300,7 +2300,7 @@ select tests.ok('S28 envio com data sugerida grava requested_publish_at e versio
   and (select requested_publish_at = now() + interval '2 days' and version_id is not null and decision = 'in_review'
        from public.content_reviews where content_id = '28000000-0000-4000-8000-000000000001' order by round desc limit 1));
 select tests.su();
-select tests.ok('S28 envio auditado (content.submit, ator herói)',
+select tests.ok('S28 envio auditado (content.submit, ator Hero)',
   exists (select 1 from public.admin_audit where action = 'content.submit' and resource_id = '28000000-0000-4000-8000-000000000001' and actor_type = 'creator'));
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
 select tests.expect_error('S28 a versão de 1 parâmetro também roda o checklist',
@@ -2310,7 +2310,7 @@ select tests.expect_error('S28 data sugerida fora da janela: invalid_publish_at'
 create temporary table t_s28_wd as select public.creator_withdraw_review('28000000-0000-4000-8000-000000000001') as r;
 select tests.ok('S28 retirar da revisão fecha a rodada como devolvida e volta a rascunho editável',
   (select review_status = 'none' from public.content where id = '28000000-0000-4000-8000-000000000001')
-  and (select decision = 'returned' and feedback = 'Retirado pelo herói' from public.content_reviews where content_id = '28000000-0000-4000-8000-000000000001' order by round desc limit 1));
+  and (select decision = 'returned' and feedback = 'Retirado pelo Hero' from public.content_reviews where content_id = '28000000-0000-4000-8000-000000000001' order by round desc limit 1));
 select tests.expect_error('S28 retirar o que não está em revisão: not_in_review', $q$select public.creator_withdraw_review('28000000-0000-4000-8000-000000000001')$q$, 'not_in_review');
 select public.submit_content_for_review('28000000-0000-4000-8000-000000000001');
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
@@ -2336,7 +2336,7 @@ insert into public.stream_uploads (uid, creator_id, expires_at) values
   ('b2800000000000000000000000000001', public.seed_uuid('creator:marcos'), now() + interval '30 minutes'),
   ('b2800000000000000000000000000002', public.seed_uuid('creator:helena'), now() + interval '30 minutes');
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
-select tests.expect_error('S28 recipe_save com o uid do Stream de outro herói: stream_media_forbidden',
+select tests.expect_error('S28 recipe_save com o uid do Stream de outro Hero: stream_media_forbidden',
   $q$select public.recipe_save('28000000-0000-4000-8000-000000000003', tests.rp('Receita S28 com vídeo', '[]', '[]', '[]', '{"video":{"provider":"cloudflare_stream","ref":"b2800000000000000000000000000001"}}'), tests.upd('28000000-0000-4000-8000-000000000003'))$q$, 'stream_media_forbidden');
 select public.recipe_save('28000000-0000-4000-8000-000000000003',
   tests.rp('Receita S28 com vídeo', jsonb_build_array(tests.ing('a2800000-0000-4000-8000-000000000031', 'Arroz', 1, 'cup')),
@@ -2383,8 +2383,8 @@ select public.recipe_save('28000000-0000-4000-8000-000000000001',
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select public.admin_validate_recipe_nutrition('28000000-0000-4000-8000-000000000001', true, 'Nutricionista CRN 1111', current_date, null);
 select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
-select tests.ok('S28 outro herói lê 0 versões da receita alheia', (select count(*) from public.recipe_versions where content_id = '28000000-0000-4000-8000-000000000001') = 0);
-select tests.expect_error('S28 outro herói não restaura versão alheia: version_not_found',
+select tests.ok('S28 outro Hero lê 0 versões da receita alheia', (select count(*) from public.recipe_versions where content_id = '28000000-0000-4000-8000-000000000001') = 0);
+select tests.expect_error('S28 outro Hero não restaura versão alheia: version_not_found',
   $q$select public.creator_restore_recipe_version((select id from public.recipe_versions where content_id = '28000000-0000-4000-8000-000000000001' limit 1))$q$, 'version_not_found');
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
 create temporary table t_s28_rest as select public.creator_restore_recipe_version(
@@ -2407,12 +2407,12 @@ select tests.expect_error('S28 restore_point (corpo v1) não é reconstruível: 
 -- ciclo de vida: arquivar, restaurar, excluir rascunho nunca publicado e duplicar
 select public.submit_content_for_review('28000000-0000-4000-8000-000000000004');
 create temporary table t_s28_arch as select public.creator_archive_content('28000000-0000-4000-8000-000000000004', 'Pausa') as r;
-select tests.ok('S28 arquivar receita em revisão fecha a rodada ("Arquivada pelo herói") e grava archived_by=creator',
+select tests.ok('S28 arquivar receita em revisão fecha a rodada ("Arquivada pelo Hero") e grava archived_by=creator',
   (select status = 'archived' and archived_by = 'creator' and review_status = 'none' and archived_at is not null from public.content where id = '28000000-0000-4000-8000-000000000004')
-  and (select decision = 'returned' and feedback = 'Arquivada pelo herói' from public.content_reviews where content_id = '28000000-0000-4000-8000-000000000004' order by round desc limit 1));
+  and (select decision = 'returned' and feedback = 'Arquivada pelo Hero' from public.content_reviews where content_id = '28000000-0000-4000-8000-000000000004' order by round desc limit 1));
 select tests.expect_error('S28 arquivar de novo: already_archived', $q$select public.creator_archive_content('28000000-0000-4000-8000-000000000004', null)$q$, 'already_archived');
 select public.creator_restore_content('28000000-0000-4000-8000-000000000004');
-select tests.ok('S28 herói restaura o que ele arquivou (volta a rascunho)', (select status = 'draft' and archived_by is null and review_status = 'none' from public.content where id = '28000000-0000-4000-8000-000000000004'));
+select tests.ok('S28 Hero restaura o que ele arquivou (volta a rascunho)', (select status = 'draft' and archived_by is null and review_status = 'none' from public.content where id = '28000000-0000-4000-8000-000000000004'));
 select tests.expect_error('S28 restaurar o que não está arquivado: not_archived', $q$select public.creator_restore_content('28000000-0000-4000-8000-000000000004')$q$, 'not_archived');
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select public.admin_set_content_status('28000000-0000-4000-8000-000000000004', 'archived', 'Teste S28: trava do admin');
@@ -2526,11 +2526,11 @@ select tests.ok('S29 moderação auditada', exists (select 1 from public.admin_a
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
 create temporary table t_s30_l1 as select public.creator_suggest_ingredient_product(
   (select id from public.recipe_ingredients where content_id = public.seed_uuid('content:g1') and position = 1), public.seed_uuid('product:m1'), 'Bowl pronto') as id;
-select tests.ok('S30 herói sugere produto para o ingrediente da própria receita', (select status from public.recipe_ingredient_products where id = (select id from t_s30_l1)) = 'suggested');
+select tests.ok('S30 Hero sugere produto para o ingrediente da própria receita', (select status from public.recipe_ingredient_products where id = (select id from t_s30_l1)) = 'suggested');
 select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
-select tests.expect_error('S30 outro herói não sugere para receita alheia',
+select tests.expect_error('S30 outro Hero não sugere para receita alheia',
   $q$select public.creator_suggest_ingredient_product((select id from public.recipe_ingredients where content_id = public.seed_uuid('content:g1') and position = 1), public.seed_uuid('product:m2'), null)$q$, 'forbidden');
-select tests.expect_error('S30 outro herói não retira sugestão alheia', $q$select public.creator_withdraw_ingredient_product((select id from t_s30_l1))$q$, 'forbidden');
+select tests.expect_error('S30 outro Hero não retira sugestão alheia', $q$select public.creator_withdraw_ingredient_product((select id from t_s30_l1))$q$, 'forbidden');
 select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
 select tests.ok('S30 consumidor não vê sugestão', (select count(*) from public.recipe_ingredient_products) = 0);
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
@@ -2614,7 +2614,7 @@ create temporary table t_s31_ret as select public.run_retention() as r;
 select tests.ok('S31 run_retention apaga o histórico com mais de 90 dias',
   ((select r from t_s31_ret) ->> 'recipe_history_deleted')::int >= 1
   and not exists (select 1 from public.recipe_view_history where user_id = '10000000-0000-4000-8000-000000000029'));
--- estatísticas do herói: visitantes distintos por dia, sem o próprio chef nem evento sem pessoa
+-- estatísticas do Hero: visitantes distintos por dia, sem o próprio chef nem evento sem pessoa
 insert into public.analytics_events (user_id, anon_id, event_name, properties, created_at) values
   ('10000000-0000-4000-8000-000000000029', null, 'content.view', jsonb_build_object('content_id', public.seed_uuid('content:g1')), now()),
   ('10000000-0000-4000-8000-000000000029', null, 'content.view', jsonb_build_object('content_id', public.seed_uuid('content:g1')), now()),
@@ -2629,10 +2629,10 @@ select tests.ok('S31 estatísticas: 3 visitantes distintos por dia em g1 (sem o 
   and not exists (select 1 from t_s31_stats s join public.content c on c.id = s.content_id where c.creator_id is distinct from public.seed_uuid('creator:helena'))
   and (select count(*) from t_s31_stats where content_id in (public.seed_uuid('content:g1'), public.seed_uuid('content:g3'), public.seed_uuid('content:g5'), public.seed_uuid('content:g9'))) = 4);
 select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
-select tests.expect_error('S31 consumidor não lê estatísticas de herói', $q$select * from public.creator_recipe_stats(30)$q$, 'forbidden');
+select tests.expect_error('S31 consumidor não lê estatísticas de Hero', $q$select * from public.creator_recipe_stats(30)$q$, 'forbidden');
 select tests.anon();
 select tests.expect_error('S31 visitante não executa creator_recipe_stats', $q$select * from public.creator_recipe_stats(30)$q$, 'permission denied');
--- catálogo: só o que está no ar, para visitante, herói dono de rascunho e agendada, e admin
+-- catálogo: só o que está no ar, para visitante, Hero dono de rascunho e agendada, e admin
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
 select public.creator_publish_content('28000000-0000-4000-8000-000000000001', now() + interval '1 day');
 select tests.anon();
@@ -2643,7 +2643,7 @@ select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 create temporary table t_s31_admin as select * from public.recipe_catalog(null, null, null, null, null, null, null, 'recent', null, 48);
 select tests.su();
 -- 0044: g6 e g8 arquivadas, 6 receitas no ar
-select tests.ok('S31 catálogo: visitante, herói (com rascunhos e agendada) e admin recebem só as 6 receitas no ar',
+select tests.ok('S31 catálogo: visitante, Hero (com rascunhos e agendada) e admin recebem só as 6 receitas no ar',
   (select count(*) from t_s31_anon) = 6 and (select count(*) from t_s31_hero) = 6 and (select count(*) from t_s31_admin) = 6
   and not exists (select 1 from (select content_id from t_s31_anon union all select content_id from t_s31_hero union all select content_id from t_s31_admin) x
                   join public.content c on c.id = x.content_id where not public.content_is_live(c.status, c.publish_at))
@@ -2688,8 +2688,8 @@ select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local
 select public.creator_unpublish_content('28000000-0000-4000-8000-000000000001');
 
 -- ================================================================ S32 · Exclusão de conta com dados de receitas (0027)
--- Herói com versões e mídia (Marcos), comentarista com avaliação, lista, histórico e comentário, e um
--- admin que validou nutrição saem por delete_my_account; um herói sai pelo painel do Auth (delete direto).
+-- Hero com versões e mídia (Marcos), comentarista com avaliação, lista, histórico e comentário, e um
+-- admin que validou nutrição saem por delete_my_account; um Hero sai pelo painel do Auth (delete direto).
 select tests.su();
 insert into public.role_assignments (user_id, role, scope_type) values ('10000000-0000-4000-8000-000000000032', 'admin', 'global');
 update public.app_settings set value = 'true'::jsonb where key = 'recipes.comments_enabled';
@@ -2721,7 +2721,7 @@ select tests.ok('S32 antes: autorias gravadas (versão e mídia do Marcos, valid
   and (select validated_by_user = '10000000-0000-4000-8000-000000000032' from public.recipe_nutrition where content_id = '26000000-0000-4000-8000-000000000001')
   and exists (select 1 from public.recipe_comments where moderated_by = '10000000-0000-4000-8000-000000000032')
   and (select rating_count = 1 and rating_sum = 3 from public.recipe_details where content_id = public.seed_uuid('content:g1')));
--- herói com conteúdo criado por ele (created_by = uid, coluna protegida): duplicar receita grava a autoria
+-- Hero com conteúdo criado por ele (created_by = uid, coluna protegida): duplicar receita grava a autoria
 select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
 create temporary table t_s32_dup as select public.creator_duplicate_recipe('27000000-0000-4000-8000-000000000002', 'Cópia do Marcos S32', 's32-copia-marcos') as id;
 select tests.su();
@@ -2738,7 +2738,7 @@ select public.delete_my_account();
 select tests.login('10000000-0000-4000-8000-000000000033', 's33seller@test.local');
 select public.delete_my_account();
 select tests.su();
-select tests.ok('S32 herói que criou conteúdo e vendedor que cadastrou produto excluem a conta: conteúdo e produto ficam, com created_by nulo',
+select tests.ok('S32 Hero que criou conteúdo e vendedor que cadastrou produto excluem a conta: conteúdo e produto ficam, com created_by nulo',
   not exists (select 1 from auth.users where id = '10000000-0000-4000-8000-000000000033')
   and (select created_by is null from public.content where id = (select id from t_s32_dup))
   and (select created_by is null from public.products where id = (select id from t_s32_prod)));
@@ -2763,7 +2763,7 @@ select tests.ok('S32 dados pessoais do comentarista saem (avaliação, comentár
 select tests.ok('S32 o perfil do Marcos fica sem usuário (set null)', (select user_id is null from public.creator_profiles where id = public.seed_uuid('creator:marcos')));
 select tests.su();
 update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:marcos');
--- caminho do painel do Auth: delete direto em auth.users de um herói com versões (Helena de teste)
+-- caminho do painel do Auth: delete direto em auth.users de um Hero com versões (Helena de teste)
 select tests.ok('S32 a Helena de teste tem versões antes do delete direto', exists (select 1 from public.recipe_versions where created_by = '10000000-0000-4000-8000-000000000026'));
 delete from auth.users where id = '10000000-0000-4000-8000-000000000026';
 select tests.ok('S32 delete direto em auth.users (painel): os gatilhos aceitam o set null da cascata e as versões ficam',
@@ -2782,7 +2782,7 @@ select tests.ok('S32 nada dos cenários S25–S32 ficou no ar e as chaves de rec
 
 -- ================================================================ S33 · Foto de perfil no Storage (0031, shim local)
 -- Bucket público sem escrita pela API; o envio é reservado pela RPC (kill switch, cota de 20/dia,
--- nome do objeto) e aplicado nos dois lados (perfil e herói) só para envio próprio já gravado.
+-- nome do objeto) e aplicado nos dois lados (perfil e Hero) só para envio próprio já gravado.
 -- Quem grava no bucket é o service role (o "su" aqui faz o papel dele). O Rafael fica ligado ao
 -- usuário de teste só neste cenário e volta sem usuário e com a ilustração do seed.
 select tests.su();
@@ -2841,13 +2841,13 @@ select tests.expect_error('S33 URL de outro bucket: invalid_path',
 select tests.expect_error('S33 URL com consulta: invalid_path', $q$select public.avatar_set_photo((select url from t_s33_url) || '?x=1')$q$, 'invalid_path');
 select tests.expect_error('S33 extensão trocada (.png): invalid_path', $q$select public.avatar_set_photo(replace((select url from t_s33_url), '.webp', '.png'))$q$, 'invalid_path');
 create temporary table t_s33_prev as select public.avatar_set_photo((select url from t_s33_url)) as prev;
-select tests.ok('S33 aplicar devolve o anterior do herói (a ilustração) e o perfil sem foto não entra',
+select tests.ok('S33 aplicar devolve o anterior do Hero (a ilustração) e o perfil sem foto não entra',
   (select prev = array[(select avatar_url from t_s33_seed)] from t_s33_prev));
-select tests.ok('S33 a foto vale no perfil e no herói ligado',
+select tests.ok('S33 a foto vale no perfil e no Hero ligado',
   (select avatar_url from public.profiles where id = auth.uid()) = (select url from t_s33_url)
   and (select avatar_url from public.creator_profiles where id = public.seed_uuid('creator:rafael')) = (select url from t_s33_url));
 select tests.anon();
-select tests.ok('S33 o visitante vê a foto no perfil público do herói',
+select tests.ok('S33 o visitante vê a foto no perfil público do Hero',
   (select avatar_url from public.creator_profiles where id = public.seed_uuid('creator:rafael')) like '%/avatars/33000000-0000-4000-8000-000000000001/%');
 
 -- kill switch
@@ -2884,12 +2884,12 @@ select tests.ok('S33 órfãos: os 19 antigos não referenciados entram; o em uso
   and not exists (select 1 from t_s33_orphans where p = (select path from t_s33_after)));
 select tests.ok('S33 órfãos: o limite é respeitado', (select count(*) from public.avatar_orphan_uploads(5)) = 5);
 
--- exclusão de conta: a linha fica sem usuário e a foto em uso no herói vira alvo da limpeza diária
+-- exclusão de conta: a linha fica sem usuário e a foto em uso no Hero vira alvo da limpeza diária
 select tests.login('33000000-0000-4000-8000-000000000001', 's33photo@test.local');
 select public.delete_my_account();
 select tests.su();
 create temporary table t_s33_gone as select p from public.avatar_orphan_uploads(1000) p;
-select tests.ok('S33 conta excluída: envios ficam sem usuário e a foto em uso no herói entra na limpeza (inclusive a recente)',
+select tests.ok('S33 conta excluída: envios ficam sem usuário e a foto em uso no Hero entra na limpeza (inclusive a recente)',
   not exists (select 1 from public.avatar_uploads where user_id = '33000000-0000-4000-8000-000000000001')
   and exists (select 1 from t_s33_gone where p = (select path from t_s33_claim))
   and exists (select 1 from t_s33_gone where p = (select path from t_s33_after))
@@ -2913,8 +2913,8 @@ select tests.ok('S33 o Rafael volta ao seed, sem usuário e com a ilustração',
   (select user_id is null and avatar_url = (select avatar_url from t_s33_seed) from public.creator_profiles where id = public.seed_uuid('creator:rafael')));
 
 -- ================================================================ S34 · Credenciais decididas sobre o texto que o admin viu (0032)
--- O herói edita o pedido entre a abertura da fila e o clique: a decisão com o texto antigo é recusada
--- (request_changed) e nada vai ao perfil público. A decisão fica no pedido para o herói ver
+-- O Hero edita o pedido entre a abertura da fila e o clique: a decisão com o texto antigo é recusada
+-- (request_changed) e nada vai ao perfil público. A decisão fica no pedido para o Hero ver
 -- "reprovadas"; editar o texto limpa a decisão. Usuário próprio (…0034), desvinculado no fim.
 select tests.su();
 insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000034', 's34helena@test.local');
@@ -2922,12 +2922,12 @@ update public.creator_profiles set user_id = '10000000-0000-4000-8000-0000000000
 select tests.login('10000000-0000-4000-8000-000000000034', 's34helena@test.local');
 insert into public.creator_credentials_requests (creator_id, text) values (public.seed_uuid('creator:helena'), 'Chef formada pelo Senac');
 select tests.ok('S34 pedido novo sem decisão', (select decision is null and decided_at is null from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
-select tests.expect_error('S34 herói não grava a própria decisão (fora do grant)',
+select tests.expect_error('S34 Hero não grava a própria decisão (fora do grant)',
   $q$update public.creator_credentials_requests set decision = 'approved' where creator_id = public.seed_uuid('creator:helena')$q$, '42501');
--- a fila do admin mostrou 'Chef formada pelo Senac'; antes do clique o herói troca o texto
+-- a fila do admin mostrou 'Chef formada pelo Senac'; antes do clique o Hero troca o texto
 update public.creator_credentials_requests set text = 'Nutricionista CRN 12345, cura diabetes' where creator_id = public.seed_uuid('creator:helena');
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
-select tests.expect_error('S34 aprovar com o texto que a fila mostrou, já editado pelo herói: request_changed',
+select tests.expect_error('S34 aprovar com o texto que a fila mostrou, já editado pelo Hero: request_changed',
   $q$select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), true, 'S34 conferido na fila', 'Chef formada pelo Senac')$q$, 'request_changed');
 select tests.expect_error('S34 reprovar com texto antigo também é recusado',
   $q$select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), false, 'S34 não confere', 'Chef formada pelo Senac')$q$, 'request_changed');
@@ -2946,7 +2946,7 @@ select tests.ok('S34 reprovar com o texto atual: decisão no pedido, sem mudar o
   (select decision = 'rejected' and decided_at is not null and updated_at = (select updated_at from t_s34_before)
    from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
 select tests.login('10000000-0000-4000-8000-000000000034', 's34helena@test.local');
-select tests.ok('S34 o herói lê a própria reprovação', (select decision = 'rejected' from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
+select tests.ok('S34 o Hero lê a própria reprovação', (select decision = 'rejected' from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
 update public.creator_credentials_requests set text = 'Chef formada pelo Senac (2015)' where creator_id = public.seed_uuid('creator:helena');
 select tests.ok('S34 editar o texto limpa a decisão (pedido volta a aguardar)',
   (select decision is null and decided_at is null and updated_at > (select updated_at from t_s34_before) from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
@@ -2985,7 +2985,7 @@ grant select on t_s35_l1, t_s35_l2 to authenticated;
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select public.admin_set_ingredient_product((select id from t_s35_l1), 'validated', null);
 select public.admin_set_ingredient_product((select id from t_s35_l2), 'validated', null);
--- a mesma escrita do recipe_save (o herói não tem update direto; a RPC é security definer)
+-- a mesma escrita do recipe_save (o Hero não tem update direto; a RPC é security definer)
 select tests.su();
 update public.recipe_ingredients set position = 60, quantity = quantity + 1, name = '  ' || upper(name) || ' '
   where id = (select id from t_s35_ing where position = 1);
@@ -3075,10 +3075,10 @@ select tests.ok('S36 limpeza: usuários, preferências e histórico do cenário 
   not exists (select 1 from public.user_recipe_prefs where user_id in ('10000000-0000-4000-8000-000000000036', '10000000-0000-4000-8000-000000000136'))
   and not exists (select 1 from public.recipe_view_history where user_id in ('10000000-0000-4000-8000-000000000036', '10000000-0000-4000-8000-000000000136')));
 
--- ================================================================ S38 · Prateleiras: 3 programas publicados por herói (0035)
+-- ================================================================ S38 · Prateleiras: 3 programas publicados por Hero (0035)
 -- Os 16 programas novos da seed de demonstração: publicados, sem destaque, etapas do mesmo pilar, en/es
--- publicados e reexecução sem efeito. Desde a 0052 os programas no ar só têm etapas do próprio herói
--- (as de outro herói, herdadas da troca de heróis da 0044, saíram; posições 1..n nos programas limpos).
+-- publicados e reexecução sem efeito. Desde a 0052 os programas no ar só têm etapas do próprio Hero
+-- (as de outro Hero, herdadas da troca de Heros da 0044, saíram; posições 1..n nos programas limpos).
 select tests.su();
 create or replace function tests.s38_programs() returns table (key text, creator text, base text) language sql immutable as $$
   values ('shelf-lia-2', 'lia', 'p1'), ('shelf-lia-3', 'lia', 'p1'), ('shelf-rafael-2', 'rafael', 'p2'), ('shelf-rafael-3', 'rafael', 'p2'),
@@ -3086,7 +3086,7 @@ create or replace function tests.s38_programs() returns table (key text, creator
          ('shelf-bruna-2', 'bruna', 'p5'), ('shelf-bruna-3', 'bruna', 'p5'), ('shelf-davi-2', 'davi', 'p6'), ('shelf-davi-3', 'davi', 'p6'),
          ('shelf-helena-2', 'helena', 'p7'), ('shelf-helena-3', 'helena', 'p7'), ('shelf-marcos-2', 'marcos', 'p8'), ('shelf-marcos-3', 'marcos', 'p8')
 $$;
--- 0044: os programas dos 2 heróis removidos (bruna, marcos) estão arquivados; as checagens públicas usam os 12 no ar
+-- 0044: os programas dos 2 Heros removidos (bruna, marcos) estão arquivados; as checagens públicas usam os 12 no ar
 create or replace function tests.s38_live() returns table (key text, creator text, base text) language sql immutable as $$
   select * from tests.s38_programs() where creator not in ('bruna', 'marcos')
 $$;
@@ -3096,12 +3096,12 @@ grant execute on function tests.s38_live() to anon, authenticated;
 insert into auth.users (id, email) values ('38000000-0000-4000-8000-000000000011', 's38a@test.local'), ('38000000-0000-4000-8000-000000000012', 's38b@test.local');
 
 select tests.anon();
-select tests.ok('S38 visitante vê 18 programas publicados, exatamente 3 por herói ativo (os 6 dos removidos na 0044 estão arquivados)',
+select tests.ok('S38 visitante vê 18 programas publicados, exatamente 3 por Hero ativo (os 6 dos removidos na 0044 estão arquivados)',
   (select count(*) from public.programs) = 18
   and (select count(*) from public.programs where status = 'published') = 18
   and (select count(*) from public.creator_profiles) = 6
   and not exists (select 1 from public.creator_profiles cp where (select count(*) from public.programs p where p.creator_id = cp.id) <> 3));
-select tests.ok('S38 os 12 novos no ar: do herói certo, versão 1 publicada como atual, sem destaque e capa de imagem do repositório',
+select tests.ok('S38 os 12 novos no ar: do Hero certo, versão 1 publicada como atual, sem destaque e capa de imagem do repositório',
   (select count(*) from tests.s38_live() s
      join public.programs p on p.id = public.seed_uuid('program:' || s.key)
      join public.program_versions v on v.id = p.current_version_id
@@ -3109,7 +3109,7 @@ select tests.ok('S38 os 12 novos no ar: do herói certo, versão 1 publicada com
       and v.id = public.seed_uuid('pv:' || s.key || ':1') and v.version_no = 1 and v.status = 'published' and v.source_locale = 'pt-BR'
       and v.estimated_weeks between 1 and 6 and length(v.summary) > 20 and length(v.description) > 80
       and not p.is_featured and p.featured_rank is null and p.cover_url ~ '^/content/[a-z0-9-]+\.webp$') = 12);
-select tests.ok('S38 destaques do Início/Explorar: os do seed menos o do herói removido (ranks 1, 2 e 4)',
+select tests.ok('S38 destaques do Início/Explorar: os do seed menos o do Hero removido (ranks 1, 2 e 4)',
   (select array_agg(featured_rank order by featured_rank) from public.programs where is_featured) = array[1, 2, 4]);
 select tests.ok('S38 cada novo tem 3 a 10 etapas, ao menos 2 "Essencial" obrigatórias antes das "Para ir além" opcionais',
   not exists (select 1 from tests.s38_live() s
@@ -3121,7 +3121,7 @@ select tests.ok('S38 cada novo tem 3 a 10 etapas, ao menos 2 "Essencial" obrigat
                    where a.version_id = public.seed_uuid('pv:' || s.key || ':1') and a.is_required and not b.is_required and a.position >= b.position)));
 -- como superusuário: o r7 foi arquivado de propósito no S9 (o visitante não o vê mais); é a única exceção a "publicado"
 select tests.su();
-select tests.ok('S38 etapas usam conteúdos publicados do mesmo pilar, todas do próprio herói (0052: 62 etapas nos 12 no ar; só o r7 do S9 fora do ar)',
+select tests.ok('S38 etapas usam conteúdos publicados do mesmo pilar, todas do próprio Hero (0052: 62 etapas nos 12 no ar; só o r7 do S9 fora do ar)',
   not exists (select 1 from tests.s38_live() s join public.programs p on p.id = public.seed_uuid('program:' || s.key)
     where exists (select 1 from public.program_items pi left join public.content c on c.id = pi.content_id
                    where pi.version_id = public.seed_uuid('pv:' || s.key || ':1')
@@ -3138,11 +3138,11 @@ select tests.ok('S38 en e es publicados para os 16 (32 linhas, títulos diferent
   and not exists (select 1 from public.program_localizations l join tests.s38_programs() s on l.version_id = public.seed_uuid('pv:' || s.key || ':1')
     join public.program_versions v on v.id = l.version_id where l.locale = 'pt-BR' or l.title = v.title));
 select tests.su();
-select tests.ok('S38 os 8 originais: 39 etapas na versão 1 (a 0052 tirou 1 de outro herói do p1) e nenhuma tradução nova',
+select tests.ok('S38 os 8 originais: 39 etapas na versão 1 (a 0052 tirou 1 de outro Hero do p1) e nenhuma tradução nova',
   (select count(*) from public.program_items pi where pi.version_id in (select public.seed_uuid('pv:p' || n || ':1') from generate_series(1, 8) n)) = 39
   and not exists (select 1 from public.program_localizations l where l.version_id in (select public.seed_uuid('pv:p' || n || ':1') from generate_series(1, 8) n))
   and (select count(*) from public.programs where id in (select public.seed_uuid('program:p' || n) from generate_series(1, 8) n)) = 8);
-select tests.ok('S38 os novos ficam atrás do original do herói na ordem "mais recentes" (created_at 1–2 dias antes)',
+select tests.ok('S38 os novos ficam atrás do original do Hero na ordem "mais recentes" (created_at 1–2 dias antes)',
   not exists (select 1 from tests.s38_programs() s
     join public.programs p on p.id = public.seed_uuid('program:' || s.key)
     join public.programs o on o.id = public.seed_uuid('program:' || s.base)
@@ -3153,7 +3153,7 @@ select tests.ok('S38 program_required_items devolve as etapas na ordem de positi
           public.seed_uuid('content:r5'), public.seed_uuid('content:r1')]);
 
 -- reexecutar a migração não muda nada (ids fixos + on conflict do nothing). Depois da 0052 a 0035
--- sozinha recolocaria as etapas de outro herói e o gatilho barra; reaplicada como no histórico (0035 sem
+-- sozinha recolocaria as etapas de outro Hero e o gatilho barra; reaplicada como no histórico (0035 sem
 -- o gatilho, depois a 0052), o estado final é o mesmo.
 select tests.su();
 create temporary table t_s38_before as
@@ -3220,12 +3220,12 @@ select tests.ok('S39 itens + substituições (leitura em lote) = program_require
        from public.program_items pi
        left join public.program_item_substitutions s on s.version_id = pi.version_id and s.original_content_id = pi.content_id
       where pi.version_id in (select current_version_id from public.programs)))
-  and (select count(*) from public.programs p cross join lateral public.program_required_items(p.current_version_id) r) = 91); -- 0052: 91 etapas, todas do herói
+  and (select count(*) from public.programs p cross join lateral public.program_required_items(p.current_version_id) r) = 91); -- 0052: 91 etapas, todas do Hero
 
 select tests.login('38000000-0000-4000-8000-000000000011', 's38a@test.local');
 create temporary table t_s39_enr as select public.enroll_program(public.seed_uuid('program:shelf-lia-2'), 'America/Sao_Paulo') as id;
 create temporary table t_s39_done as select public.complete_content(public.seed_uuid('content:r9'), 'America/Sao_Paulo') as r;
-select tests.ok('S39 inscrição em programa novo fica na versão 1 e o progresso conta só obrigatórias (1 de 3; a 0052 tirou 1 de outro herói)',
+select tests.ok('S39 inscrição em programa novo fica na versão 1 e o progresso conta só obrigatórias (1 de 3; a 0052 tirou 1 de outro Hero)',
   (select version_id = public.seed_uuid('pv:shelf-lia-2:1') and status = 'active' from public.enrollments where id = (select id from t_s39_enr))
   and (select count(*) from public.program_required_items(public.seed_uuid('pv:shelf-lia-2:1')) r
         where r.is_required and exists (select 1 from public.completions c where c.user_id = auth.uid() and c.content_id in (r.content_id, r.original_content_id))) = 1
@@ -3244,8 +3244,8 @@ select tests.ok('S39 limpeza: contas, inscrição, conclusão e substituição d
   and not exists (select 1 from public.profiles where id in ('38000000-0000-4000-8000-000000000011', '38000000-0000-4000-8000-000000000012'))
   and not exists (select 1 from public.program_item_substitutions where version_id = public.seed_uuid('pv:shelf-rafael-2:1')));
 
--- ================================================================ S40 · Herói exclui de vez a receita que arquivou (0036)
--- creator_delete_recipe: rascunho nunca publicado (como antes) ou arquivada pelo próprio herói; publicada,
+-- ================================================================ S40 · Hero exclui de vez a receita que arquivou (0036)
+-- creator_delete_recipe: rascunho nunca publicado (como antes) ou arquivada pelo próprio Hero; publicada,
 -- rascunho que já esteve no ar e arquivada pelo admin são recusados; em uso (conclusão) também. Cascata em
 -- favoritos e versões; a auditoria fica. É a limpeza da publicação efêmera do E2E (P4) em produção.
 select tests.su();
@@ -3297,10 +3297,10 @@ select public.creator_archive_content('40000000-0000-4000-8000-000000000010', 'F
 select public.creator_archive_content('40000000-0000-4000-8000-000000000013', 'Fim do teste');
 
 select tests.login('40000000-0000-4000-8000-000000000002', 's40marcos@test.local');
-select tests.expect_error('S40 outro herói não exclui a receita da Helena: forbidden',
+select tests.expect_error('S40 outro Hero não exclui a receita da Helena: forbidden',
   $q$select public.creator_delete_recipe('40000000-0000-4000-8000-000000000010')$q$, 'forbidden');
 select tests.login('40000000-0000-4000-8000-000000000003', 's40free@test.local');
-select tests.expect_error('S40 consumidor (sem perfil de herói): forbidden',
+select tests.expect_error('S40 consumidor (sem perfil de Hero): forbidden',
   $q$select public.creator_delete_recipe('40000000-0000-4000-8000-000000000010')$q$, 'forbidden');
 select tests.anon();
 select tests.expect_error('S40 visitante não executa creator_delete_recipe',
@@ -3308,7 +3308,7 @@ select tests.expect_error('S40 visitante não executa creator_delete_recipe',
 
 select tests.login('40000000-0000-4000-8000-000000000001', 's40helena@test.local');
 create temporary table t_s40_del as select public.creator_delete_recipe('40000000-0000-4000-8000-000000000010') as r;
-select tests.ok('S40 a arquivada pelo herói é excluída de vez e a RPC devolve id, slug e caminhos',
+select tests.ok('S40 a arquivada pelo Hero é excluída de vez e a RPC devolve id, slug e caminhos',
   (select r ->> 'id' = '40000000-0000-4000-8000-000000000010' and r ->> 'slug' = 's40-publicada' and r -> 'paths' = '[]'::jsonb from t_s40_del));
 select tests.su();
 select tests.ok('S40 a exclusão leva conteúdo, detalhes, ingredientes, versões e o favorito do consumidor; a auditoria fica',
@@ -3344,12 +3344,12 @@ select tests.ok('S40 creator_delete_recipe: security definer com search_path fix
   and has_function_privilege('authenticated', 'public.creator_delete_recipe(uuid)', 'execute')
   and has_function_privilege('service_role', 'public.creator_delete_recipe(uuid)', 'execute'));
 
--- limpeza: conclusão, receitas e contas de teste; os heróis voltam a quem eram
+-- limpeza: conclusão, receitas e contas de teste; os Heros voltam a quem eram
 delete from public.completions where user_id = '40000000-0000-4000-8000-000000000003';
 delete from public.content where id in ('40000000-0000-4000-8000-000000000012', '40000000-0000-4000-8000-000000000013');
 update public.creator_profiles p set user_id = o.user_id from t_s40_owners o where p.id = o.id;
 delete from auth.users where id in ('40000000-0000-4000-8000-000000000001', '40000000-0000-4000-8000-000000000002', '40000000-0000-4000-8000-000000000003');
-select tests.ok('S40 limpeza: receitas S40 fora do banco, heróis com o dono de antes e contas removidas',
+select tests.ok('S40 limpeza: receitas S40 fora do banco, Heros com o dono de antes e contas removidas',
   not exists (select 1 from public.content where id::text like '40000000-0000-4000-8000-0000000000%')
   and (select bool_and(p.user_id is not distinct from o.user_id) from public.creator_profiles p join t_s40_owners o on o.id = p.id)
   and not exists (select 1 from public.profiles where id::text like '40000000-0000-4000-8000-00000000000%'));
@@ -4182,12 +4182,12 @@ delete from public.products where id = '53000000-0000-4000-8000-000000000001';
 drop table s53_del;
 drop table s53_metrics;
 
--- ================================================================ S54 · Capa do herói com foto real (0042, shim local)
--- Bucket público hero-covers sem escrita pela API; o envio é reservado pela RPC (kill switch, herói
+-- ================================================================ S54 · Capa do Hero com foto real (0042, shim local)
+-- Bucket público hero-covers sem escrita pela API; o envio é reservado pela RPC (kill switch, Hero
 -- ativo, tipo, tamanho, cota de 20/dia, nome do objeto) e aplicado só no perfil ativo do próprio
--- herói, para envio próprio já gravado. Quem grava no bucket é o service role (o "su" aqui faz o
+-- Hero, para envio próprio já gravado. Quem grava no bucket é o service role (o "su" aqui faz o
 -- papel dele). Rafael (…0541) e Tiago (…0542) ficam ligados a usuários de teste só neste cenário
--- e voltam sem usuário e com a capa do seed; …0543 é uma conta comum (sem o papel de herói).
+-- e voltam sem usuário e com a capa do seed; …0543 é uma conta comum (sem o papel de Hero).
 select tests.su();
 insert into auth.users (id, email) values
   ('54000000-0000-4000-8000-000000000541', 's54hero@test.local'),
@@ -4219,26 +4219,26 @@ select tests.expect_error('S54 anon não reserva envio', $q$select public.hero_c
 select tests.expect_error('S54 anon não aplica capa', $q$select public.hero_cover_set('https://x.supabase.co/storage/v1/object/public/hero-covers/a/b.webp')$q$, 'permission denied');
 select tests.expect_error('S54 anon não remove capa', $q$select public.hero_cover_clear()$q$, 'permission denied');
 select tests.expect_error('S54 anon não lista órfãos', $q$select public.hero_cover_orphan_uploads(10)$q$, 'permission denied');
-select tests.expect_error('S54 anon não consulta o herói ativo de ninguém', $q$select public.hero_cover_active_creator('54000000-0000-4000-8000-000000000541')$q$, 'permission denied');
+select tests.expect_error('S54 anon não consulta o Hero ativo de ninguém', $q$select public.hero_cover_active_creator('54000000-0000-4000-8000-000000000541')$q$, 'permission denied');
 select tests.expect_error('S54 anon não lê hero_cover_uploads', $q$select count(*) from public.hero_cover_uploads$q$, 'permission denied');
 
--- conta comum (sem papel de herói nem perfil): nada de capa
+-- conta comum (sem papel de Hero nem perfil): nada de capa
 select tests.login('54000000-0000-4000-8000-000000000543', 's54plain@test.local');
 select tests.expect_error('S54 conta comum não reserva envio de capa: not_a_hero', $q$select public.hero_cover_upload_claim(1000, 'image/webp')$q$, 'not_a_hero');
 select tests.expect_error('S54 conta comum não remove capa: not_a_hero', $q$select public.hero_cover_clear()$q$, 'not_a_hero');
-select tests.expect_error('S54 conta comum não consulta o herói ativo (função interna)', $q$select public.hero_cover_active_creator(auth.uid())$q$, 'permission denied');
+select tests.expect_error('S54 conta comum não consulta o Hero ativo (função interna)', $q$select public.hero_cover_active_creator(auth.uid())$q$, 'permission denied');
 
--- herói: nada de escrita direta, validações da reserva
+-- Hero: nada de escrita direta, validações da reserva
 select tests.login('54000000-0000-4000-8000-000000000541', 's54hero@test.local');
-select tests.expect_error('S54 herói não grava no bucket hero-covers pela API (sem política)',
+select tests.expect_error('S54 Hero não grava no bucket hero-covers pela API (sem política)',
   $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('hero-covers', auth.uid() || '/a5400000-0000-4000-8000-000000000001.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
-select tests.expect_error('S54 herói não insere em hero_cover_uploads',
+select tests.expect_error('S54 Hero não insere em hero_cover_uploads',
   $q$insert into public.hero_cover_uploads (user_id, path, bytes, mime) values (auth.uid(), auth.uid() || '/a5400000-0000-4000-8000-000000000002.webp', 1, 'image/webp')$q$, '42501');
 select tests.expect_error('S54 tipo fora da lista: not_image', $q$select public.hero_cover_upload_claim(1000, 'image/png')$q$, 'not_image');
 select tests.expect_error('S54 arquivo vazio: empty_file', $q$select public.hero_cover_upload_claim(0, 'image/webp')$q$, 'empty_file');
 select tests.expect_error('S54 acima de 3 MiB: file_too_large', $q$select public.hero_cover_upload_claim(3145729, 'image/jpeg')$q$, 'file_too_large');
 create temporary table t_s54_claim as select public.hero_cover_upload_claim(240000, 'image/webp') as path;
-select tests.ok('S54 reserva devolve <user_id>/<uuid>.webp e o herói vê a própria linha',
+select tests.ok('S54 reserva devolve <user_id>/<uuid>.webp e o Hero vê a própria linha',
   (select path ~ '^54000000-0000-4000-8000-000000000541/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$' from t_s54_claim)
   and (select count(*) from public.hero_cover_uploads where path = (select path from t_s54_claim) and bytes = 240000 and mime = 'image/webp') = 1);
 create temporary table t_s54_url as
@@ -4249,11 +4249,11 @@ select tests.su();
 grant select on t_s54_claim, t_s54_url to authenticated, anon;
 insert into storage.objects (bucket_id, name, metadata) values ('hero-covers', (select path from t_s54_claim), '{"mimetype":"image/webp","size":240000}');
 
--- outro herói não vê nem usa o envio alheio; a capa dele não muda
+-- outro Hero não vê nem usa o envio alheio; a capa dele não muda
 select tests.login('54000000-0000-4000-8000-000000000542', 's54other@test.local');
-select tests.ok('S54 outro herói não lê o envio alheio', (select count(*) from public.hero_cover_uploads) = 0);
-select tests.expect_error('S54 outro herói não aplica a capa alheia', $q$select public.hero_cover_set((select url from t_s54_url))$q$, 'invalid_path');
-select tests.ok('S54 a capa do outro herói segue a do seed',
+select tests.ok('S54 outro Hero não lê o envio alheio', (select count(*) from public.hero_cover_uploads) = 0);
+select tests.expect_error('S54 outro Hero não aplica a capa alheia', $q$select public.hero_cover_set((select url from t_s54_url))$q$, 'invalid_path');
+select tests.ok('S54 a capa do outro Hero segue a do seed',
   (select cover_url from public.creator_profiles where id = public.seed_uuid('creator:tiago')) = (select cover_url from t_s54_seed where id = public.seed_uuid('creator:tiago')));
 select tests.login('54000000-0000-4000-8000-000000000543', 's54plain@test.local');
 select tests.expect_error('S54 conta comum não aplica a capa alheia', $q$select public.hero_cover_set((select url from t_s54_url))$q$, 'not_a_hero');
@@ -4265,18 +4265,18 @@ select tests.expect_error('S54 URL com consulta: invalid_path', $q$select public
 select tests.expect_error('S54 extensão trocada (.png): invalid_path', $q$select public.hero_cover_set(replace((select url from t_s54_url), '.webp', '.png'))$q$, 'invalid_path');
 select tests.expect_error('S54 caminho solto (desenho antigo): invalid_path', $q$select public.hero_cover_set('/placeholders/cover-training-1.svg')$q$, 'invalid_path');
 create temporary table t_s54_prev as select public.hero_cover_set((select url from t_s54_url)) as prev;
-select tests.ok('S54 aplicar devolve a capa anterior do herói (a oficial do seed)',
+select tests.ok('S54 aplicar devolve a capa anterior do Hero (a oficial do seed)',
   (select prev = (select cover_url from t_s54_seed where id = public.seed_uuid('creator:rafael')) from t_s54_prev));
-select tests.ok('S54 a capa vale no perfil do herói ligado e o avatar não muda',
+select tests.ok('S54 a capa vale no perfil do Hero ligado e o avatar não muda',
   (select cover_url from public.creator_profiles where id = public.seed_uuid('creator:rafael')) = (select url from t_s54_url)
   and (select avatar_url not like '%hero-covers%' from public.creator_profiles where id = public.seed_uuid('creator:rafael')));
 select tests.ok('S54 aplicar a mesma capa de novo não devolve anterior (nada a apagar)',
   public.hero_cover_set((select url from t_s54_url)) is null);
 select tests.anon();
-select tests.ok('S54 o visitante vê a capa no perfil público do herói',
+select tests.ok('S54 o visitante vê a capa no perfil público do Hero',
   (select cover_url from public.creator_profiles where id = public.seed_uuid('creator:rafael')) like '%/hero-covers/54000000-0000-4000-8000-000000000541/%');
 
--- só o herói ATIVO e com o papel: perfil suspenso ou papel revogado não reservam, não aplicam nem removem
+-- só o Hero ATIVO e com o papel: perfil suspenso ou papel revogado não reservam, não aplicam nem removem
 select tests.su();
 update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:rafael');
 select tests.login('54000000-0000-4000-8000-000000000541', 's54hero@test.local');
@@ -4287,8 +4287,8 @@ select tests.su();
 update public.creator_profiles set status = 'active' where id = public.seed_uuid('creator:rafael');
 update public.role_assignments set revoked_at = now() where user_id = '54000000-0000-4000-8000-000000000541' and role = 'creator';
 select tests.login('54000000-0000-4000-8000-000000000541', 's54hero@test.local');
-select tests.expect_error('S54 papel de herói revogado não reserva envio: not_a_hero', $q$select public.hero_cover_upload_claim(1000, 'image/webp')$q$, 'not_a_hero');
-select tests.expect_error('S54 papel de herói revogado não remove capa: not_a_hero', $q$select public.hero_cover_clear()$q$, 'not_a_hero');
+select tests.expect_error('S54 papel de Hero revogado não reserva envio: not_a_hero', $q$select public.hero_cover_upload_claim(1000, 'image/webp')$q$, 'not_a_hero');
+select tests.expect_error('S54 papel de Hero revogado não remove capa: not_a_hero', $q$select public.hero_cover_clear()$q$, 'not_a_hero');
 select tests.su();
 update public.role_assignments set revoked_at = null where user_id = '54000000-0000-4000-8000-000000000541' and role = 'creator';
 
@@ -4319,7 +4319,7 @@ select tests.ok('S54 a cota da capa é separada da foto de perfil (avatar_upload
   (select count(*) from public.avatar_uploads where user_id = auth.uid()) = 0);
 
 -- limpeza diária: só o service role; lista o não referenciado com mais de 1 h e nunca o que está em uso
-select tests.expect_error('S54 herói não lista órfãos', $q$select public.hero_cover_orphan_uploads(10)$q$, 'permission denied');
+select tests.expect_error('S54 Hero não lista órfãos', $q$select public.hero_cover_orphan_uploads(10)$q$, 'permission denied');
 select tests.su();
 grant select on t_s54_after to authenticated, anon;
 create temporary table t_s54_orphans as select p from public.hero_cover_orphan_uploads(1000) p;
@@ -4329,10 +4329,10 @@ select tests.ok('S54 órfãos: os 19 antigos não referenciados entram; o em uso
   and not exists (select 1 from t_s54_orphans where p = (select path from t_s54_after)));
 select tests.ok('S54 órfãos: o limite é respeitado', (select count(*) from public.hero_cover_orphan_uploads(5)) = 5);
 
--- remover: só a capa do próprio herói; devolve a anterior (o servidor apaga o objeto) e o avatar fica
+-- remover: só a capa do próprio Hero; devolve a anterior (o servidor apaga o objeto) e o avatar fica
 select tests.login('54000000-0000-4000-8000-000000000541', 's54hero@test.local');
 create temporary table t_s54_cleared as select public.hero_cover_clear() as prev;
-select tests.ok('S54 remover devolve a capa que estava e deixa o herói sem capa (o avatar e o outro herói ficam)',
+select tests.ok('S54 remover devolve a capa que estava e deixa o Hero sem capa (o avatar e o outro Hero ficam)',
   (select prev from t_s54_cleared) = (select url from t_s54_url)
   and (select cover_url is null and avatar_url is not null from public.creator_profiles where id = public.seed_uuid('creator:rafael'))
   and (select cover_url from public.creator_profiles where id = public.seed_uuid('creator:tiago')) = (select cover_url from t_s54_seed where id = public.seed_uuid('creator:tiago')));
@@ -4342,7 +4342,7 @@ update public.hero_cover_uploads set created_at = now() - interval '2 hours' whe
 select tests.ok('S54 capa removida (sem referência há mais de 1 h) entra na limpeza diária',
   exists (select 1 from public.hero_cover_orphan_uploads(1000) p where p = (select path from t_s54_claim)));
 
--- exclusão de conta: a linha fica sem usuário e a capa em uso no herói vira alvo da limpeza diária
+-- exclusão de conta: a linha fica sem usuário e a capa em uso no Hero vira alvo da limpeza diária
 insert into storage.objects (bucket_id, name, metadata) values ('hero-covers', (select path from t_s54_after), '{"mimetype":"image/webp","size":1000}');
 create temporary table t_s54_url2 as
   select 'https://proj.supabase.co/storage/v1/object/public/hero-covers/' || (select path from t_s54_after) as url;
@@ -4352,12 +4352,12 @@ select public.hero_cover_set((select url from t_s54_url2));
 select public.delete_my_account();
 select tests.su();
 create temporary table t_s54_gone as select p from public.hero_cover_orphan_uploads(1000) p;
-select tests.ok('S54 conta excluída: envios ficam sem usuário e a capa em uso no herói entra na limpeza (inclusive a recente)',
+select tests.ok('S54 conta excluída: envios ficam sem usuário e a capa em uso no Hero entra na limpeza (inclusive a recente)',
   not exists (select 1 from public.hero_cover_uploads where user_id = '54000000-0000-4000-8000-000000000541')
   and exists (select 1 from t_s54_gone where p = (select path from t_s54_after))
   and (select user_id is null from public.creator_profiles where id = public.seed_uuid('creator:rafael')));
 
-select tests.ok('S54 funções: search_path fixo; reserva, aplicação e remoção definer sem anon; órfãos e herói ativo só service role',
+select tests.ok('S54 funções: search_path fixo; reserva, aplicação e remoção definer sem anon; órfãos e Hero ativo só service role',
   (select bool_and(exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')) from pg_proc p
      where p.pronamespace = 'public'::regnamespace and p.proname in ('hero_cover_upload_claim', 'hero_cover_set', 'hero_cover_clear', 'hero_cover_orphan_uploads', 'hero_cover_active_creator'))
   and (select bool_and(p.prosecdef) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('hero_cover_upload_claim', 'hero_cover_set', 'hero_cover_clear'))
@@ -4381,10 +4381,10 @@ select tests.ok('S54 Rafael e Tiago voltam ao seed, sem usuário e com a capa of
   (select count(*) from public.creator_profiles c join t_s54_seed s on s.id = c.id where c.user_id is null and c.cover_url is not distinct from s.cover_url) = 2);
 
 -- ================================================================ S55 · Post com foto no composer (0043, shim local)
--- Bucket público post-photos sem escrita pela API; o envio é reservado pela RPC (kill switch, herói
--- ativo, tipo, tamanho, cota de 30/hora, nome do objeto). O herói só usa no corpo ('upload') e na
+-- Bucket público post-photos sem escrita pela API; o envio é reservado pela RPC (kill switch, Hero
+-- ativo, tipo, tamanho, cota de 30/hora, nome do objeto). O Hero só usa no corpo ('upload') e na
 -- capa do conteúdo uma foto que ele reservou e que já está no bucket; uma foto serve a um corpo só;
--- a publicação confere de novo; o descarte só apaga rascunho de foto do próprio herói. Rafael
+-- a publicação confere de novo; o descarte só apaga rascunho de foto do próprio Hero. Rafael
 -- (…0551) e Tiago (…0552) ficam ligados a usuários de teste só aqui e voltam sem usuário; …0553 é
 -- uma conta comum. Tudo que este cenário cria sai no fim (o S14 conta 40 no ar).
 select tests.su();
@@ -4418,23 +4418,23 @@ select tests.expect_error('S55 anon não usa as funções internas (caminho)', $
 select tests.expect_error('S55 anon não usa as funções internas (foto utilizável)', $q$select public.post_photo_usable('a/b.webp', gen_random_uuid())$q$, 'permission denied');
 select tests.expect_error('S55 anon não lê post_photo_uploads', $q$select count(*) from public.post_photo_uploads$q$, 'permission denied');
 
--- conta comum (sem papel de herói nem perfil)
+-- conta comum (sem papel de Hero nem perfil)
 select tests.login('55000000-0000-4000-8000-000000000553', 's55plain@test.local');
 select tests.expect_error('S55 conta comum não reserva envio: not_a_hero', $q$select public.post_photo_upload_claim(1000, 'image/webp')$q$, 'not_a_hero');
 select tests.expect_error('S55 conta comum não descarta: forbidden', $q$select public.creator_discard_photo_draft(gen_random_uuid())$q$, 'forbidden');
 select tests.expect_error('S55 conta comum não usa as funções internas', $q$select public.post_photo_usable('a/b.webp', auth.uid())$q$, 'permission denied');
 
--- herói: nada de escrita direta, validações da reserva
+-- Hero: nada de escrita direta, validações da reserva
 select tests.login('55000000-0000-4000-8000-000000000551', 's55hero@test.local');
-select tests.expect_error('S55 herói não grava no bucket post-photos pela API (sem política)',
+select tests.expect_error('S55 Hero não grava no bucket post-photos pela API (sem política)',
   $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('post-photos', auth.uid() || '/a5500000-0000-4000-8000-000000000001.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
-select tests.expect_error('S55 herói não insere em post_photo_uploads',
+select tests.expect_error('S55 Hero não insere em post_photo_uploads',
   $q$insert into public.post_photo_uploads (user_id, path, bytes, mime) values (auth.uid(), auth.uid() || '/a5500000-0000-4000-8000-000000000002.webp', 1, 'image/webp')$q$, '42501');
 select tests.expect_error('S55 tipo fora da lista: not_image', $q$select public.post_photo_upload_claim(1000, 'image/png')$q$, 'not_image');
 select tests.expect_error('S55 arquivo vazio: empty_file', $q$select public.post_photo_upload_claim(0, 'image/webp')$q$, 'empty_file');
 select tests.expect_error('S55 acima de 3,5 MiB: file_too_large', $q$select public.post_photo_upload_claim(3670017, 'image/jpeg')$q$, 'file_too_large');
 create temporary table t_s55_claim as select public.post_photo_upload_claim(900000, 'image/webp') as path;
-select tests.ok('S55 reserva devolve <user_id>/<uuid>.webp e o herói vê a própria linha',
+select tests.ok('S55 reserva devolve <user_id>/<uuid>.webp e o Hero vê a própria linha',
   (select path ~ '^55000000-0000-4000-8000-000000000551/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$' from t_s55_claim)
   and (select count(*) from public.post_photo_uploads where path = (select path from t_s55_claim) and bytes = 900000 and mime = 'image/webp') = 1);
 create temporary table t_s55_url as
@@ -4452,7 +4452,7 @@ insert into public.content (id, slug, creator_id, pillar, type, title, summary, 
   ('55000000-0000-4000-8000-000000005501', 's55-foto-1', public.seed_uuid('creator:rafael'), 'routine', 'article', 'Foto S55', 'Legenda S55', (select url from t_s55_url), 'own');
 insert into public.content_bodies (content_id, body, media_provider, media_ref) values
   ('55000000-0000-4000-8000-000000005501', '{"kind":"article","format":"photo","intro":"","sections":[],"key_points":[]}', 'upload', (select path from t_s55_claim));
-select tests.ok('S55 herói cria o rascunho com a própria foto na capa e no corpo',
+select tests.ok('S55 Hero cria o rascunho com a própria foto na capa e no corpo',
   (select cover_url = (select url from t_s55_url) from public.content where id = '55000000-0000-4000-8000-000000005501')
   and (select media_provider = 'upload' and media_ref = (select path from t_s55_claim) from public.content_bodies where content_id = '55000000-0000-4000-8000-000000005501'));
 insert into public.content (id, slug, creator_id, pillar, type, title) values
@@ -4463,18 +4463,18 @@ select tests.expect_error('S55 capa com URL do bucket fora do formato é recusad
 update public.content set title = 'Foto S55 (editada)' where id = '55000000-0000-4000-8000-000000005501';
 select tests.ok('S55 editar o texto sem mexer na capa não revalida a foto', (select title from public.content where id = '55000000-0000-4000-8000-000000005501') = 'Foto S55 (editada)');
 
--- outro herói não vê, não usa nem descarta a foto alheia
+-- outro Hero não vê, não usa nem descarta a foto alheia
 select tests.login('55000000-0000-4000-8000-000000000552', 's55other@test.local');
-select tests.ok('S55 outro herói não lê o envio alheio', (select count(*) from public.post_photo_uploads) = 0);
-select tests.expect_error('S55 outro herói não usa a foto alheia como capa (insert)',
+select tests.ok('S55 outro Hero não lê o envio alheio', (select count(*) from public.post_photo_uploads) = 0);
+select tests.expect_error('S55 outro Hero não usa a foto alheia como capa (insert)',
   $q$insert into public.content (id, slug, creator_id, pillar, type, title, cover_url) values ('55000000-0000-4000-8000-000000005503', 's55-foto-3', public.seed_uuid('creator:tiago'), 'routine', 'article', 'Cópia', (select url from t_s55_url))$q$,
   'photo_media_forbidden');
 insert into public.content (id, slug, creator_id, pillar, type, title) values
   ('55000000-0000-4000-8000-000000005503', 's55-foto-3', public.seed_uuid('creator:tiago'), 'routine', 'article', 'Cópia');
-select tests.expect_error('S55 outro herói não usa a foto alheia como capa (update)', $q$update public.content set cover_url = (select url from t_s55_url) where id = '55000000-0000-4000-8000-000000005503'$q$, 'photo_media_forbidden');
-select tests.expect_error('S55 outro herói não grava a foto alheia no corpo', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('55000000-0000-4000-8000-000000005503', '{"kind":"article"}', 'upload', (select path from t_s55_claim))$q$, 'photo_media_forbidden');
-select tests.expect_error('S55 outro herói não descarta o rascunho alheio', $q$select public.creator_discard_photo_draft('55000000-0000-4000-8000-000000005501')$q$, 'forbidden');
-select tests.expect_error('S55 outro herói não publica o rascunho alheio', $q$select public.creator_publish_content('55000000-0000-4000-8000-000000005501')$q$, 'forbidden');
+select tests.expect_error('S55 outro Hero não usa a foto alheia como capa (update)', $q$update public.content set cover_url = (select url from t_s55_url) where id = '55000000-0000-4000-8000-000000005503'$q$, 'photo_media_forbidden');
+select tests.expect_error('S55 outro Hero não grava a foto alheia no corpo', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('55000000-0000-4000-8000-000000005503', '{"kind":"article"}', 'upload', (select path from t_s55_claim))$q$, 'photo_media_forbidden');
+select tests.expect_error('S55 outro Hero não descarta o rascunho alheio', $q$select public.creator_discard_photo_draft('55000000-0000-4000-8000-000000005501')$q$, 'forbidden');
+select tests.expect_error('S55 outro Hero não publica o rascunho alheio', $q$select public.creator_publish_content('55000000-0000-4000-8000-000000005501')$q$, 'forbidden');
 
 -- publicar: o dono publica; o visitante vê a foto na capa; publicado não se descarta
 select tests.login('55000000-0000-4000-8000-000000000551', 's55hero@test.local');
@@ -4490,7 +4490,7 @@ insert into public.content_bodies (content_id, body, media_provider, media_ref) 
   ('55000000-0000-4000-8000-000000005502', '{"kind":"article"}', 'upload', '55000000-0000-4000-8000-000000000551/a5500000-0000-4000-8000-0000000000aa.webp')
   on conflict (content_id) do update set media_provider = excluded.media_provider, media_ref = excluded.media_ref;
 select tests.login('55000000-0000-4000-8000-000000000551', 's55hero@test.local');
-select tests.expect_error('S55 publicar com foto não reservada pelo herói: forbidden', $q$select public.creator_publish_content('55000000-0000-4000-8000-000000005502')$q$, 'forbidden');
+select tests.expect_error('S55 publicar com foto não reservada pelo Hero: forbidden', $q$select public.creator_publish_content('55000000-0000-4000-8000-000000005502')$q$, 'forbidden');
 
 -- descartar: só rascunho de foto; devolve o caminho (o servidor apaga o objeto)
 create temporary table t_s55_claim2 as select public.post_photo_upload_claim(500000, 'image/jpeg') as path;
@@ -4539,7 +4539,7 @@ select tests.ok('S55 envios de mais de 1 h não contam na cota; a cota é separa
   (select path is not null from t_s55_after) and (select count(*) from public.hero_cover_uploads where user_id = auth.uid()) = 0);
 
 -- limpeza diária: só o service role; o não usado com mais de 1 h entra, o em uso e o recente não
-select tests.expect_error('S55 herói não lista órfãos', $q$select public.post_photo_orphan_uploads(10)$q$, 'permission denied');
+select tests.expect_error('S55 Hero não lista órfãos', $q$select public.post_photo_orphan_uploads(10)$q$, 'permission denied');
 select tests.su();
 grant select on t_s55_after to authenticated, anon;
 update public.post_photo_uploads set created_at = now() - interval '2 hours' where path = (select path from t_s55_claim);
@@ -4550,7 +4550,7 @@ select tests.ok('S55 órfãos: a foto descartada entra; a do post publicado (em 
   and not exists (select 1 from t_s55_orphans where p = (select path from t_s55_after)));
 select tests.ok('S55 órfãos: o limite é respeitado', (select count(*) from public.post_photo_orphan_uploads(5)) = 5);
 
--- só o herói ATIVO: perfil suspenso não reserva
+-- só o Hero ATIVO: perfil suspenso não reserva
 update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:rafael');
 select tests.login('55000000-0000-4000-8000-000000000551', 's55hero@test.local');
 select tests.expect_error('S55 perfil suspenso não reserva envio: not_a_hero', $q$select public.post_photo_upload_claim(1000, 'image/webp')$q$, 'not_a_hero');
@@ -4592,14 +4592,14 @@ delete from public.content where id in ('55000000-0000-4000-8000-000000005501', 
 update public.creator_profiles set user_id = null where id in (public.seed_uuid('creator:rafael'), public.seed_uuid('creator:tiago'));
 delete from storage.objects where bucket_id = 'post-photos';
 delete from auth.users where id in ('55000000-0000-4000-8000-000000000552', '55000000-0000-4000-8000-000000000553');
-select tests.ok('S55 nada do cenário fica no ar e os heróis voltam sem usuário',
+select tests.ok('S55 nada do cenário fica no ar e os Heros voltam sem usuário',
   (select count(*) from public.content where slug like 's55-%') = 0
   and (select count(*) from public.creator_profiles where id in (public.seed_uuid('creator:rafael'), public.seed_uuid('creator:tiago')) and user_id is null) = 2);
 
--- ================================================================ S56 · Admin publica pelo herói (0045)
+-- ================================================================ S56 · Admin publica pelo Hero (0045)
 -- O servidor manda `x-acting-hero` só no fluxo "Publicar como hero" do admin; o banco honra o
--- cabeçalho só para admin com herói ativo. Herói, consumidor e visitante com o mesmo cabeçalho não
--- mudam de herói. Rafael (…0561) fica ligado a um herói de teste só aqui; Tiago é o herói em nome de
+-- cabeçalho só para admin com Hero ativo. Hero, consumidor e visitante com o mesmo cabeçalho não
+-- mudam de Hero. Rafael (…0561) fica ligado a um Hero de teste só aqui; Tiago é o Hero em nome de
 -- quem o admin age. Tudo que este cenário cria sai no fim (o S14 conta 40 no ar).
 create or replace function tests.acting(p_creator text) returns void language plpgsql as $$
 begin
@@ -4616,7 +4616,7 @@ insert into public.content_bodies (content_id, body) values ('56000000-0000-4000
 create temporary table t_s56_tiago as select public.seed_uuid('creator:tiago')::text as id;
 grant select on t_s56_tiago to authenticated, anon;
 
--- visitante: sem execute nas funções novas; o cabeçalho não dá herói
+-- visitante: sem execute nas funções novas; o cabeçalho não dá Hero
 select tests.anon();
 select tests.acting((select id from t_s56_tiago));
 select tests.ok('S56 visitante com o cabeçalho: my_creator_id() segue nulo', public.my_creator_id() is null);
@@ -4628,30 +4628,30 @@ select tests.expect_error('S56 visitante não reserva foto nem com o cabeçalho'
 select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
 select tests.acting((select id from t_s56_tiago));
 select tests.ok('S56 consumidor com o cabeçalho: my_creator_id() e acting_hero_id() nulos', public.my_creator_id() is null and public.acting_hero_id() is null);
-select tests.expect_error('S56 consumidor não age pelo herói: admin_act_as_hero forbidden', $q$select public.admin_act_as_hero(public.seed_uuid('creator:tiago'))$q$, 'forbidden');
+select tests.expect_error('S56 consumidor não age pelo Hero: admin_act_as_hero forbidden', $q$select public.admin_act_as_hero(public.seed_uuid('creator:tiago'))$q$, 'forbidden');
 select tests.expect_error('S56 consumidor com o cabeçalho não reserva foto: not_a_hero', $q$select public.post_photo_upload_claim(1000, 'image/webp')$q$, 'not_a_hero');
-select tests.expect_error('S56 consumidor com o cabeçalho não publica o rascunho do herói', $q$select public.creator_publish_content('56000000-0000-4000-8000-000000005601')$q$, 'forbidden');
-select tests.ok('S56 consumidor com o cabeçalho não vê o rascunho do herói', (select count(*) from public.content where id = '56000000-0000-4000-8000-000000005601') = 0);
+select tests.expect_error('S56 consumidor com o cabeçalho não publica o rascunho do Hero', $q$select public.creator_publish_content('56000000-0000-4000-8000-000000005601')$q$, 'forbidden');
+select tests.ok('S56 consumidor com o cabeçalho não vê o rascunho do Hero', (select count(*) from public.content where id = '56000000-0000-4000-8000-000000005601') = 0);
 
--- herói (Rafael) com o cabeçalho do Tiago: continua sendo o Rafael
+-- Hero (Rafael) com o cabeçalho do Tiago: continua sendo o Rafael
 select tests.login('56000000-0000-4000-8000-000000000561', 's56hero@test.local');
 select tests.acting((select id from t_s56_tiago));
-select tests.ok('S56 herói com o cabeçalho de outro herói: my_creator_id() é o próprio', public.my_creator_id() = public.seed_uuid('creator:rafael') and public.acting_hero_id() is null);
-select tests.expect_error('S56 herói não escolhe outro herói: admin_act_as_hero forbidden', $q$select public.admin_act_as_hero(public.seed_uuid('creator:tiago'))$q$, 'forbidden');
-select tests.ok('S56 herói com o cabeçalho não vê o rascunho do outro herói', (select count(*) from public.content where id = '56000000-0000-4000-8000-000000005601') = 0);
-select tests.expect_error('S56 herói com o cabeçalho não publica o rascunho do outro herói', $q$select public.creator_publish_content('56000000-0000-4000-8000-000000005601')$q$, 'forbidden');
-select tests.expect_error('S56 herói com o cabeçalho não cria conteúdo em nome do outro herói',
+select tests.ok('S56 Hero com o cabeçalho de outro Hero: my_creator_id() é o próprio', public.my_creator_id() = public.seed_uuid('creator:rafael') and public.acting_hero_id() is null);
+select tests.expect_error('S56 Hero não escolhe outro Hero: admin_act_as_hero forbidden', $q$select public.admin_act_as_hero(public.seed_uuid('creator:tiago'))$q$, 'forbidden');
+select tests.ok('S56 Hero com o cabeçalho não vê o rascunho do outro Hero', (select count(*) from public.content where id = '56000000-0000-4000-8000-000000005601') = 0);
+select tests.expect_error('S56 Hero com o cabeçalho não publica o rascunho do outro Hero', $q$select public.creator_publish_content('56000000-0000-4000-8000-000000005601')$q$, 'forbidden');
+select tests.expect_error('S56 Hero com o cabeçalho não cria conteúdo em nome do outro Hero',
   $q$insert into public.content (slug, creator_id, pillar, type, title) values ('s56-intruso', public.seed_uuid('creator:tiago'), 'training', 'article', 'Intruso')$q$, 'row-level security');
-select tests.expect_error('S56 herói não envia foto de receita para a pasta de outro herói (política nova é só do admin)',
+select tests.expect_error('S56 Hero não envia foto de receita para a pasta de outro Hero (política nova é só do admin)',
   $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('recipe-media', public.seed_uuid('creator:tiago') || '/56000000-0000-4000-8000-000000005602/a5600000-0000-4000-8000-000000000001.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
 select tests.acting(null);
-select tests.ok('S56 herói sem o cabeçalho: nada mudou (my_creator_id() é o próprio)', public.my_creator_id() = public.seed_uuid('creator:rafael'));
+select tests.ok('S56 Hero sem o cabeçalho: nada mudou (my_creator_id() é o próprio)', public.my_creator_id() = public.seed_uuid('creator:rafael'));
 
--- admin sem o cabeçalho: moderação de sempre, sem herói
+-- admin sem o cabeçalho: moderação de sempre, sem Hero
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select tests.acting(null);
-select tests.ok('S56 admin sem o cabeçalho: sem herói', public.my_creator_id() is null and public.acting_hero_id() is null);
-select tests.expect_error('S56 admin sem o cabeçalho não usa a publicação do herói', $q$select public.creator_publish_content('56000000-0000-4000-8000-000000005601')$q$, 'forbidden');
+select tests.ok('S56 admin sem o cabeçalho: sem Hero', public.my_creator_id() is null and public.acting_hero_id() is null);
+select tests.expect_error('S56 admin sem o cabeçalho não usa a publicação do Hero', $q$select public.creator_publish_content('56000000-0000-4000-8000-000000005601')$q$, 'forbidden');
 select tests.expect_error('S56 admin sem o cabeçalho não reserva foto de post: not_a_hero', $q$select public.post_photo_upload_claim(1000, 'image/webp')$q$, 'not_a_hero');
 -- valores inválidos são ignorados
 select set_config('request.headers', '{"x-acting-hero":"nao-e-uuid"}', true);
@@ -4659,19 +4659,19 @@ select tests.ok('S56 cabeçalho que não é uuid é ignorado', public.acting_her
 select set_config('request.headers', '{x-acting-hero: quebrado', true);
 select tests.ok('S56 request.headers malformado é ignorado sem erro', public.acting_hero_id() is null);
 select tests.acting(gen_random_uuid()::text);
-select tests.ok('S56 herói inexistente é ignorado', public.acting_hero_id() is null);
-select tests.expect_error('S56 admin_act_as_hero de herói inexistente: hero_unavailable', $q$select public.admin_act_as_hero(gen_random_uuid())$q$, 'hero_unavailable');
+select tests.ok('S56 Hero inexistente é ignorado', public.acting_hero_id() is null);
+select tests.expect_error('S56 admin_act_as_hero de Hero inexistente: hero_unavailable', $q$select public.admin_act_as_hero(gen_random_uuid())$q$, 'hero_unavailable');
 
 -- admin com o cabeçalho do Tiago: age pelo Tiago
 select tests.acting((select id from t_s56_tiago));
 select tests.ok('S56 admin com o cabeçalho: acting_hero_id() e my_creator_id() são o Tiago; auditoria como admin',
   public.acting_hero_id() = public.seed_uuid('creator:tiago') and public.my_creator_id() = public.seed_uuid('creator:tiago') and public.audit_actor() = 'admin');
-select tests.ok('S56 admin escolhe o herói (admin_act_as_hero devolve nome e slug)',
+select tests.ok('S56 admin escolhe o Hero (admin_act_as_hero devolve nome e slug)',
   (public.admin_act_as_hero(public.seed_uuid('creator:tiago')) ->> 'slug') = 'neymar');
 insert into public.content (id, slug, creator_id, pillar, type, title, media_license_kind, created_by) values
   ('56000000-0000-4000-8000-000000005603', 's56-post-admin', public.seed_uuid('creator:tiago'), 'training', 'article', 'Post do admin pelo Tiago', 'own', auth.uid());
 insert into public.content_bodies (content_id, body) values ('56000000-0000-4000-8000-000000005603', '{"kind":"article"}');
-select tests.ok('S56 admin agindo publica pelo Tiago com a RPC do herói', (public.creator_publish_content('56000000-0000-4000-8000-000000005603') ->> 'status') = 'published');
+select tests.ok('S56 admin agindo publica pelo Tiago com a RPC do Hero', (public.creator_publish_content('56000000-0000-4000-8000-000000005603') ->> 'status') = 'published');
 create temporary table t_s56_claim as select public.post_photo_upload_claim(1000, 'image/webp') as path;
 select tests.ok('S56 admin agindo reserva foto do post (pasta do próprio admin)',
   (select path like '10000000-0000-4000-8000-000000000001/%' from t_s56_claim));
@@ -4680,24 +4680,24 @@ insert into public.content (id, slug, creator_id, pillar, type, title, summary) 
   ('56000000-0000-4000-8000-000000005602', 's56-receita-tiago', public.seed_uuid('creator:tiago'), 'gastronomy', 'recipe', 'Receita S56', 'Resumo');
 insert into storage.objects (bucket_id, name, owner_id, metadata) values
   ('recipe-media', public.seed_uuid('creator:tiago') || '/56000000-0000-4000-8000-000000005602/a5600000-0000-4000-8000-000000000002.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1000}');
-select tests.ok('S56 admin envia foto para o rascunho de receita do herói', exists (select 1 from storage.objects where name like '%a5600000-0000-4000-8000-000000000002.webp'));
+select tests.ok('S56 admin envia foto para o rascunho de receita do Hero', exists (select 1 from storage.objects where name like '%a5600000-0000-4000-8000-000000000002.webp'));
 select tests.expect_error('S56 admin não envia foto para receita no ar',
   $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('recipe-media', public.seed_uuid('creator:helena') || '/' || public.seed_uuid('content:g1') || '/a5600000-0000-4000-8000-000000000003.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
-select tests.ok('S56 admin registra a foto da receita do herói (recipe_register_media)',
+select tests.ok('S56 admin registra a foto da receita do Hero (recipe_register_media)',
   public.recipe_register_media('56000000-0000-4000-8000-000000005602', public.seed_uuid('creator:tiago') || '/56000000-0000-4000-8000-000000005602/a5600000-0000-4000-8000-000000000002.webp', 'gallery', 'Foto', true, 10, 10) is not null);
 delete from public.content where id = '56000000-0000-4000-8000-000000005602';
--- herói suspenso: o cabeçalho deixa de valer
+-- Hero suspenso: o cabeçalho deixa de valer
 select tests.su();
 update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:tiago');
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select tests.acting((select id from t_s56_tiago));
-select tests.ok('S56 herói suspenso: o admin não age mais por ele', public.acting_hero_id() is null and public.my_creator_id() is null);
-select tests.expect_error('S56 admin_act_as_hero de herói suspenso: hero_unavailable', $q$select public.admin_act_as_hero(public.seed_uuid('creator:tiago'))$q$, 'hero_unavailable');
+select tests.ok('S56 Hero suspenso: o admin não age mais por ele', public.acting_hero_id() is null and public.my_creator_id() is null);
+select tests.expect_error('S56 admin_act_as_hero de Hero suspenso: hero_unavailable', $q$select public.admin_act_as_hero(public.seed_uuid('creator:tiago'))$q$, 'hero_unavailable');
 select tests.acting(null);
 select tests.su();
 update public.creator_profiles set status = 'active' where id = public.seed_uuid('creator:tiago');
 
-select tests.ok('S56 auditoria: escolha do herói, criação, publicação e exclusão em nome do Tiago (actor admin)',
+select tests.ok('S56 auditoria: escolha do Hero, criação, publicação e exclusão em nome do Tiago (actor admin)',
   exists (select 1 from public.admin_audit where action = 'hero_act.select' and actor_type = 'admin' and after_data ->> 'acting_creator' = (select id from t_s56_tiago))
   and exists (select 1 from public.admin_audit where action = 'hero_act.content.insert' and resource_id = '56000000-0000-4000-8000-000000005603'
                 and actor_id = '10000000-0000-4000-8000-000000000001' and after_data ->> 'acting_creator' = (select id from t_s56_tiago))
@@ -4984,8 +4984,8 @@ select tests.ok('S16 consumidor não lê creator_rights_private', (select count(
 select tests.anon();
 select tests.expect_error('S16 visitante não lê creator_rights_private (tabela sem grant para anon)', $q$select count(*) from public.creator_rights_private$q$, 'permission denied');
 select tests.expect_error('S16 visitante não executa a RPC privada de direitos', $q$select public.admin_set_creator_rights_private(public.seed_uuid('creator:lia'), 'FALSO', null, null)$q$, 'permission denied');
--- 0044: os 6 heróis no ar são pessoas reais com uso autorizado (titular = a própria pessoa, sem validade)
-select tests.ok('S16 seed: os 6 heróis no ar são reais e autorizados, titular = o próprio nome, sem validade',
+-- 0044: os 6 Heros no ar são pessoas reais com uso autorizado (titular = a própria pessoa, sem validade)
+select tests.ok('S16 seed: os 6 Heros no ar são reais e autorizados, titular = o próprio nome, sem validade',
   (select count(*) from public.creator_profiles where rights_status = 'authorized' and rights_holder = name and rights_valid_until is null and not is_fictional) = 6
   and (select count(*) from public.creator_profiles) = 6);
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
@@ -5087,13 +5087,13 @@ select tests.ok('S16 funções novas: triggers e checagem interna sem execute pa
   and (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')
        from pg_proc p where p.oid = 'public.admin_set_creator_rights_private(uuid, text, text, text)'::regprocedure));
 
--- ================================================================ S44 · Heróis reais (0044)
--- Os seis heróis viram as pessoas reais com contrato (slug, nome, foto, direitos autorizados) e os dois
+-- ================================================================ S44 · Heros reais (0044)
+-- Os seis Heros viram as pessoas reais com contrato (slug, nome, foto, direitos autorizados) e os dois
 -- personagens restantes saem do app de forma reversível: perfil suspenso, nada deles no ar, vínculos
 -- suspensos e um registro de auditoria por perfil. Reaplicar a migração não muda nada.
 select tests.su();
--- (o S16 mexe nos direitos da Anitta, herói do creator1: ela fica fora da checagem de direitos)
-select tests.ok('S44 os seis heróis reais: slug novo, ativos, sem fictício, autorizados e com foto do repositório',
+-- (o S16 mexe nos direitos da Anitta, Hero do creator1: ela fica fora da checagem de direitos)
+select tests.ok('S44 os seis Heros reais: slug novo, ativos, sem fictício, autorizados e com foto do repositório',
   (select count(*) from public.creator_profiles
     where slug in ('neymar', 'gabriel-medina', 'joao-fonseca', 'anitta', 'ronaldinho-gaucho', 'erick-jacquin')
       and status = 'active' and not is_fictional
@@ -5109,7 +5109,7 @@ select tests.ok('S44 removidos: suspensos e sem foto; nada deles no ar (conteúd
   and not exists (select 1 from public.creator_recipe_links x join public.creator_profiles cp on cp.id = x.creator_id where cp.status = 'suspended' and x.status = 'validated')
   and (select count(*) from public.admin_audit where action = 'hero.removed' and before_data ->> 'status' = 'active'
          and after_data ? 'content_archived' and after_data ? 'content_moved') = 2);
-select tests.ok('S44 programa no ar não tem etapa de conteúdo de herói removido (o que era etapa passou ao dono do programa)',
+select tests.ok('S44 programa no ar não tem etapa de conteúdo de Hero removido (o que era etapa passou ao dono do programa)',
   not exists (select 1 from public.program_items pi join public.program_versions v on v.id = pi.version_id join public.programs p on p.id = v.program_id
               join public.content c on c.id = pi.content_id join public.creator_profiles cp on cp.id = c.creator_id
               where p.status = 'published' and cp.status = 'suspended')
@@ -5132,7 +5132,7 @@ create temporary table t_s44_before as
          (select md5(string_agg(id::text || status::text, ',' order by id)) from public.creator_recipe_links) as links,
          (select count(*) from public.admin_audit where action like 'hero.%') as audits;
 \ir ../migrations/0044_real_heroes.sql
-select tests.ok('S44 reaplicar a 0044 não muda nada (heróis, conteúdos, indicações e auditoria)',
+select tests.ok('S44 reaplicar a 0044 não muda nada (Heros, conteúdos, indicações e auditoria)',
   (select (b.heroes, b.contents, b.links, b.audits) = (
      (select md5(string_agg(id::text || slug || name || status::text || coalesce(avatar_url, '') || coalesce(cover_url, '') || rights_status, ',' order by id)) from public.creator_profiles),
      (select md5(string_agg(id::text || status::text || coalesce(creator_id::text, '') || coalesce(cover_url, ''), ',' order by id)) from public.content),
@@ -5229,7 +5229,7 @@ update public.shop_filters set is_active = true where slug = 'surf';
 delete from public.shop_filter_products where filter_id in (public.seed_uuid('shopfilter:surf'), public.seed_uuid('shopfilter:futebol'));
 delete from public.admin_audit where resource_type = 'shop_filter';
 
--- ================================================================ S60 · Categorias dos heróis (0049)
+-- ================================================================ S60 · Categorias dos Heros (0049)
 select tests.su();
 select tests.ok('S60 seed: 4 categorias na ordem Esporte, Música, Gastronomia, Arte e Entretenimento, todas ativas',
   (select string_agg(slug, ',' order by sort_order) from public.hero_categories) = 'esporte,musica,gastronomia,arte-e-entretenimento'
@@ -5246,20 +5246,20 @@ select tests.ok('S60 RLS ligada nas 2 tabelas, visitante só com SELECT',
   and not has_table_privilege('anon', 'public.creator_category_links', 'update')
   and not has_table_privilege('anon', 'public.creator_category_links', 'delete'));
 
--- prepara: Música desativada; herói suspenso (Bruna) ligado a Esporte
+-- prepara: Música desativada; Hero suspenso (Bruna) ligado a Esporte
 update public.hero_categories set is_active = false where slug = 'musica';
 insert into public.creator_category_links (creator_id, category_id, position)
 values (public.seed_uuid('creator:bruna'), public.seed_uuid('herocat:esporte'), 1);
 
 select tests.anon();
 select tests.ok('S60 visitante lê só as categorias ativas', (select string_agg(slug, ',' order by sort_order) from public.hero_categories) = 'esporte,gastronomia,arte-e-entretenimento');
-select tests.ok('S60 visitante lê só vínculos de categoria ativa com herói ativo (sem Música, sem herói suspenso)',
+select tests.ok('S60 visitante lê só vínculos de categoria ativa com Hero ativo (sem Música, sem Hero suspenso)',
   (select count(*) from public.creator_category_links) = 6
   and not exists (select 1 from public.creator_category_links where creator_id = public.seed_uuid('creator:bruna'))
   and not exists (select 1 from public.creator_category_links where category_id = public.seed_uuid('herocat:musica')));
 select tests.expect_error('S60 visitante não cria categoria', $q$insert into public.hero_categories (slug, name) values ('s60-anon', '{"pt-BR":"X"}')$q$, 'permission denied');
 select tests.expect_error('S60 visitante não altera categoria', $q$update public.hero_categories set is_active = false$q$, 'permission denied');
-select tests.expect_error('S60 visitante não liga herói', $q$insert into public.creator_category_links (creator_id, category_id, position) values (public.seed_uuid('creator:bruna'), public.seed_uuid('herocat:gastronomia'), 2)$q$, 'permission denied');
+select tests.expect_error('S60 visitante não liga Hero', $q$insert into public.creator_category_links (creator_id, category_id, position) values (public.seed_uuid('creator:bruna'), public.seed_uuid('herocat:gastronomia'), 2)$q$, 'permission denied');
 select tests.expect_error('S60 visitante não executa admin_set_creator_categories',
   $q$select public.admin_set_creator_categories(public.seed_uuid('creator:bruna'), '{}')$q$, 'permission denied');
 
@@ -5267,9 +5267,9 @@ select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local
 select tests.ok('S60 consumidor lê só as categorias ativas e seus vínculos visíveis',
   (select count(*) from public.hero_categories) = 3 and (select count(*) from public.creator_category_links) = 6);
 select tests.expect_error('S60 consumidor não cria categoria (RLS)', $q$insert into public.hero_categories (slug, name) values ('s60-user', '{"pt-BR":"X"}')$q$, 'row-level security');
-select tests.expect_error('S60 consumidor não liga herói (RLS)',
+select tests.expect_error('S60 consumidor não liga Hero (RLS)',
   $q$insert into public.creator_category_links (creator_id, category_id, position) values (public.seed_uuid('creator:bruna'), public.seed_uuid('herocat:gastronomia'), 2)$q$, 'row-level security');
-select tests.expect_error('S60 consumidor não troca categorias de herói (forbidden)',
+select tests.expect_error('S60 consumidor não troca categorias de Hero (forbidden)',
   $q$select public.admin_set_creator_categories(public.seed_uuid('creator:bruna'), '{}')$q$, 'forbidden');
 update public.hero_categories set name = '{"pt-BR":"Hack"}', sort_order = 1 where slug = 'gastronomia';
 delete from public.creator_category_links;
@@ -5280,14 +5280,14 @@ select tests.ok('S60 update/delete de quem não é admin não afeta nada',
   and (select count(*) from public.hero_categories) = 4
   and (select count(*) from public.creator_category_links) = 8);
 
--- admin: lê tudo, cria, renomeia, troca as categorias de um herói, exclui; máximo de 2 garantido
+-- admin: lê tudo, cria, renomeia, troca as categorias de um Hero, exclui; máximo de 2 garantido
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select tests.ok('S60 admin lê também a categoria inativa e todos os vínculos',
   (select count(*) from public.hero_categories) = 4 and (select count(*) from public.creator_category_links) = 8);
 insert into public.hero_categories (id, slug, name, sort_order) values ('60000000-0000-4000-8000-000000000001', 's60-moda', '{"pt-BR":"Moda","en":"Fashion","es":"Moda"}', 50);
 update public.hero_categories set name = '{"pt-BR":"Moda e Estilo","en":"Fashion","es":"Moda"}', sort_order = 5 where id = '60000000-0000-4000-8000-000000000001';
 select public.admin_set_creator_categories(public.seed_uuid('creator:tiago'), array['60000000-0000-4000-8000-000000000001', public.seed_uuid('herocat:esporte')]::uuid[]);
-select tests.ok('S60 admin troca as categorias do herói na ordem pedida',
+select tests.ok('S60 admin troca as categorias do Hero na ordem pedida',
   (select string_agg(category_id::text || ':' || position, ',' order by position) from public.creator_category_links where creator_id = public.seed_uuid('creator:tiago'))
     = '60000000-0000-4000-8000-000000000001:1,' || public.seed_uuid('herocat:esporte')::text || ':2');
 select public.admin_set_creator_categories(public.seed_uuid('creator:tiago'), array['60000000-0000-4000-8000-000000000001', public.seed_uuid('herocat:esporte')]::uuid[]);
@@ -5307,13 +5307,13 @@ select tests.ok('S60 Anitta segue com 2 categorias depois das tentativas',
 delete from public.hero_categories where id = '60000000-0000-4000-8000-000000000001';
 update public.hero_categories set name = '{"pt-BR":"Esportes","en":"Sports","es":"Deportes"}' where slug = 'esporte';
 select tests.su();
-select tests.ok('S60 excluir a categoria leva os vínculos (cascata); o herói fica com a outra',
+select tests.ok('S60 excluir a categoria leva os vínculos (cascata); o Hero fica com a outra',
   not exists (select 1 from public.creator_category_links where category_id = '60000000-0000-4000-8000-000000000001')
   and (select string_agg(category_id::text, ',') from public.creator_category_links where creator_id = public.seed_uuid('creator:tiago')) = public.seed_uuid('herocat:esporte')::text);
 select tests.ok('S60 auditoria da categoria: criar, renomear e excluir',
   (select string_agg(action, ',' order by id) from public.admin_audit where resource_type = 'hero_category' and resource_id = '60000000-0000-4000-8000-000000000001')
     = 'hero_categories.insert,hero_categories.update,hero_categories.delete');
-select tests.ok('S60 auditoria do herói: troca (sai Esporte, entram as 2) e a cascata; repetir a mesma troca não audita nada',
+select tests.ok('S60 auditoria do Hero: troca (sai Esporte, entram as 2) e a cascata; repetir a mesma troca não audita nada',
   (select string_agg(action || ':' || (coalesce(after_data, before_data) ->> 'position'), ',' order by id) from public.admin_audit
      where resource_type = 'hero_category_link' and resource_id = public.seed_uuid('creator:tiago')::text)
     = 'creator_category_links.delete:1,creator_category_links.insert:1,creator_category_links.insert:2,creator_category_links.delete:1'
@@ -5322,7 +5322,7 @@ select tests.ok('S60 escrita de quem não é admin não gerou auditoria (nem o s
   not exists (select 1 from public.admin_audit where resource_type = 'hero_category_link' and resource_id <> public.seed_uuid('creator:tiago')::text)
   and (select count(*) from public.admin_audit where resource_type = 'hero_category') = 4);
 
--- reaplicar a 0049 não desfaz edição do admin: nome editado fica; herói com trilha não ganha o seed de volta
+-- reaplicar a 0049 não desfaz edição do admin: nome editado fica; Hero com trilha não ganha o seed de volta
 delete from public.creator_category_links where creator_id = public.seed_uuid('creator:tiago');
 \ir ../migrations/0049_hero_categories.sql
 select tests.ok('S60 reaplicar a 0049 respeita a edição do admin',
@@ -5351,9 +5351,9 @@ delete from public.creator_category_links where creator_id = public.seed_uuid('c
 insert into public.creator_category_links (creator_id, category_id, position) values (public.seed_uuid('creator:tiago'), public.seed_uuid('herocat:esporte'), 1);
 delete from public.admin_audit where resource_type in ('hero_category', 'hero_category_link');
 
--- ================================================================ S61 · Atalhos da página do herói (0050)
--- hero_library_tabs (por categoria) e creator_library_overrides (exceção por herói). Fontes fixas
--- (7 chaves), ícone de lista fixa, rótulo com pt-BR. Leitura pública: categoria ativa / herói ativo.
+-- ================================================================ S61 · Atalhos da página do Hero (0050)
+-- hero_library_tabs (por categoria) e creator_library_overrides (exceção por Hero). Fontes fixas
+-- (7 chaves), ícone de lista fixa, rótulo com pt-BR. Leitura pública: categoria ativa / Hero ativo.
 -- Escrita só do admin (RLS + RPCs security invoker que só gravam o que mudou), auditada em admin_audit.
 select tests.su();
 select tests.ok('S61 sem seed: os padrões vivem no código (nenhuma linha nas 2 tabelas)',
@@ -5435,17 +5435,17 @@ select tests.expect_error('S61 fonte repetida na mesma troca é recusada',
 select tests.expect_error('S61 categoria inexistente',
   $q$select public.admin_set_category_library_tabs('61000000-0000-4000-8000-000000000099', '[]')$q$, 'not_found');
 
--- leitura: Música desativada com atalho; visitante não vê atalho de categoria inativa nem exceção de herói suspenso
+-- leitura: Música desativada com atalho; visitante não vê atalho de categoria inativa nem exceção de Hero suspenso
 select public.admin_set_category_library_tabs(public.seed_uuid('herocat:musica'), '[{"source_key":"produtos","label":null,"icon":"star","sort_order":10,"is_visible":true}]');
 update public.hero_categories set is_active = false where slug = 'musica';
 select tests.anon();
 select tests.ok('S61 visitante lê os atalhos de categoria ativa (Esporte) e não os de Música (inativa)',
   (select count(*) from public.hero_library_tabs) = 7
   and not exists (select 1 from public.hero_library_tabs where category_id = public.seed_uuid('herocat:musica')));
-select tests.ok('S61 visitante lê a exceção de herói ativo e não a de herói suspenso',
+select tests.ok('S61 visitante lê a exceção de Hero ativo e não a de Hero suspenso',
   (select count(*) from public.creator_library_overrides) = 1
   and (select label ->> 'pt-BR' from public.creator_library_overrides where creator_id = public.seed_uuid('creator:tiago')) = 'Treinos do Neymar');
-select tests.ok('S61 visitante lê a categoria principal do herói com os atalhos embutidos (mesma leitura do app)',
+select tests.ok('S61 visitante lê a categoria principal do Hero com os atalhos embutidos (mesma leitura do app)',
   (select count(*) from public.creator_category_links l join public.hero_library_tabs t on t.category_id = l.category_id
      where l.creator_id = public.seed_uuid('creator:tiago') and l.position = 1) = 7);
 select tests.expect_error('S61 visitante não cria atalho', $q$insert into public.hero_library_tabs (category_id, source_key) values (public.seed_uuid('herocat:esporte'), 'produtos')$q$, 'permission denied');
@@ -5463,7 +5463,7 @@ select tests.expect_error('S61 consumidor não cria exceção (RLS)',
   $q$insert into public.creator_library_overrides (creator_id, source_key, is_visible) values (public.seed_uuid('creator:lia'), 'produtos', false)$q$, 'row-level security');
 select tests.expect_error('S61 consumidor não troca os atalhos da categoria (forbidden)',
   $q$select public.admin_set_category_library_tabs(public.seed_uuid('herocat:esporte'), '[]')$q$, 'forbidden');
-select tests.expect_error('S61 consumidor não troca a exceção do herói (forbidden)',
+select tests.expect_error('S61 consumidor não troca a exceção do Hero (forbidden)',
   $q$select public.admin_set_creator_library_overrides(public.seed_uuid('creator:tiago'), '[]')$q$, 'forbidden');
 update public.hero_library_tabs set is_visible = false;
 delete from public.creator_library_overrides;
@@ -5472,7 +5472,7 @@ select tests.ok('S61 update/delete de quem não é admin não afeta nada',
   (select count(*) from public.hero_library_tabs where is_visible) = 7
   and (select count(*) from public.creator_library_overrides) = 2);
 
--- cascata: excluir a categoria leva os atalhos dela (auditado); o herói continua com a exceção
+-- cascata: excluir a categoria leva os atalhos dela (auditado); o Hero continua com a exceção
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select tests.ok('S61 admin lê tudo (inclusive Música inativa e a exceção da suspensa)',
   (select count(*) from public.hero_library_tabs) = 8 and (select count(*) from public.creator_library_overrides) = 2);
@@ -5546,7 +5546,7 @@ select tests.ok('S62 políticas: leitura pública só de SELECT; escrita só par
   (select count(*) from pg_policies where schemaname = 'public' and tablename in ('recipe_signers', 'recipe_ready_products') and 'anon' = any (roles) and cmd <> 'SELECT') = 0
   and (select count(*) from pg_policies where schemaname = 'public' and tablename in ('recipe_signers', 'recipe_ready_products') and cmd = 'ALL'
          and roles = '{authenticated}'::name[] and qual like '%is_admin()%' and with_check like '%is_admin()%') = 2);
-select tests.ok('S62 contadores não guardam pessoa nem IP: só dia, herói, origem, ação, receita, contagem e atualização',
+select tests.ok('S62 contadores não guardam pessoa nem IP: só dia, Hero, origem, ação, receita, contagem e atualização',
   (select string_agg(column_name::text, ',' order by column_name) from information_schema.columns where table_schema = 'public' and table_name = 'recipe_action_counters')
     = 'action,content_id,count,creator_id,day,source_key,updated_at');
 
@@ -5619,7 +5619,7 @@ select tests.ok('S62 update/delete de quem não é admin não afeta nada',
   (select product_id = (select m4 from t_s62) from public.recipe_ready_products where content_id = (select g1 from t_s62))
   and (select count(*) from public.recipe_signers) = 2);
 
--- contador: só o service role; só receita no ar na vitrine de herói ativo (autor ou vínculo validado)
+-- contador: só o service role; só receita no ar na vitrine de Hero ativo (autor ou vínculo validado)
 select set_config('role', 'service_role', true);
 create temp table t_s62_bump as select
   public.recipe_action_bump(public.seed_uuid('creator:helena'), 'alimentacao', 'fazer', (select g1 from t_s62)) as a1,
@@ -5633,13 +5633,13 @@ create temp table t_s62_bump as select
   public.recipe_action_bump(public.seed_uuid('creator:helena'), 'produtos', 'fazer', (select g1 from t_s62)) as b5,
   public.recipe_action_bump(null, 'alimentacao', 'fazer', (select g1 from t_s62)) as b6;
 select set_config('role', 'none', true); -- o service role não usa o schema tests
-select tests.ok('S62 service role soma: autor (2x), herói que indica (Neymar) e na página da receita',
+select tests.ok('S62 service role soma: autor (2x), Hero que indica (Neymar) e na página da receita',
   (select a1 and a2 and a3 and a4 from t_s62_bump));
-select tests.ok('S62 fora da regra não conta: herói suspenso, receita arquivada, outro tipo, ação ou origem desconhecida, nulos',
+select tests.ok('S62 fora da regra não conta: Hero suspenso, receita arquivada, outro tipo, ação ou origem desconhecida, nulos',
   (select not (b1 or b2 or b3 or b4 or b5 or coalesce(b6, false)) from t_s62_bump));
 drop table t_s62_bump;
 select tests.su();
-select tests.ok('S62 contadores agregados por dia (Brasília), herói, origem, ação e receita',
+select tests.ok('S62 contadores agregados por dia (Brasília), Hero, origem, ação e receita',
   (select count(*) from public.recipe_action_counters) = 3
   and (select count from public.recipe_action_counters where creator_id = public.seed_uuid('creator:helena') and action = 'fazer') = 2
   and (select bool_and(day = (now() at time zone 'America/Sao_Paulo')::date) from public.recipe_action_counters)
@@ -5676,9 +5676,9 @@ drop table t_s62;
 select tests.ok('S62 estado restaurado',
   (select count(*) from public.recipe_signers) = 0 and (select count(*) from public.recipe_ready_products) = 0 and (select count(*) from public.recipe_action_counters) = 0);
 
--- ================================================================ S63 · Página do herói só com o que é do herói (0052)
--- Programa de herói só tem etapa (e substituto) de conteúdo do próprio herói: as herdadas da troca de
--- heróis da 0044 saíram e um gatilho impede que voltem. Produtos: a alocação em massa da 0021 saiu.
+-- ================================================================ S63 · Página do Hero só com o que é do Hero (0052)
+-- Programa de Hero só tem etapa (e substituto) de conteúdo do próprio Hero: as herdadas da troca de
+-- Heros da 0044 saíram e um gatilho impede que voltem. Produtos: a alocação em massa da 0021 saiu.
 select tests.su();
 create or replace function tests.s63_hero(p_slug text) returns uuid language sql stable as $$
   select id from public.creator_profiles where slug = p_slug
@@ -5689,7 +5689,7 @@ $$;
 grant execute on function tests.s63_hero(text) to authenticated;
 
 -- 1) resultado da limpeza nos dados do seed
-select tests.ok('S63 nenhum programa não arquivado tem etapa de outro herói (em nenhuma versão)',
+select tests.ok('S63 nenhum programa não arquivado tem etapa de outro Hero (em nenhuma versão)',
   not exists (select 1 from public.programs p join public.program_versions v on v.program_id = p.id
               join public.program_items pi on pi.version_id = v.id join public.content c on c.id = pi.content_id
               where p.creator_id is not null and p.status <> 'archived' and c.creator_id is distinct from p.creator_id));
@@ -5708,7 +5708,7 @@ select tests.ok('S63 posições contíguas 1..n nas versões limpas',
               where p.slug in ('autocuidado-em-pequenas-doses', 'noites-que-descansam', 'core-e-postura-em-3-semanas', 'mobilidade-para-correr-melhor', 'foco-sem-telas')
                 and (select array_agg(pi.position order by pi.position) from public.program_items pi where pi.version_id = v.id)
                     <> (select array_agg(g::int order by g) from generate_series(1, (select count(*) from public.program_items pi where pi.version_id = v.id)) g)));
-select tests.ok('S63 programas arquivados dos heróis removidos (0044) não foram mexidos',
+select tests.ok('S63 programas arquivados dos Heros removidos (0044) não foram mexidos',
   (select count(*) from public.programs p join public.program_items pi on pi.version_id = p.current_version_id
      where p.status = 'archived' and p.creator_id in (public.seed_uuid('creator:bruna'), public.seed_uuid('creator:marcos'))) = 36);
 select tests.ok('S63 cada programa limpo tem auditoria de sistema com as etapas que saíram (9 programas)',
@@ -5725,7 +5725,7 @@ select tests.ok('S63 alocação feita pelo admin (RPC auditada do S20) sobrevive
   exists (select 1 from public.creator_products where id = '50000000-0000-4000-8000-000000000001' and status = 'validated')
   and exists (select 1 from public.creator_products where creator_id = public.seed_uuid('creator:rafael') and product_id = public.seed_uuid('product:k1') and status = 'validated'));
 
--- 2) gatilho: admin não põe conteúdo de outro herói em programa de herói
+-- 2) gatilho: admin não põe conteúdo de outro Hero em programa de Hero
 create temporary table t_s63_ids as
   select (select id from public.content where creator_id = tests.s63_hero('neymar') and status = 'published' order by slug limit 1) as own,
          (select id from public.content where creator_id = tests.s63_hero('joao-fonseca') and status = 'published' order by slug limit 1) as foreign_id;
@@ -5738,23 +5738,23 @@ insert into public.program_versions (id, program_id, version_no, title, status) 
   ('62000000-0000-4000-8000-000000000011', '62000000-0000-4000-8000-000000000001', 1, 'S63 Neymar', 'draft'),
   ('62000000-0000-4000-8000-000000000012', '62000000-0000-4000-8000-000000000002', 1, 'S63 editorial', 'draft');
 insert into public.program_items (version_id, content_id, position) values ('62000000-0000-4000-8000-000000000011', (select own from t_s63_ids), 1);
-select tests.ok('S63 admin põe conteúdo do próprio herói', (select count(*) from public.program_items where version_id = '62000000-0000-4000-8000-000000000011') = 1);
-select tests.expect_error('S63 admin não põe conteúdo de outro herói (gatilho)',
+select tests.ok('S63 admin põe conteúdo do próprio Hero', (select count(*) from public.program_items where version_id = '62000000-0000-4000-8000-000000000011') = 1);
+select tests.expect_error('S63 admin não põe conteúdo de outro Hero (gatilho)',
   $q$insert into public.program_items (version_id, content_id, position) values ('62000000-0000-4000-8000-000000000011', (select foreign_id from t_s63_ids), 2)$q$, 'program_item_foreign_content');
-select tests.expect_error('S63 trocar a etapa por conteúdo de outro herói também é barrado',
+select tests.expect_error('S63 trocar a etapa por conteúdo de outro Hero também é barrado',
   $q$update public.program_items set content_id = (select foreign_id from t_s63_ids) where version_id = '62000000-0000-4000-8000-000000000011'$q$, 'program_item_foreign_content');
-select tests.expect_error('S63 substituto de outro herói é barrado (RPC de substituição)',
-  $q$select public.admin_substitute_program_item(public.seed_uuid('pv:shelf-rafael-2:1'), public.seed_uuid('content:r7'), public.seed_uuid('content:r1'), 'S63 substituto de outro herói')$q$, 'program_item_foreign_content');
-select tests.expect_error('S63 trocar o herói de programa com etapas do herói antigo é barrado',
+select tests.expect_error('S63 substituto de outro Hero é barrado (RPC de substituição)',
+  $q$select public.admin_substitute_program_item(public.seed_uuid('pv:shelf-rafael-2:1'), public.seed_uuid('content:r7'), public.seed_uuid('content:r1'), 'S63 substituto de outro Hero')$q$, 'program_item_foreign_content');
+select tests.expect_error('S63 trocar o Hero de programa com etapas do Hero antigo é barrado',
   $q$update public.programs set creator_id = tests.s63_hero('joao-fonseca') where id = '62000000-0000-4000-8000-000000000001'$q$, 'program_creator_has_foreign_items');
 insert into public.program_items (version_id, content_id, position) values
   ('62000000-0000-4000-8000-000000000012', (select own from t_s63_ids), 1),
   ('62000000-0000-4000-8000-000000000012', (select foreign_id from t_s63_ids), 2);
-select tests.ok('S63 programa editorial (sem herói) aceita conteúdo de qualquer herói',
+select tests.ok('S63 programa editorial (sem Hero) aceita conteúdo de qualquer Hero',
   (select count(*) from public.program_items where version_id = '62000000-0000-4000-8000-000000000012') = 2);
 update public.programs set creator_id = null where id = '62000000-0000-4000-8000-000000000001';
 update public.programs set slug = 's63-neymar-2' where id = '62000000-0000-4000-8000-000000000001';
-select tests.ok('S63 tirar o herói ou mexer em outra coluna do programa não esbarra no gatilho',
+select tests.ok('S63 tirar o Hero ou mexer em outra coluna do programa não esbarra no gatilho',
   (select creator_id is null and slug = 's63-neymar-2' from public.programs where id = '62000000-0000-4000-8000-000000000001'));
 
 -- 3) segurança dos gatilhos e reaplicação
@@ -5917,17 +5917,17 @@ drop table t_s64_base, t_s64_order, t_s64_f;
 -- pessoas próprias do cenário (as de cima já passaram por exclusão de conta)
 select tests.su();
 insert into auth.users (id, email) values ('65000000-0000-4000-8000-0000000000a1', 's65a@test.local'), ('65000000-0000-4000-8000-0000000000a2', 's65b@test.local');
--- herói favorito: só a própria linha; herói inativo não entra
+-- Hero favorito: só a própria linha; Hero inativo não entra
 select tests.login('65000000-0000-4000-8000-0000000000a1', 's65a@test.local');
 insert into public.hero_favorites (user_id, creator_id) values ('65000000-0000-4000-8000-0000000000a1', public.seed_uuid('creator:tiago'));
-select tests.expect_error('S65 favoritar herói em nome de outra pessoa é recusado',
+select tests.expect_error('S65 favoritar Hero em nome de outra pessoa é recusado',
   $q$insert into public.hero_favorites (user_id, creator_id) values ('65000000-0000-4000-8000-0000000000a2', public.seed_uuid('creator:lia'))$q$, 'row-level security');
 select tests.login('65000000-0000-4000-8000-0000000000a2', 's65b@test.local');
 select tests.ok('S65 outra pessoa não vê o favorito de ninguém', (select count(*) from public.hero_favorites) = 0);
 select tests.su();
 update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:lia');
 select tests.login('65000000-0000-4000-8000-0000000000a2', 's65b@test.local');
-select tests.expect_error('S65 herói suspenso não pode ser favoritado',
+select tests.expect_error('S65 Hero suspenso não pode ser favoritado',
   $q$insert into public.hero_favorites (user_id, creator_id) values ('65000000-0000-4000-8000-0000000000a2', public.seed_uuid('creator:lia'))$q$, 'row-level security');
 select tests.su();
 update public.creator_profiles set status = 'active' where id = public.seed_uuid('creator:lia');
@@ -5957,7 +5957,7 @@ select tests.expect_error('S65 authenticated não lê a fila', $q$select count(*
 select tests.expect_error('S65 authenticated não enfileira', $q$select public.push_enqueue('65000000-0000-4000-8000-0000000000a1', 'hero_post', 'x', '{}')$q$, 'permission denied');
 select tests.expect_error('S65 authenticated não pega lote', $q$select * from public.push_claim(10)$q$, 'permission denied');
 
--- post de herói favorito: sem consentimento, nada; com consentimento, um aviso por dia por herói
+-- post de Hero favorito: sem consentimento, nada; com consentimento, um aviso por dia por Hero
 select tests.su();
 select id as s65_post from public.content where creator_id = public.seed_uuid('creator:tiago') and status = 'published' order by id limit 1 \gset
 select id as s65_post2 from public.content where creator_id = public.seed_uuid('creator:tiago') and status = 'published' order by id offset 1 limit 1 \gset
@@ -5967,7 +5967,7 @@ select tests.ok('S65 sem consentimento de push nada entra na fila', (select coun
 insert into public.notification_preferences (user_id, channel_push, hero_posts) values ('65000000-0000-4000-8000-0000000000a1', true, false);
 update public.content set status = 'draft' where id = :'s65_post';
 update public.content set status = 'published' where id = :'s65_post';
-select tests.ok('S65 push ligado sem o tipo "posts de heróis": nada', (select count(*) from public.push_outbox) = 0);
+select tests.ok('S65 push ligado sem o tipo "posts de Heros": nada', (select count(*) from public.push_outbox) = 0);
 update public.notification_preferences set hero_posts = true where user_id = '65000000-0000-4000-8000-0000000000a1';
 update public.content set status = 'draft' where id = :'s65_post';
 update public.content set status = 'published' where id = :'s65_post';
@@ -5976,7 +5976,7 @@ select tests.ok('S65 com consentimento: um aviso para quem favoritou, apontando 
   and (select user_id = '65000000-0000-4000-8000-0000000000a1' and kind = 'hero_post' and payload ->> 'content_id' = :'s65_post' from public.push_outbox));
 update public.content set status = 'published' where id = :'s65_post2';
 update public.content set title = title || ' ' where id = :'s65_post';
-select tests.ok('S65 segundo post do mesmo herói no dia e edição do publicado não geram outro aviso', (select count(*) from public.push_outbox) = 1);
+select tests.ok('S65 segundo post do mesmo Hero no dia e edição do publicado não geram outro aviso', (select count(*) from public.push_outbox) = 1);
 update public.content set status = 'draft', publish_at = now() + interval '3 days' where id = :'s65_post2';
 update public.content set status = 'published' where id = :'s65_post2';
 select tests.ok('S65 post agendado entra na fila para a data de ir ao ar',
@@ -6028,7 +6028,7 @@ select tests.ok('S65 reaplicar a 0054 não perde favoritos nem preferências',
   (select count(*) from public.hero_favorites) = 1
   and (select hero_posts and achievements from public.notification_preferences where user_id = '65000000-0000-4000-8000-0000000000a1'));
 
--- ================================================================ S65 · Embed conteúdo → herói sem ambiguidade (0055)
+-- ================================================================ S65 · Embed conteúdo → Hero sem ambiguidade (0055)
 -- Uma tabela cuja chave primária tem FK para content E para creator_profiles vira, para a API,
 -- um caminho muitos-para-muitos e quebra "creator:creator_profiles(...)" em content (PGRST201).
 select tests.su();
@@ -6046,7 +6046,7 @@ select tests.ok('S65 limpeza de contadores sem execução por clientes',
 
 -- ================================================================ S66 · Colecionáveis (lances ao vivo, 0057)
 -- Leitura pública sem ids de usuário; lance só pela RPC e só logado; incremento, fim, auto-cobertura,
--- limite de 2 s, conta suspensa, admin e o próprio herói recusados; anti-sniping; escrita só do admin
+-- limite de 2 s, conta suspensa, admin e o próprio Hero recusados; anti-sniping; escrita só do admin
 -- (auditada); encerramento idempotente; sem pagamento: o admin marca o contato com o vencedor (auditado);
 -- Realtime só nas tabelas públicas; nenhuma tabela-ponte na chave primária (embeds sem PGRST201); S14 = 17.
 select tests.su();
@@ -6140,7 +6140,7 @@ select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select tests.ok('S66 admin vê todos os donos', (select count(*) from public.collectible_bid_owners) = 3);
 select tests.expect_error('S66 admin não dá lance', $q$select public.place_bid(public.seed_uuid('collectible:bola-neymar'), 1000)$q$, 'admin_cannot_bid');
 
--- conta suspensa e o próprio herói do item
+-- conta suspensa e o próprio Hero do item
 select tests.su();
 update auth.users set banned_until = now() + interval '1 day' where id = '10000000-0000-4000-8000-000000005402';
 select tests.login('10000000-0000-4000-8000-000000005402', 'lance2@test.local');
@@ -6150,7 +6150,7 @@ update auth.users set banned_until = null where id = '10000000-0000-4000-8000-00
 insert into t_s66 select 'hero_user', coalesce(user_id::text, '') from public.creator_profiles where slug = 'neymar';
 update public.creator_profiles set user_id = '10000000-0000-4000-8000-000000005403' where slug = 'neymar';
 select tests.login('10000000-0000-4000-8000-000000005403', 'lance3@test.local');
-select tests.expect_error('S66 o herói não dá lance no próprio item', $q$select public.place_bid(public.seed_uuid('collectible:bola-neymar'), 1000)$q$, 'creator_cannot_bid');
+select tests.expect_error('S66 o Hero não dá lance no próprio item', $q$select public.place_bid(public.seed_uuid('collectible:bola-neymar'), 1000)$q$, 'creator_cannot_bid');
 select tests.su();
 update public.creator_profiles set user_id = nullif((select v from t_s66 where k = 'hero_user'), '')::uuid where slug = 'neymar';
 
@@ -6299,8 +6299,8 @@ select tests.ok('S66 reaplicar a 0057 mantém edição do admin, estado e public
 drop publication supabase_realtime;
 drop table t_s66;
 
--- ================================================================ S67 · Seguir heróis e comparar (0056)
--- Seguir = hero_favorites (0054). Contagem pública por herói sem identidades; Hero de comparação em
+-- ================================================================ S67 · Seguir Heros e comparar (0056)
+-- Seguir = hero_favorites (0054). Contagem pública por Hero sem identidades; Hero de comparação em
 -- profiles.compare_creator_id (exige seguir, some ao deixar de seguir); referências: leitura
 -- pública, escrita só do admin, com auditoria.
 select tests.su();
@@ -6312,7 +6312,7 @@ select (select id from public.creator_profiles where slug = 'neymar') as neymar,
        (select id from public.creator_profiles where slug = 'anitta') as anitta,
        (select id from public.creator_profiles where slug = 'erick-jacquin') as jacquin,
        (select coalesce(max(id), 0) from public.admin_audit) as audit_base,
-       -- o S65 já segue heróis com outras pessoas: as contagens são relativas a este ponto
+       -- o S65 já segue Heros com outras pessoas: as contagens são relativas a este ponto
        coalesce((select followers from public.creator_follower_counts where creator_id = (select id from public.creator_profiles where slug = 'neymar')), 0) as base_n,
        coalesce((select followers from public.creator_follower_counts where creator_id = (select id from public.creator_profiles where slug = 'anitta')), 0) as base_a;
 grant select on t_s67 to anon, authenticated;
@@ -6326,7 +6326,7 @@ select tests.ok('S67 cada pessoa só vê o próprio seguir',
   (select count(*) from public.hero_favorites) = 1);
 
 select tests.anon();
-select tests.ok('S67 contagem pública por herói, sem identidades',
+select tests.ok('S67 contagem pública por Hero, sem identidades',
   (select followers from public.creator_follower_counts where creator_id = (select neymar from t_s67)) = (select base_n + 2 from t_s67)
   and (select followers from public.creator_follower_counts where creator_id = (select anitta from t_s67)) = (select base_a + 1 from t_s67)
   and not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'creator_follower_counts' and column_name = 'user_id'));
@@ -6339,7 +6339,7 @@ select tests.expect_error('S67 pessoa logada não escreve na contagem',
 -- Hero de comparação: só entre os que segue; deixar de seguir limpa a escolha
 select tests.login('67000000-0000-4000-8000-000000000671', 's67a@test.local');
 update public.profiles set compare_creator_id = (select neymar from t_s67) where id = '67000000-0000-4000-8000-000000000671';
-select tests.ok('S67 escolhe um herói seguido para comparar',
+select tests.ok('S67 escolhe um Hero seguido para comparar',
   (select compare_creator_id from public.profiles where id = '67000000-0000-4000-8000-000000000671') = (select neymar from t_s67));
 select tests.expect_error('S67 comparar exige seguir',
   $q$update public.profiles set compare_creator_id = (select jacquin from t_s67) where id = '67000000-0000-4000-8000-000000000671'$q$, 'compare_requires_follow');
@@ -6363,9 +6363,9 @@ select tests.ok('S67 conta anonimizada deixa de seguir (contagem e comparação 
   and (select compare_creator_id from public.profiles where id = '67000000-0000-4000-8000-000000000671') is null
   and (select followers from public.creator_follower_counts where creator_id = (select anitta from t_s67)) = (select base_a from t_s67));
 
--- referências: leitura pública (herói ativo), escrita só do admin, auditada
+-- referências: leitura pública (Hero ativo), escrita só do admin, auditada
 select tests.anon();
-select tests.ok('S67 visitante lê as referências do herói ativo (seed de demonstração)',
+select tests.ok('S67 visitante lê as referências do Hero ativo (seed de demonstração)',
   (select count(*) from public.creator_reference_metrics where creator_id = (select neymar from t_s67) and source = 'reference') = 7);
 select tests.login('67000000-0000-4000-8000-000000000672', 's67b@test.local');
 select tests.expect_error('S67 consumidor não grava referência',
@@ -6379,7 +6379,7 @@ delete from public.creator_reference_metrics where creator_id = (select neymar f
 select tests.expect_error('S67 unidade e faixa fixas por indicador',
   $q$insert into public.creator_reference_metrics (creator_id, metric_key, value, unit) select neymar, 'recipes_week', 3, 'h' from t_s67$q$, '23514');
 select tests.su();
-select tests.ok('S67 admin edita e apaga referência com auditoria (antes/depois, por herói)',
+select tests.ok('S67 admin edita e apaga referência com auditoria (antes/depois, por Hero)',
   (select value from public.creator_reference_metrics where creator_id = (select neymar from t_s67) and metric_key = 'sleep_hours') = 8.5
   and exists (select 1 from public.admin_audit where id > (select audit_base from t_s67) and action = 'creator_reference_metrics.update'
               and resource_type = 'creator_reference' and resource_id = (select neymar from t_s67)::text
@@ -6679,7 +6679,7 @@ select public.professional_tap_bump((select v::uuid from t_s68 where k = 'new'),
 select public.professional_tap_bump((select v::uuid from t_s68 where k = 'new'), (select id from public.creator_profiles where slug = 'erick-jacquin'), 'receita', 'contratar');
 select public.professional_tap_bump((select v::uuid from t_s68 where k = 'new'), null, 'perfil', 'ver_perfil');
 select public.professional_tap_bump((select v::uuid from t_s68 where k = 'teo'), null, 'perfil', 'contratar');
-select tests.ok('S68 contador agrega por dia/herói/origem/ação; suspenso não conta',
+select tests.ok('S68 contador agrega por dia/Hero/origem/ação; suspenso não conta',
   (select count from public.professional_tap_counters where professional_id = (select v::uuid from t_s68 where k = 'new') and source = 'receita') = 2
   and (select count(*) from public.professional_tap_counters where professional_id = (select v::uuid from t_s68 where k = 'new')) = 2
   and not exists (select 1 from public.professional_tap_counters where professional_id = (select v::uuid from t_s68 where k = 'teo')));
@@ -6865,7 +6865,7 @@ select tests.ok('S69 auditoria: produtos (2 trocas, salvar igual não conta), se
   and (select bool_and(actor_id = '10000000-0000-4000-8000-000000000001' and actor_type = 'admin') from public.admin_audit where id > (select v::bigint from t_s69 where k = 'audit')));
 
 -- integridade: serviço só em sugestão de programa; serviço apagado zera só a coluna
-select tests.expect_error('S69 serviço em sugestão de herói é recusado',
+select tests.expect_error('S69 serviço em sugestão de Hero é recusado',
   format($q$update public.professional_suggestions set service_id = %L where professional_id = %L and creator_id is not null$q$, (select v from t_s69 where k = 'teo_aula'), (select v from t_s69 where k = 'teo')), 'professional_suggestions_service_program');
 select tests.expect_error('S69 serviço de outro profissional é recusado pela FK',
   format($q$update public.professional_suggestions set service_id = %L where professional_id = %L and program_id is not null$q$, (select v from t_s69 where k = 'nina_consulta'), (select v from t_s69 where k = 'teo')), 'professional_suggestions_service_fk');
@@ -6923,7 +6923,7 @@ select tests.expect_error('S70 visitante não soma atalho', format($q$select pub
 -- pessoa logada (não admin): RPC recusa; contadores fechados
 select tests.login('70000000-0000-4000-8000-000000000701', 's70a@test.local');
 insert into public.hero_favorites (user_id, creator_id) values ('70000000-0000-4000-8000-000000000701', (select v::uuid from t_s70 where k = 'hero'));
-select tests.expect_error('S70 consumidor não lê indicadores por herói', $q$select public.admin_indicators_heroes(30)$q$, 'forbidden');
+select tests.expect_error('S70 consumidor não lê indicadores por Hero', $q$select public.admin_indicators_heroes(30)$q$, 'forbidden');
 select tests.expect_error('S70 consumidor não lê indicadores de atalhos', $q$select public.admin_indicators_shortcuts(7)$q$, 'forbidden');
 select tests.expect_error('S70 consumidor não lê conversão', $q$select public.admin_indicators_conversion(7)$q$, 'forbidden');
 select tests.expect_error('S70 consumidor não lê profissionais', $q$select public.admin_indicators_professionals(7)$q$, 'forbidden');
@@ -6936,7 +6936,7 @@ select tests.expect_error('S70 consumidor não soma atalho', format($q$select pu
 select tests.expect_error('S70 consumidor não lê o contador de receitas', $q$select count(*) from public.recipe_action_counters$q$, 'permission denied');
 select tests.expect_error('S70 consumidor não lê o contador de profissionais', $q$select count(*) from public.professional_tap_counters$q$, 'permission denied');
 
--- service role soma: herói ativo e fonte conhecida; fora disso nada
+-- service role soma: Hero ativo e fonte conhecida; fora disso nada
 select tests.su();
 update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:lia');
 select set_config('role', 'service_role', true);
@@ -6949,13 +6949,13 @@ create temp table t_s70_bump as select
   public.shortcut_open_bump('70000000-0000-4000-8000-0000000007ff', 'alimentacao') as b3,
   public.shortcut_open_bump(null, 'alimentacao') as b4;
 select set_config('role', 'none', true);
-select tests.ok('S70 service role soma aberturas de atalho de herói ativo', (select a1 and a2 and a3 from t_s70_bump));
-select tests.ok('S70 fonte desconhecida, herói suspenso, herói inexistente e nulo não contam',
+select tests.ok('S70 service role soma aberturas de atalho de Hero ativo', (select a1 and a2 and a3 from t_s70_bump));
+select tests.ok('S70 fonte desconhecida, Hero suspenso, Hero inexistente e nulo não contam',
   (select not (b1 or b2 or b3 or coalesce(b4, false)) from t_s70_bump));
 drop table t_s70_bump;
 select tests.su();
 update public.creator_profiles set status = 'active' where id = public.seed_uuid('creator:lia');
-select tests.ok('S70 contador agregado por dia (Brasília), herói e atalho: sem pessoa',
+select tests.ok('S70 contador agregado por dia (Brasília), Hero e atalho: sem pessoa',
   (select count(*) from public.shortcut_open_counters) = 2
   and (select count from public.shortcut_open_counters where source_key = 'alimentacao') = 2
   and (select day from public.shortcut_open_counters limit 1) = (now() at time zone 'America/Sao_Paulo')::date
@@ -6980,11 +6980,11 @@ insert into t_s70 select 'conversion', public.admin_indicators_conversion(30)::t
 insert into t_s70 select 'professionals', public.admin_indicators_professionals(90)::text;
 insert into t_s70 select 'collectibles', public.admin_indicators_collectibles(30)::text;
 insert into t_s70 select 'ranking', public.admin_indicators_ranking(30)::text;
-select tests.ok('S70 admin: por herói com seguidor novo, views e atalhos do período',
+select tests.ok('S70 admin: por Hero com seguidor novo, views e atalhos do período',
   (select (r ->> 'new_followers')::int >= 1 and (r ->> 'followers')::int >= 1 and (r ->> 'shortcut_opens')::int = 3 and (r ->> 'content_views')::int >= 2
    from t_s70, jsonb_array_elements(v::jsonb -> 'rows') r where k = 'heroes' and r ->> 'id' = (select v from t_s70 where k = 'hero'))
   and (select (v::jsonb ->> 'window_days')::int = 7 and jsonb_array_length(v::jsonb -> 'daily_follows') = 7 from t_s70 where k = 'heroes'));
-select tests.ok('S70 admin: atalhos por fonte, por herói e por dia',
+select tests.ok('S70 admin: atalhos por fonte, por Hero e por dia',
   (select (v::jsonb -> 'by_source' -> 0 ->> 'source_key') = 'alimentacao' and (v::jsonb -> 'by_source' -> 0 ->> 'opens')::int = 2
      and jsonb_array_length(v::jsonb -> 'by_hero') = 2 and (v::jsonb ->> 'tracking_since') is not null from t_s70 where k = 'shortcuts'));
 select tests.ok('S70 admin: conversão, profissionais, colecionáveis e ranking respondem com as chaves esperadas',
@@ -7024,7 +7024,7 @@ select tests.ok('S70 reaplicar a 0060 mantém as aberturas somadas', (select sum
 delete from auth.users where id in ('70000000-0000-4000-8000-000000000701', '70000000-0000-4000-8000-000000000702');
 drop table t_s70;
 
--- ================================================================ S71 · Lance superado e visitas ao herói (0061)
+-- ================================================================ S71 · Lance superado e visitas ao Hero (0061)
 -- Push só para quem vencia (com consentimento e aparelho), no máximo 1 a cada 2 min por item; aviso no app
 -- (user_alerts) só da própria pessoa, que só marca como visto; contador de visitas só do service role, sem
 -- pessoa e sem FK; leitura do admin com as visitas; S14 = 17; S65 (sem tabela-ponte na chave) segue.
@@ -7162,7 +7162,7 @@ select tests.ok('S71 Realtime: a 0061 publica só user_alerts, que tem RLS ligad
       = 'user_alerts_select_own:SELECT,user_alerts_update_own:UPDATE');
 drop publication supabase_realtime;
 
--- visitas à página do herói: só o service role soma
+-- visitas à página do Hero: só o service role soma
 insert into t_s71 values ('hero', public.seed_uuid('creator:tiago')::text);
 select tests.anon();
 select tests.expect_error('S71 visitante não lê o contador de visitas', $q$select count(*) from public.hero_page_view_counters$q$, 'permission denied');
@@ -7173,7 +7173,7 @@ select tests.expect_error('S71 consumidor não lê o contador de visitas', $q$se
 select tests.expect_error('S71 consumidor não grava no contador de visitas',
   format($q$insert into public.hero_page_view_counters (day, creator_id, count) values (current_date, %L, 99)$q$, (select v from t_s71 where k = 'hero')), 'permission denied');
 select tests.expect_error('S71 consumidor não soma visita', format($q$select public.hero_page_view_bump(%L)$q$, (select v from t_s71 where k = 'hero')), 'permission denied');
-select tests.expect_error('S71 consumidor não lê indicadores por herói', $q$select public.admin_indicators_heroes(7)$q$, 'forbidden');
+select tests.expect_error('S71 consumidor não lê indicadores por Hero', $q$select public.admin_indicators_heroes(7)$q$, 'forbidden');
 select tests.su();
 update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:lia');
 select set_config('role', 'service_role', true);
@@ -7184,22 +7184,22 @@ create temp table t_s71_bump as select
   public.hero_page_view_bump('71000000-0000-4000-8000-0000000007ff') as b2,
   public.hero_page_view_bump(null) as b3;
 select set_config('role', 'none', true);
-select tests.ok('S71 service role soma visitas de herói ativo; suspenso, inexistente e nulo não contam',
+select tests.ok('S71 service role soma visitas de Hero ativo; suspenso, inexistente e nulo não contam',
   (select a1 and a2 and not (b1 or b2 or b3) from t_s71_bump));
 drop table t_s71_bump;
 select tests.su();
 update public.creator_profiles set status = 'active' where id = public.seed_uuid('creator:lia');
-select tests.ok('S71 contador de visitas por dia (Brasília) e herói, sem pessoa, sem FK e com chave própria',
+select tests.ok('S71 contador de visitas por dia (Brasília) e Hero, sem pessoa, sem FK e com chave própria',
   (select count(*) from public.hero_page_view_counters) = 1
   and (select count = 2 and day = (now() at time zone 'America/Sao_Paulo')::date from public.hero_page_view_counters)
   and not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'hero_page_view_counters' and column_name in ('user_id', 'anon_id', 'ip'))
   and not exists (select 1 from pg_constraint where conrelid = 'public.hero_page_view_counters'::regclass and contype = 'f')
   and (select pg_get_constraintdef(oid) from pg_constraint where conrelid = 'public.hero_page_view_counters'::regclass and contype = 'p') = 'PRIMARY KEY (id)');
 
--- admin: visitas por herói, por dia e desde quando
+-- admin: visitas por Hero, por dia e desde quando
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 insert into t_s71 select 'heroes', public.admin_indicators_heroes(7)::text;
-select tests.ok('S71 admin: visitas à página do herói por herói e por dia',
+select tests.ok('S71 admin: visitas à página do Hero por Hero e por dia',
   (select (r ->> 'page_views')::int = 2 from t_s71, jsonb_array_elements(v::jsonb -> 'rows') r where k = 'heroes' and r ->> 'id' = (select v from t_s71 where k = 'hero'))
   and (select jsonb_array_length(v::jsonb -> 'daily_page_views') = 7
             and (select sum((d ->> 'value')::int) from jsonb_array_elements(v::jsonb -> 'daily_page_views') d) = 2
@@ -7316,7 +7316,7 @@ select tests.ok('S72 validador de link: só https com domínio, sem usuário/sen
 
 -- visitante: lê o que está no ar
 select tests.anon();
-select tests.ok('S72 visitante lê marcas, produtos, marcas do herói, marcações e recomendados no ar',
+select tests.ok('S72 visitante lê marcas, produtos, marcas do Hero, marcações e recomendados no ar',
   (select count(*) from public.brands) = 5 and (select count(*) from public.brand_products) = 9
   and (select count(*) from public.creator_brands where creator_id = (select v::uuid from t_s72 where k = 'medina')) = 2
   and (select count(*) from public.media_smart_tags where content_id = (select v::uuid from t_s72 where k = 'facas')) = 2
@@ -7336,7 +7336,7 @@ update public.brand_products set status = 'inactive' where id = (select v::uuid 
 update public.content set status = 'draft' where id = (select v::uuid from t_s72 where k = 'hidratacao');
 update public.programs set status = 'draft' where id = (select v::uuid from t_s72 where k = 'prog_f');
 select tests.anon();
-select tests.ok('S72 marca desativada some com os produtos, a ligação do herói e as marcações dela',
+select tests.ok('S72 marca desativada some com os produtos, a ligação do Hero e as marcações dela',
   (select count(*) from public.brands where id = (select v::uuid from t_s72 where k = 'volta')) = 0
   and (select count(*) from public.brand_products where brand_id = (select v::uuid from t_s72 where k = 'volta')) = 0
   and (select count(*) from public.creator_brands where creator_id = (select v::uuid from t_s72 where k = 'medina')) = 1
@@ -7358,7 +7358,7 @@ select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local
 select tests.expect_error('S72 consumidor não grava marca direto', $q$update public.brands set name = 'X'$q$, 'permission denied');
 select tests.expect_error('S72 consumidor não salva marca pela RPC', $q$select public.admin_brand_save(null, '{"name":"X","slug":"x","site_url":"https://example.com"}'::jsonb)$q$, 'forbidden');
 select tests.expect_error('S72 consumidor não marca a foto', format($q$select public.admin_content_smart_tags_save(%L, '[]'::jsonb)$q$, (select v from t_s72 where k = 'facas')), 'forbidden');
-select tests.expect_error('S72 consumidor não liga marca ao herói', format($q$select public.admin_creator_brands_save(%L, '[]'::jsonb)$q$, (select v from t_s72 where k = 'medina')), 'forbidden');
+select tests.expect_error('S72 consumidor não liga marca ao Hero', format($q$select public.admin_creator_brands_save(%L, '[]'::jsonb)$q$, (select v from t_s72 where k = 'medina')), 'forbidden');
 select tests.expect_error('S72 consumidor não lê os cliques', $q$select public.admin_brand_clicks(30)$q$, 'forbidden');
 
 -- admin: grava pelas RPCs, sempre auditado
@@ -7380,10 +7380,10 @@ select tests.expect_error('S72 produto com link inválido recusado',
 select public.admin_creator_brands_save((select v::uuid from t_s72 where k = 'medina'),
   jsonb_build_array(jsonb_build_object('brand_id', (select v from t_s72 where k = 'nova'), 'relationship', 'sponsor'),
                     jsonb_build_object('brand_id', (select v from t_s72 where k = 'volta'), 'relationship', 'identified', 'status', 'inactive')));
-select tests.ok('S72 marcas do herói trocadas na ordem, com relação e situação (auditado)',
+select tests.ok('S72 marcas do Hero trocadas na ordem, com relação e situação (auditado)',
   (select array_agg(relationship || ':' || status order by sort_order) from public.creator_brands where creator_id = (select v::uuid from t_s72 where k = 'medina')) = array['sponsor:active', 'identified:inactive']
   and exists (select 1 from public.admin_audit where action = 'creator.brands' and resource_id = (select v from t_s72 where k = 'medina')));
-select tests.expect_error('S72 marca repetida na lista do herói recusada',
+select tests.expect_error('S72 marca repetida na lista do Hero recusada',
   format($q$select public.admin_creator_brands_save(%L, '[{"brand_id":"%s","relationship":"sponsor"},{"brand_id":"%s","relationship":"mentioned"}]'::jsonb)$q$,
     (select v from t_s72 where k = 'medina'), (select v from t_s72 where k = 'nova'), (select v from t_s72 where k = 'nova')), 'duplicate_item');
 
@@ -7416,7 +7416,7 @@ select tests.ok('S72 ligações do conteúdo e do programa trocadas (auditadas)'
 
 -- público vê o que o admin deixou ativo (marcação desativada não aparece)
 select tests.anon();
-select tests.ok('S72 visitante vê só a marcação ativa e o patrocinador novo do herói',
+select tests.ok('S72 visitante vê só a marcação ativa e o patrocinador novo do Hero',
   (select count(*) from public.media_smart_tags where content_id = (select v::uuid from t_s72 where k = 'hidratacao')) = 1
   and (select relationship from public.creator_brands where creator_id = (select v::uuid from t_s72 where k = 'medina')) = 'sponsor');
 
@@ -8004,7 +8004,7 @@ select tests.ok('S74 nenhuma função nova para o visitante: a lista do S14 segu
   (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 
 -- ================================================================ S75 · Gestão: casting e media kit (0065)
--- Talento com e sem página, um herói por talento, consentimento LGPD, redes declaradas (source nunca vem do
+-- Talento com e sem página, um Hero por talento, consentimento LGPD, redes declaradas (source nunca vem do
 -- cliente), media kit com link por hash, creator sem leitura de talent_profiles, conta demo sem talento real.
 \ir ../migrations/0065_gestao_casting.sql
 select tests.su();
@@ -8014,10 +8014,10 @@ insert into auth.users (id, email, raw_app_meta_data) values
   ('75000000-0000-4000-8000-0000000000d3', 'talento-2@test.local', '{}'),
   ('75000000-0000-4000-8000-0000000000e2', 'demo-hero@test.local', '{"ultra_hero_demo": true}');
 insert into public.creator_profiles (id, slug, name, status, user_id) values
-  (public.seed_uuid('s75:creator:real'), 's75-heroi-real', 'Herói Real', 'active', '75000000-0000-4000-8000-0000000000d2'),
-  (public.seed_uuid('s75:creator:demo'), 's75-heroi-demo', 'Herói da conta demo', 'active', '75000000-0000-4000-8000-0000000000e2'),
-  (public.seed_uuid('s75:creator:livre'), 's75-heroi-livre', 'Herói livre', 'active', null),
-  (public.seed_uuid('s75:creator:pausado'), 's75-heroi-pausado', 'Herói pausado', 'pending', null);
+  (public.seed_uuid('s75:creator:real'), 's75-heroi-real', 'Hero Real', 'active', '75000000-0000-4000-8000-0000000000d2'),
+  (public.seed_uuid('s75:creator:demo'), 's75-heroi-demo', 'Hero da conta demo', 'active', '75000000-0000-4000-8000-0000000000e2'),
+  (public.seed_uuid('s75:creator:livre'), 's75-heroi-livre', 'Hero livre', 'active', null),
+  (public.seed_uuid('s75:creator:pausado'), 's75-heroi-pausado', 'Hero pausado', 'pending', null);
 create temp table t_s75 (k text primary key, v text);
 grant all on t_s75 to anon, authenticated, service_role;
 insert into t_s75 select 'seg_b', s.id::text from public.talent_segments s where s.agency_id = public.seed_uuid('s74:agency:b') and s.slug = 'fitness';
@@ -8035,8 +8035,8 @@ select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 insert into t_s75 values ('t1', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'),
   '{"display_name": "Talento Um", "city": "São Paulo", "state": "sp", "internal_notes": "nota interna", "commercial_status": "active",
     "manager_id": "74000000-0000-4000-8000-0000000000a2"}')::text);
-insert into t_s75 values ('t2', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Herói Real"}')::text);
-insert into t_s75 values ('t3', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Herói da conta demo"}')::text);
+insert into t_s75 values ('t2', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Hero Real"}')::text);
+insert into t_s75 values ('t3', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Hero da conta demo"}')::text);
 insert into t_s75 values ('t4', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Sem login"}')::text);
 select tests.expect_error('S75 UF fora da lista',
   $q$select public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "X Y", "state": "XX"}')$q$, 'invalid_input');
@@ -8087,21 +8087,21 @@ select tests.ok('S75 segmentos trocados (escopo copiado do talento)',
   and not exists (select 1 from public.talent_segment_links l where l.talent_id = (select v::uuid from t_s75 where k = 't1')
                   and l.agency_id <> public.seed_uuid('s74:agency:a')));
 
--- 3) herói ligado: um herói por talento; conta demo sem acesso ao talento da agência real ---------
+-- 3) Hero ligado: um Hero por talento; conta demo sem acesso ao talento da agência real ---------
 select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't2'), public.seed_uuid('s75:creator:real'));
-select tests.expect_error('S75 herói em dois talentos',
+select tests.expect_error('S75 Hero em dois talentos',
   $q$select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't3'), public.seed_uuid('s75:creator:real'))$q$, 'creator_already_in_casting');
-select tests.expect_error('S75 herói que não está ativo',
+select tests.expect_error('S75 Hero que não está ativo',
   $q$select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't3'), public.seed_uuid('s75:creator:pausado'))$q$, 'not_found');
 select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't3'), public.seed_uuid('s75:creator:demo'));
 select tests.su();
-select tests.ok('S75 talent_user_id: herói real tem login; herói de conta demo fica sem login na agência real',
+select tests.ok('S75 talent_user_id: Hero real tem login; Hero de conta demo fica sem login na agência real',
   public.talent_user_id((select v::uuid from t_s75 where k = 't2')) = '75000000-0000-4000-8000-0000000000d2'
   and public.talent_user_id((select v::uuid from t_s75 where k = 't3')) is null);
 select tests.login('75000000-0000-4000-8000-0000000000d2', 'heroi-real@test.local');
-select tests.ok('S75 dono do herói age como o talento', public.my_talent_id() = (select v::uuid from t_s75 where k = 't2'));
+select tests.ok('S75 dono do Hero age como o talento', public.my_talent_id() = (select v::uuid from t_s75 where k = 't2'));
 select tests.login('75000000-0000-4000-8000-0000000000e2', 'demo-hero@test.local');
-select tests.ok('S75 D6: conta demo dona do herói não age como o talento da agência real',
+select tests.ok('S75 D6: conta demo dona do Hero não age como o talento da agência real',
   public.my_talent_id() is null and public.talent_my_context() is null
   and (select count(*) from public.talent_social_accounts) = 0 and (select count(*) from public.media_kits) = 0
   and (select count(*) from public.documents where talent_id = (select v::uuid from t_s75 where k = 't3')) = 0);
@@ -8112,7 +8112,7 @@ select tests.expect_error('S75 D6: conta demo não gera link do talento real',
 
 -- 4) convite de talento sem página; aceite liga o login ---------------------------------------
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
-select tests.expect_error('S75 convite para talento com herói',
+select tests.expect_error('S75 convite para talento com Hero',
   $q$select * from public.agency_invite_talent((select v::uuid from t_s75 where k = 't2'), 'x@test.local')$q$, 'talent_has_creator');
 insert into t_s75 select 'tok_t1', token from public.agency_invite_talent((select v::uuid from t_s75 where k = 't1'), 'Talento-1@Test.Local');
 select tests.ok('S75 gestor lê o convite do talento (não os de equipe)',
@@ -8127,22 +8127,22 @@ select tests.ok('S75 papel creator com escopo talent gravado',
   exists (select 1 from public.role_assignments where user_id = '75000000-0000-4000-8000-0000000000d1' and role = 'creator'
           and scope_type = 'talent' and scope_id = (select v::uuid from t_s75 where k = 't1') and revoked_at is null)
   and (select user_id from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't1')) = '75000000-0000-4000-8000-0000000000d1');
--- D10: quem já tem talento próprio não entra por herói em outro talento
+-- D10: quem já tem talento próprio não entra por Hero em outro talento
 update public.creator_profiles set user_id = '75000000-0000-4000-8000-0000000000d1' where id = public.seed_uuid('s75:creator:livre');
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
-select tests.expect_error('S75 usuário com talento próprio + herói em outro talento',
+select tests.expect_error('S75 usuário com talento próprio + Hero em outro talento',
   $q$select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't4'), public.seed_uuid('s75:creator:livre'))$q$, 'user_has_talent');
-select tests.expect_error('S75 talento com login não recebe herói',
+select tests.expect_error('S75 talento com login não recebe Hero',
   $q$select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't1'), public.seed_uuid('s75:creator:pausado'))$q$, 'talent_has_login');
 select tests.expect_error('S75 convite para talento que já tem login',
   $q$select * from public.agency_invite_talent((select v::uuid from t_s75 where k = 't1'), 'outro@test.local')$q$, 'talent_has_login');
 select tests.su();
 update public.creator_profiles set user_id = null where id = public.seed_uuid('s75:creator:livre');
--- convite do mesmo talento para quem já é dono de herói em outro talento
+-- convite do mesmo talento para quem já é dono de Hero em outro talento
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 insert into t_s75 select 'tok_t4', token from public.agency_invite_talent((select v::uuid from t_s75 where k = 't4'), 'heroi-real@test.local');
 select tests.login('75000000-0000-4000-8000-0000000000d2', 'heroi-real@test.local');
-select tests.expect_error('S75 D10: dono de herói no casting não aceita convite de outro talento',
+select tests.expect_error('S75 D10: dono de Hero no casting não aceita convite de outro talento',
   $q$select public.accept_invitation((select v from t_s75 where k = 'tok_t4'))$q$, 'user_has_talent');
 
 -- 5) o creator não lê talent_profiles; contexto com lista fechada de campos ------------------------
@@ -8322,7 +8322,7 @@ select tests.expect_error('S75 visitante sem acesso às tabelas do casting', $q$
 -- 11) agência demo travada ------------------------------------------------------------------
 select tests.login('74000000-0000-4000-8000-0000000000e3', 'demo-adm@test.local');
 insert into t_s75 values ('td', public.agency_talent_save(null, public.seed_uuid('s74:agency:d'), '{"display_name": "Talento de exemplo"}')::text);
-select tests.expect_error('S75 agência demo não liga herói real',
+select tests.expect_error('S75 agência demo não liga Hero real',
   $q$select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 'td'), public.seed_uuid('s75:creator:livre'))$q$, 'demo_locked');
 select tests.expect_error('S75 agência demo não registra consentimento',
   $q$select public.agency_talent_record_consent((select v::uuid from t_s75 where k = 'td'), '2026-10', gen_random_uuid())$q$, 'demo_locked');
@@ -8352,7 +8352,7 @@ select tests.ok('S75 arquivado sai do catálogo',
 select tests.expect_error('S75 talento arquivado não é editado',
   $q$select public.agency_talent_save((select v::uuid from t_s75 where k = 't4'), public.seed_uuid('s74:agency:a'), '{"city": "Rio"}')$q$, 'talent_archived');
 -- 13) correções da revisão de segurança da etapa B -----------------------------------------------
--- a) o consentimento é da pessoa: trocar ou desligar o herói zera consentimento, catálogo e link
+-- a) o consentimento é da pessoa: trocar ou desligar o Hero zera consentimento, catálogo e link
 select tests.login('75000000-0000-4000-8000-0000000000d2', 'heroi-real@test.local');
 select public.talent_set_consent(true, '2026-10');
 insert into t_s75 values ('kit_t2', public.media_kit_share((select v::uuid from t_s75 where k = 't2'), 30));
@@ -8360,34 +8360,34 @@ select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 select public.agency_talent_set_catalog((select v::uuid from t_s75 where k = 't2'), true);
 select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't2'), null);
 select tests.su();
-select tests.ok('S75 desligar o herói revoga o consentimento, tira do catálogo e desliga o link',
+select tests.ok('S75 desligar o Hero revoga o consentimento, tira do catálogo e desliga o link',
   (select consent_revoked_at is not null and not catalog_visible from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't2'))
   and public.media_kit_resolve((select v from t_s75 where k = 'kit_t2'), false) is null);
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 select public.agency_talent_record_consent((select v::uuid from t_s75 where k = 't2'), '2026-10', (select v::uuid from t_s75 where k = 'doc_t2'));
 select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't2'), public.seed_uuid('s75:creator:real'));
 select tests.su();
-select tests.ok('S75 religar o herói não reaproveita o consentimento registrado sem ele',
+select tests.ok('S75 religar o Hero não reaproveita o consentimento registrado sem ele',
   (select consent_revoked_at is not null and not catalog_visible from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't2')));
--- a2) herói suspenso: o kit sai do ar, a agência não gera link nem liga o catálogo, o dono ainda revoga
+-- a2) Hero suspenso: o kit sai do ar, a agência não gera link nem liga o catálogo, o dono ainda revoga
 select tests.login('75000000-0000-4000-8000-0000000000d2', 'heroi-real@test.local');
 select public.talent_set_consent(true, '2026-10');
 insert into t_s75 values ('kit_t2b', public.media_kit_share((select v::uuid from t_s75 where k = 't2'), 30));
 select tests.su();
 update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('s75:creator:real');
-select tests.ok('S75 herói suspenso: o kit sai do ar', public.media_kit_resolve((select v from t_s75 where k = 'kit_t2b'), false) is null);
+select tests.ok('S75 Hero suspenso: o kit sai do ar', public.media_kit_resolve((select v from t_s75 where k = 'kit_t2b'), false) is null);
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
-select tests.expect_error('S75 herói suspenso: a agência não gera link',
+select tests.expect_error('S75 Hero suspenso: a agência não gera link',
   $q$select public.media_kit_share((select v::uuid from t_s75 where k = 't2'), 30)$q$, 'invalid_state');
-select tests.expect_error('S75 herói suspenso: a agência não liga o catálogo',
+select tests.expect_error('S75 Hero suspenso: a agência não liga o catálogo',
   $q$select public.agency_talent_set_catalog((select v::uuid from t_s75 where k = 't2'), true)$q$, 'invalid_state');
 select tests.login('75000000-0000-4000-8000-0000000000d2', 'heroi-real@test.local');
 select public.talent_set_consent(false, null);
 select tests.su();
-select tests.ok('S75 herói suspenso: o dono ainda revoga o consentimento',
+select tests.ok('S75 Hero suspenso: o dono ainda revoga o consentimento',
   (select consent_revoked_at is not null from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't2')));
 update public.creator_profiles set status = 'active' where id = public.seed_uuid('s75:creator:real');
--- a3) o dono do herói muda (conta excluída ou trocada pelo admin): nada da pessoa anterior passa adiante
+-- a3) o dono do Hero muda (conta excluída ou trocada pelo admin): nada da pessoa anterior passa adiante
 select tests.login('75000000-0000-4000-8000-0000000000d2', 'heroi-real@test.local');
 select public.talent_set_consent(true, '2026-10');
 insert into t_s75 values ('kit_t2c', public.media_kit_share((select v::uuid from t_s75 where k = 't2'), 30));
@@ -8395,25 +8395,25 @@ select public.talent_social_save((select v::uuid from t_s75 where k = 't2'), nul
 select tests.su();
 update public.documents set share_talent = true where id = (select v::uuid from t_s75 where k = 'doc_t2');
 update public.creator_profiles set user_id = null where id = public.seed_uuid('s75:creator:real');
-select tests.ok('S75 dono do herói mudou: consentimento revogado, link desligado, redes dele apagadas, documentos não compartilhados',
+select tests.ok('S75 dono do Hero mudou: consentimento revogado, link desligado, redes dele apagadas, documentos não compartilhados',
   (select consent_revoked_at is not null and not catalog_visible from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't2'))
   and public.media_kit_resolve((select v from t_s75 where k = 'kit_t2c'), false) is null
   and not exists (select 1 from public.talent_social_accounts where talent_id = (select v::uuid from t_s75 where k = 't2') and declared_side = 'talent')
   and exists (select 1 from public.talent_social_accounts where talent_id = (select v::uuid from t_s75 where k = 't2') and declared_side = 'integration')
   and not (select share_talent from public.documents where id = (select v::uuid from t_s75 where k = 'doc_t2')));
 update public.creator_profiles set user_id = '75000000-0000-4000-8000-0000000000d2' where id = public.seed_uuid('s75:creator:real');
--- b) herói fora do ar: a agência não registra consentimento por ele
+-- b) Hero fora do ar: a agência não registra consentimento por ele
 insert into public.creator_profiles (id, slug, name, status, user_id) values
-  (public.seed_uuid('s75:creator:extra'), 's75-heroi-extra', 'Herói extra', 'active', null);
+  (public.seed_uuid('s75:creator:extra'), 's75-heroi-extra', 'Hero extra', 'active', null);
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 insert into t_s75 values ('t5', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Talento cinco"}')::text);
 select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't5'), public.seed_uuid('s75:creator:extra'));
 select tests.su();
 update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('s75:creator:extra');
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
-select tests.expect_error('S75 herói suspenso: a agência não registra consentimento',
+select tests.expect_error('S75 Hero suspenso: a agência não registra consentimento',
   $q$select public.agency_talent_record_consent((select v::uuid from t_s75 where k = 't5'), '2026-10', gen_random_uuid())$q$, 'invalid_state');
--- d) arquivar solta o herói: outra agência pode colocá-lo no casting
+-- d) arquivar solta o Hero: outra agência pode colocá-lo no casting
 insert into t_s75 values ('t6', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Talento seis"}')::text);
 select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't6'), public.seed_uuid('s75:creator:livre'));
 select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
@@ -8421,27 +8421,27 @@ select public.agency_talent_archive((select v::uuid from t_s75 where k = 't6'), 
 select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
 select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 'tb'), public.seed_uuid('s75:creator:livre'));
 select tests.su();
-select tests.ok('S75 arquivar solta o herói (outra agência liga) e a auditoria guarda quem era',
+select tests.ok('S75 arquivar solta o Hero (outra agência liga) e a auditoria guarda quem era',
   (select creator_id is null and user_id is null from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't6'))
   and (select creator_id from public.talent_profiles where id = (select v::uuid from t_s75 where k = 'tb')) = public.seed_uuid('s75:creator:livre')
   and exists (select 1 from public.admin_audit where action = 'talent.archive' and resource_id = (select v from t_s75 where k = 't6')
               and before_data ->> 'creator_id' = public.seed_uuid('s75:creator:livre')::text));
--- e) convite de herói que já está num casting para quem já tem talento: recusa (D10)
+-- e) convite de Hero que já está num casting para quem já tem talento: recusa (D10)
 insert into public.invitations (email, role, creator_profile_id, token_hash, expires_at)
 values ('talento-1@test.local', 'creator', public.seed_uuid('s75:creator:livre'), encode(extensions.digest('s75-tok-livre', 'sha256'), 'hex'), now() + interval '1 day');
 select tests.login('75000000-0000-4000-8000-0000000000d1', 'talento-1@test.local');
-select tests.expect_error('S75 D10: convite de herói do casting para quem já tem talento',
+select tests.expect_error('S75 D10: convite de Hero do casting para quem já tem talento',
   $q$select public.accept_invitation('s75-tok-livre')$q$, 'user_has_talent');
--- e2) ligar um herói derruba o convite pendente do talento (senão o aceite falharia com mensagem enganosa)
+-- e2) ligar um Hero derruba o convite pendente do talento (senão o aceite falharia com mensagem enganosa)
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 insert into t_s75 values ('t9', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Talento nove"}')::text);
 select count(*) from public.agency_invite_talent((select v::uuid from t_s75 where k = 't9'), 'nove@test.local');
 select tests.su();
-insert into public.creator_profiles (id, slug, name, status, user_id) values (public.seed_uuid('s75:creator:nove'), 's75-heroi-nove', 'Herói nove', 'active', null);
+insert into public.creator_profiles (id, slug, name, status, user_id) values (public.seed_uuid('s75:creator:nove'), 's75-heroi-nove', 'Hero nove', 'active', null);
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't9'), public.seed_uuid('s75:creator:nove'));
 select tests.su();
-select tests.ok('S75 ligar herói revoga o convite pendente do talento',
+select tests.ok('S75 ligar Hero revoga o convite pendente do talento',
   not exists (select 1 from public.invitations where talent_id = (select v::uuid from t_s75 where k = 't9') and status = 'pending'));
 -- f) convidar alguém para a equipe não revoga o convite de talento com o mesmo e-mail
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
@@ -8950,7 +8950,7 @@ select tests.ok('S77 feed e RLS concordam para creator, marca, colaborador e adm
   and coalesce((select array_agg(id order by id)::text from public.calendar_events_for_user('10000000-0000-4000-8000-000000000001')), '{}') = (select v from t_s77 where k = 'rls_admin')
   and (select v from t_s77 where k = 'rls_brand') <> '{}' and (select v from t_s77 where k = 'rls_admin') <> '{}'
   and (select count(*) from public.calendar_feeds) = 2);
--- herói suspenso: a RLS (my_talent_id) não devolve nada e o feed também não
+-- Hero suspenso: a RLS (my_talent_id) não devolve nada e o feed também não
 select tests.su();
 insert into auth.users (id, email, raw_app_meta_data) values ('77000000-0000-4000-8000-0000000000d2', 's77-hero@test.local', '{}');
 insert into public.creator_profiles (id, user_id, slug, name, status) values ('77000000-0000-4000-8000-0000000000d3', '77000000-0000-4000-8000-0000000000d2', 's77-hero', 'Hero', 'suspended');
@@ -8962,7 +8962,7 @@ values (public.seed_uuid('s74:agency:a'), 'recording', 'Gravação do suspenso',
 select tests.login('77000000-0000-4000-8000-0000000000d2', 's77-hero@test.local');
 insert into t_s77 select 'rls_hero', count(*)::text from public.calendar_events;
 select tests.su();
-select tests.ok('S77 herói suspenso: 0 eventos pela RLS e 0 pelo feed',
+select tests.ok('S77 Hero suspenso: 0 eventos pela RLS e 0 pelo feed',
   (select v from t_s77 where k = 'rls_hero') = '0' and (select count(*) from public.calendar_events_for_user('77000000-0000-4000-8000-0000000000d2')) = 0);
 select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
 select public.calendar_feed_revoke();
@@ -9226,7 +9226,7 @@ select tests.ok('S78 funções novas: search_path fixo, nenhuma para o visitante
 drop table t_s78;
 
 -- ================================================================ S79 · Gestão: financeiro simulado, painéis, alertas e patrocínio (0072)
--- Campanha F da marca D com o creator D1 (login) e o talento F (sem login, herói ligado): a contratação gera os
+-- Campanha F da marca D com o creator D1 (login) e o talento F (sem login, Hero ligado): a contratação gera os
 -- lançamentos (a receber = comissão + repasses, com a taxa do negócio); só o Adm lê e muda a situação; o creator lê
 -- só o próprio repasse; painéis por lado; varredura de alertas com dedupe; patrocínio publicado pelo gestor.
 \ir ../migrations/0072_gestao_financeiro.sql
@@ -9418,23 +9418,23 @@ select tests.ok('S79 creator: resumo com campanhas ativas, próximas entregas e 
 select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
 select tests.expect_error('S79 quem não é creator não tem resumo do escritório', $q$select public.talent_office_summary()$q$, 'not_found');
 
--- 5) patrocínio na área social: gestor+, contratado, herói ligado; idempotente ----------------------------------------------------
+-- 5) patrocínio na área social: gestor+, contratado, Hero ligado; idempotente ----------------------------------------------------
 select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
 select tests.expect_error('S79 colaborador não publica patrocínio', $q$select public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dtf'))$q$, 'forbidden');
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
-select tests.expect_error('S79 creator sem herói ligado não vira patrocínio', $q$select public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dt1'))$q$, 'no_hero');
+select tests.expect_error('S79 creator sem Hero ligado não vira patrocínio', $q$select public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dt1'))$q$, 'no_hero');
 select tests.expect_error('S79 marca ainda inativa na área social não vira patrocínio', $q$select public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dtf'))$q$, 'brand_inactive');
 select tests.su();
 update public.brands set status = 'active' where id = (select v::uuid from t_s79 where k = 'brand_d');
 update public.talent_profiles set consent_revoked_at = now(), catalog_visible = false where id = (select v::uuid from t_s79 where k = 'tf');
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
-select tests.expect_error('S79 sem consentimento vigente o herói não vira patrocinado', $q$select public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dtf'))$q$, 'consent_required');
+select tests.expect_error('S79 sem consentimento vigente o Hero não vira patrocinado', $q$select public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dtf'))$q$, 'consent_required');
 select tests.su();
 update public.talent_profiles set consent_revoked_at = null, catalog_visible = true where id = (select v::uuid from t_s79 where k = 'tf');
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 select tests.ok('S79 gestor publica o patrocínio', public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dtf')));
 select tests.su();
-select tests.ok('S79 marca patrocinadora do herói, ativa', exists (select 1 from public.creator_brands cb where cb.creator_id = (select v::uuid from t_s79 where k = 'hero')
+select tests.ok('S79 marca patrocinadora do Hero, ativa', exists (select 1 from public.creator_brands cb where cb.creator_id = (select v::uuid from t_s79 where k = 'hero')
   and cb.brand_id = (select v::uuid from t_s79 where k = 'brand_d') and cb.relationship = 'sponsor' and cb.status = 'active'));
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 select tests.ok('S79 publicar de novo não duplica', not public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dtf'))
@@ -9563,7 +9563,7 @@ drop table t_s80;
 drop table t_s74;
 
 -- ================================================================ S81 · Fotos do colecionável pelo admin (0074)
--- O admin reserva o envio da foto sem herói (mesma tabela, kill switch e cota da foto do post); visitante
+-- O admin reserva o envio da foto sem Hero (mesma tabela, kill switch e cota da foto do post); visitante
 -- e conta comum não; a foto usada por um colecionável não entra na limpeza diária; a lista do S14 não muda.
 select tests.su();
 create temp table t_s81 (k text primary key, v text);
@@ -9632,8 +9632,8 @@ delete from public.collectibles where id = (select v::uuid from t_s81 where k = 
 drop table t_s81;
 
 -- ================================================================ S82 · Blocos por pilar no Novo post (0075)
--- O herói (ou o admin por ele) grava o bloco do post pela RPC: forma e tamanhos conferidos; receita só do
--- próprio herói e publicada; produto só no ar. Quem pode consumir o post lê o bloco e marca os passos do
+-- O Hero (ou o admin por ele) grava o bloco do post pela RPC: forma e tamanhos conferidos; receita só do
+-- próprio Hero e publicada; produto só no ar. Quem pode consumir o post lê o bloco e marca os passos do
 -- treino para si (ninguém lê a marcação de outra pessoa). Visitante e conta comum: nada. S14 não muda.
 select tests.su();
 create temp table t_s82 (k text primary key, v text);
@@ -9672,7 +9672,7 @@ select tests.expect_error('S82 visitante não marca passo', $q$select public.pos
 select tests.login('82000000-0000-4000-8000-000000000823', 's82other@test.local');
 select tests.expect_error('S82 conta comum não grava bloco no post de outro: forbidden', $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', '{"description":"","steps":[{"text":"a"}]}')$q$, 'forbidden');
 
--- herói: forma e referências
+-- Hero: forma e referências
 select tests.login('82000000-0000-4000-8000-000000000821', 's82hero@test.local');
 select tests.expect_error('S82 tipo de bloco desconhecido', $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'poema', '{}')$q$, 'invalid_block');
 select tests.expect_error('S82 treino sem passo: invalid_block', $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', '{"description":"x","steps":[]}')$q$, 'invalid_block');
@@ -9680,11 +9680,11 @@ select tests.expect_error('S82 treino com passo em branco: invalid_block', $q$se
 select tests.expect_error('S82 treino com 21 passos: invalid_block',
   $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', jsonb_build_object('description', '', 'steps', (select jsonb_agg(jsonb_build_object('text', 'p' || g)) from generate_series(1, 21) g)))$q$, 'invalid_block');
 select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', '{"description":"Aquecer 5 min","steps":[{"text":"10 agachamentos"},{"text":"1 min de prancha"},{"text":"20 polichinelos"}]}');
-select tests.ok('S82 herói grava o treino e lê o próprio bloco',
+select tests.ok('S82 Hero grava o treino e lê o próprio bloco',
   (select jsonb_array_length(data -> 'steps') from public.post_blocks where content_id = '82000000-0000-4000-8000-000000008201' and kind = 'workout') = 3);
 select tests.expect_error('S82 treino sem chaves (nulo não passa): invalid_block', $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', '{}')$q$, 'invalid_block');
 select tests.expect_error('S82 passo sem texto: invalid_block', $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', '{"description":"","steps":[{}]}')$q$, 'invalid_block');
-select tests.expect_error('S82 nutrição com receita de outro herói: invalid_reference',
+select tests.expect_error('S82 nutrição com receita de outro Hero: invalid_reference',
   $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'nutrition', '{"items":[{"kind":"recipe","content_id":"82000000-0000-4000-8000-000000008203"}]}')$q$, 'invalid_reference');
 select tests.expect_error('S82 nutrição com receita própria em rascunho: invalid_reference',
   $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'nutrition', '{"items":[{"kind":"recipe","content_id":"82000000-0000-4000-8000-000000008204"}]}')$q$, 'invalid_reference');
@@ -9696,9 +9696,9 @@ select tests.expect_error('S82 nutrição com prato sem nome: invalid_block',
   $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'nutrition', '{"items":[{"kind":"dish"}]}')$q$, 'invalid_block');
 select tests.expect_error('S82 cardápio com opção sem nome: invalid_block',
   $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'menu', '{"options":[{"description":"x","recipe_id":null}]}')$q$, 'invalid_block');
-select tests.expect_error('S82 cardápio apontando para receita de outro herói: invalid_reference',
+select tests.expect_error('S82 cardápio apontando para receita de outro Hero: invalid_reference',
   $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'menu', '{"options":[{"name":"Risoto","description":"","recipe_id":"82000000-0000-4000-8000-000000008203"}]}')$q$, 'invalid_reference');
-select tests.expect_error('S82 herói não grava bloco em post de outro herói: forbidden',
+select tests.expect_error('S82 Hero não grava bloco em post de outro Hero: forbidden',
   $q$select public.post_block_set('82000000-0000-4000-8000-000000008203', 'menu', '{"options":[{"name":"x","description":"","recipe_id":null}]}')$q$, 'forbidden');
 select tests.ok('S82 o treino continua sendo o único bloco', (select count(*) from public.post_blocks where content_id = '82000000-0000-4000-8000-000000008201') = 1);
 
@@ -9716,7 +9716,7 @@ select tests.ok('S82 seguidor lê só as próprias marcações', (select count(*
 select tests.login('82000000-0000-4000-8000-000000000823', 's82other@test.local');
 select tests.ok('S82 outra pessoa não vê a marcação do seguidor', (select count(*) from public.post_step_checks) = 0);
 
--- herói troca o pilar: um bloco por post, marcações antigas somem; nulos apagam
+-- Hero troca o pilar: um bloco por post, marcações antigas somem; nulos apagam
 select tests.login('82000000-0000-4000-8000-000000000821', 's82hero@test.local');
 select public.post_block_set('82000000-0000-4000-8000-000000008201', 'nutrition',
   ('{"items":[{"kind":"recipe","content_id":"82000000-0000-4000-8000-000000008202"},{"kind":"product","product_id":"' || (select v from t_s82 where k = 'product') || '"},{"kind":"dish","name":"Salada","description":"folhas e grãos"}]}')::jsonb);
@@ -9744,7 +9744,7 @@ drop table t_s82;
 
 -- ================================================================ S83 · Programa como bloco do conteúdo (0076)
 -- O programa é um segundo slot: convive com o bloco do pilar, aponta só para programa publicado (com
--- versão atual) do mesmo herói. Gravar o bloco do pilar preserva o programa; gravar o programa preserva o
+-- versão atual) do mesmo Hero. Gravar o bloco do pilar preserva o programa; gravar o programa preserva o
 -- pilar e as marcações do treino; p_kind nulo apaga tudo. Quem consome o conteúdo lê os dois blocos.
 select tests.su();
 insert into auth.users (id, email) values
@@ -9772,13 +9772,13 @@ select tests.ok('S83 estrutura: o tipo program entra na restrição da tabela e 
   and not has_function_privilege('anon', 'public.post_block_set(uuid, text, jsonb)', 'execute')
   and not has_function_privilege('anon', 'public.post_block_data_ok(text, jsonb)', 'execute'));
 
--- herói: forma e referências do programa
+-- Hero: forma e referências do programa
 select tests.login('83000000-0000-4000-8000-000000000831', 's83hero@test.local');
 select tests.expect_error('S83 programa sem id: invalid_block', $q$select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"note":"x"}')$q$, 'invalid_block');
 select tests.expect_error('S83 programa sem nota (chave ausente): invalid_block', $q$select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008311"}')$q$, 'invalid_block');
 select tests.expect_error('S83 nota longa demais: invalid_block',
   $q$select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', jsonb_build_object('program_id', '83000000-0000-4000-8000-000000008311', 'note', repeat('n', 301)))$q$, 'invalid_block');
-select tests.expect_error('S83 programa de outro herói: invalid_reference',
+select tests.expect_error('S83 programa de outro Hero: invalid_reference',
   $q$select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008312","note":""}')$q$, 'invalid_reference');
 select tests.expect_error('S83 programa em rascunho: invalid_reference',
   $q$select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008313","note":""}')$q$, 'invalid_reference');
@@ -9797,7 +9797,7 @@ select tests.ok('S83 treino e programa convivem (dois blocos)',
 select tests.login('83000000-0000-4000-8000-000000000832', 's83fan@test.local');
 select tests.ok('S83 seguidor lê os dois blocos', (select count(*) from public.post_blocks where content_id = '83000000-0000-4000-8000-000000008301') = 2);
 select tests.ok('S83 seguidor marca o passo 1', public.post_step_toggle('83000000-0000-4000-8000-000000008301', 0, true) = 1);
-select tests.expect_error('S83 seguidor não grava programa no conteúdo do herói: forbidden',
+select tests.expect_error('S83 seguidor não grava programa no conteúdo do Hero: forbidden',
   $q$select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008311","note":""}')$q$, 'forbidden');
 select tests.login('83000000-0000-4000-8000-000000000831', 's83hero@test.local');
 select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008311","note":"nota nova"}');
@@ -9819,10 +9819,10 @@ select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', 
 select public.post_block_set('83000000-0000-4000-8000-000000008301', null, null);
 select tests.ok('S83 p_kind nulo apaga os dois slots', (select count(*) from public.post_blocks where content_id = '83000000-0000-4000-8000-000000008301') = 0);
 
--- admin grava pelo herói (Novo conteúdo do admin)
+-- admin grava pelo Hero (Novo conteúdo do admin)
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008311","note":""}');
-select tests.ok('S83 admin grava o programa no conteúdo do herói', (select count(*) from public.post_blocks where content_id = '83000000-0000-4000-8000-000000008301' and kind = 'program') = 1);
+select tests.ok('S83 admin grava o programa no conteúdo do Hero', (select count(*) from public.post_blocks where content_id = '83000000-0000-4000-8000-000000008301' and kind = 'program') = 1);
 
 -- limpeza: nada do S83 fica
 select tests.su();
@@ -12150,11 +12150,11 @@ delete from public.agencies where id = '93000000-0000-4000-8000-000000009301';
 delete from auth.users where id::text like '93000000-0000-4000-8000-00000000093%';
 drop table t_s93;
 
--- ================================================================ S94 · Login do creator com herói ligado e portal do creator (0087)
--- O gestor da agência convida o creator cujo herói não tem conta (mesma RPC do convite do escritório, sem
--- sobrecarga); o colaborador não convida; agência de fora não convida (nem sabe que o talento existe); herói já
--- com conta e herói com convite pendente do admin recusam. Reenviar troca o link (um pendente só). Aceitar pelo
--- e-mail (primeiro acesso, 0077) liga a conta ao HERÓI (papel creator escopo creator) e o escritório abre
+-- ================================================================ S94 · Login do creator com Hero ligado e portal do creator (0087)
+-- O gestor da agência convida o creator cujo Hero não tem conta (mesma RPC do convite do escritório, sem
+-- sobrecarga); o colaborador não convida; agência de fora não convida (nem sabe que o talento existe); Hero já
+-- com conta e Hero com convite pendente do admin recusam. Reenviar troca o link (um pendente só). Aceitar pelo
+-- e-mail (primeiro acesso, 0077) liga a conta ao HERO (papel creator escopo creator) e o escritório abre
 -- (talent_my_context). O selo do casting (agency_talent_access) mostra login/pendente/sem login com e-mail
 -- mascarado; prazo só para gestor+. S14 segue 18.
 \ir ../migrations/0087_creator_login_portal.sql
@@ -12173,17 +12173,17 @@ insert into public.agency_members (agency_id, user_id, role, display_name) value
   ('94000000-0000-4000-8000-000000009401', '94000000-0000-4000-8000-000000000942', 'staff', 'Colab S94'),
   ('94000000-0000-4000-8000-000000009402', '94000000-0000-4000-8000-000000000943', 'manager', 'Gestor Fora S94');
 insert into public.creator_profiles (id, slug, name, status, user_id) values
-  ('94000000-0000-4000-8000-000000009411', 's94-heroi-sem-conta', 'Herói sem conta S94', 'active', null),
-  ('94000000-0000-4000-8000-000000009412', 's94-heroi-com-conta', 'Herói com conta S94', 'active', '94000000-0000-4000-8000-000000000944'),
-  ('94000000-0000-4000-8000-000000009413', 's94-heroi-admin', 'Herói do admin S94', 'active', null),
-  ('94000000-0000-4000-8000-000000009414', 's94-heroi-fora', 'Herói fora S94', 'active', null);
+  ('94000000-0000-4000-8000-000000009411', 's94-heroi-sem-conta', 'Hero sem conta S94', 'active', null),
+  ('94000000-0000-4000-8000-000000009412', 's94-heroi-com-conta', 'Hero com conta S94', 'active', '94000000-0000-4000-8000-000000000944'),
+  ('94000000-0000-4000-8000-000000009413', 's94-heroi-admin', 'Hero do admin S94', 'active', null),
+  ('94000000-0000-4000-8000-000000009414', 's94-heroi-fora', 'Hero fora S94', 'active', null);
 insert into public.talent_profiles (id, agency_id, display_name, creator_id) values
-  ('94000000-0000-4000-8000-000000009421', '94000000-0000-4000-8000-000000009401', 'Creator com herói S94', '94000000-0000-4000-8000-000000009411'),
+  ('94000000-0000-4000-8000-000000009421', '94000000-0000-4000-8000-000000009401', 'Creator com Hero S94', '94000000-0000-4000-8000-000000009411'),
   ('94000000-0000-4000-8000-000000009422', '94000000-0000-4000-8000-000000009401', 'Creator dono S94', '94000000-0000-4000-8000-000000009412'),
   ('94000000-0000-4000-8000-000000009423', '94000000-0000-4000-8000-000000009401', 'Creator admin S94', '94000000-0000-4000-8000-000000009413'),
   ('94000000-0000-4000-8000-000000009424', '94000000-0000-4000-8000-000000009402', 'Creator de fora S94', '94000000-0000-4000-8000-000000009414'),
   ('94000000-0000-4000-8000-000000009425', '94000000-0000-4000-8000-000000009401', 'Creator sem página S94', null);
--- convite de herói do admin, pendente
+-- convite de Hero do admin, pendente
 insert into public.invitations (email, role, creator_profile_id, token_hash, expires_at) values
   ('admin-convidou.s94@test.local', 'creator', '94000000-0000-4000-8000-000000009413', 's94-hash-admin', now() + interval '5 days');
 create temp table t_s94 (k text primary key, v text);
@@ -12211,23 +12211,23 @@ select tests.expect_error('S94 agência de fora não lê o selo da outra', $q$se
 select tests.anon();
 select tests.expect_error('S94 visitante não convida', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009421', 'novo.s94@test.local')$q$, 'permission denied');
 
--- gestor: herói com conta e herói com convite do admin recusam; o gestor não convida talento de outra agência
+-- gestor: Hero com conta e Hero com convite do admin recusam; o gestor não convida talento de outra agência
 select tests.login('94000000-0000-4000-8000-000000000941', 's94-gestor@test.local');
-select tests.expect_error('S94 herói já com conta recusa', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009422', 'novo.s94@test.local')$q$, 'creator_has_login');
-select tests.expect_error('S94 herói com convite pendente do admin recusa', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009423', 'novo.s94@test.local')$q$, 'hero_invite_pending');
+select tests.expect_error('S94 Hero já com conta recusa', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009422', 'novo.s94@test.local')$q$, 'creator_has_login');
+select tests.expect_error('S94 Hero com convite pendente do admin recusa', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009423', 'novo.s94@test.local')$q$, 'hero_invite_pending');
 select tests.expect_error('S94 gestor não convida talento de outra agência', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009424', 'novo.s94@test.local')$q$, 'not_found');
 
--- gestor convida o creator com herói sem conta; reenviar troca o link (um pendente só)
+-- gestor convida o creator com Hero sem conta; reenviar troca o link (um pendente só)
 insert into t_s94 select 'inv1', invitation_id::text from public.agency_invite_talent('94000000-0000-4000-8000-000000009421', 'antigo.s94@test.local', 7);
 insert into t_s94 select 'inv2', invitation_id::text from public.agency_invite_talent('94000000-0000-4000-8000-000000009421', 'S94-Creator@Test.Local', 10);
-select tests.ok('S94 gestor lê o convite do talento com herói (forma do convite de talento)',
+select tests.ok('S94 gestor lê o convite do talento com Hero (forma do convite de talento)',
   (select count(*) from public.invitations where talent_id = '94000000-0000-4000-8000-000000009421' and status = 'pending') = 1
   and (select role::text = 'creator' and agency_id = '94000000-0000-4000-8000-000000009401' and creator_profile_id is null and email::text = 's94-creator@test.local'
        from public.invitations where id = (select v::uuid from t_s94 where k = 'inv2')));
 select tests.su();
 select tests.ok('S94 reenviar revogou o convite anterior', (select status::text from public.invitations where id = (select v::uuid from t_s94 where k = 'inv1')) = 'revoked');
 
--- selo: gestor vê pendente com prazo e o login do herói com e-mail mascarado; colaborador vê o selo sem prazo
+-- selo: gestor vê pendente com prazo e o login do Hero com e-mail mascarado; colaborador vê o selo sem prazo
 select tests.login('94000000-0000-4000-8000-000000000941', 's94-gestor@test.local');
 select tests.ok('S94 selo do gestor: pendente com prazo, login mascarado, sem login',
   (select access = 'pending' and invite_expires_at > now() + interval '9 days' and login_email is null
@@ -12241,18 +12241,18 @@ select tests.ok('S94 selo do colaborador: pendente sem prazo',
   (select access = 'pending' and invite_expires_at is null
    from public.agency_talent_access('94000000-0000-4000-8000-000000009401') where talent_id = '94000000-0000-4000-8000-000000009421'));
 
--- primeiro acesso: o convidado entra com o e-mail convidado; o aceite liga a conta ao herói e o escritório abre
+-- primeiro acesso: o convidado entra com o e-mail convidado; o aceite liga a conta ao Hero e o escritório abre
 select tests.login('94000000-0000-4000-8000-000000000945', 's94-creator@test.local');
 select tests.ok('S94 antes do aceite: sem escritório', public.talent_my_context() is null);
 insert into t_s94 values ('acc', public.accept_my_invitations()::text);
-select tests.ok('S94 aceite devolve escopo creator do herói e o talento (o app abre o escritório)',
+select tests.ok('S94 aceite devolve escopo creator do Hero e o talento (o app abre o escritório)',
   (select (v::jsonb -> 0 ->> 'scope_type') = 'creator' and (v::jsonb -> 0 ->> 'scope_id') = '94000000-0000-4000-8000-000000009411'
           and (v::jsonb -> 0 ->> 'talent_id') = '94000000-0000-4000-8000-000000009421' from t_s94 where k = 'acc'));
-select tests.ok('S94 escritório abre pelo herói (talent_my_context)',
+select tests.ok('S94 escritório abre pelo Hero (talent_my_context)',
   (public.talent_my_context() ->> 'id') = '94000000-0000-4000-8000-000000009421'
   and (public.talent_my_context() ->> 'has_public_page')::boolean);
 select tests.su();
-select tests.ok('S94 conta ligada ao herói (user_id + papel creator escopo creator); talento sem login próprio',
+select tests.ok('S94 conta ligada ao Hero (user_id + papel creator escopo creator); talento sem login próprio',
   (select user_id from public.creator_profiles where id = '94000000-0000-4000-8000-000000009411') = '94000000-0000-4000-8000-000000000945'
   and exists (select 1 from public.role_assignments where user_id = '94000000-0000-4000-8000-000000000945' and role::text = 'creator'
               and scope_type::text = 'creator' and scope_id = '94000000-0000-4000-8000-000000009411' and revoked_at is null)
@@ -12262,10 +12262,10 @@ select tests.login('94000000-0000-4000-8000-000000000941', 's94-gestor@test.loca
 select tests.ok('S94 depois do aceite o selo vira login (e-mail mascarado)',
   (select access = 'login' and login_email = 's•••@test.local'
    from public.agency_talent_access('94000000-0000-4000-8000-000000009401') where talent_id = '94000000-0000-4000-8000-000000009421'));
-select tests.expect_error('S94 herói que acabou de ganhar conta não recebe outro convite', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009421', 'outro.s94@test.local')$q$, 'creator_has_login');
+select tests.expect_error('S94 Hero que acabou de ganhar conta não recebe outro convite', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009421', 'outro.s94@test.local')$q$, 'creator_has_login');
 
 -- talento sem página continua pelo caminho antigo (escopo talent)
--- 0116: e-mail sem conta (o gestor de outra agência não pode virar herói: um e-mail, um perfil de negócio)
+-- 0116: e-mail sem conta (o gestor de outra agência não pode virar Hero: um e-mail, um perfil de negócio)
 insert into t_s94 select 'inv3', invitation_id::text from public.agency_invite_talent('94000000-0000-4000-8000-000000009425', 's94-talento-sem-conta@test.local');
 select tests.su();
 select tests.ok('S94 convite do talento sem página continua com a mesma forma',
@@ -13403,14 +13403,14 @@ delete from public.agencies where id = '97000000-0000-4000-8000-000000009701';
 delete from auth.users where id::text like '97000000-0000-4000-8000-0000000009%';
 drop table t_s97;
 
--- ================================================================ S98 · Convites por papel, equipe do herói e primeiro acesso (0091)
+-- ================================================================ S98 · Convites por papel, equipe do Hero e primeiro acesso (0091)
 -- Admin convida cada papel (Admin só até 48h e com confirmação); quem não é admin não usa o convite do admin (agência
--- não convida admin/fornecedor/profissional); colaborador da agência não convida marca nem herói; gestor convida marca
+-- não convida admin/fornecedor/profissional); colaborador da agência não convida marca nem Hero; gestor convida marca
 -- nova (onboarding já ligada) e marca existente (pedido de vínculo que o dono aceita; e-mail diferente recusa); dono da
--- marca sem agência convida a Equipe, a Equipe não convida; dono transfere a posse. Titular do herói convida membro,
--- membro não convida; membro age pelo herói (my_creator_id) e abre o escritório do talento ligado, sem dar o
+-- marca sem agência convida a Equipe, a Equipe não convida; dono transfere a posse. Titular do Hero convida membro,
+-- membro não convida; membro age pelo Hero (my_creator_id) e abre o escritório do talento ligado, sem dar o
 -- consentimento; quem é de fora não vê nada. Onboarding cria a empresa e o papel certo (CNPJ validado; só
--- authenticated). Creator sem herói cria o dele (pendente). S14 segue 18.
+-- authenticated). Creator sem Hero cria o dele (pendente). S14 segue 18.
 \ir ../migrations/0091_convites_equipe_heroi_onboarding.sql
 select tests.su();
 insert into auth.users (id, email) values
@@ -13433,12 +13433,12 @@ insert into public.agencies (id, slug, name) values ('98000000-0000-4000-8000-00
 insert into public.agency_members (agency_id, user_id, role, display_name) values
   ('98000000-0000-4000-8000-000000009901', '98000000-0000-4000-8000-000000009802', 'manager', 'Gestor S98'),
   ('98000000-0000-4000-8000-000000009901', '98000000-0000-4000-8000-000000009803', 'staff', 'Colab S98');
--- herói ativo com titular, ligado a um talento do casting; marca autogerida com dono
+-- Hero ativo com titular, ligado a um talento do casting; marca autogerida com dono
 insert into public.creator_profiles (id, slug, name, status, user_id) values
-  ('98000000-0000-4000-8000-000000009911', 's98-heroi', 'Herói S98', 'active', '98000000-0000-4000-8000-000000009804');
+  ('98000000-0000-4000-8000-000000009911', 's98-heroi', 'Hero S98', 'active', '98000000-0000-4000-8000-000000009804');
 insert into public.talent_profiles (id, agency_id, display_name, creator_id, consent_at, consent_version) values
   ('98000000-0000-4000-8000-000000009921', '98000000-0000-4000-8000-000000009901', 'Creator S98', '98000000-0000-4000-8000-000000009911', now(), 'v1'),
-  ('98000000-0000-4000-8000-000000009922', '98000000-0000-4000-8000-000000009901', 'Creator sem herói S98', null, null, null);
+  ('98000000-0000-4000-8000-000000009922', '98000000-0000-4000-8000-000000009901', 'Creator sem Hero S98', null, null, null);
 insert into public.role_assignments (user_id, role, scope_type, scope_id) values
   ('98000000-0000-4000-8000-000000009804', 'creator', 'creator', '98000000-0000-4000-8000-000000009911');
 insert into public.brands (id, slug, name, site_url, status, self_managed) values
@@ -13479,7 +13479,7 @@ select tests.ok('S98 estrutura: RPCs novas sem sobrecarga, definer com search_pa
   and not has_table_privilege('authenticated', 'public.creator_team_members', 'insert')
   and not has_table_privilege('authenticated', 'public.account_onboardings', 'insert')
   and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
-select tests.ok('S98 migração: o titular do herói está na equipe como owner',
+select tests.ok('S98 migração: o titular do Hero está na equipe como owner',
   exists (select 1 from public.creator_team_members where creator_profile_id = '98000000-0000-4000-8000-000000009911'
           and user_id = '98000000-0000-4000-8000-000000009804' and role = 'owner' and status = 'active'));
 
@@ -13495,14 +13495,14 @@ insert into t_s98 values ('marc', public.admin_invite('s98-nova-marca@test.local
 insert into t_s98 values ('forn', public.admin_invite('s98-forn@test.local', 'seller', 7, '{}')::text);
 insert into t_s98 values ('prof', public.admin_invite('s98-pro@test.local', 'professional', 7, '{}')::text);
 insert into t_s98 values ('crl', public.admin_invite('s98-creator-livre@test.local', 'creator', 7, '{"hero_mode": "none"}')::text);
-insert into t_s98 values ('crn', public.admin_invite('s98-creator-novo@test.local', 'creator', 7, '{"hero_mode": "new", "hero_name": "Herói Novo S98"}')::text);
+insert into t_s98 values ('crn', public.admin_invite('s98-creator-novo@test.local', 'creator', 7, '{"hero_mode": "new", "hero_name": "Hero Novo S98"}')::text);
 insert into t_s98 values ('cre', public.admin_invite('s98-creator-equipe@test.local', 'creator', 7, '{"hero_mode": "existing", "hero_id": "98000000-0000-4000-8000-000000009911"}')::text);
 insert into t_s98 values ('her', public.admin_invite('s98-heroi-titular@test.local', 'hero', 7,
-  '{"hero_name": "Herói Equipe S98", "team_mode": "new", "team_email": "s98-heroi-membro@test.local"}')::text);
+  '{"hero_name": "Hero Equipe S98", "team_mode": "new", "team_email": "s98-heroi-membro@test.local"}')::text);
 insert into t_s98 values ('hex', public.admin_invite('s98-heroi-titular2@test.local', 'hero', 7,
-  '{"hero_name": "Herói Existente S98", "team_mode": "existing", "team_user_id": "98000000-0000-4000-8000-000000009804"}')::text);
-select tests.expect_error('S98 herói com creator existente exige papel creator', $q$select public.admin_invite('s98-h3@test.local', 'hero', 7,
-  '{"hero_name": "Herói Três S98", "team_mode": "existing", "team_user_id": "98000000-0000-4000-8000-000000009806"}')$q$, 'creator_role_required');
+  '{"hero_name": "Hero Existente S98", "team_mode": "existing", "team_user_id": "98000000-0000-4000-8000-000000009804"}')::text);
+select tests.expect_error('S98 Hero com creator existente exige papel creator', $q$select public.admin_invite('s98-h3@test.local', 'hero', 7,
+  '{"hero_name": "Hero Três S98", "team_mode": "existing", "team_user_id": "98000000-0000-4000-8000-000000009806"}')$q$, 'creator_role_required');
 select tests.su();
 select tests.ok('S98 convites do admin: um por papel, com a forma certa',
   (select role::text = 'admin' and kind = 'admin' and expires_at <= now() + interval '48 hours 1 minute'
@@ -13513,7 +13513,7 @@ select tests.ok('S98 convites do admin: um por papel, com a forma certa',
   and (select role::text = 'seller' and kind = 'onboarding' from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s98 where k = 'forn'))
   and (select role::text = 'professional' and kind = 'onboarding' from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s98 where k = 'prof'))
   and (select role::text = 'creator' and creator_profile_id is null from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s98 where k = 'crl'))
-  and (select team_role = 'owner' and c.status::text = 'pending' and c.name = 'Herói Novo S98' from public.invitations i join public.creator_profiles c on c.id = i.creator_profile_id
+  and (select team_role = 'owner' and c.status::text = 'pending' and c.name = 'Hero Novo S98' from public.invitations i join public.creator_profiles c on c.id = i.creator_profile_id
        where i.id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s98 where k = 'crn'))
   and (select team_role = 'member' from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s98 where k = 'cre'))
   and (select jsonb_array_length(v::jsonb -> 'invitations') = 2 from t_s98 where k = 'her')
@@ -13531,10 +13531,10 @@ select tests.anon();
 select tests.expect_error('S98 visitante não convida', $q$select public.admin_invite('x.s98@test.local', 'consumer', 7, '{}')$q$, 'permission denied');
 select tests.expect_error('S98 visitante não cria empresa (onboarding só authenticated)', $q$select public.onboarding_create_brand('X', null, null, 'https://x.example.com')$q$, 'permission denied');
 
--- 3) agência: colaborador não convida; gestor convida marca nova e marca existente; herói --------------------------------
+-- 3) agência: colaborador não convida; gestor convida marca nova e marca existente; Hero --------------------------------
 select tests.login('98000000-0000-4000-8000-000000009803', 's98-colab@test.local');
 select tests.expect_error('S98 colaborador da agência não convida marca', $q$select public.agency_invite_brand('98000000-0000-4000-8000-000000009901', 'y.s98@test.local')$q$, 'forbidden');
-select tests.expect_error('S98 colaborador da agência não convida herói', $q$select * from public.agency_invite_hero('98000000-0000-4000-8000-000000009922', 'Herói X', 'y.s98@test.local')$q$, 'forbidden');
+select tests.expect_error('S98 colaborador da agência não convida Hero', $q$select * from public.agency_invite_hero('98000000-0000-4000-8000-000000009922', 'Hero X', 'y.s98@test.local')$q$, 'forbidden');
 select tests.login('98000000-0000-4000-8000-000000009806', 's98-fora@test.local');
 select tests.expect_error('S98 quem é de fora não convida pela agência', $q$select public.agency_invite_brand('98000000-0000-4000-8000-000000009901', 'y.s98@test.local')$q$, 'not_found');
 select tests.login('98000000-0000-4000-8000-000000009802', 's98-gestor@test.local');
@@ -13542,10 +13542,10 @@ insert into t_s98 values ('bnew', public.agency_invite_brand('98000000-0000-4000
 insert into t_s98 values ('blink', public.agency_invite_brand('98000000-0000-4000-8000-000000009901', 'S98-Dono-Marca@test.local')::text);
 select tests.ok('S98 gestor: e-mail sem marca → marca nova (onboarding ligada); dono de marca → pedido de vínculo',
   (select v::jsonb ->> 'kind' = 'onboarding' from t_s98 where k = 'bnew') and (select v::jsonb ->> 'kind' = 'brand_link' from t_s98 where k = 'blink'));
-insert into t_s98 select 'hinv', invitation_id::text from public.agency_invite_hero('98000000-0000-4000-8000-000000009922', 'Herói do Casting S98', 's98-heroi-casting@test.local');
+insert into t_s98 select 'hinv', invitation_id::text from public.agency_invite_hero('98000000-0000-4000-8000-000000009922', 'Hero do Casting S98', 's98-heroi-casting@test.local');
 select tests.su();
-select tests.ok('S98 herói do casting: nasce pendente ligado ao talento, convite do escritório',
-  (select c.status::text = 'pending' and c.name = 'Herói do Casting S98' from public.talent_profiles t join public.creator_profiles c on c.id = t.creator_id
+select tests.ok('S98 Hero do casting: nasce pendente ligado ao talento, convite do escritório',
+  (select c.status::text = 'pending' and c.name = 'Hero do Casting S98' from public.talent_profiles t join public.creator_profiles c on c.id = t.creator_id
    where t.id = '98000000-0000-4000-8000-000000009922')
   and (select talent_id = '98000000-0000-4000-8000-000000009922' from public.invitations where id = (select v::uuid from t_s98 where k = 'hinv')));
 -- aceite com e-mail diferente recusa; o dono aceita o vínculo
@@ -13581,15 +13581,15 @@ select tests.ok('S98 transferência: antigo dono vira Equipe', public.brand_memb
 select tests.login('98000000-0000-4000-8000-000000009808', 's98-equipe-marca@test.local');
 select tests.ok('S98 transferência: novo dono', public.brand_member_of('98000000-0000-4000-8000-000000009931') = 'owner');
 
--- 5) equipe do herói -------------------------------------------------------------------------------------------------
+-- 5) equipe do Hero -------------------------------------------------------------------------------------------------
 select tests.login('98000000-0000-4000-8000-000000009804', 's98-titular@test.local');
 insert into t_s98 select 'tinv', token from public.hero_team_invite('98000000-0000-4000-8000-000000009911', 's98-membro@test.local', 7);
 select tests.ok('S98 titular lê o convite da equipe', exists (select 1 from public.invitations where creator_profile_id = '98000000-0000-4000-8000-000000009911' and kind = 'hero_team' and email = 's98-membro@test.local'));
 select tests.expect_error('S98 titular não sai sem transferir', $q$select public.hero_team_remove('98000000-0000-4000-8000-000000009911', '98000000-0000-4000-8000-000000009804')$q$, 'owner_must_transfer');
 select tests.login('98000000-0000-4000-8000-000000009805', 's98-membro@test.local');
-select tests.ok('S98 antes do aceite: sem herói nem escritório', public.my_creator_id() is null and public.talent_my_context() is null);
+select tests.ok('S98 antes do aceite: sem Hero nem escritório', public.my_creator_id() is null and public.talent_my_context() is null);
 insert into t_s98 values ('macc', public.accept_invitation((select v from t_s98 where k = 'tinv'))::text);
-select tests.ok('S98 membro age pelo herói e abre o escritório ligado (marcado como membro)',
+select tests.ok('S98 membro age pelo Hero e abre o escritório ligado (marcado como membro)',
   public.my_creator_id() = '98000000-0000-4000-8000-000000009911'
   and (public.talent_my_context() ->> 'id') = '98000000-0000-4000-8000-000000009921'
   and (public.talent_my_context() ->> 'is_team_member')::boolean
@@ -13611,14 +13611,14 @@ select tests.expect_error('S98 de fora não convida para a equipe', $q$select * 
 select tests.login('98000000-0000-4000-8000-000000009804', 's98-titular@test.local');
 select public.hero_team_transfer('98000000-0000-4000-8000-000000009911', '98000000-0000-4000-8000-000000009805');
 select tests.su();
-select tests.ok('S98 transferência do herói: user_id = novo titular; o antigo continua membro',
+select tests.ok('S98 transferência do Hero: user_id = novo titular; o antigo continua membro',
   (select user_id from public.creator_profiles where id = '98000000-0000-4000-8000-000000009911') = '98000000-0000-4000-8000-000000009805'
   and (select role from public.creator_team_members where creator_profile_id = '98000000-0000-4000-8000-000000009911' and user_id = '98000000-0000-4000-8000-000000009804') = 'member'
   and (select count(*) from public.creator_team_members where creator_profile_id = '98000000-0000-4000-8000-000000009911' and role = 'owner' and status = 'active') = 1);
 select tests.login('98000000-0000-4000-8000-000000009805', 's98-membro@test.local');
 select public.hero_team_remove('98000000-0000-4000-8000-000000009911', '98000000-0000-4000-8000-000000009804');
 select tests.login('98000000-0000-4000-8000-000000009804', 's98-titular@test.local');
-select tests.ok('S98 removido perde o herói', public.my_creator_id() is null);
+select tests.ok('S98 removido perde o Hero', public.my_creator_id() is null);
 
 -- 6) primeiro acesso por onboarding --------------------------------------------------------------------------------
 select tests.login('98000000-0000-4000-8000-000000009809', 's98-nova-agencia@test.local');
@@ -13661,21 +13661,21 @@ select tests.ok('S98 onboarding do profissional: perfil pendente com o registro 
   (select user_id = '98000000-0000-4000-8000-000000009814' and registry_type = 'CRN' and registry_uf = 'SP' and status = 'pending'
    from public.professionals where id = (select v::uuid from t_s98 where k = 'prid')));
 
--- 7) admin e consumidor; creator sem herói cria o dele ------------------------------------------------------------------
+-- 7) admin e consumidor; creator sem Hero cria o dele ------------------------------------------------------------------
 select tests.login('98000000-0000-4000-8000-000000009812', 's98-novo-admin@test.local');
 select public.accept_my_invitations();
 select tests.ok('S98 convite de Admin aceito dá o papel admin', public.is_admin());
 select tests.login('98000000-0000-4000-8000-000000009811', 's98-creator-livre@test.local');
 insert into t_s98 values ('clacc', public.accept_my_invitations()::text);
-select tests.ok('S98 creator sem herói: papel creator global', (select v::jsonb -> 0 ->> 'scope_type' = 'global' and v::jsonb -> 0 ->> 'role' = 'creator' from t_s98 where k = 'clacc'));
-insert into t_s98 values ('mine', public.creator_create_my_hero('Meu Herói S98')::text);
-select tests.ok('S98 Criar meu herói: pendente, a pessoa é titular e o lê', (select status::text = 'pending' and user_id = '98000000-0000-4000-8000-000000009811'
+select tests.ok('S98 creator sem Hero: papel creator global', (select v::jsonb -> 0 ->> 'scope_type' = 'global' and v::jsonb -> 0 ->> 'role' = 'creator' from t_s98 where k = 'clacc'));
+insert into t_s98 values ('mine', public.creator_create_my_hero('Meu Hero S98')::text);
+select tests.ok('S98 Criar meu Hero: pendente, a pessoa é titular e o lê', (select status::text = 'pending' and user_id = '98000000-0000-4000-8000-000000009811'
   from public.creator_profiles where id = (select v::uuid from t_s98 where k = 'mine'))
   and (public.my_hero_team() ->> 'role') = 'owner' and public.my_creator_id() is null);
-select tests.expect_error('S98 Criar meu herói só uma vez', $q$select public.creator_create_my_hero('Outro S98')$q$, 'has_hero');
+select tests.expect_error('S98 Criar meu Hero só uma vez', $q$select public.creator_create_my_hero('Outro S98')$q$, 'has_hero');
 select tests.login('98000000-0000-4000-8000-000000009806', 's98-fora@test.local');
-select tests.expect_error('S98 sem papel creator não cria herói', $q$select public.creator_create_my_hero('Intruso S98')$q$, 'creator_role_required');
-select tests.ok('S98 de fora não lê o herói pendente', not exists (select 1 from public.creator_profiles where id = (select v::uuid from t_s98 where k = 'mine')));
+select tests.expect_error('S98 sem papel creator não cria Hero', $q$select public.creator_create_my_hero('Intruso S98')$q$, 'creator_role_required');
+select tests.ok('S98 de fora não lê o Hero pendente', not exists (select 1 from public.creator_profiles where id = (select v::uuid from t_s98 where k = 'mine')));
 
 -- limpeza
 select tests.su();
@@ -13700,8 +13700,8 @@ drop table t_s98;
 -- ================================================================ S99 · Creator cria conteúdo estruturado pelo próprio portal (0092)
 -- Titular cria rascunho estruturado (bloco do pilar), envia para revisão e publica direto; membro da equipe cria,
 -- publica e arquiva o rascunho que nunca foi ao ar, mas não tira do ar nem arquiva o que já esteve no ar
--- (owner_only); creator em dois heróis escolhe o herói pelo cabeçalho x-my-hero (herói de que não faz parte é
--- ignorado); creator de outro herói não lê, não edita nem publica; visitante nada. Sem sobrecarga nova; S14 segue 18.
+-- (owner_only); creator em dois Heros escolhe o Hero pelo cabeçalho x-my-hero (Hero de que não faz parte é
+-- ignorado); creator de outro Hero não lê, não edita nem publica; visitante nada. Sem sobrecarga nova; S14 segue 18.
 \ir ../migrations/0092_creator_conteudo_estruturado.sql
 select tests.su();
 insert into auth.users (id, email) values
@@ -13709,9 +13709,9 @@ insert into auth.users (id, email) values
   ('99000000-0000-4000-8000-000000009902', 's99-membro@test.local'),
   ('99000000-0000-4000-8000-000000009903', 's99-outro@test.local');
 insert into public.creator_profiles (id, slug, name, status, user_id) values
-  ('99000000-0000-4000-8000-000000009911', 's99-heroi-a', 'Herói A S99', 'active', '99000000-0000-4000-8000-000000009901'),
-  ('99000000-0000-4000-8000-000000009912', 's99-heroi-b', 'Herói B S99', 'active', '99000000-0000-4000-8000-000000009903'),
-  ('99000000-0000-4000-8000-000000009913', 's99-heroi-c', 'Herói C S99', 'active', null);
+  ('99000000-0000-4000-8000-000000009911', 's99-heroi-a', 'Hero A S99', 'active', '99000000-0000-4000-8000-000000009901'),
+  ('99000000-0000-4000-8000-000000009912', 's99-heroi-b', 'Hero B S99', 'active', '99000000-0000-4000-8000-000000009903'),
+  ('99000000-0000-4000-8000-000000009913', 's99-heroi-c', 'Hero C S99', 'active', null);
 insert into public.role_assignments (user_id, role, scope_type) values
   ('99000000-0000-4000-8000-000000009901', 'creator', 'global'),
   ('99000000-0000-4000-8000-000000009902', 'creator', 'global'),
@@ -13737,7 +13737,7 @@ select tests.ok('S99 estrutura: sem sobrecarga nova (publicar e enviar seguem co
 
 -- titular: cria o rascunho estruturado, grava corpo e bloco do pilar, envia para revisão e publica outro direto
 select tests.login('99000000-0000-4000-8000-000000009901', 's99-titular@test.local');
-select tests.ok('S99 titular: my_creator_id() é o herói dele', public.my_creator_id() = '99000000-0000-4000-8000-000000009911');
+select tests.ok('S99 titular: my_creator_id() é o Hero dele', public.my_creator_id() = '99000000-0000-4000-8000-000000009911');
 insert into public.content (id, slug, creator_id, pillar, type, title, created_by) values
   ('99000000-0000-4000-8000-000000009921', 's99-guia-revisao', '99000000-0000-4000-8000-000000009911', 'training', 'guide', 'Guia S99 revisão', auth.uid()),
   ('99000000-0000-4000-8000-000000009922', 's99-guia-no-ar', '99000000-0000-4000-8000-000000009911', 'training', 'guide', 'Guia S99 no ar', auth.uid());
@@ -13755,7 +13755,7 @@ select public.creator_publish_content('99000000-0000-4000-8000-000000009922');
 select tests.ok('S99 titular publica direto quando o tipo não exige revisão',
   (select status = 'published' and published_at is not null from public.content where id = '99000000-0000-4000-8000-000000009922'));
 
--- membro: cria e publica pelo herói A; não tira do ar nem arquiva o que já esteve no ar
+-- membro: cria e publica pelo Hero A; não tira do ar nem arquiva o que já esteve no ar
 select tests.login('99000000-0000-4000-8000-000000009902', 's99-membro@test.local');
 select tests.ok('S99 membro: sem cabeçalho, my_creator_id() é a equipe mais antiga (A)', public.my_creator_id() = '99000000-0000-4000-8000-000000009911');
 insert into public.content (id, slug, creator_id, pillar, type, title, created_by) values
@@ -13764,10 +13764,10 @@ insert into public.content (id, slug, creator_id, pillar, type, title, created_b
 insert into public.content_bodies (content_id, body) values
   ('99000000-0000-4000-8000-000000009924', '{"kind":"article","sections":[{"heading":"a","text":"b"}]}');
 select public.creator_publish_content('99000000-0000-4000-8000-000000009924');
-select tests.ok('S99 membro cria rascunho e publica pelo herói (a equipe posta pelo herói)',
+select tests.ok('S99 membro cria rascunho e publica pelo Hero (a equipe posta pelo Hero)',
   (select count(*) from public.content where id = '99000000-0000-4000-8000-000000009923' and status = 'draft') = 1
   and (select status = 'published' from public.content where id = '99000000-0000-4000-8000-000000009924'));
-select tests.ok('S99 membro reserva a foto da capa (post_photo_upload_claim aceita a equipe do herói)',
+select tests.ok('S99 membro reserva a foto da capa (post_photo_upload_claim aceita a equipe do Hero)',
   public.post_photo_upload_claim(1000, 'image/webp') like '99000000-0000-4000-8000-000000009902/%.webp');
 select tests.expect_error('S99 membro não tira do ar conteúdo publicado: owner_only',
   $q$select public.creator_unpublish_content('99000000-0000-4000-8000-000000009922')$q$, 'owner_only');
@@ -13779,32 +13779,32 @@ select tests.ok('S99 delete direto do membro não apaga nada (RLS)',
 select public.creator_archive_content('99000000-0000-4000-8000-000000009923', 'não vou usar');
 select tests.ok('S99 membro arquiva o rascunho que nunca foi ao ar',
   (select status = 'archived' from public.content where id = '99000000-0000-4000-8000-000000009923'));
--- dois heróis: o cabeçalho x-my-hero escolhe o C; herói de que não faz parte (B) é ignorado
+-- dois Heros: o cabeçalho x-my-hero escolhe o C; Hero de que não faz parte (B) é ignorado
 select set_config('request.headers', '{"x-my-hero":"99000000-0000-4000-8000-000000009913"}', true);
 select tests.ok('S99 membro com x-my-hero do C: my_creator_id() é o C', public.my_creator_id() = '99000000-0000-4000-8000-000000009913');
 insert into public.content (id, slug, creator_id, pillar, type, title, created_by) values
   ('99000000-0000-4000-8000-000000009925', 's99-membro-c', '99000000-0000-4000-8000-000000009913', 'routine', 'guide', 'Guia do C S99', auth.uid());
-select tests.ok('S99 membro cria rascunho no herói C escolhido',
+select tests.ok('S99 membro cria rascunho no Hero C escolhido',
   (select count(*) from public.content where id = '99000000-0000-4000-8000-000000009925') = 1);
 select set_config('request.headers', '{"x-my-hero":"99000000-0000-4000-8000-000000009912"}', true);
-select tests.ok('S99 x-my-hero de herói alheio é ignorado (volta ao A)', public.my_creator_id() = '99000000-0000-4000-8000-000000009911');
-select tests.expect_error('S99 membro não cria conteúdo no herói B (alheio) nem com o cabeçalho',
+select tests.ok('S99 x-my-hero de Hero alheio é ignorado (volta ao A)', public.my_creator_id() = '99000000-0000-4000-8000-000000009911');
+select tests.expect_error('S99 membro não cria conteúdo no Hero B (alheio) nem com o cabeçalho',
   $q$insert into public.content (slug, creator_id, pillar, type, title) values ('s99-invasao', '99000000-0000-4000-8000-000000009912', 'routine', 'guide', 'Invasão')$q$, '42501');
 select set_config('request.headers', '{"x-my-hero":"nao-e-uuid"}', true);
 select tests.ok('S99 x-my-hero que não é uuid é ignorado sem erro', public.my_creator_id() = '99000000-0000-4000-8000-000000009911');
 select set_config('request.headers', '', true);
 
--- creator de outro herói: não lê, não edita, não publica nem envia
+-- creator de outro Hero: não lê, não edita, não publica nem envia
 select tests.login('99000000-0000-4000-8000-000000009903', 's99-outro@test.local');
-select tests.ok('S99 outro herói não lê os rascunhos do A', (select count(*) from public.content where id in
+select tests.ok('S99 outro Hero não lê os rascunhos do A', (select count(*) from public.content where id in
   ('99000000-0000-4000-8000-000000009921', '99000000-0000-4000-8000-000000009923', '99000000-0000-4000-8000-000000009925')) = 0);
 update public.content set title = 'Invadido' where id = '99000000-0000-4000-8000-000000009922';
-select tests.ok('S99 outro herói não edita conteúdo do A (0 linhas)',
+select tests.ok('S99 outro Hero não edita conteúdo do A (0 linhas)',
   (select title from public.content where id = '99000000-0000-4000-8000-000000009922') = 'Guia S99 no ar');
-select tests.expect_error('S99 outro herói não publica rascunho do A', $q$select public.creator_publish_content('99000000-0000-4000-8000-000000009925')$q$, 'forbidden');
-select tests.expect_error('S99 outro herói não envia para revisão conteúdo do A', $q$select public.submit_content_for_review('99000000-0000-4000-8000-000000009925')$q$, 'forbidden');
-select tests.expect_error('S99 outro herói não tira do ar conteúdo do A', $q$select public.creator_unpublish_content('99000000-0000-4000-8000-000000009922')$q$, 'forbidden');
-select tests.expect_error('S99 outro herói não grava bloco no conteúdo do A', $q$select public.post_block_set('99000000-0000-4000-8000-000000009922', null, null)$q$, 'forbidden');
+select tests.expect_error('S99 outro Hero não publica rascunho do A', $q$select public.creator_publish_content('99000000-0000-4000-8000-000000009925')$q$, 'forbidden');
+select tests.expect_error('S99 outro Hero não envia para revisão conteúdo do A', $q$select public.submit_content_for_review('99000000-0000-4000-8000-000000009925')$q$, 'forbidden');
+select tests.expect_error('S99 outro Hero não tira do ar conteúdo do A', $q$select public.creator_unpublish_content('99000000-0000-4000-8000-000000009922')$q$, 'forbidden');
+select tests.expect_error('S99 outro Hero não grava bloco no conteúdo do A', $q$select public.post_block_set('99000000-0000-4000-8000-000000009922', null, null)$q$, 'forbidden');
 
 -- visitante: nada
 select tests.anon();
@@ -13824,7 +13824,7 @@ select tests.ok('S99 titular tira do ar e arquiva o que já esteve no ar',
   and (select status = 'archived' from public.content where id = '99000000-0000-4000-8000-000000009924'));
 
 
--- herói PENDENTE: titular e membro preparam rascunhos; publicar só depois da aprovação do admin; suspenso não posta
+-- Hero PENDENTE: titular e membro preparam rascunhos; publicar só depois da aprovação do admin; suspenso não posta
 select tests.su();
 insert into auth.users (id, email) values
   ('99000000-0000-4000-8000-000000009904', 's99-pend-titular@test.local'), ('99000000-0000-4000-8000-000000009905', 's99-pend-membro@test.local'),
@@ -13832,11 +13832,11 @@ insert into auth.users (id, email) values
 insert into public.role_assignments (user_id, role, scope_type) values
   ('99000000-0000-4000-8000-000000009904', 'creator', 'global'), ('99000000-0000-4000-8000-000000009905', 'creator', 'global'), ('99000000-0000-4000-8000-000000009906', 'creator', 'global'), ('99000000-0000-4000-8000-000000009907', 'admin', 'global');
 insert into public.creator_profiles (id, slug, name, status, user_id) values
-  ('99000000-0000-4000-8000-000000009914', 's99-heroi-pend', 'Herói Pendente S99', 'pending', '99000000-0000-4000-8000-000000009904'),
-  ('99000000-0000-4000-8000-000000009915', 's99-heroi-susp', 'Herói Suspenso S99', 'suspended', '99000000-0000-4000-8000-000000009906');
+  ('99000000-0000-4000-8000-000000009914', 's99-heroi-pend', 'Hero Pendente S99', 'pending', '99000000-0000-4000-8000-000000009904'),
+  ('99000000-0000-4000-8000-000000009915', 's99-heroi-susp', 'Hero Suspenso S99', 'suspended', '99000000-0000-4000-8000-000000009906');
 insert into public.creator_team_members (creator_profile_id, user_id, role, status) values ('99000000-0000-4000-8000-000000009914', '99000000-0000-4000-8000-000000009905', 'member', 'active');
 select tests.login('99000000-0000-4000-8000-000000009904', 's99-pend-titular@test.local');
-select tests.ok('S99 pendente: titular tem my_creator_id() do herói pendente', public.my_creator_id() = '99000000-0000-4000-8000-000000009914');
+select tests.ok('S99 pendente: titular tem my_creator_id() do Hero pendente', public.my_creator_id() = '99000000-0000-4000-8000-000000009914');
 insert into public.content (id, slug, creator_id, pillar, type, title, created_by) values
   ('99000000-0000-4000-8000-000000009931', 's99-pend-a', '99000000-0000-4000-8000-000000009914', 'training', 'guide', 'Guia pendente S99', auth.uid()),
   ('99000000-0000-4000-8000-000000009932', 's99-pend-b', '99000000-0000-4000-8000-000000009914', 'training', 'guide', 'Guia pendente 2 S99', auth.uid());
@@ -13851,25 +13851,25 @@ select tests.expect_error('S99 pendente: publicar é recusado (hero_not_active)'
 select public.submit_content_for_review('99000000-0000-4000-8000-000000009932');
 select tests.ok('S99 pendente: enviar para revisão fica guardado', (select review_status = 'in_review' from public.content where id = '99000000-0000-4000-8000-000000009932'));
 select tests.login('99000000-0000-4000-8000-000000009905', 's99-pend-membro@test.local');
-select tests.ok('S99 pendente: membro tem o herói pendente', public.my_creator_id() = '99000000-0000-4000-8000-000000009914');
+select tests.ok('S99 pendente: membro tem o Hero pendente', public.my_creator_id() = '99000000-0000-4000-8000-000000009914');
 insert into public.content (id, slug, creator_id, pillar, type, title, created_by) values
   ('99000000-0000-4000-8000-000000009933', 's99-pend-membro', '99000000-0000-4000-8000-000000009914', 'routine', 'guide', 'Guia do membro pendente S99', auth.uid());
 insert into public.content_bodies (content_id, body) values ('99000000-0000-4000-8000-000000009933', '{"kind":"guide","sections":[{"heading":"a","text":"b"}]}');
 select tests.ok('S99 pendente: membro cria rascunho', (select count(*) from public.content where id = '99000000-0000-4000-8000-000000009933') = 1);
 select tests.expect_error('S99 pendente: membro também não publica', $q$select public.creator_publish_content('99000000-0000-4000-8000-000000009933')$q$, 'hero_not_active');
 select tests.anon();
-select tests.ok('S99 pendente: o público não vê nada do herói pendente', (select count(*) from public.content where creator_id = '99000000-0000-4000-8000-000000009914') = 0
+select tests.ok('S99 pendente: o público não vê nada do Hero pendente', (select count(*) from public.content where creator_id = '99000000-0000-4000-8000-000000009914') = 0
   and (select count(*) from public.creator_profiles where id = '99000000-0000-4000-8000-000000009914') = 0);
 select tests.su();
 update public.content set access_level = 'free' where id = '99000000-0000-4000-8000-000000009932';
 select tests.login('99000000-0000-4000-8000-000000009907', 's99-admin@test.local');
-select tests.expect_error('S99 pendente: aprovar o conteúdo antes do herói é recusado', $q$select public.admin_review_content('99000000-0000-4000-8000-000000009932', 'approved', 'ok')$q$, 'hero_not_active');
+select tests.expect_error('S99 pendente: aprovar o conteúdo antes do Hero é recusado', $q$select public.admin_review_content('99000000-0000-4000-8000-000000009932', 'approved', 'ok')$q$, 'hero_not_active');
 select public.admin_set_creator_status('99000000-0000-4000-8000-000000009914', 'active', 'aprovado no teste');
 select tests.login('99000000-0000-4000-8000-000000009904', 's99-pend-titular@test.local');
 select public.creator_publish_content('99000000-0000-4000-8000-000000009931');
-select tests.ok('S99 herói aprovado: o rascunho guardado agora publica', (select status = 'published' from public.content where id = '99000000-0000-4000-8000-000000009931'));
+select tests.ok('S99 Hero aprovado: o rascunho guardado agora publica', (select status = 'published' from public.content where id = '99000000-0000-4000-8000-000000009931'));
 select tests.anon();
-select tests.ok('S99 herói aprovado: o público vê o conteúdo publicado', (select count(*) from public.content where id = '99000000-0000-4000-8000-000000009931') = 1);
+select tests.ok('S99 Hero aprovado: o público vê o conteúdo publicado', (select count(*) from public.content where id = '99000000-0000-4000-8000-000000009931') = 1);
 select tests.login('99000000-0000-4000-8000-000000009906', 's99-susp-titular@test.local');
 select tests.ok('S99 suspenso: my_creator_id() nulo', public.my_creator_id() is null);
 select tests.expect_error('S99 suspenso não cria rascunho', $q$insert into public.content (slug, creator_id, pillar, type, title) values ('s99-susp', '99000000-0000-4000-8000-000000009915', 'routine', 'guide', 'Susp')$q$, '42501');
@@ -13881,11 +13881,11 @@ delete from public.post_photo_uploads where user_id::text like '99000000-%';
 delete from public.creator_profiles where id::text like '99000000-%';
 delete from auth.users where id::text like '99000000-%';
 
--- ================================================================ S100 · Sugerir heróis no negócio: busca na plataforma, ficha criada ao salvar e herói digitado (0093)
--- Busca (gestor+): só heróis ativos fora do casting da agência, com selo (fora do casting, em outra agência, pessoa já no
+-- ================================================================ S100 · Sugerir Heros no negócio: busca na plataforma, ficha criada ao salvar e Hero digitado (0093)
+-- Busca (gestor+): só Heros ativos fora do casting da agência, com selo (fora do casting, em outra agência, pessoa já no
 -- casting), sem dados de direitos/conta, paginada e sem acento. Sugerir: gestor+ do negócio aberto da própria agência;
--- herói do casting reaproveita a ficha, herói de fora cria a ficha sem consentimento, herói digitado cria ficha sem herói
--- (nome limpo); herói de outra agência, suspenso, pendente e pessoa que já tem ficha são recusados; tudo atômico e
+-- Hero do casting reaproveita a ficha, Hero de fora cria a ficha sem consentimento, Hero digitado cria ficha sem Hero
+-- (nome limpo); Hero de outra agência, suspenso, pendente e pessoa que já tem ficha são recusados; tudo atômico e
 -- idempotente; creator removido volta a "sugerido". Colaborador, outra agência e visitante recusados; S14 segue 18.
 \ir ../migrations/0093_sugerir_herois_negocio.sql
 select tests.su();
@@ -13910,21 +13910,21 @@ insert into public.brands (id, slug, name, site_url) values ('c1000000-0000-4000
 insert into public.agency_brands (agency_id, brand_id) values ('c1000000-0000-4000-8000-0000000000a1', 'c1000000-0000-4000-8000-0000000000b1');
 insert into public.deals (id, agency_id, brand_id, title, owner_id) values
   ('c1000000-0000-4000-8000-0000000000d1', 'c1000000-0000-4000-8000-0000000000a1', 'c1000000-0000-4000-8000-0000000000b1', 'Negócio S100', 'c1000000-0000-4000-8000-000000000003');
--- heróis: H1 no casting da A; H2 livre; H3 no casting da B; H4 suspenso; H5 pendente; H6 dono com ficha própria na B (login);
+-- Heros: H1 no casting da A; H2 livre; H3 no casting da B; H4 suspenso; H5 pendente; H6 dono com ficha própria na B (login);
 -- H7 dono com ficha própria na A (login); H8 livre (atomicidade); H9 livre com dono (consentimento pendente)
 insert into public.creator_profiles (id, slug, name, status, user_id, headline, pillars, socials, rights_status, rights_holder) values
   ('c1000000-0000-4000-8000-0000000000c1', 's100-heroi-casting', 'Heroi Casting S100', 'active', null, 'chamada 1', '{training}', '{"instagram":"@casting"}', 'fictional', null),
-  ('c1000000-0000-4000-8000-0000000000c2', 's100-heroi-fora', 'Herói Fora S100', 'active', null, 'chamada 2', '{nutrition,routine}', '{"instagram":"@fora","youtube":"@forayt","site":"https://fora.test"}', 'authorized', 'Titular Secreto'),
-  ('c1000000-0000-4000-8000-0000000000c3', 's100-heroi-outra', 'Herói Outra S100', 'active', null, null, '{routine}', '{}', 'fictional', null),
-  ('c1000000-0000-4000-8000-0000000000c4', 's100-heroi-suspenso', 'Herói Suspenso S100', 'suspended', null, null, '{routine}', '{}', 'fictional', null),
-  ('c1000000-0000-4000-8000-0000000000c5', 's100-heroi-pendente', 'Herói Pendente S100', 'pending', null, null, '{routine}', '{}', 'fictional', null),
-  ('c1000000-0000-4000-8000-0000000000c6', 's100-heroi-dono-b', 'Herói Dono B S100', 'active', 'c1000000-0000-4000-8000-000000000006', null, '{training}', '{}', 'fictional', null),
-  ('c1000000-0000-4000-8000-0000000000c7', 's100-heroi-dono-a', 'Herói Dono A S100', 'active', 'c1000000-0000-4000-8000-000000000007', null, '{training}', '{}', 'fictional', null),
-  ('c1000000-0000-4000-8000-0000000000c8', 's100-heroi-livre', 'Herói Livre S100', 'active', null, null, '{training}', '{}', 'fictional', null),
-  ('c1000000-0000-4000-8000-0000000000c9', 's100-heroi-com-dono', 'Herói Com Dono S100', 'active', 'c1000000-0000-4000-8000-000000000005', null, '{gastronomy}', '{}', 'fictional', null);
+  ('c1000000-0000-4000-8000-0000000000c2', 's100-heroi-fora', 'Hero Fora S100', 'active', null, 'chamada 2', '{nutrition,routine}', '{"instagram":"@fora","youtube":"@forayt","site":"https://fora.test"}', 'authorized', 'Titular Secreto'),
+  ('c1000000-0000-4000-8000-0000000000c3', 's100-heroi-outra', 'Hero Outra S100', 'active', null, null, '{routine}', '{}', 'fictional', null),
+  ('c1000000-0000-4000-8000-0000000000c4', 's100-heroi-suspenso', 'Hero Suspenso S100', 'suspended', null, null, '{routine}', '{}', 'fictional', null),
+  ('c1000000-0000-4000-8000-0000000000c5', 's100-heroi-pendente', 'Hero Pendente S100', 'pending', null, null, '{routine}', '{}', 'fictional', null),
+  ('c1000000-0000-4000-8000-0000000000c6', 's100-heroi-dono-b', 'Hero Dono B S100', 'active', 'c1000000-0000-4000-8000-000000000006', null, '{training}', '{}', 'fictional', null),
+  ('c1000000-0000-4000-8000-0000000000c7', 's100-heroi-dono-a', 'Hero Dono A S100', 'active', 'c1000000-0000-4000-8000-000000000007', null, '{training}', '{}', 'fictional', null),
+  ('c1000000-0000-4000-8000-0000000000c8', 's100-heroi-livre', 'Hero Livre S100', 'active', null, null, '{training}', '{}', 'fictional', null),
+  ('c1000000-0000-4000-8000-0000000000c9', 's100-heroi-com-dono', 'Hero Com Dono S100', 'active', 'c1000000-0000-4000-8000-000000000005', null, '{gastronomy}', '{}', 'fictional', null);
 insert into public.talent_profiles (id, agency_id, display_name, creator_id, user_id) values
   ('c1000000-0000-4000-8000-0000000000e1', 'c1000000-0000-4000-8000-0000000000a1', 'Heroi Casting S100', 'c1000000-0000-4000-8000-0000000000c1', null),
-  ('c1000000-0000-4000-8000-0000000000e3', 'c1000000-0000-4000-8000-0000000000a2', 'Herói Outra S100', 'c1000000-0000-4000-8000-0000000000c3', null),
+  ('c1000000-0000-4000-8000-0000000000e3', 'c1000000-0000-4000-8000-0000000000a2', 'Hero Outra S100', 'c1000000-0000-4000-8000-0000000000c3', null),
   ('c1000000-0000-4000-8000-0000000000e6', 'c1000000-0000-4000-8000-0000000000a2', 'Dono B S100', null, 'c1000000-0000-4000-8000-000000000006'),
   ('c1000000-0000-4000-8000-0000000000e7', 'c1000000-0000-4000-8000-0000000000a1', 'Dono A S100', null, 'c1000000-0000-4000-8000-000000000007');
 create temp table t_s100 (k text primary key, v jsonb);
@@ -13941,13 +13941,13 @@ select tests.ok('S100 estrutura: sem sobrecarga, security definer com search_pat
 
 -- visitante
 select tests.anon();
-select tests.expect_error('S100 visitante não busca heróis', $q$select public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', '')$q$, 'permission denied');
+select tests.expect_error('S100 visitante não busca Heros', $q$select public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', '')$q$, 'permission denied');
 select tests.expect_error('S100 visitante não sugere', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[]')$q$, 'permission denied');
 
 -- colaborador (mesmo sendo o responsável pelo negócio) e agência de fora
 select tests.login('c1000000-0000-4000-8000-000000000003', 's100-colab-a@test.local');
-select tests.expect_error('S100 colaborador não busca heróis', $q$select public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', '')$q$, 'forbidden');
-select tests.expect_error('S100 colaborador não sugere herói', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c2"}]')$q$, 'forbidden');
+select tests.expect_error('S100 colaborador não busca Heros', $q$select public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', '')$q$, 'forbidden');
+select tests.expect_error('S100 colaborador não sugere Hero', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c2"}]')$q$, 'forbidden');
 select tests.login('c1000000-0000-4000-8000-000000000004', 's100-adm-b@test.local');
 select tests.expect_error('S100 agência de fora não busca no negócio alheio', $q$select public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', '')$q$, 'not_found');
 select tests.expect_error('S100 agência de fora não sugere no negócio alheio', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"typed","name":"Intruso Fora"}]')$q$, 'not_found');
@@ -13956,9 +13956,9 @@ select tests.ok('S100 a agência de fora não tem ficha nenhuma criada na A', (s
 -- gestor: busca
 select tests.login('c1000000-0000-4000-8000-000000000002', 's100-gestor-a@test.local');
 insert into t_s100 select 'all', public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 's100');
-select tests.ok('S100 busca: o herói do casting e os heróis suspenso e pendente não aparecem',
+select tests.ok('S100 busca: o Hero do casting e os Heros suspenso e pendente não aparecem',
   not exists (select 1 from jsonb_array_elements((select v -> 'items' from t_s100 where k = 'all')) i where i ->> 'slug' in ('s100-heroi-casting', 's100-heroi-suspenso', 's100-heroi-pendente')));
-select tests.ok('S100 busca: selos fora do casting, em outra agência (herói e dono com ficha) e pessoa já no casting',
+select tests.ok('S100 busca: selos fora do casting, em outra agência (Hero e dono com ficha) e pessoa já no casting',
   (select v -> 'items' from t_s100 where k = 'all') @> '[{"slug":"s100-heroi-fora","scope":"outside"},{"slug":"s100-heroi-livre","scope":"outside"},{"slug":"s100-heroi-com-dono","scope":"outside"},{"slug":"s100-heroi-outra","scope":"other_agency"},{"slug":"s100-heroi-dono-b","scope":"other_agency"},{"slug":"s100-heroi-dono-a","scope":"person_in_casting"}]'::jsonb);
 select tests.ok('S100 busca: os selecionáveis vêm antes dos indisponíveis',
   (with x as (select i ->> 'scope' as s, ordinality as n from jsonb_array_elements((select v -> 'items' from t_s100 where k = 'all')) with ordinality as t(i, ordinality) where i ->> 'slug' like 's100-%')
@@ -13967,9 +13967,9 @@ select tests.ok('S100 busca: só campos públicos (nada de direitos, conta ou e-
   (select bool_and(not (i ? 'rights_status') and not (i ? 'rights_holder') and not (i ? 'user_id') and not (i ? 'email') and (select array_agg(k order by k) from jsonb_object_keys(i) k) = array['avatar_url', 'followers', 'headline', 'id', 'name', 'pillars', 'scope', 'slug', 'socials'])
    from jsonb_array_elements((select v -> 'items' from t_s100 where k = 'all')) i)
   and not ((select v::text from t_s100 where k = 'all') like '%Titular Secreto%'));
-select tests.ok('S100 busca: redes públicas do herói (instagram, youtube, site)',
+select tests.ok('S100 busca: redes públicas do Hero (instagram, youtube, site)',
   (select i -> 'socials' = '{"instagram":"@fora","youtube":"@forayt","site":"https://fora.test"}'::jsonb from jsonb_array_elements((select v -> 'items' from t_s100 where k = 'all')) i where i ->> 'slug' = 's100-heroi-fora'));
-select tests.ok('S100 busca por nome sem acento e sem caixa', (select jsonb_array_length(public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 'HEROI FORA S100') -> 'items')) = 1
+select tests.ok('S100 busca por nome sem acento e sem caixa', (select jsonb_array_length(public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 'HÉRO FORA S100') -> 'items')) = 1
   and (select public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 'heroi-fora') -> 'items' -> 0 ->> 'slug') = 's100-heroi-fora');
 select tests.ok('S100 busca: curinga do usuário vale como texto (% não casa tudo)', (select jsonb_array_length(public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', '100%') -> 'items')) = 0);
 select tests.ok('S100 busca paginada: página de 2, tem mais, e a próxima começa depois',
@@ -13979,7 +13979,7 @@ select tests.ok('S100 busca paginada: página de 2, tem mais, e a próxima come�
       is distinct from (public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 's100', 2, 2) -> 'items' -> 0 ->> 'slug')
   and not (public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 's100', 50, 0) ->> 'has_more')::boolean);
 
--- gestor: sugerir (herói do casting, herói de fora, digitado)
+-- gestor: sugerir (Hero do casting, Hero de fora, digitado)
 select tests.ok('S100 antes: A tem 2 fichas e nenhuma no negócio', (select count(*) from public.talent_profiles where agency_id = 'c1000000-0000-4000-8000-0000000000a1') = 2
   and (select count(*) from public.deal_talents where deal_id = 'c1000000-0000-4000-8000-0000000000d1') = 0);
 insert into t_s100 select 'r1', public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', $j$[
@@ -13987,16 +13987,16 @@ insert into t_s100 select 'r1', public.agency_deal_suggest_heroes('c1000000-0000
   {"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c9"},
   {"kind":"typed","name":"  Ana   <Souza>  ","profile":"@ana.souza","email":"ANA@Exemplo.com"}
 ]$j$::jsonb);
-select tests.ok('S100 herói do casting reaproveita a ficha; herói de fora e digitado criam 2 fichas', (select (v ->> 'created')::int = 2 from t_s100 where k = 'r1')
+select tests.ok('S100 Hero do casting reaproveita a ficha; Hero de fora e digitado criam 2 fichas', (select (v ->> 'created')::int = 2 from t_s100 where k = 'r1')
   and (select count(*) from public.talent_profiles where agency_id = 'c1000000-0000-4000-8000-0000000000a1') = 4
   and (select count(*) from public.talent_profiles where creator_id = 'c1000000-0000-4000-8000-0000000000c1') = 1
   and (select count(*) from public.deal_talents where deal_id = 'c1000000-0000-4000-8000-0000000000d1' and status = 'suggested') = 3
   and exists (select 1 from public.deal_talents where deal_id = 'c1000000-0000-4000-8000-0000000000d1' and talent_id = 'c1000000-0000-4000-8000-0000000000e1' and reasons @> '[{"code":"segment"}]'));
-select tests.ok('S100 ficha do herói de fora: ligada ao herói, prospecto, sem consentimento, fora do catálogo, criada pelo gestor',
-  (select creator_id = 'c1000000-0000-4000-8000-0000000000c9' and display_name = 'Herói Com Dono S100' and commercial_status = 'prospect' and consent_at is null
+select tests.ok('S100 ficha do Hero de fora: ligada ao Hero, prospecto, sem consentimento, fora do catálogo, criada pelo gestor',
+  (select creator_id = 'c1000000-0000-4000-8000-0000000000c9' and display_name = 'Hero Com Dono S100' and commercial_status = 'prospect' and consent_at is null
           and consent_revoked_at is null and not catalog_visible and created_by = 'c1000000-0000-4000-8000-000000000002' and agency_id = 'c1000000-0000-4000-8000-0000000000a1'
    from public.talent_profiles where creator_id = 'c1000000-0000-4000-8000-0000000000c9'));
-select tests.ok('S100 ficha digitada: nome limpo, sem herói e sem login, e-mail e perfil guardados, prospecto',
+select tests.ok('S100 ficha digitada: nome limpo, sem Hero e sem login, e-mail e perfil guardados, prospecto',
   (select creator_id is null and user_id is null and display_name = 'Ana Souza' and contact_email = 'ana@exemplo.com' and internal_notes = 'Perfil informado: @ana.souza' and commercial_status = 'prospect' and not catalog_visible
    from public.talent_profiles where agency_id = 'c1000000-0000-4000-8000-0000000000a1' and display_name = 'Ana Souza'));
 select tests.su();
@@ -14016,15 +14016,15 @@ select tests.ok('S100 repetir é idempotente: nenhuma ficha nova, mesmas 3 linha
   and (select count(*) from public.talent_profiles where agency_id = 'c1000000-0000-4000-8000-0000000000a1') = 4
   and (select count(*) from public.deal_talents where deal_id = 'c1000000-0000-4000-8000-0000000000d1') = 3);
 select tests.ok('S100 o negócio avançou para a pré-seleção', (select stage = 'shortlist' from public.deals where id = 'c1000000-0000-4000-8000-0000000000d1'));
-select tests.ok('S100 a busca agora trata o herói criado como do casting (some da busca)',
+select tests.ok('S100 a busca agora trata o Hero criado como do casting (some da busca)',
   not exists (select 1 from jsonb_array_elements(public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 's100') -> 'items') i where i ->> 'slug' = 's100-heroi-com-dono'));
 
 -- recusas
-select tests.expect_error('S100 herói de outra agência é recusado', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c3"}]')$q$, 'creator_already_in_casting');
-select tests.expect_error('S100 herói suspenso é invisível', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c4"}]')$q$, 'not_found');
-select tests.expect_error('S100 herói pendente é invisível', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c5"}]')$q$, 'not_found');
-select tests.expect_error('S100 dono do herói com ficha em outra agência é recusado (uma pessoa, um casting)', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c6"}]')$q$, 'user_has_talent');
-select tests.expect_error('S100 dono do herói com ficha neste casting também é recusado', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c7"}]')$q$, 'user_has_talent');
+select tests.expect_error('S100 Hero de outra agência é recusado', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c3"}]')$q$, 'creator_already_in_casting');
+select tests.expect_error('S100 Hero suspenso é invisível', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c4"}]')$q$, 'not_found');
+select tests.expect_error('S100 Hero pendente é invisível', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c5"}]')$q$, 'not_found');
+select tests.expect_error('S100 dono do Hero com ficha em outra agência é recusado (uma pessoa, um casting)', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c6"}]')$q$, 'user_has_talent');
+select tests.expect_error('S100 dono do Hero com ficha neste casting também é recusado', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c7"}]')$q$, 'user_has_talent');
 select tests.expect_error('S100 ficha de outra agência é recusada', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"talent","talent_id":"c1000000-0000-4000-8000-0000000000e3"}]')$q$, 'not_found');
 select tests.expect_error('S100 nome digitado vazio depois da limpeza', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"typed","name":" <> "}]')$q$, 'invalid_hero_name');
 select tests.expect_error('S100 nome digitado de 1 letra', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"typed","name":"A"}]')$q$, 'invalid_hero_name');
@@ -14036,8 +14036,8 @@ select tests.expect_error('S100 no máximo 10 fichas novas por salvamento', $q$s
 select tests.ok('S100 as recusas não deixaram ficha nenhuma (o salvamento é atômico)',
   (select count(*) from public.talent_profiles where agency_id = 'c1000000-0000-4000-8000-0000000000a1') = 4
   and (select count(*) from public.deal_talents where deal_id = 'c1000000-0000-4000-8000-0000000000d1') = 3);
-select tests.expect_error('S100 um item ruim desfaz o herói válido da mesma lista', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c8"},{"kind":"typed","name":"<>"}]')$q$, 'invalid_hero_name');
-select tests.ok('S100 o herói livre segue sem ficha e sem linha no negócio', not exists (select 1 from public.talent_profiles where creator_id = 'c1000000-0000-4000-8000-0000000000c8'));
+select tests.expect_error('S100 um item ruim desfaz o Hero válido da mesma lista', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c8"},{"kind":"typed","name":"<>"}]')$q$, 'invalid_hero_name');
+select tests.ok('S100 o Hero livre segue sem ficha e sem linha no negócio', not exists (select 1 from public.talent_profiles where creator_id = 'c1000000-0000-4000-8000-0000000000c8'));
 
 -- remover e sugerir de novo traz de volta como sugerido, sem a consulta antiga
 select tests.su();
@@ -14052,9 +14052,9 @@ select tests.ok('S100 creator removido volta a sugerido, sem consulta nem cachê
   and (select count(*) from public.deal_talents where deal_id = 'c1000000-0000-4000-8000-0000000000d1') = 2
   and (select count(*) from public.talent_profiles where agency_id = 'c1000000-0000-4000-8000-0000000000a1' and display_name = 'Ana Souza') = 1);
 
--- consentimento: o creator dono do herói de fora enxerga a agência no escritório, sem consentimento dado
+-- consentimento: o creator dono do Hero de fora enxerga a agência no escritório, sem consentimento dado
 select tests.login('c1000000-0000-4000-8000-000000000005', 's100-dono-fora@test.local');
-select tests.ok('S100 o dono do herói vê o escritório da agência, com o consentimento ainda pendente e fora do catálogo',
+select tests.ok('S100 o dono do Hero vê o escritório da agência, com o consentimento ainda pendente e fora do catálogo',
   (public.talent_my_context() ->> 'agency') = 'Agência A S100' and (public.talent_my_context() ->> 'consent_at') is null and (public.talent_my_context() ->> 'catalog_visible')::boolean = false);
 select tests.ok('S100 o creator não lê talent_profiles (só o escritório por talent_my_context)', (select count(*) from public.talent_profiles) = 0);
 select tests.login('c1000000-0000-4000-8000-000000000004', 's100-adm-b@test.local');
@@ -14067,7 +14067,7 @@ update public.deals set stage = 'closed', outcome = 'cancelled' where id = 'c100
 select tests.login('c1000000-0000-4000-8000-000000000002', 's100-gestor-a@test.local');
 select tests.expect_error('S100 negócio encerrado não recebe sugestão', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[]')$q$, 'invalid_stage');
 
--- agência de demonstração: não enxerga heróis reais, nem cria ficha de herói real; o digitado respeita o limite
+-- agência de demonstração: não enxerga Heros reais, nem cria ficha de Hero real; o digitado respeita o limite
 select tests.su();
 insert into public.agencies (id, slug, name, is_demo) values ('c1000000-0000-4000-8000-0000000000a3', 's100-agencia-demo', 'Agência Demo S100', true);
 insert into public.agency_members (agency_id, user_id, role, display_name) values ('c1000000-0000-4000-8000-0000000000a3', 'c1000000-0000-4000-8000-000000000008', 'admin', 'Dani Demo S100');
@@ -14076,7 +14076,7 @@ insert into public.agency_brands (agency_id, brand_id) values ('c1000000-0000-40
 insert into public.deals (id, agency_id, brand_id, title) values ('c1000000-0000-4000-8000-0000000000d3', 'c1000000-0000-4000-8000-0000000000a3', 'c1000000-0000-4000-8000-0000000000b3', 'Negócio Demo S100');
 select tests.login('c1000000-0000-4000-8000-000000000008', 's100-adm-demo@test.local');
 select tests.ok('S100 agência de demonstração: a busca volta vazia', jsonb_array_length(public.agency_hero_search('c1000000-0000-4000-8000-0000000000d3', '') -> 'items') = 0);
-select tests.expect_error('S100 agência de demonstração não cria ficha de herói real', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d3', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c2"}]')$q$, 'demo_locked');
+select tests.expect_error('S100 agência de demonstração não cria ficha de Hero real', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d3', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c2"}]')$q$, 'demo_locked');
 
 -- limpeza
 select tests.su();
@@ -14090,12 +14090,12 @@ delete from public.agencies where id::text like 'c1000000-%';
 delete from public.creator_profiles where id::text like 'c1000000-%';
 delete from auth.users where id::text like 'c1000000-%';
 
--- ================================================================ S101 · Agenda e financeiro do herói (0094)
--- Herói independente: titular cria/edita/exclui compromisso e serviço (valor a receber, vencimento, recebido); membro
--- da equipe LÊ a agenda (e as datas de serviço, sem valor) e NÃO lê nem escreve o financeiro nem a agenda; outro herói
--- não vê nada; visitante nada; admin lê (não escreve); herói suspenso não escreve (titular ainda lê). Checklist
--- inválido, serviço de outro herói e troca de herói são recusados. Comprovante: caminho precisa do prefixo do herói.
--- Herói com agência: o membro da equipe abre o escritório mas NÃO lê o cachê (só o titular); creator_id no contexto.
+-- ================================================================ S101 · Agenda e financeiro do Hero (0094)
+-- Hero independente: titular cria/edita/exclui compromisso e serviço (valor a receber, vencimento, recebido); membro
+-- da equipe LÊ a agenda (e as datas de serviço, sem valor) e NÃO lê nem escreve o financeiro nem a agenda; outro Hero
+-- não vê nada; visitante nada; admin lê (não escreve); Hero suspenso não escreve (titular ainda lê). Checklist
+-- inválido, serviço de outro Hero e troca de Hero são recusados. Comprovante: caminho precisa do prefixo do Hero.
+-- Hero com agência: o membro da equipe abre o escritório mas NÃO lê o cachê (só o titular); creator_id no contexto.
 -- Sem sobrecarga; funções novas só para authenticated; S14 segue 18.
 \ir ../migrations/0094_heroi_agenda_financeiro.sql
 select tests.su();
@@ -14116,10 +14116,10 @@ insert into public.role_assignments (user_id, role, scope_type) values
   ('a1010000-0000-4000-8000-000000000006', 'creator', 'global'),
   ('a1010000-0000-4000-8000-000000000007', 'creator', 'global');
 insert into public.creator_profiles (id, slug, name, status, user_id) values
-  ('a1010000-0000-4000-8000-0000000000c1', 's101-heroi-a', 'Herói A S101', 'active', 'a1010000-0000-4000-8000-000000000001'),
-  ('a1010000-0000-4000-8000-0000000000c2', 's101-heroi-b', 'Herói B S101', 'active', 'a1010000-0000-4000-8000-000000000003'),
-  ('a1010000-0000-4000-8000-0000000000c3', 's101-heroi-s', 'Herói S S101', 'active', 'a1010000-0000-4000-8000-000000000005'),
-  ('a1010000-0000-4000-8000-0000000000c4', 's101-heroi-ag', 'Herói Agência S101', 'active', 'a1010000-0000-4000-8000-000000000006');
+  ('a1010000-0000-4000-8000-0000000000c1', 's101-heroi-a', 'Hero A S101', 'active', 'a1010000-0000-4000-8000-000000000001'),
+  ('a1010000-0000-4000-8000-0000000000c2', 's101-heroi-b', 'Hero B S101', 'active', 'a1010000-0000-4000-8000-000000000003'),
+  ('a1010000-0000-4000-8000-0000000000c3', 's101-heroi-s', 'Hero S S101', 'active', 'a1010000-0000-4000-8000-000000000005'),
+  ('a1010000-0000-4000-8000-0000000000c4', 's101-heroi-ag', 'Hero Agência S101', 'active', 'a1010000-0000-4000-8000-000000000006');
 insert into public.creator_team_members (creator_profile_id, user_id, role, status) values
   ('a1010000-0000-4000-8000-0000000000c1', 'a1010000-0000-4000-8000-000000000002', 'member', 'active'),
   ('a1010000-0000-4000-8000-0000000000c4', 'a1010000-0000-4000-8000-000000000007', 'member', 'active');
@@ -14161,12 +14161,12 @@ select tests.expect_error('S101 checklist com item sem texto é recusado', $q$in
 select tests.expect_error('S101 checklist com campo extra é recusado', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at, checklist) values ('a1010000-0000-4000-8000-0000000000c1', 'x', now(), now(), '[{"text":"a","done":false,"x":1}]')$q$, 'hero_events_checklist_check');
 select tests.expect_error('S101 fim antes do início é recusado', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at) values ('a1010000-0000-4000-8000-0000000000c1', 'x', now(), now() - interval '1 hour')$q$, 'hero_events_range_check');
 select tests.expect_error('S101 valor negativo é recusado', $q$insert into public.hero_services (creator_profile_id, title, client, service_on, amount_cents) values ('a1010000-0000-4000-8000-0000000000c1', 'x', 'y', current_date, -1)$q$, 'hero_services_amount_cents_check');
-select tests.expect_error('S101 comprovante precisa do prefixo do herói', $q$update public.hero_services set proof_path = 'a1010000-0000-4000-8000-0000000000c2/x/a.pdf', proof_mime = 'application/pdf' where id = 'a1010000-0000-4000-8000-0000000000e1'$q$, 'hero_services_proof_path_check');
+select tests.expect_error('S101 comprovante precisa do prefixo do Hero', $q$update public.hero_services set proof_path = 'a1010000-0000-4000-8000-0000000000c2/x/a.pdf', proof_mime = 'application/pdf' where id = 'a1010000-0000-4000-8000-0000000000e1'$q$, 'hero_services_proof_path_check');
 update public.hero_services set proof_path = 'a1010000-0000-4000-8000-0000000000c1/a1010000-0000-4000-8000-0000000000e1/a.pdf', proof_mime = 'application/pdf' where id = 'a1010000-0000-4000-8000-0000000000e1';
-select tests.ok('S101 titular guarda o comprovante (caminho do herói)', (select proof_mime = 'application/pdf' from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e1'));
-select tests.expect_error('S101 não troca o herói do registro', $q$update public.hero_events set creator_profile_id = 'a1010000-0000-4000-8000-0000000000c2' where id = 'a1010000-0000-4000-8000-0000000000d2'$q$, 'invalid_input');
-select tests.expect_error('S101 não cria no herói dos outros', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at) values ('a1010000-0000-4000-8000-0000000000c2', 'x', now(), now())$q$, 'row-level security');
-select tests.expect_error('S101 não cria serviço no herói dos outros', $q$insert into public.hero_services (creator_profile_id, title, client, service_on, amount_cents) values ('a1010000-0000-4000-8000-0000000000c2', 'x', 'y', current_date, 1)$q$, 'row-level security');
+select tests.ok('S101 titular guarda o comprovante (caminho do Hero)', (select proof_mime = 'application/pdf' from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e1'));
+select tests.expect_error('S101 não troca o Hero do registro', $q$update public.hero_events set creator_profile_id = 'a1010000-0000-4000-8000-0000000000c2' where id = 'a1010000-0000-4000-8000-0000000000d2'$q$, 'invalid_input');
+select tests.expect_error('S101 não cria no Hero dos outros', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at) values ('a1010000-0000-4000-8000-0000000000c2', 'x', now(), now())$q$, 'row-level security');
+select tests.expect_error('S101 não cria serviço no Hero dos outros', $q$insert into public.hero_services (creator_profile_id, title, client, service_on, amount_cents) values ('a1010000-0000-4000-8000-0000000000c2', 'x', 'y', current_date, 1)$q$, 'row-level security');
 select tests.ok('S101 titular lê as datas de serviço para a agenda (sem valor)',
   jsonb_array_length(public.hero_service_dates('a1010000-0000-4000-8000-0000000000c1', current_date - 30, current_date + 30)) = 2
   and (public.hero_service_dates('a1010000-0000-4000-8000-0000000000c1', current_date - 30, current_date + 30))::text !~ '(amount|due_on|status)');
@@ -14176,9 +14176,9 @@ select tests.ok('S101 titular exclui compromisso', (select count(*) from public.
 
 -- membro da equipe: lê a agenda e as datas de serviço; não lê o financeiro; não escreve nada
 select tests.login('a1010000-0000-4000-8000-000000000002', 's101-membro@test.local');
-select tests.ok('S101 membro lê a agenda do herói (compromisso, checklist e contratante)',
+select tests.ok('S101 membro lê a agenda do Hero (compromisso, checklist e contratante)',
   (select count(*) from public.hero_events) = 1 and (select jsonb_array_length(checklist) = 1 from public.hero_events limit 1));
-select tests.ok('S101 membro NÃO lê o financeiro do herói', (select count(*) from public.hero_services) = 0);
+select tests.ok('S101 membro NÃO lê o financeiro do Hero', (select count(*) from public.hero_services) = 0);
 select tests.ok('S101 membro vê as datas de serviço na agenda, sem valor, vencimento nem situação',
   jsonb_array_length(public.hero_service_dates('a1010000-0000-4000-8000-0000000000c1', current_date - 30, current_date + 30)) = 2
   and (public.hero_service_dates('a1010000-0000-4000-8000-0000000000c1', current_date - 30, current_date + 30))::text !~ '(amount|cents|due_on|status|proof)');
@@ -14192,14 +14192,14 @@ select tests.ok('S101 membro não altera nem exclui nada (compromisso e serviço
   (select title from public.hero_events where id = 'a1010000-0000-4000-8000-0000000000d1') = 'Gravar reels (novo horário)'
   and (select amount_cents from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e1') = 150000);
 
--- outro herói e visitante: nada
+-- outro Hero e visitante: nada
 select tests.login('a1010000-0000-4000-8000-000000000003', 's101-outro@test.local');
-select tests.ok('S101 outro herói não lê agenda nem financeiro', (select count(*) from public.hero_events) = 0 and (select count(*) from public.hero_services) = 0);
-select tests.ok('S101 outro herói não vê as datas de serviço de quem não é da equipe', public.hero_service_dates('a1010000-0000-4000-8000-0000000000c1', current_date - 30, current_date + 30) = '[]'::jsonb);
+select tests.ok('S101 outro Hero não lê agenda nem financeiro', (select count(*) from public.hero_events) = 0 and (select count(*) from public.hero_services) = 0);
+select tests.ok('S101 outro Hero não vê as datas de serviço de quem não é da equipe', public.hero_service_dates('a1010000-0000-4000-8000-0000000000c1', current_date - 30, current_date + 30) = '[]'::jsonb);
 update public.hero_events set title = 'invadido' where id = 'a1010000-0000-4000-8000-0000000000d1';
 delete from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e1';
 select tests.su();
-select tests.ok('S101 outro herói não altera nem exclui', (select count(*) from public.hero_services) = 2 and (select title from public.hero_events where id = 'a1010000-0000-4000-8000-0000000000d1') = 'Gravar reels (novo horário)');
+select tests.ok('S101 outro Hero não altera nem exclui', (select count(*) from public.hero_services) = 2 and (select title from public.hero_events where id = 'a1010000-0000-4000-8000-0000000000d1') = 'Gravar reels (novo horário)');
 select tests.anon();
 select tests.expect_error('S101 visitante não lê a agenda', $q$select count(*) from public.hero_events$q$, 'permission denied');
 select tests.expect_error('S101 visitante não lê o financeiro', $q$select count(*) from public.hero_services$q$, 'permission denied');
@@ -14209,46 +14209,46 @@ select tests.expect_error('S101 visitante não chama as datas de serviço', $q$s
 -- admin: lê tudo, não escreve
 select tests.login('a1010000-0000-4000-8000-000000000004', 's101-admin@test.local');
 select tests.ok('S101 admin lê agenda e financeiro de todos', (select count(*) from public.hero_events) = 1 and (select count(*) from public.hero_services) = 2);
-select tests.expect_error('S101 admin não escreve na agenda do herói', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at) values ('a1010000-0000-4000-8000-0000000000c1', 'x', now(), now())$q$, 'row-level security');
+select tests.expect_error('S101 admin não escreve na agenda do Hero', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at) values ('a1010000-0000-4000-8000-0000000000c1', 'x', now(), now())$q$, 'row-level security');
 update public.hero_services set amount_cents = 5 where id = 'a1010000-0000-4000-8000-0000000000e1';
 select tests.su();
 select tests.ok('S101 admin não altera o financeiro', (select amount_cents from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e1') = 150000);
 
--- herói suspenso: titular lê, mas não escreve
+-- Hero suspenso: titular lê, mas não escreve
 select tests.su();
 insert into public.hero_events (id, creator_profile_id, title, starts_at, ends_at) values ('a1010000-0000-4000-8000-0000000000d3', 'a1010000-0000-4000-8000-0000000000c3', 'Antes da suspensão', now(), now());
 insert into public.hero_services (id, creator_profile_id, title, client, service_on, amount_cents) values ('a1010000-0000-4000-8000-0000000000e3', 'a1010000-0000-4000-8000-0000000000c3', 'Serviço antigo', 'Cliente', current_date, 1000);
 update public.creator_profiles set status = 'suspended' where id = 'a1010000-0000-4000-8000-0000000000c3';
 select tests.login('a1010000-0000-4000-8000-000000000005', 's101-suspenso@test.local');
-select tests.ok('S101 titular de herói suspenso ainda lê o que já tinha', (select count(*) from public.hero_events) = 1 and (select count(*) from public.hero_services) = 1);
-select tests.expect_error('S101 herói suspenso não cria compromisso', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at) values ('a1010000-0000-4000-8000-0000000000c3', 'x', now(), now())$q$, 'row-level security');
-select tests.expect_error('S101 herói suspenso não cria serviço', $q$insert into public.hero_services (creator_profile_id, title, client, service_on, amount_cents) values ('a1010000-0000-4000-8000-0000000000c3', 'x', 'y', current_date, 1)$q$, 'row-level security');
+select tests.ok('S101 titular de Hero suspenso ainda lê o que já tinha', (select count(*) from public.hero_events) = 1 and (select count(*) from public.hero_services) = 1);
+select tests.expect_error('S101 Hero suspenso não cria compromisso', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at) values ('a1010000-0000-4000-8000-0000000000c3', 'x', now(), now())$q$, 'row-level security');
+select tests.expect_error('S101 Hero suspenso não cria serviço', $q$insert into public.hero_services (creator_profile_id, title, client, service_on, amount_cents) values ('a1010000-0000-4000-8000-0000000000c3', 'x', 'y', current_date, 1)$q$, 'row-level security');
 update public.hero_services set amount_cents = 7 where id = 'a1010000-0000-4000-8000-0000000000e3';
 delete from public.hero_events where id = 'a1010000-0000-4000-8000-0000000000d3';
 select tests.su();
-select tests.ok('S101 herói suspenso não edita nem exclui', (select amount_cents from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e3') = 1000
+select tests.ok('S101 Hero suspenso não edita nem exclui', (select amount_cents from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e3') = 1000
   and (select count(*) from public.hero_events where id = 'a1010000-0000-4000-8000-0000000000d3') = 1);
 
--- serviço de outro herói não vincula; excluir serviço mantém o compromisso (vínculo some)
+-- serviço de outro Hero não vincula; excluir serviço mantém o compromisso (vínculo some)
 select tests.login('a1010000-0000-4000-8000-000000000003', 's101-outro@test.local');
 insert into public.hero_services (id, creator_profile_id, title, client, service_on, amount_cents) values ('a1010000-0000-4000-8000-0000000000e4', 'a1010000-0000-4000-8000-0000000000c2', 'Serviço do B', 'Cliente B', current_date, 500);
-select tests.expect_error('S101 compromisso não vincula serviço de outro herói', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at, service_id) values ('a1010000-0000-4000-8000-0000000000c2', 'x', now(), now(), 'a1010000-0000-4000-8000-0000000000e1')$q$, 'invalid_input');
+select tests.expect_error('S101 compromisso não vincula serviço de outro Hero', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at, service_id) values ('a1010000-0000-4000-8000-0000000000c2', 'x', now(), now(), 'a1010000-0000-4000-8000-0000000000e1')$q$, 'invalid_input');
 select tests.login('a1010000-0000-4000-8000-000000000001', 's101-titular@test.local');
 delete from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e1';
 select tests.ok('S101 excluir o serviço mantém o compromisso, sem o vínculo',
   (select count(*) from public.hero_events where id = 'a1010000-0000-4000-8000-0000000000d1' and service_id is null) = 1);
 
--- armazenamento do comprovante: só o titular lê e envia no prefixo do herói
+-- armazenamento do comprovante: só o titular lê e envia no prefixo do Hero
 select tests.login('a1010000-0000-4000-8000-000000000001', 's101-titular@test.local');
-select tests.ok('S101 titular acessa o próprio prefixo do comprovante e não o de outro herói',
+select tests.ok('S101 titular acessa o próprio prefixo do comprovante e não o de outro Hero',
   public.hero_proof_access('a1010000-0000-4000-8000-0000000000c1/x/a.pdf', true) and public.hero_proof_access('a1010000-0000-4000-8000-0000000000c1/x/a.pdf', false)
   and not public.hero_proof_access('a1010000-0000-4000-8000-0000000000c2/x/a.pdf', false) and not public.hero_proof_access('lixo/a.pdf', false));
 select tests.login('a1010000-0000-4000-8000-000000000002', 's101-membro@test.local');
-select tests.ok('S101 membro não acessa comprovante do herói', not public.hero_proof_access('a1010000-0000-4000-8000-0000000000c1/x/a.pdf', false) and not public.hero_proof_access('a1010000-0000-4000-8000-0000000000c1/x/a.pdf', true));
+select tests.ok('S101 membro não acessa comprovante do Hero', not public.hero_proof_access('a1010000-0000-4000-8000-0000000000c1/x/a.pdf', false) and not public.hero_proof_access('a1010000-0000-4000-8000-0000000000c1/x/a.pdf', true));
 select tests.login('a1010000-0000-4000-8000-000000000004', 's101-admin@test.local');
 select tests.ok('S101 admin lê (e não grava) comprovante', public.hero_proof_access('a1010000-0000-4000-8000-0000000000c1/x/a.pdf', false) and not public.hero_proof_access('a1010000-0000-4000-8000-0000000000c1/x/a.pdf', true));
 
--- herói com agência: o membro abre o escritório, mas o cachê é só do titular
+-- Hero com agência: o membro abre o escritório, mas o cachê é só do titular
 select tests.su();
 insert into public.agencies (id, slug, name) values ('a1010000-0000-4000-8000-0000000000a1', 's101-agencia', 'Agência S101');
 insert into public.brands (id, slug, name, site_url) values ('a1010000-0000-4000-8000-0000000000b1', 's101-marca', 'Marca S101', 'https://marca.s101.test');
@@ -14263,7 +14263,7 @@ insert into public.financial_entries (id, agency_id, brand_id, deal_id, talent_i
   ('a1010000-0000-4000-8000-0000000000ac', 'a1010000-0000-4000-8000-0000000000a1', 'a1010000-0000-4000-8000-0000000000b1', 'a1010000-0000-4000-8000-0000000000aa',
    'a1010000-0000-4000-8000-0000000000f1', 'a1010000-0000-4000-8000-0000000000ab', 'talent_payout', 90000, 2000);
 select tests.login('a1010000-0000-4000-8000-000000000006', 's101-agencia-titular@test.local');
-select tests.ok('S101 titular com agência: contexto traz o herói ligado e os ganhos (só o cachê, sem comissão)',
+select tests.ok('S101 titular com agência: contexto traz o Hero ligado e os ganhos (só o cachê, sem comissão)',
   (public.talent_my_context() ->> 'creator_id') = 'a1010000-0000-4000-8000-0000000000c4'
   and jsonb_array_length(public.talent_payouts()) = 1 and (public.talent_payouts() -> 0 ->> 'amount_cents') = '90000'
   and not exists (select 1 from jsonb_array_elements(public.talent_payouts()) x where x ? 'rate_bp' or x ? 'commission_cents')
@@ -14278,7 +14278,7 @@ select tests.ok('S101 membro com agência: my_talent_owner_id nulo; titular: o t
 select tests.login('a1010000-0000-4000-8000-000000000006', 's101-agencia-titular@test.local');
 select tests.ok('S101 titular com agência: my_talent_owner_id é o talento', public.my_talent_owner_id() = 'a1010000-0000-4000-8000-0000000000f1');
 
--- feed .ics: compromissos e datas de serviço (sem valor) do herói, só de quem está na equipe
+-- feed .ics: compromissos e datas de serviço (sem valor) do Hero, só de quem está na equipe
 select tests.su();
 insert into public.calendar_feeds (user_id, token_hash) values
   ('a1010000-0000-4000-8000-000000000001', encode(extensions.digest(repeat('a', 64), 'sha256'), 'hex')),
@@ -14287,7 +14287,7 @@ insert into public.calendar_feeds (user_id, token_hash) values
 select tests.ok('S101 feed do titular: compromisso com checklist, data de serviço e sem valor',
   (select count(*) from jsonb_array_elements(public.calendar_feed_resolve(repeat('a', 64)) -> 'events') e where e ->> 'kind' = 'hero_shoot' and e ->> 'description' like '%[x] Roteiro impresso%') = 1
   and (public.calendar_feed_resolve(repeat('a', 64)))::text !~ '(amount|150000)');
-select tests.ok('S101 feed do membro: o compromisso do herói; o de outro herói só o serviço dele',
+select tests.ok('S101 feed do membro: o compromisso do Hero; o de outro Hero só o serviço dele',
   (select count(*) from jsonb_array_elements(public.calendar_feed_resolve(repeat('b', 64)) -> 'events') e where e ->> 'kind' = 'hero_shoot') = 1
   and (select count(*) from jsonb_array_elements(public.calendar_feed_resolve(repeat('c', 64)) -> 'events') e where e ->> 'kind' like 'hero_%') = 1
   and (select count(*) from jsonb_array_elements(public.calendar_feed_resolve(repeat('c', 64)) -> 'events') e where e ->> 'title' = 'Serviço do B') = 1);
@@ -14307,12 +14307,12 @@ delete from public.agencies where id::text like 'a1010000-%';
 delete from public.creator_profiles where id::text like 'a1010000-%';
 delete from auth.users where id::text like 'a1010000-%';
 
--- ================================================================ S102 · Oportunidade de patrocínio por herói: ficha criada ao salvar, herói digitado e rascunho sem consentimento (0095)
--- A agência (gestor+) escolhe o HERÓI da oportunidade: ficha do casting, herói da plataforma fora do casting (a ficha nasce
--- ao salvar, sem consentimento) ou herói digitado (ficha sem herói). Publicar às marcas exige consentimento vigente e herói
--- ativo; rascunho vale sem consentimento e é invisível para marca e creator (lista, tabelas, agenda, aviso). Herói de outra
+-- ================================================================ S102 · Oportunidade de patrocínio por Hero: ficha criada ao salvar, Hero digitado e rascunho sem consentimento (0095)
+-- A agência (gestor+) escolhe o HERO da oportunidade: ficha do casting, Hero da plataforma fora do casting (a ficha nasce
+-- ao salvar, sem consentimento) ou Hero digitado (ficha sem Hero). Publicar às marcas exige consentimento vigente e Hero
+-- ativo; rascunho vale sem consentimento e é invisível para marca e creator (lista, tabelas, agenda, aviso). Hero de outra
 -- agência, suspenso, pendente e pessoa que já tem ficha são recusados; colaborador, outra agência e visitante recusados;
--- salvamento atômico; rascunho se descarta (cancela) sem avisos; consentimento revogado esconde a página do herói da marca.
+-- salvamento atômico; rascunho se descarta (cancela) sem avisos; consentimento revogado esconde a página do Hero da marca.
 \ir ../migrations/0095_oportunidade_heroi.sql
 select tests.su();
 insert into auth.users (id, email) values
@@ -14326,20 +14326,20 @@ insert into public.agency_members (agency_id, user_id, role, display_name) value
 insert into public.brands (id, slug, name, site_url) values ('a1020000-0000-4000-8000-0000000000b1','s102-marca','Marca S102','https://m.s102.test');
 insert into public.agency_brands (agency_id, brand_id) values ('a1020000-0000-4000-8000-0000000000a1','a1020000-0000-4000-8000-0000000000b1');
 insert into public.brand_members (brand_id, user_id, role, display_name) values ('a1020000-0000-4000-8000-0000000000b1','a1020000-0000-4000-8000-000000000005','owner','Dona S102');
--- heróis: C1 no casting da A (com consentimento); C2 livre; C3 livre com dono (creator); C4 no casting da B; C5 suspenso; C6 pendente;
+-- Heros: C1 no casting da A (com consentimento); C2 livre; C3 livre com dono (creator); C4 no casting da B; C5 suspenso; C6 pendente;
 -- C7 dono com ficha própria na A (login); C8 livre (outros testes); C9 livre
 insert into public.creator_profiles (id, slug, name, status, user_id, headline, pillars, socials, rights_status, rights_holder, avatar_url) values
-  ('a1020000-0000-4000-8000-0000000000c1','s102-heroi-casting','Herói Casting S102','active',null,'chamada 1','{training}','{"instagram":"@casting"}','fictional',null,'https://img.test/c1.png'),
-  ('a1020000-0000-4000-8000-0000000000c2','s102-heroi-fora','Herói Fora S102','active',null,'chamada 2','{nutrition,routine}','{"instagram":"@fora"}','authorized','Titular Secreto','https://img.test/c2.png'),
-  ('a1020000-0000-4000-8000-0000000000c3','s102-heroi-dono','Herói Dono S102','active','a1020000-0000-4000-8000-000000000006',null,'{training}','{}','fictional',null,null),
-  ('a1020000-0000-4000-8000-0000000000c4','s102-heroi-outra','Herói Outra S102','active',null,null,'{routine}','{}','fictional',null,null),
-  ('a1020000-0000-4000-8000-0000000000c5','s102-heroi-suspenso','Herói Suspenso S102','suspended',null,null,'{routine}','{}','fictional',null,null),
-  ('a1020000-0000-4000-8000-0000000000c6','s102-heroi-pendente','Herói Pendente S102','pending',null,null,'{routine}','{}','fictional',null,null),
-  ('a1020000-0000-4000-8000-0000000000c7','s102-heroi-pessoa','Herói Pessoa S102','active','a1020000-0000-4000-8000-000000000007',null,'{training}','{}','fictional',null,null),
-  ('a1020000-0000-4000-8000-0000000000c8','s102-heroi-livre','Herói Livre S102','active',null,null,'{training}','{}','fictional',null,null);
+  ('a1020000-0000-4000-8000-0000000000c1','s102-heroi-casting','Hero Casting S102','active',null,'chamada 1','{training}','{"instagram":"@casting"}','fictional',null,'https://img.test/c1.png'),
+  ('a1020000-0000-4000-8000-0000000000c2','s102-heroi-fora','Hero Fora S102','active',null,'chamada 2','{nutrition,routine}','{"instagram":"@fora"}','authorized','Titular Secreto','https://img.test/c2.png'),
+  ('a1020000-0000-4000-8000-0000000000c3','s102-heroi-dono','Hero Dono S102','active','a1020000-0000-4000-8000-000000000006',null,'{training}','{}','fictional',null,null),
+  ('a1020000-0000-4000-8000-0000000000c4','s102-heroi-outra','Hero Outra S102','active',null,null,'{routine}','{}','fictional',null,null),
+  ('a1020000-0000-4000-8000-0000000000c5','s102-heroi-suspenso','Hero Suspenso S102','suspended',null,null,'{routine}','{}','fictional',null,null),
+  ('a1020000-0000-4000-8000-0000000000c6','s102-heroi-pendente','Hero Pendente S102','pending',null,null,'{routine}','{}','fictional',null,null),
+  ('a1020000-0000-4000-8000-0000000000c7','s102-heroi-pessoa','Hero Pessoa S102','active','a1020000-0000-4000-8000-000000000007',null,'{training}','{}','fictional',null,null),
+  ('a1020000-0000-4000-8000-0000000000c8','s102-heroi-livre','Hero Livre S102','active',null,null,'{training}','{}','fictional',null,null);
 insert into public.talent_profiles (id, agency_id, display_name, creator_id, user_id, consent_at, consent_version) values
-  ('a1020000-0000-4000-8000-0000000000e1','a1020000-0000-4000-8000-0000000000a1','Herói Casting S102','a1020000-0000-4000-8000-0000000000c1',null, now() - interval '30 days','v1'),
-  ('a1020000-0000-4000-8000-0000000000e4','a1020000-0000-4000-8000-0000000000a2','Herói Outra S102','a1020000-0000-4000-8000-0000000000c4',null, now() - interval '30 days','v1'),
+  ('a1020000-0000-4000-8000-0000000000e1','a1020000-0000-4000-8000-0000000000a1','Hero Casting S102','a1020000-0000-4000-8000-0000000000c1',null, now() - interval '30 days','v1'),
+  ('a1020000-0000-4000-8000-0000000000e4','a1020000-0000-4000-8000-0000000000a2','Hero Outra S102','a1020000-0000-4000-8000-0000000000c4',null, now() - interval '30 days','v1'),
   ('a1020000-0000-4000-8000-0000000000e7','a1020000-0000-4000-8000-0000000000a1','Pessoa S102',null,'a1020000-0000-4000-8000-000000000007', null, null),
   ('a1020000-0000-4000-8000-0000000000e8','a1020000-0000-4000-8000-0000000000a1','Digitada Antiga S102',null,null, null, null),
   ('a1020000-0000-4000-8000-0000000000e9','a1020000-0000-4000-8000-0000000000a3','Ficha Demo S102',null,null, null, null);
@@ -14363,27 +14363,27 @@ select tests.ok('S102 rascunho é uma situação válida e só aberta/rascunho t
 
 -- visitante
 select tests.anon();
-select tests.expect_error('S102 visitante não busca heróis', $q$select public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','')$q$, 'permission denied');
+select tests.expect_error('S102 visitante não busca Heros', $q$select public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','')$q$, 'permission denied');
 select tests.expect_error('S102 visitante não salva', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, '{}')$q$, 'permission denied');
 select tests.expect_error('S102 visitante não publica', $q$select public.agency_sponsorship_publish(gen_random_uuid())$q$, 'permission denied');
 
 -- colaborador e agência de fora
 select tests.login('a1020000-0000-4000-8000-000000000003','s102-colab-a@test.local');
-select tests.expect_error('S102 colaborador não busca heróis', $q$select public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','')$q$, 'forbidden');
-select tests.expect_error('S102 colaborador não cria oportunidade com herói', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"talent","talent_id":"a1020000-0000-4000-8000-0000000000e1"},"publish":false}')$q$, 'forbidden');
+select tests.expect_error('S102 colaborador não busca Heros', $q$select public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','')$q$, 'forbidden');
+select tests.expect_error('S102 colaborador não cria oportunidade com Hero', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"talent","talent_id":"a1020000-0000-4000-8000-0000000000e1"},"publish":false}')$q$, 'forbidden');
 select tests.login('a1020000-0000-4000-8000-000000000004','s102-adm-b@test.local');
 select tests.expect_error('S102 outra agência não busca na A', $q$select public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','')$q$, 'not_found');
 select tests.expect_error('S102 outra agência não cria na A', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c2"},"publish":false}')$q$, 'not_found');
 select tests.ok('S102 nenhuma ficha nasceu da tentativa de fora', not exists (select 1 from public.talent_profiles where creator_id = 'a1020000-0000-4000-8000-0000000000c2'));
 
--- gestor: busca da caixa Herói
+-- gestor: busca da caixa Hero
 select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
 insert into t_s102 select 'all', public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','s102')::text;
-select tests.ok('S102 busca: selos casting (com consentimento), casting sem herói, fora do casting, outra agência e pessoa já no casting',
+select tests.ok('S102 busca: selos casting (com consentimento), casting sem Hero, fora do casting, outra agência e pessoa já no casting',
   (select v::jsonb -> 'items' from t_s102 where k='all') @> '[{"slug":"s102-heroi-casting","scope":"casting","consent":"active","kind":"talent"},{"slug":"s102-heroi-fora","scope":"outside","kind":"hero"},{"slug":"s102-heroi-dono","scope":"outside"},{"slug":"s102-heroi-outra","scope":"other_agency"},{"slug":"s102-heroi-pessoa","scope":"person_in_casting"}]'::jsonb);
-select tests.ok('S102 busca: heróis suspenso e pendente não aparecem',
+select tests.ok('S102 busca: Heros suspenso e pendente não aparecem',
   not exists (select 1 from jsonb_array_elements((select v::jsonb -> 'items' from t_s102 where k='all')) i where i ->> 'slug' in ('s102-heroi-suspenso','s102-heroi-pendente')));
-select tests.ok('S102 busca por nome acha a ficha do casting sem herói (sem acento e sem caixa)',
+select tests.ok('S102 busca por nome acha a ficha do casting sem Hero (sem acento e sem caixa)',
   jsonb_path_exists(public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','DIGITADA antiga') , '$.items[*] ? (@.name == "Digitada Antiga S102" && @.scope == "casting" && @.kind == "talent")'));
 select tests.ok('S102 busca: no casting vem antes, depois fora do casting, depois indisponíveis',
   (with x as (select i ->> 'scope' as sc, ordinality as n from jsonb_array_elements((select v::jsonb -> 'items' from t_s102 where k='all')) with ordinality as t(i, ordinality))
@@ -14397,58 +14397,58 @@ select tests.ok('S102 busca pagina: 1 por vez, com has_more',
   (public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','s102',1,0) ->> 'has_more')::boolean and jsonb_array_length(public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','s102',1,0) -> 'items') = 1
   and public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','s102',1,0) -> 'items' <> public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','s102',1,1) -> 'items');
 
--- criar: herói do casting, com consentimento (ausente = publica, como antes)
+-- criar: Hero do casting, com consentimento (ausente = publica, como antes)
 insert into t_s102 values ('o1', public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"talent","talent_id":"a1020000-0000-4000-8000-0000000000e1"}}')::text);
-select tests.ok('S102 herói do casting com consentimento: aberta, usa a ficha existente, evento visível à marca e ao creator',
+select tests.ok('S102 Hero do casting com consentimento: aberta, usa a ficha existente, evento visível à marca e ao creator',
   (select status = 'open' and talent_id = 'a1020000-0000-4000-8000-0000000000e1' from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o1'))
   and (select count(*) from public.talent_profiles where agency_id = 'a1020000-0000-4000-8000-0000000000a1') = 3
   and (select count(*) from public.calendar_events e where e.sponsorship_id = (select v::uuid from t_s102 where k='o1') and e.visible_to_brand and e.visible_to_talent) = 1);
-select tests.ok('S102 a lista da agência traz o herói (página, nome, consentimento)',
+select tests.ok('S102 a lista da agência traz o Hero (página, nome, consentimento)',
   (select x -> 'hero' ->> 'slug' = 's102-heroi-casting' and x -> 'hero' ->> 'consent' = 'active' and (x -> 'hero' ->> 'has_hero')::boolean
    from jsonb_array_elements(public.agency_sponsorships('a1020000-0000-4000-8000-0000000000a1')) x where x ->> 'id' = (select v from t_s102 where k='o1')));
 
--- herói fora do casting como rascunho: a ficha nasce ligada ao herói, sem consentimento
+-- Hero fora do casting como rascunho: a ficha nasce ligada ao Hero, sem consentimento
 insert into t_s102 values ('o2', public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c2"},"publish":false}')::text);
-select tests.ok('S102 herói de fora, rascunho: ficha ligada ao herói (prospecto, sem consentimento) e oportunidade em rascunho',
+select tests.ok('S102 Hero de fora, rascunho: ficha ligada ao Hero (prospecto, sem consentimento) e oportunidade em rascunho',
   (select status = 'draft' and closed_reason is null and talent_id = (select id from public.talent_profiles where creator_id = 'a1020000-0000-4000-8000-0000000000c2' and agency_id = 'a1020000-0000-4000-8000-0000000000a1')
    from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o2'))
-  and (select commercial_status = 'prospect' and consent_at is null and display_name = 'Herói Fora S102' from public.talent_profiles where creator_id = 'a1020000-0000-4000-8000-0000000000c2'));
-select tests.ok('S102 o detalhe do rascunho traz o herói e o consentimento "none"',
+  and (select commercial_status = 'prospect' and consent_at is null and display_name = 'Hero Fora S102' from public.talent_profiles where creator_id = 'a1020000-0000-4000-8000-0000000000c2'));
+select tests.ok('S102 o detalhe do rascunho traz o Hero e o consentimento "none"',
   (public.agency_sponsorship_detail((select v::uuid from t_s102 where k='o2')) -> 'opportunity' -> 'hero') @> '{"slug":"s102-heroi-fora","consent":"none","has_hero":true,"hero_active":true}'::jsonb
   and public.agency_sponsorship_detail((select v::uuid from t_s102 where k='o2')) -> 'opportunity' ->> 'status' = 'draft');
 select tests.ok('S102 a lista mostra o rascunho depois das abertas',
   (select (array_agg(x ->> 'status' order by ordinality))[1:2] = array['open','draft'] from jsonb_array_elements(public.agency_sponsorships('a1020000-0000-4000-8000-0000000000a1')) with ordinality as t(x, ordinality)));
 
 -- publicar sem consentimento é recusado e não deixa ficha pela metade
-select tests.expect_error('S102 publicar com herói de fora sem consentimento é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c3"},"publish":true}')$q$, 'consent_required');
-select tests.ok('S102 a recusa desfez a ficha do herói C3 (atômico)', not exists (select 1 from public.talent_profiles where creator_id = 'a1020000-0000-4000-8000-0000000000c3'));
+select tests.expect_error('S102 publicar com Hero de fora sem consentimento é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c3"},"publish":true}')$q$, 'consent_required');
+select tests.ok('S102 a recusa desfez a ficha do Hero C3 (atômico)', not exists (select 1 from public.talent_profiles where creator_id = 'a1020000-0000-4000-8000-0000000000c3'));
 select tests.expect_error('S102 formato antigo (sem publish) sem consentimento também é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"talent_id":"a1020000-0000-4000-8000-0000000000e8"}')$q$, 'consent_required');
-select tests.expect_error('S102 publicar herói digitado sem consentimento é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"typed","name":"Outro Digitado S102"},"publish":true}')$q$, 'consent_required');
+select tests.expect_error('S102 publicar Hero digitado sem consentimento é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"typed","name":"Outro Digitado S102"},"publish":true}')$q$, 'consent_required');
 select tests.ok('S102 nenhuma ficha "Outro Digitado" ficou', not exists (select 1 from public.talent_profiles where display_name = 'Outro Digitado S102'));
 
--- herói digitado: ficha sem herói, nome limpo, reaproveita a de mesmo nome
+-- Hero digitado: ficha sem Hero, nome limpo, reaproveita a de mesmo nome
 insert into t_s102 values ('o3', public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') ||
   '{"hero":{"kind":"typed","name":"  Digitado   Novo <S102> ","profile":"@digitado.novo","email":"Digitado@Novo.Test"},"publish":false}')::text);
-select tests.ok('S102 herói digitado: ficha sem herói, nome limpo, perfil nas notas e e-mail de contato; rascunho',
+select tests.ok('S102 Hero digitado: ficha sem Hero, nome limpo, perfil nas notas e e-mail de contato; rascunho',
   (select t.creator_id is null and t.display_name = 'Digitado Novo S102' and t.contact_email = 'digitado@novo.test' and t.internal_notes like '%@digitado.novo%' and t.consent_at is null and o.status = 'draft'
    from public.sponsorship_opportunities o join public.talent_profiles t on t.id = o.talent_id where o.id = (select v::uuid from t_s102 where k='o3')));
 insert into t_s102 values ('o4', public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"typed","name":"digitado novo s102"},"publish":false}')::text);
 select tests.ok('S102 digitar o mesmo nome de novo reaproveita a ficha', (select count(*) from public.talent_profiles where agency_id = 'a1020000-0000-4000-8000-0000000000a1' and lower(display_name) = 'digitado novo s102') = 1
   and (select talent_id from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o3')) = (select talent_id from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o4')));
-select tests.ok('S102 o detalhe do digitado: sem página do herói', (public.agency_sponsorship_detail((select v::uuid from t_s102 where k='o3')) -> 'opportunity' -> 'hero' ->> 'has_hero') = 'false');
+select tests.ok('S102 o detalhe do digitado: sem página do Hero', (public.agency_sponsorship_detail((select v::uuid from t_s102 where k='o3')) -> 'opportunity' -> 'hero' ->> 'has_hero') = 'false');
 
--- herói com dono (creator): rascunho
+-- Hero com dono (creator): rascunho
 insert into t_s102 values ('o5', public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c3"},"publish":false}')::text);
 
--- recusas de herói
-select tests.expect_error('S102 herói de outra agência é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c4"},"publish":false}')$q$, 'creator_already_in_casting');
+-- recusas de Hero
+select tests.expect_error('S102 Hero de outra agência é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c4"},"publish":false}')$q$, 'creator_already_in_casting');
 select tests.expect_error('S102 ficha de outra agência é recusada', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"talent","talent_id":"a1020000-0000-4000-8000-0000000000e4"},"publish":false}')$q$, 'not_found');
-select tests.expect_error('S102 herói suspenso é invisível', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c5"},"publish":false}')$q$, 'not_found');
-select tests.expect_error('S102 herói pendente é invisível', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c6"},"publish":false}')$q$, 'not_found');
-select tests.expect_error('S102 dono do herói que já tem ficha no casting é recusado (uma pessoa, um casting)', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c7"},"publish":false}')$q$, 'user_has_talent');
-select tests.expect_error('S102 tipo de herói desconhecido', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"qualquer"},"publish":false}')$q$, 'invalid_input');
-select tests.expect_error('S102 herói que não é objeto', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":"texto","publish":false}')$q$, 'invalid_input');
-select tests.expect_error('S102 id de herói inválido', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"x"},"publish":false}')$q$, 'invalid_input');
+select tests.expect_error('S102 Hero suspenso é invisível', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c5"},"publish":false}')$q$, 'not_found');
+select tests.expect_error('S102 Hero pendente é invisível', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c6"},"publish":false}')$q$, 'not_found');
+select tests.expect_error('S102 dono do Hero que já tem ficha no casting é recusado (uma pessoa, um casting)', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c7"},"publish":false}')$q$, 'user_has_talent');
+select tests.expect_error('S102 tipo de Hero desconhecido', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"qualquer"},"publish":false}')$q$, 'invalid_input');
+select tests.expect_error('S102 Hero que não é objeto', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":"texto","publish":false}')$q$, 'invalid_input');
+select tests.expect_error('S102 id de Hero inválido', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"x"},"publish":false}')$q$, 'invalid_input');
 select tests.expect_error('S102 nome digitado vazio depois da limpeza', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"typed","name":" <> "},"publish":false}')$q$, 'invalid_hero_name');
 select tests.expect_error('S102 perfil digitado inválido', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"typed","name":"Fulano S102","profile":"javascript:alert(1)"},"publish":false}')$q$, 'invalid_profile_ref');
 select tests.expect_error('S102 e-mail digitado inválido', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"typed","name":"Fulano S102","email":"sem-arroba"},"publish":false}')$q$, 'invalid_email');
@@ -14465,12 +14465,12 @@ select tests.ok('S102 marca vê só a oportunidade aberta (rascunhos invisíveis
   and (select count(*) from public.calendar_events where kind = 'sponsorship') = 1);
 select tests.expect_error('S102 marca não responde a rascunho', $q$select public.brand_sponsorship_respond((select v::uuid from t_s102 where k='o2'), 'a1020000-0000-4000-8000-0000000000b1', 'interested', null)$q$, 'not_found');
 select tests.expect_error('S102 marca não vê a negociação de rascunho', $q$select public.brand_sponsorship_negotiation((select v::uuid from t_s102 where k='o2'), 'a1020000-0000-4000-8000-0000000000b1')$q$, 'not_found');
-select tests.ok('S102 marca vê o herói da aberta (foto, nome, nicho, endereço da página) quando há consentimento',
-  (select x -> 'hero' @> '{"slug":"s102-heroi-casting","name":"Herói Casting S102","avatar_url":"https://img.test/c1.png","pillars":["training"]}'::jsonb
+select tests.ok('S102 marca vê o Hero da aberta (foto, nome, nicho, endereço da página) quando há consentimento',
+  (select x -> 'hero' @> '{"slug":"s102-heroi-casting","name":"Hero Casting S102","avatar_url":"https://img.test/c1.png","pillars":["training"]}'::jsonb
    from jsonb_array_elements(public.brand_sponsorships('a1020000-0000-4000-8000-0000000000b1')) x));
--- rascunho é invisível: creator (dono do herói C3, rascunho o5)
+-- rascunho é invisível: creator (dono do Hero C3, rascunho o5)
 select tests.login('a1020000-0000-4000-8000-000000000006','s102-dono-heroi@test.local');
-select tests.ok('S102 creator dono do herói não vê o rascunho (tabela, lista, agenda)',
+select tests.ok('S102 creator dono do Hero não vê o rascunho (tabela, lista, agenda)',
   (select count(*) from public.sponsorship_opportunities) = 0 and jsonb_array_length(public.talent_sponsorships()) = 0
   and (select count(*) from public.calendar_events where kind = 'sponsorship') = 0);
 
@@ -14496,47 +14496,47 @@ select tests.ok('S102 a marca agora vê as duas abertas', jsonb_array_length(pub
 select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
 select tests.expect_error('S102 publicar de novo', $q$select public.agency_sponsorship_publish((select v::uuid from t_s102 where k='o2'))$q$, 'invalid_state');
 
--- herói suspenso depois: não publica
+-- Hero suspenso depois: não publica
 select tests.su();
 select public.talent_consent_apply((select talent_id from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o5')), true, 'v1');
 update public.creator_profiles set status = 'suspended' where id = 'a1020000-0000-4000-8000-0000000000c3';
 select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
-select tests.expect_error('S102 herói suspenso depois do rascunho: não publica', $q$select public.agency_sponsorship_publish((select v::uuid from t_s102 where k='o5'))$q$, 'hero_inactive');
-select tests.expect_error('S102 herói suspenso: salvar publicando também é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', (select v::uuid from t_s102 where k='o5'), '{"publish":true}')$q$, 'hero_inactive');
-select tests.ok('S102 a busca esconde a ficha do herói suspenso', not exists (select 1 from jsonb_array_elements(public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','s102-heroi-dono') -> 'items') i));
+select tests.expect_error('S102 Hero suspenso depois do rascunho: não publica', $q$select public.agency_sponsorship_publish((select v::uuid from t_s102 where k='o5'))$q$, 'hero_inactive');
+select tests.expect_error('S102 Hero suspenso: salvar publicando também é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', (select v::uuid from t_s102 where k='o5'), '{"publish":true}')$q$, 'hero_inactive');
+select tests.ok('S102 a busca esconde a ficha do Hero suspenso', not exists (select 1 from jsonb_array_elements(public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','s102-heroi-dono') -> 'items') i));
 select tests.su(); update public.creator_profiles set status = 'active' where id = 'a1020000-0000-4000-8000-0000000000c3';
 -- prazo vencido do rascunho: não publica
 update public.sponsorship_opportunities set respond_by = now() - interval '1 hour' where id = (select v::uuid from t_s102 where k='o5');
 select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
 select tests.expect_error('S102 rascunho com prazo vencido não publica', $q$select public.agency_sponsorship_publish((select v::uuid from t_s102 where k='o5'))$q$, 'invalid_date');
 
--- editar: rascunho publica pelo salvar (publish=true) e herói pode mudar; aberta fica aberta
+-- editar: rascunho publica pelo salvar (publish=true) e Hero pode mudar; aberta fica aberta
 select tests.su(); update public.sponsorship_opportunities set respond_by = now() + interval '3 days' where id = (select v::uuid from t_s102 where k='o5');
 select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
 select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', (select v::uuid from t_s102 where k='o5'), '{"title":"Corrida S102 editada","publish":true}');
 select tests.ok('S102 rascunho com consentimento publica pelo salvar e título muda', (select status = 'open' and title = 'Corrida S102 editada' from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o5')));
 select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', (select v::uuid from t_s102 where k='o3'), '{"hero":{"kind":"talent","talent_id":"a1020000-0000-4000-8000-0000000000e1"},"title":"Digitado vira casting"}');
-select tests.ok('S102 rascunho troca de herói e continua rascunho (publish ausente na edição)',
+select tests.ok('S102 rascunho troca de Hero e continua rascunho (publish ausente na edição)',
   (select status = 'draft' and talent_id = 'a1020000-0000-4000-8000-0000000000e1' and title = 'Digitado vira casting' from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o3')));
 select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', (select v::uuid from t_s102 where k='o1'), '{"title":"Aberta editada S102","publish":false}');
 select tests.ok('S102 aberta editada com publish=false continua aberta (não despublica)', (select status = 'open' and title = 'Aberta editada S102' from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o1')));
 
--- com resposta de marca o herói não muda
+-- com resposta de marca o Hero não muda
 select tests.login('a1020000-0000-4000-8000-000000000005','s102-dono-marca@test.local');
 select public.brand_sponsorship_respond((select v::uuid from t_s102 where k='o1'), 'a1020000-0000-4000-8000-0000000000b1', 'interested', null);
 select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
-select tests.expect_error('S102 com resposta da marca, o herói não muda', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', (select v::uuid from t_s102 where k='o1'), '{"hero":{"kind":"talent","talent_id":"a1020000-0000-4000-8000-0000000000e8"}}')$q$, 'invalid_state');
+select tests.expect_error('S102 com resposta da marca, o Hero não muda', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', (select v::uuid from t_s102 where k='o1'), '{"hero":{"kind":"talent","talent_id":"a1020000-0000-4000-8000-0000000000e8"}}')$q$, 'invalid_state');
 
--- consentimento revogado depois de publicada: a marca segue vendo, o herói só com o nome
+-- consentimento revogado depois de publicada: a marca segue vendo, o Hero só com o nome
 select tests.su();
 select public.talent_consent_apply('a1020000-0000-4000-8000-0000000000e1', false, null);
 select tests.login('a1020000-0000-4000-8000-000000000005','s102-dono-marca@test.local');
-select tests.ok('S102 consentimento revogado: a marca vê a oportunidade, mas o herói só com o nome (sem página, foto nem nicho)',
-  (select x -> 'hero' = '{"talent_id":"a1020000-0000-4000-8000-0000000000e1","name":"Herói Casting S102","has_hero":true,"hero_active":true,"pillars":[]}'::jsonb
+select tests.ok('S102 consentimento revogado: a marca vê a oportunidade, mas o Hero só com o nome (sem página, foto nem nicho)',
+  (select x -> 'hero' = '{"talent_id":"a1020000-0000-4000-8000-0000000000e1","name":"Hero Casting S102","has_hero":true,"hero_active":true,"pillars":[]}'::jsonb
         or (x -> 'hero' ? 'name' and not (x -> 'hero' ? 'slug') and not (x -> 'hero' ? 'avatar_url') and not (x -> 'hero' ? 'creator_id') and not (x -> 'hero' ? 'consent'))
    from jsonb_array_elements(public.brand_sponsorships('a1020000-0000-4000-8000-0000000000b1')) x where x ->> 'id' = (select v from t_s102 where k='o1')));
 select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
-select tests.expect_error('S102 consentimento revogado: o rascunho com esse herói não publica', $q$select public.agency_sponsorship_publish((select v::uuid from t_s102 where k='o3'))$q$, 'consent_required');
+select tests.expect_error('S102 consentimento revogado: o rascunho com esse Hero não publica', $q$select public.agency_sponsorship_publish((select v::uuid from t_s102 where k='o3'))$q$, 'consent_required');
 
 -- decidir: rascunho só se descarta
 select tests.login('a1020000-0000-4000-8000-000000000003','s102-colab-a@test.local');
@@ -14551,11 +14551,11 @@ select tests.ok('S102 rascunho descartado: cancelada, sem evento e sem avisos',
   and not exists (select 1 from public.inbox_notifications where entity_id = (select v::uuid from t_s102 where k='o3')));
 select tests.expect_error('S102 descartada não se edita', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', (select v::uuid from t_s102 where k='o3'), '{"title":"Volta"}')$q$, 'invalid_state');
 
--- agência de demonstração: só enxerga o próprio casting; não cria ficha de herói real
+-- agência de demonstração: só enxerga o próprio casting; não cria ficha de Hero real
 select tests.login('a1020000-0000-4000-8000-000000000008','s102-adm-demo@test.local');
-select tests.ok('S102 agência de demonstração: a busca traz só a ficha do próprio casting (sem heróis reais)',
+select tests.ok('S102 agência de demonstração: a busca traz só a ficha do próprio casting (sem Heros reais)',
   (select bool_and(i ->> 'scope' = 'casting') and count(*) = 1 from jsonb_array_elements(public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a3','') -> 'items') i));
-select tests.expect_error('S102 agência de demonstração não cria ficha de herói real', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a3', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c8"},"publish":false}')$q$, 'demo_locked');
+select tests.expect_error('S102 agência de demonstração não cria ficha de Hero real', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a3', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c8"},"publish":false}')$q$, 'demo_locked');
 
 -- S14 segue 18
 select tests.ok('S102 S14 segue 18 (nada novo para o visitante)', (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
@@ -14574,9 +14574,9 @@ delete from public.agencies where id::text like 'a1020000-%';
 delete from public.creator_profiles where id::text like 'a1020000-%';
 delete from auth.users where id::text like 'a1020000-%';
 
--- ================================================================ S103 · Modelo de valor (fixo x por herói) e montador de elenco (0096)
--- Valor fixo (total dividido entre os heróis) ou por herói (valor + máximo de heróis obrigatório, teto = valor × máximo) na
--- campanha da marca, na chamada, na proposta da agência e nas contrapropostas; o banco recusa indicar/acordar mais heróis que o
+-- ================================================================ S103 · Modelo de valor (fixo x por Hero) e montador de elenco (0096)
+-- Valor fixo (total dividido entre os Heros) ou por Hero (valor + máximo de Heros obrigatório, teto = valor × máximo) na
+-- campanha da marca, na chamada, na proposta da agência e nas contrapropostas; o banco recusa indicar/acordar mais Heros que o
 -- máximo; o acordo congela modelo/valor/máximo e a campanha nasce herdando; a marca lê total/modelo/máximo da própria campanha e
 -- nunca cachê; o gestor lê modelo/máximo sem valor e o montador sem nenhum R$ (só o Adm vê cachês); outra marca/agência, colaborador
 -- e visitante não leem nada; o creator não vê modelo nem valor; S14 segue 18.
@@ -14596,11 +14596,11 @@ insert into public.agency_brands (agency_id, brand_id) values ('b1030000-0000-40
 insert into public.brand_members (brand_id, user_id, role, display_name) values
   ('b1030000-0000-4000-8000-0000000000b1','b1030000-0000-4000-8000-000000000005','owner','Dona M1 S103'),('b1030000-0000-4000-8000-0000000000b2','b1030000-0000-4000-8000-000000000006','owner','Dono M2 S103');
 insert into public.talent_profiles (id, agency_id, display_name, user_id, catalog_visible, consent_at) values
-  ('b1030000-0000-4000-8000-0000000000e1','b1030000-0000-4000-8000-0000000000a1','Herói Um S103','b1030000-0000-4000-8000-000000000007',true, now() - interval '30 days'),
-  ('b1030000-0000-4000-8000-0000000000e2','b1030000-0000-4000-8000-0000000000a1','Herói Dois S103',null,true, now() - interval '30 days'),
-  ('b1030000-0000-4000-8000-0000000000e3','b1030000-0000-4000-8000-0000000000a1','Herói Três S103',null,true, now() - interval '30 days'),
-  ('b1030000-0000-4000-8000-0000000000e4','b1030000-0000-4000-8000-0000000000a1','Herói Quatro S103',null,false, null),
-  ('b1030000-0000-4000-8000-0000000000e5','b1030000-0000-4000-8000-0000000000a2','Herói Cinco S103',null,true, now() - interval '30 days');
+  ('b1030000-0000-4000-8000-0000000000e1','b1030000-0000-4000-8000-0000000000a1','Hero Um S103','b1030000-0000-4000-8000-000000000007',true, now() - interval '30 days'),
+  ('b1030000-0000-4000-8000-0000000000e2','b1030000-0000-4000-8000-0000000000a1','Hero Dois S103',null,true, now() - interval '30 days'),
+  ('b1030000-0000-4000-8000-0000000000e3','b1030000-0000-4000-8000-0000000000a1','Hero Três S103',null,true, now() - interval '30 days'),
+  ('b1030000-0000-4000-8000-0000000000e4','b1030000-0000-4000-8000-0000000000a1','Hero Quatro S103',null,false, null),
+  ('b1030000-0000-4000-8000-0000000000e5','b1030000-0000-4000-8000-0000000000a2','Hero Cinco S103',null,true, now() - interval '30 days');
 insert into public.talent_social_accounts (agency_id, talent_id, network, handle, followers, avg_reach, engagement_bp, audience, as_of, declared_side) values
   ('b1030000-0000-4000-8000-0000000000a1','b1030000-0000-4000-8000-0000000000e1','instagram','s103um',120000,30000,320,'{"age":{"18-24":4000,"25-34":3500},"top_states":["RJ","SP"]}', current_date - 10,'agency'),
   ('b1030000-0000-4000-8000-0000000000a1','b1030000-0000-4000-8000-0000000000e2','instagram','s103dois',40000,9000,510,'{}', current_date - 400,'agency');
@@ -14633,16 +14633,16 @@ select tests.expect_error('S103 visitante não lê o modelo do negócio', $q$sel
 
 -- marca: validação do modelo na campanha
 select tests.login('b1030000-0000-4000-8000-000000000005','s103-dono-m1@test.local');
-select tests.expect_error('S103 por herói sem máximo é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","budget_max_cents":200000}')$q$, 'max_heroes_required');
-select tests.expect_error('S103 por herói com máximo 0 é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","budget_max_cents":200000,"max_heroes":0}')$q$, 'max_heroes_required');
-select tests.expect_error('S103 por herói com máximo 51 é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","budget_max_cents":200000,"max_heroes":51}')$q$, 'max_heroes_required');
-select tests.expect_error('S103 por herói sem valor é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","max_heroes":3}')$q$, 'value_per_hero_required');
-select tests.expect_error('S103 por herói com valor 0 é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","budget_max_cents":0,"max_heroes":3}')$q$, 'value_per_hero_required');
+select tests.expect_error('S103 por Hero sem máximo é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","budget_max_cents":200000}')$q$, 'max_heroes_required');
+select tests.expect_error('S103 por Hero com máximo 0 é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","budget_max_cents":200000,"max_heroes":0}')$q$, 'max_heroes_required');
+select tests.expect_error('S103 por Hero com máximo 51 é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","budget_max_cents":200000,"max_heroes":51}')$q$, 'max_heroes_required');
+select tests.expect_error('S103 por Hero sem valor é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","max_heroes":3}')$q$, 'value_per_hero_required');
+select tests.expect_error('S103 por Hero com valor 0 é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","budget_max_cents":0,"max_heroes":3}')$q$, 'value_per_hero_required');
 select tests.expect_error('S103 modelo desconhecido é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"gratis","budget_max_cents":200000}')$q$, 'invalid_input');
 select tests.ok('S103 nenhuma campanha ficou das recusas', (select count(*) from public.campaign_requests where brand_id = 'b1030000-0000-4000-8000-0000000000b1') = 0);
 insert into t_s103 values ('r1', public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","budget_max_cents":200000,"max_heroes":3}')::text);
 insert into t_s103 values ('r2', public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"title":"Campanha fixa S103","value_model":"fixo","budget_max_cents":1200000,"max_heroes":9}')::text);
-select tests.ok('S103 por herói: valor por herói, máximo 3, teto 600000 (valor × máximo) e sem mínimo; fixo ignora o máximo',
+select tests.ok('S103 por Hero: valor por Hero, máximo 3, teto 600000 (valor × máximo) e sem mínimo; fixo ignora o máximo',
   (select value_model = 'por_heroi' and max_heroes = 3 and budget_max_cents = 200000 and budget_min_cents is null and budget_max_cents * max_heroes = 600000
    from public.campaign_request_budgets where request_id = (select v::uuid from t_s103 where k='r1'))
   and (select value_model = 'fixo' and max_heroes is null and budget_max_cents = 1200000 from public.campaign_request_budgets where request_id = (select v::uuid from t_s103 where k='r2')));
@@ -14672,7 +14672,7 @@ select tests.ok('S103 gestor lê modelo e máximo do negócio, sem valor nem tet
    from public.deal_value_terms((select v::uuid from t_s103 where k='d1')) d)
   and (select count(*) from public.campaign_request_budgets) = 0);
 select tests.login('b1030000-0000-4000-8000-000000000001','s103-adm-a@test.local');
-select tests.ok('S103 Adm lê o valor por herói e o teto (200000 × 3)',
+select tests.ok('S103 Adm lê o valor por Hero e o teto (200000 × 3)',
   (select (d ->> 'value_cents')::bigint = 200000 and (d ->> 'ceiling_cents')::bigint = 600000 from public.deal_value_terms((select v::uuid from t_s103 where k='d1')) d));
 select tests.login('b1030000-0000-4000-8000-000000000003','s103-colab-a@test.local');
 select tests.expect_error('S103 colaborador não lê o modelo', $q$select public.deal_value_terms((select v::uuid from t_s103 where k='d1'))$q$, 'forbidden');
@@ -14682,23 +14682,23 @@ select tests.expect_error('S103 outra agência não lê o modelo', $q$select pub
 select tests.expect_error('S103 outra agência não monta elenco na A', $q$select public.agency_cast_inputs('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d2'), null)$q$, 'not_found');
 select tests.expect_error('S103 outra agência não usa elenco no negócio alheio', $q$select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d1'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e5"}]')$q$, 'not_found');
 
--- máximo de heróis no banco (negócio por herói, máximo 3)
+-- máximo de Heros no banco (negócio por Hero, máximo 3)
 select tests.login('b1030000-0000-4000-8000-000000000002','s103-gestor-a@test.local');
 select public.agency_deal_suggest_heroes((select v::uuid from t_s103 where k='d1'), '[{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e1"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e2"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e3"}]');
-select tests.ok('S103 três heróis cabem no máximo 3', (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d1') and status = 'suggested') = 3);
-select tests.expect_error('S103 o quarto herói é recusado pelo banco (sugerir)', $q$select public.agency_deal_suggest_heroes((select v::uuid from t_s103 where k='d1'), '[{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e1"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e2"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e3"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e4"}]')$q$, 'max_heroes');
+select tests.ok('S103 três Heros cabem no máximo 3', (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d1') and status = 'suggested') = 3);
+select tests.expect_error('S103 o quarto Hero é recusado pelo banco (sugerir)', $q$select public.agency_deal_suggest_heroes((select v::uuid from t_s103 where k='d1'), '[{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e1"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e2"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e3"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e4"}]')$q$, 'max_heroes');
 select tests.ok('S103 a recusa não deixou o quarto', (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d1')) = 3);
 select public.agency_deal_suggest_heroes((select v::uuid from t_s103 where k='d1'), '[{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e1"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e2"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e4"}]');
-select tests.ok('S103 trocar um herói por outro no teto funciona (a vaga volta antes de conferir)',
+select tests.ok('S103 trocar um Hero por outro no teto funciona (a vaga volta antes de conferir)',
   (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d1') and status = 'suggested') = 3
   and not exists (select 1 from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d1') and talent_id = 'b1030000-0000-4000-8000-0000000000e3'));
 select tests.su();
-select tests.expect_error('S103 inserir direto o quarto herói também é recusado no commit',
+select tests.expect_error('S103 inserir direto o quarto Hero também é recusado no commit',
   $q$insert into public.deal_talents (agency_id, deal_id, talent_id, status) values ('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d1'), 'b1030000-0000-4000-8000-0000000000e3', 'suggested'); set constraints all immediate$q$, 'max_heroes');
 update public.deal_talents set status = 'removed' where deal_id = (select v::uuid from t_s103 where k='d1') and talent_id = 'b1030000-0000-4000-8000-0000000000e4';
 insert into public.deal_talents (agency_id, deal_id, talent_id, status) values ('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d1'), 'b1030000-0000-4000-8000-0000000000e3', 'suggested');
 set constraints all immediate;
-select tests.ok('S103 herói removido libera a vaga para outro', (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d1') and status not in ('removed','declined')) = 3);
+select tests.ok('S103 Hero removido libera a vaga para outro', (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d1') and status not in ('removed','declined')) = 3);
 select tests.expect_error('S103 reviver o removido acima do máximo é recusado',
   $q$update public.deal_talents set status = 'suggested' where deal_id = (select v::uuid from t_s103 where k='d1') and talent_id = 'b1030000-0000-4000-8000-0000000000e4'; set constraints all immediate$q$, 'max_heroes');
 insert into public.deal_talents (agency_id, deal_id, talent_id, status, consulted_at) values ('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d2'), 'b1030000-0000-4000-8000-0000000000e1', 'suggested', null);
@@ -14706,7 +14706,7 @@ insert into public.deal_talents (agency_id, deal_id, talent_id, status, consulte
 insert into public.deal_talents (agency_id, deal_id, talent_id, status, consulted_at) values ('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d2'), 'b1030000-0000-4000-8000-0000000000e3', 'suggested', null);
 insert into public.deal_talents (agency_id, deal_id, talent_id, status, consulted_at) values ('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d2'), 'b1030000-0000-4000-8000-0000000000e4', 'suggested', null);
 set constraints all immediate;
-select tests.ok('S103 valor fixo não limita a quantidade de heróis', (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d2')) = 4);
+select tests.ok('S103 valor fixo não limita a quantidade de Heros', (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d2')) = 4);
 delete from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d2');
 
 -- montador: gestor sem nenhum valor; Adm com cachês; fixo 1.200.000 com taxa de 20% => orçamento de cachês 1.000.000
@@ -14719,70 +14719,70 @@ select tests.ok('S103 gestor: montador sem fee_cents, sem orçamento, sem taxa; 
      and (v::jsonb -> 'context' ->> 'has_budget')::boolean and v::jsonb -> 'context' ->> 'value_model' = 'fixo'
      and not exists (select 1 from jsonb_array_elements(v::jsonb -> 'heroes') h where h ->> 'fee_cents' is not null) and v::text not like '%400000%' and v::text not like '%1200000%'
    from t_s103 where k='gin'));
-select tests.ok('S103 gestor: só os heróis da própria agência (4), com redes declaradas, data do dado, bloqueio e consentimento',
+select tests.ok('S103 gestor: só os Heros da própria agência (4), com redes declaradas, data do dado, bloqueio e consentimento',
   (select jsonb_array_length(v::jsonb -> 'heroes') = 4
      and not exists (select 1 from jsonb_array_elements(v::jsonb -> 'heroes') h where h ->> 'name' like '%Cinco%')
-     and exists (select 1 from jsonb_array_elements(v::jsonb -> 'heroes') h where h ->> 'name' = 'Herói Um S103' and h -> 'accounts' -> 0 ->> 'as_of' is not null and (h -> 'accounts' -> 0 ->> 'avg_reach')::int = 30000 and (h ->> 'consent_ok')::boolean)
-     and exists (select 1 from jsonb_array_elements(v::jsonb -> 'heroes') h where h ->> 'name' = 'Herói Quatro S103' and not (h ->> 'consent_ok')::boolean)
+     and exists (select 1 from jsonb_array_elements(v::jsonb -> 'heroes') h where h ->> 'name' = 'Hero Um S103' and h -> 'accounts' -> 0 ->> 'as_of' is not null and (h -> 'accounts' -> 0 ->> 'avg_reach')::int = 30000 and (h ->> 'consent_ok')::boolean)
+     and exists (select 1 from jsonb_array_elements(v::jsonb -> 'heroes') h where h ->> 'name' = 'Hero Quatro S103' and not (h ->> 'consent_ok')::boolean)
    from t_s103 where k='gin'));
-select tests.ok('S103 o último cachê do herói (negócio por herói) aparece ao gestor só como proporção: 400000 / 1000000 = 4000 bp',
+select tests.ok('S103 o último cachê do Hero (negócio por Hero) aparece ao gestor só como proporção: 400000 / 1000000 = 4000 bp',
   (select (h ->> 'cost_bp')::int = 4000 and h ->> 'fee_source' = 'past' and h ->> 'fee_cents' is null
-   from t_s103, jsonb_array_elements(v::jsonb -> 'heroes') h where k='gin' and h ->> 'name' = 'Herói Um S103'));
+   from t_s103, jsonb_array_elements(v::jsonb -> 'heroes') h where k='gin' and h ->> 'name' = 'Hero Um S103'));
 select tests.login('b1030000-0000-4000-8000-000000000001','s103-adm-a@test.local');
 insert into t_s103 select 'ain', public.agency_cast_inputs('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d2'), null)::text;
-select tests.ok('S103 Adm: valor total, taxa e orçamento de cachês (1.200.000 ÷ 1,20 = 1.000.000) e o cachê do herói',
+select tests.ok('S103 Adm: valor total, taxa e orçamento de cachês (1.200.000 ÷ 1,20 = 1.000.000) e o cachê do Hero',
   (select (v::jsonb ->> 'can_values')::boolean and (v::jsonb -> 'context' ->> 'budget_cents')::bigint = 1200000 and (v::jsonb -> 'context' ->> 'rate_bp')::int = 2000
      and (v::jsonb -> 'context' ->> 'fee_budget_cents')::bigint = 1000000
-     and exists (select 1 from jsonb_array_elements(v::jsonb -> 'heroes') h where h ->> 'name' = 'Herói Um S103' and (h ->> 'fee_cents')::bigint = 400000 and h ->> 'cost_bp' is null)
+     and exists (select 1 from jsonb_array_elements(v::jsonb -> 'heroes') h where h ->> 'name' = 'Hero Um S103' and (h ->> 'fee_cents')::bigint = 400000 and h ->> 'cost_bp' is null)
    from t_s103 where k='ain'));
-select tests.ok('S103 período do herói bloqueado (dias 25 a 30) aparece como bloqueado e o dado de 400 dias atrás vem com a data',
-  (select (h ->> 'blocked')::boolean from t_s103, jsonb_array_elements(v::jsonb -> 'heroes') h where k='ain' and h ->> 'name' = 'Herói Três S103')
-  and (select (h -> 'accounts' -> 0 ->> 'as_of')::date = current_date - 400 from t_s103, jsonb_array_elements(v::jsonb -> 'heroes') h where k='ain' and h ->> 'name' = 'Herói Dois S103'));
+select tests.ok('S103 período do Hero bloqueado (dias 25 a 30) aparece como bloqueado e o dado de 400 dias atrás vem com a data',
+  (select (h ->> 'blocked')::boolean from t_s103, jsonb_array_elements(v::jsonb -> 'heroes') h where k='ain' and h ->> 'name' = 'Hero Três S103')
+  and (select (h -> 'accounts' -> 0 ->> 'as_of')::date = current_date - 400 from t_s103, jsonb_array_elements(v::jsonb -> 'heroes') h where k='ain' and h ->> 'name' = 'Hero Dois S103'));
 
 -- usar o elenco
 select tests.login('b1030000-0000-4000-8000-000000000002','s103-gestor-a@test.local');
 select tests.expect_error('S103 gestor não grava repartição de cachê', $q$select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d2'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","fee_cents":500000}]')$q$, 'forbidden');
 select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d2'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e1"},{"talent_id":"b1030000-0000-4000-8000-0000000000e2"}]');
-select tests.ok('S103 gestor usa o elenco sem valores: 2 heróis sugeridos e nenhum cachê gravado',
+select tests.ok('S103 gestor usa o elenco sem valores: 2 Heros sugeridos e nenhum cachê gravado',
   (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d2') and status = 'suggested') = 2
   and (select count(*) from public.deal_talent_fees where deal_id = (select v::uuid from t_s103 where k='d2')) = 0);
 select tests.login('b1030000-0000-4000-8000-000000000001','s103-adm-a@test.local');
 select tests.expect_error('S103 repartição acima do orçamento de cachês (1.000.000) é recusada', $q$select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d2'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","fee_cents":600000},{"talent_id":"b1030000-0000-4000-8000-0000000000e2","fee_cents":400001}]')$q$, 'fee_over_budget');
 select tests.expect_error('S103 cachê negativo é recusado', $q$select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d2'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","fee_cents":-1}]')$q$, 'invalid_input');
-select tests.expect_error('S103 herói de outra agência não entra', $q$select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d2'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e5"}]')$q$, 'not_found');
+select tests.expect_error('S103 Hero de outra agência não entra', $q$select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d2'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e5"}]')$q$, 'not_found');
 select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d2'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","fee_cents":600000},{"talent_id":"b1030000-0000-4000-8000-0000000000e2","fee_cents":400000}]');
 select tests.ok('S103 Adm usa o elenco com a repartição: soma = orçamento de cachês (1.000.000)',
   (select sum(fee_cents) = 1000000 and count(*) = 2 from public.deal_talent_fees where deal_id = (select v::uuid from t_s103 where k='d2')));
-select tests.expect_error('S103 elenco acima do máximo (3) no negócio por herói', $q$select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d1'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e1"},{"talent_id":"b1030000-0000-4000-8000-0000000000e2"},{"talent_id":"b1030000-0000-4000-8000-0000000000e3"},{"talent_id":"b1030000-0000-4000-8000-0000000000e4"}]')$q$, 'max_heroes');
+select tests.expect_error('S103 elenco acima do máximo (3) no negócio por Hero', $q$select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d1'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e1"},{"talent_id":"b1030000-0000-4000-8000-0000000000e2"},{"talent_id":"b1030000-0000-4000-8000-0000000000e3"},{"talent_id":"b1030000-0000-4000-8000-0000000000e4"}]')$q$, 'max_heroes');
 
 -- chamada: validação, publicação, proposta, contraproposta e acordo
 select tests.login('b1030000-0000-4000-8000-000000000005','s103-dono-m1@test.local');
-select tests.expect_error('S103 chamada por herói sem máximo é recusada', $q$select public.brand_call_save('b1030000-0000-4000-8000-0000000000b1', null, (select v::jsonb from t_s103 where k='call') - 'max_heroes')$q$, 'max_heroes_required');
-select tests.expect_error('S103 chamada por herói sem valor é recusada', $q$select public.brand_call_save('b1030000-0000-4000-8000-0000000000b1', null, (select v::jsonb from t_s103 where k='call') - 'budget_cents')$q$, 'value_per_hero_required');
+select tests.expect_error('S103 chamada por Hero sem máximo é recusada', $q$select public.brand_call_save('b1030000-0000-4000-8000-0000000000b1', null, (select v::jsonb from t_s103 where k='call') - 'max_heroes')$q$, 'max_heroes_required');
+select tests.expect_error('S103 chamada por Hero sem valor é recusada', $q$select public.brand_call_save('b1030000-0000-4000-8000-0000000000b1', null, (select v::jsonb from t_s103 where k='call') - 'budget_cents')$q$, 'value_per_hero_required');
 insert into t_s103 values ('c1', public.brand_call_save('b1030000-0000-4000-8000-0000000000b1', null, (select v::jsonb from t_s103 where k='call') || '{"budget_display":"open"}')::text);
-select tests.ok('S103 chamada por herói nunca fica com valor "aberto"; guarda modelo e máximo',
+select tests.ok('S103 chamada por Hero nunca fica com valor "aberto"; guarda modelo e máximo',
   (select value_model = 'por_heroi' and max_heroes = 3 and budget_cents = 200000 and budget_display = 'exact' from public.brand_calls where id = (select v::uuid from t_s103 where k='c1')));
 insert into t_s103 values ('c2', public.brand_call_save('b1030000-0000-4000-8000-0000000000b1', null, (select v::jsonb from t_s103 where k='call') || '{"title":"Chamada fixa S103","value_model":"fixo","max_heroes":4,"budget_cents":900000}')::text);
 select tests.ok('S103 chamada fixa não guarda máximo', (select value_model = 'fixo' and max_heroes is null from public.brand_calls where id = (select v::uuid from t_s103 where k='c2')));
 select public.brand_call_submit((select v::uuid from t_s103 where k='c1'), null);
 select public.brand_call_submit((select v::uuid from t_s103 where k='c2'), null);
 select tests.login('b1030000-0000-4000-8000-000000000001','s103-adm-a@test.local');
-select tests.expect_error('S103 proposta por herói sem máximo é recusada', $q$select public.agency_brand_call_proposal_save((select v::uuid from t_s103 where k='c1'), 'b1030000-0000-4000-8000-0000000000a1',
+select tests.expect_error('S103 proposta por Hero sem máximo é recusada', $q$select public.agency_brand_call_proposal_save((select v::uuid from t_s103 where k='c1'), 'b1030000-0000-4000-8000-0000000000a1',
   '{"talents":[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","deliverables":[{"kind":"reels","quantity":1}]}],"amount_cents":150000,"value_model":"por_heroi"}')$q$, 'max_heroes_required');
-select tests.expect_error('S103 proposta com mais heróis que o máximo é recusada', $q$select public.agency_brand_call_proposal_save((select v::uuid from t_s103 where k='c1'), 'b1030000-0000-4000-8000-0000000000a1',
+select tests.expect_error('S103 proposta com mais Heros que o máximo é recusada', $q$select public.agency_brand_call_proposal_save((select v::uuid from t_s103 where k='c1'), 'b1030000-0000-4000-8000-0000000000a1',
   '{"talents":[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","deliverables":[{"kind":"reels","quantity":1}]},{"talent_id":"b1030000-0000-4000-8000-0000000000e2","deliverables":[{"kind":"reels","quantity":1}]}],"amount_cents":150000,"value_model":"por_heroi","max_heroes":1}')$q$, 'max_heroes');
 insert into t_s103 values ('p1', public.agency_brand_call_proposal_save((select v::uuid from t_s103 where k='c1'), 'b1030000-0000-4000-8000-0000000000a1',
   '{"talents":[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","deliverables":[{"kind":"reels","quantity":1}]},{"talent_id":"b1030000-0000-4000-8000-0000000000e2","deliverables":[{"kind":"reels","quantity":1}]}],"amount_cents":150000,"value_model":"por_heroi","max_heroes":2}')::text);
 insert into t_s103 values ('p2', public.agency_brand_call_proposal_save((select v::uuid from t_s103 where k='c2'), 'b1030000-0000-4000-8000-0000000000a1',
   '{"talents":[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","deliverables":[{"kind":"reels","quantity":1}]},{"talent_id":"b1030000-0000-4000-8000-0000000000e2","deliverables":[{"kind":"reels","quantity":1}]},{"talent_id":"b1030000-0000-4000-8000-0000000000e3","deliverables":[{"kind":"reels","quantity":1}]}],"amount_cents":800000}')::text);
-select tests.ok('S103 rascunhos guardam o modelo da proposta (por herói com 2; fixo sem máximo)',
+select tests.ok('S103 rascunhos guardam o modelo da proposta (por Hero com 2; fixo sem máximo)',
   (select value_model = 'por_heroi' and max_heroes = 2 and amount_cents = 150000 from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p1'))
   and (select value_model = 'fixo' and max_heroes is null from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p2')));
 select tests.login('b1030000-0000-4000-8000-000000000002','s103-gestor-a@test.local');
 select public.agency_brand_call_proposal_save((select v::uuid from t_s103 where k='c1'), 'b1030000-0000-4000-8000-0000000000a1',
   '{"talents":[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","deliverables":[{"kind":"reels","quantity":1}]}],"amount_cents":1,"value_model":"fixo","max_heroes":null}');
 select tests.su();
-select tests.ok('S103 gestor não muda modelo, valor nem máximo da proposta (só os heróis)',
+select tests.ok('S103 gestor não muda modelo, valor nem máximo da proposta (só os Heros)',
   (select value_model = 'por_heroi' and max_heroes = 2 and amount_cents = 150000 from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p1'))
   and (select count(*) from public.brand_call_proposal_talents where proposal_id = (select v::uuid from t_s103 where k='p1')) = 1);
 select tests.login('b1030000-0000-4000-8000-000000000002','s103-gestor-a@test.local');
@@ -14799,16 +14799,16 @@ select tests.ok('S103 a 1ª rodada leva o modelo e o máximo',
 
 -- marca vê tudo da própria chamada; outra marca nada
 select tests.login('b1030000-0000-4000-8000-000000000005','s103-dono-m1@test.local');
-select tests.ok('S103 a marca lê modelo, máximo e valor da proposta por herói (teto 300000)',
+select tests.ok('S103 a marca lê modelo, máximo e valor da proposta por Hero (teto 300000)',
   (select (q ->> 'value_model') = 'por_heroi' and (q ->> 'max_heroes')::int = 2 and (q ->> 'amount_cents')::bigint = 150000 and (q ->> 'amount_cents')::bigint * (q ->> 'max_heroes')::int = 300000
    from public.brand_call_detail((select v::uuid from t_s103 where k='c1')) d, jsonb_array_elements(d -> 'proposals') q limit 1));
--- contraproposta: troca para valor fixo; sem informar, mantém o modelo; por herói exige valor e máximo
-select tests.expect_error('S103 contraproposta por herói sem máximo é recusada', $q$select public.brand_call_reply((select v::uuid from t_s103 where k='p2'), 'counter', 100000, '[{"kind":"reels","quantity":3}]'::jsonb, null, 'ok', 'por_heroi', null)$q$, 'max_heroes_required');
-select public.brand_call_reply((select v::uuid from t_s103 where k='p2'), 'counter', 100000, '[{"kind":"reels","quantity":3}]'::jsonb, null, 'por herói', 'por_heroi', 2);
-select tests.ok('S103 contraproposta da marca vira por herói com máximo 2 (a proposta tem 3 heróis)',
+-- contraproposta: troca para valor fixo; sem informar, mantém o modelo; por Hero exige valor e máximo
+select tests.expect_error('S103 contraproposta por Hero sem máximo é recusada', $q$select public.brand_call_reply((select v::uuid from t_s103 where k='p2'), 'counter', 100000, '[{"kind":"reels","quantity":3}]'::jsonb, null, 'ok', 'por_heroi', null)$q$, 'max_heroes_required');
+select public.brand_call_reply((select v::uuid from t_s103 where k='p2'), 'counter', 100000, '[{"kind":"reels","quantity":3}]'::jsonb, null, 'por Hero', 'por_heroi', 2);
+select tests.ok('S103 contraproposta da marca vira por Hero com máximo 2 (a proposta tem 3 Heros)',
   (select value_model = 'por_heroi' and max_heroes = 2 and amount_cents = 100000 and awaiting = 'agency' from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p2')));
 select tests.login('b1030000-0000-4000-8000-000000000001','s103-adm-a@test.local');
-select tests.expect_error('S103 a agência não acorda com mais heróis que o máximo da contraproposta', $q$select public.agency_brand_call_reply((select v::uuid from t_s103 where k='p2'), 'accept', null, null, null, null)$q$, 'max_heroes');
+select tests.expect_error('S103 a agência não acorda com mais Heros que o máximo da contraproposta', $q$select public.agency_brand_call_reply((select v::uuid from t_s103 where k='p2'), 'accept', null, null, null, null)$q$, 'max_heroes');
 select tests.ok('S103 a recusa desfez o acordo', (select status = 'open' and agreed_value_model is null from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p2')));
 select public.agency_brand_call_reply((select v::uuid from t_s103 where k='p2'), 'counter', 100000, '[{"kind":"reels","quantity":3}]'::jsonb, null, 'volto a fixo', 'fixo', null);
 select tests.ok('S103 a agência contrapropõe de volta a valor fixo (máximo zera)',
@@ -14821,7 +14821,7 @@ select tests.ok('S103 acordo fixo: congela modelo e valor e a campanha herda',
        from public.brand_call_proposals q join public.campaign_request_budgets b on b.request_id = q.request_id where q.id = (select v::uuid from t_s103 where k='p2')));
 select tests.login('b1030000-0000-4000-8000-000000000005','s103-dono-m1@test.local');
 select public.brand_call_reply((select v::uuid from t_s103 where k='p1'), 'accept', null, null, null, null);
-select tests.ok('S103 acordo por herói: congela modelo, valor e máximo; a campanha nasce por herói (sem mínimo) com o teto',
+select tests.ok('S103 acordo por Hero: congela modelo, valor e máximo; a campanha nasce por Hero (sem mínimo) com o teto',
   (select status = 'agreed' and agreed_value_model = 'por_heroi' and agreed_max_heroes = 2 and agreed_cents = 150000 from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p1'))
   and (select b.value_model = 'por_heroi' and b.max_heroes = 2 and b.budget_max_cents = 150000 and b.budget_min_cents is null
        from public.brand_call_proposals q join public.campaign_request_budgets b on b.request_id = q.request_id where q.id = (select v::uuid from t_s103 where k='p1')));
@@ -14829,26 +14829,26 @@ select public.brand_request_save((select request_id from public.brand_call_propo
 select tests.ok('S103 depois do acordo a marca não muda modelo, valor nem máximo da campanha',
   (select b.value_model = 'por_heroi' and b.max_heroes = 2 and b.budget_max_cents = 150000
    from public.brand_call_proposals q join public.campaign_request_budgets b on b.request_id = q.request_id where q.id = (select v::uuid from t_s103 where k='p1')));
-select tests.expect_error('S103 proposta acordada não aceita mais heróis', $q$insert into public.brand_call_proposal_talents (proposal_id, call_id, agency_id, brand_id, talent_id, position, deliverables)
+select tests.expect_error('S103 proposta acordada não aceita mais Heros', $q$insert into public.brand_call_proposal_talents (proposal_id, call_id, agency_id, brand_id, talent_id, position, deliverables)
   values ((select v::uuid from t_s103 where k='p1'), (select v::uuid from t_s103 where k='c1'), 'b1030000-0000-4000-8000-0000000000a1', 'b1030000-0000-4000-8000-0000000000b1', 'b1030000-0000-4000-8000-0000000000e3', 3, '[{"kind":"reels","quantity":1}]')$q$, 'permission denied');
 select tests.su();
 update public.campaign_request_budgets set budget_max_cents = 900000 where request_id = (select v::uuid from t_s103 where k='r1');
 update public.campaign_request_budgets set budget_max_cents = 90000 where request_id = (select request_id from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p1'));
-select tests.ok('S103 alteração de verba numa campanha por herói enviada vira total ÷ máximo (900000 ÷ 3); o rascunho não passa por isso',
+select tests.ok('S103 alteração de verba numa campanha por Hero enviada vira total ÷ máximo (900000 ÷ 3); o rascunho não passa por isso',
   (select budget_max_cents = 300000 and value_model = 'por_heroi' from public.campaign_request_budgets where request_id = (select v::uuid from t_s103 where k='r1'))
   and (select b.budget_max_cents = 90000 from public.brand_call_proposals q join public.campaign_request_budgets b on b.request_id = q.request_id where q.id = (select v::uuid from t_s103 where k='p1')));
 select tests.login('b1030000-0000-4000-8000-000000000006','s103-dono-m2@test.local');
 select tests.expect_error('S103 outra marca não lê a chamada', $q$select public.brand_call_detail((select v::uuid from t_s103 where k='c1'))$q$, 'not_found');
 select tests.login('b1030000-0000-4000-8000-000000000004','s103-adm-b@test.local');
 select tests.expect_error('S103 outra agência (fora do alvo) não lê a chamada nem monta elenco', $q$select public.agency_cast_inputs('b1030000-0000-4000-8000-0000000000a2', null, (select v::uuid from t_s103 where k='c1'))$q$, 'not_found');
--- montador na proposta à chamada (gestor sem valor; Adm com a verba por herói não entra como orçamento)
+-- montador na proposta à chamada (gestor sem valor; Adm com a verba por Hero não entra como orçamento)
 select tests.login('b1030000-0000-4000-8000-000000000002','s103-gestor-a@test.local');
-select tests.ok('S103 montador da chamada: modelo por herói e máximo 3 para o gestor, sem valor',
+select tests.ok('S103 montador da chamada: modelo por Hero e máximo 3 para o gestor, sem valor',
   (select v ->> 'can_values' = 'false' and v -> 'context' ->> 'value_model' = 'por_heroi' and (v -> 'context' ->> 'max_heroes')::int = 3 and v -> 'context' ->> 'budget_cents' is null and v::text not like '%200000%'
    from (select public.agency_cast_inputs('b1030000-0000-4000-8000-0000000000a1', null, (select v::uuid from t_s103 where k='c1')) as v) x));
 -- creator: nunca vê modelo nem valor
 select tests.login('b1030000-0000-4000-8000-000000000007','s103-heroi@test.local');
-select tests.ok('S103 o herói não vê modelo, máximo nem valor nas chamadas',
+select tests.ok('S103 o Hero não vê modelo, máximo nem valor nas chamadas',
   (select coalesce(jsonb_agg(x)::text, '') not like '%value_model%' and coalesce(jsonb_agg(x)::text, '') not like '%max_heroes%' and coalesce(jsonb_agg(x)::text, '') not like '%budget_cents%' and count(*) >= 1
    from jsonb_array_elements(public.talent_brand_calls()) x));
 
@@ -14870,10 +14870,10 @@ delete from public.agencies where id::text like 'b1030000-%';
 delete from auth.users where id::text like 'b1030000-%';
 drop table t_s103;
 
--- ================================================================ S104 · Portal do Herói único: convite "Herói" do admin (0097)
--- O convite do admin tem 7 papéis (sem "Creator" separado). "Herói" escolhe: herói novo (pendente, a pessoa é a titular),
--- equipe de um herói existente (titular se ele não tem titular; senão membro) ou herói já no casting (convite de acesso à
--- ficha, com as mesmas regras do convite da agência: sem login na ficha, herói ligado sem conta, nada arquivado; o convite
+-- ================================================================ S104 · Portal do Hero único: convite "Hero" do admin (0097)
+-- O convite do admin tem 7 papéis (sem "Creator" separado). "Hero" escolhe: Hero novo (pendente, a pessoa é a titular),
+-- equipe de um Hero existente (titular se ele não tem titular; senão membro) ou Hero já no casting (convite de acesso à
+-- ficha, com as mesmas regras do convite da agência: sem login na ficha, Hero ligado sem conta, nada arquivado; o convite
 -- novo substitui o pendente da mesma ficha). O aceite da ficha leva a pessoa ao casting (talent_my_context). Convite antigo
 -- com papel 'creator' segue valendo. A lista de fichas convidáveis é só do admin geral (gestor e visitante não leem);
 -- quem não é admin não convida. S14 segue 18.
@@ -14888,17 +14888,17 @@ insert into public.agencies (id, slug, name) values ('b1040000-0000-4000-8000-00
 insert into public.agency_members (agency_id, user_id, role, display_name) values
   ('b1040000-0000-4000-8000-0000000000a1','b1040000-0000-4000-8000-000000000002','manager','Gil Gestor S104');
 insert into public.creator_profiles (id, slug, name, status, user_id) values
-  ('b1040000-0000-4000-8000-0000000000c1','s104-heroi-titular','Herói Com Titular S104','active','b1040000-0000-4000-8000-000000000003'),
-  ('b1040000-0000-4000-8000-0000000000c2','s104-heroi-livre','Herói Sem Titular S104','active',null),
-  ('b1040000-0000-4000-8000-0000000000c3','s104-heroi-casting','Herói do Casting S104','active',null);
+  ('b1040000-0000-4000-8000-0000000000c1','s104-heroi-titular','Hero Com Titular S104','active','b1040000-0000-4000-8000-000000000003'),
+  ('b1040000-0000-4000-8000-0000000000c2','s104-heroi-livre','Hero Sem Titular S104','active',null),
+  ('b1040000-0000-4000-8000-0000000000c3','s104-heroi-casting','Hero do Casting S104','active',null);
 insert into public.role_assignments (user_id, role, scope_type, scope_id) values
   ('b1040000-0000-4000-8000-000000000003','creator','creator','b1040000-0000-4000-8000-0000000000c1');
 insert into public.talent_profiles (id, agency_id, display_name, user_id, creator_id, archived_at) values
   ('b1040000-0000-4000-8000-0000000000e1','b1040000-0000-4000-8000-0000000000a1','Ficha Livre S104',null,null,null),
   ('b1040000-0000-4000-8000-0000000000e2','b1040000-0000-4000-8000-0000000000a1','Ficha Com Login S104','b1040000-0000-4000-8000-000000000004',null,null),
   ('b1040000-0000-4000-8000-0000000000e3','b1040000-0000-4000-8000-0000000000a1','Ficha Arquivada S104',null,null,now()),
-  ('b1040000-0000-4000-8000-0000000000e4','b1040000-0000-4000-8000-0000000000a1','Ficha Herói Titular S104',null,'b1040000-0000-4000-8000-0000000000c1',null),
-  ('b1040000-0000-4000-8000-0000000000e5','b1040000-0000-4000-8000-0000000000a1','Ficha Herói Sem Conta S104',null,'b1040000-0000-4000-8000-0000000000c3',null);
+  ('b1040000-0000-4000-8000-0000000000e4','b1040000-0000-4000-8000-0000000000a1','Ficha Hero Titular S104',null,'b1040000-0000-4000-8000-0000000000c1',null),
+  ('b1040000-0000-4000-8000-0000000000e5','b1040000-0000-4000-8000-0000000000a1','Ficha Hero Sem Conta S104',null,'b1040000-0000-4000-8000-0000000000c3',null);
 create temp table t_s104 (k text primary key, v text);
 grant all on t_s104 to anon, authenticated, service_role;
 
@@ -14918,56 +14918,56 @@ select tests.login('b1040000-0000-4000-8000-000000000002', 's104-gestor@test.loc
 select tests.expect_error('S104 gestor não lista fichas do admin', $q$select * from public.admin_invite_talent_options()$q$, 'forbidden');
 select tests.expect_error('S104 gestor não usa o convite do admin', $q$select public.admin_invite('x.s104@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000e1"}')$q$, 'forbidden');
 
--- admin: lista e os três caminhos do Herói
+-- admin: lista e os três caminhos do Hero
 select tests.login('b1040000-0000-4000-8000-000000000001', 's104-admin@test.local');
-select tests.ok('S104 lista do admin: ficha sem login e herói sem conta entram; com login, arquivada e herói com titular ficam fora',
+select tests.ok('S104 lista do admin: ficha sem login e Hero sem conta entram; com login, arquivada e Hero com titular ficam fora',
   (select array_agg(talent_id order by display_name) from public.admin_invite_talent_options() where talent_id::text like 'b1040000-%')
     = array['b1040000-0000-4000-8000-0000000000e5','b1040000-0000-4000-8000-0000000000e1']::uuid[]
   and (select has_hero from public.admin_invite_talent_options() where talent_id = 'b1040000-0000-4000-8000-0000000000e5'));
-insert into t_s104 values ('new', public.admin_invite('s104-novo@test.local', 'hero', 7, '{"hero_mode": "new", "hero_name": "Herói Novo S104"}')::text);
+insert into t_s104 values ('new', public.admin_invite('s104-novo@test.local', 'hero', 7, '{"hero_mode": "new", "hero_name": "Hero Novo S104"}')::text);
 insert into t_s104 values ('own', public.admin_invite('s104-assume@test.local', 'hero', 7, '{"hero_mode": "team", "hero_id": "b1040000-0000-4000-8000-0000000000c2"}')::text);
 insert into t_s104 values ('mem', public.admin_invite('s104-membro@test.local', 'hero', 7, '{"hero_mode": "team", "hero_id": "b1040000-0000-4000-8000-0000000000c1"}')::text);
 insert into t_s104 values ('cast1', public.admin_invite('s104-ficha@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000e1"}')::text);
 insert into t_s104 values ('cast2', public.admin_invite('s104-ficha@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000e1"}')::text);
 insert into t_s104 values ('old', public.admin_invite('s104-antigo@test.local', 'creator', 7, '{"hero_mode": "none"}')::text);
-select tests.ok('S104 herói novo nasce pendente com a pessoa titular; equipe: titular quando o herói não tem, membro quando tem',
+select tests.ok('S104 Hero novo nasce pendente com a pessoa titular; equipe: titular quando o Hero não tem, membro quando tem',
   (select i.kind = 'hero' and i.team_role = 'owner' and c.status = 'pending' from public.invitations i join public.creator_profiles c on c.id = i.creator_profile_id
      where i.id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s104 where k = 'new'))
   and (select role::text = 'creator' and creator_profile_id = 'b1040000-0000-4000-8000-0000000000c2' and team_role = 'owner' from public.invitations
      where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s104 where k = 'own'))
   and (select team_role = 'member' from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s104 where k = 'mem')));
-select tests.ok('S104 herói no casting: convite da ficha (papel interno creator, agência e ficha), o novo substitui o pendente e fica auditado',
+select tests.ok('S104 Hero no casting: convite da ficha (papel interno creator, agência e ficha), o novo substitui o pendente e fica auditado',
   (select role::text = 'creator' and talent_id = 'b1040000-0000-4000-8000-0000000000e1' and agency_id = 'b1040000-0000-4000-8000-0000000000a1' and kind is null and status = 'pending'
      from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s104 where k = 'cast2'))
   and (select status = 'revoked' from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s104 where k = 'cast1'))
   and exists (select 1 from public.admin_audit where action = 'invitation.create' and resource_id = (select v::jsonb -> 'invitations' -> 0 ->> 'id' from t_s104 where k = 'cast2')));
 select tests.expect_error('S104 ficha com login recusa', $q$select public.admin_invite('y.s104@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000e2"}')$q$, 'talent_has_login');
 select tests.expect_error('S104 ficha arquivada recusa', $q$select public.admin_invite('y.s104@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000e3"}')$q$, 'talent_archived');
-select tests.expect_error('S104 ficha de herói com titular recusa (entra pela conta dele)', $q$select public.admin_invite('y.s104@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000e4"}')$q$, 'creator_has_login');
+select tests.expect_error('S104 ficha de Hero com titular recusa (entra pela conta dele)', $q$select public.admin_invite('y.s104@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000e4"}')$q$, 'creator_has_login');
 select tests.expect_error('S104 ficha inexistente', $q$select public.admin_invite('y.s104@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000ff"}')$q$, 'not_found');
 select tests.expect_error('S104 modo desconhecido recusa', $q$select public.admin_invite('y.s104@test.local', 'hero', 7, '{"hero_mode": "outro"}')$q$, 'invalid_input');
-select tests.expect_error('S104 equipe sem herói recusa', $q$select public.admin_invite('y.s104@test.local', 'hero', 7, '{"hero_mode": "team"}')$q$, 'invalid_input');
+select tests.expect_error('S104 equipe sem Hero recusa', $q$select public.admin_invite('y.s104@test.local', 'hero', 7, '{"hero_mode": "team"}')$q$, 'invalid_input');
 
 -- aceite: a pessoa da ficha entra no casting; o convite antigo (creator) segue valendo
 select tests.login('b1040000-0000-4000-8000-000000000005', 's104-ficha@test.local');
 insert into t_s104 values ('acc', public.accept_invitation((select v::jsonb -> 'invitations' -> 0 ->> 'token' from t_s104 where k = 'cast2'))::text);
-select tests.ok('S104 aceite da ficha: a pessoa vira o login da ficha e abre o casting no Portal do Herói',
+select tests.ok('S104 aceite da ficha: a pessoa vira o login da ficha e abre o casting no Portal do Hero',
   (select v::jsonb ->> 'talent_id' from t_s104 where k = 'acc') = 'b1040000-0000-4000-8000-0000000000e1'
   and public.my_talent_id() = 'b1040000-0000-4000-8000-0000000000e1'
   and (public.talent_my_context() ->> 'id') = 'b1040000-0000-4000-8000-0000000000e1');
 select tests.login('b1040000-0000-4000-8000-000000000006', 's104-antigo@test.local');
 insert into t_s104 values ('oacc', public.accept_invitation((select v::jsonb -> 'invitations' -> 0 ->> 'token' from t_s104 where k = 'old'))::text);
 select tests.su();
-select tests.ok('S104 convite antigo com papel creator segue valendo (mesmo papel interno do herói)',
+select tests.ok('S104 convite antigo com papel creator segue valendo (mesmo papel interno do Hero)',
   exists (select 1 from public.role_assignments where user_id = 'b1040000-0000-4000-8000-000000000006' and role::text = 'creator' and revoked_at is null));
 
 -- limpeza
 delete from public.admin_audit where resource_id in (select id::text from public.invitations where email::text like '%s104%');
 delete from public.invitations where email::text like '%s104%';
-delete from public.creator_team_members where creator_profile_id in (select id from public.creator_profiles where slug like 's104-%' or name = 'Herói Novo S104');
+delete from public.creator_team_members where creator_profile_id in (select id from public.creator_profiles where slug like 's104-%' or name = 'Hero Novo S104');
 delete from public.role_assignments where user_id::text like 'b1040000-%';
 delete from public.talent_profiles where id::text like 'b1040000-%';
-delete from public.creator_profiles where id::text like 'b1040000-%' or name = 'Herói Novo S104';
+delete from public.creator_profiles where id::text like 'b1040000-%' or name = 'Hero Novo S104';
 delete from public.agency_members where agency_id = 'b1040000-0000-4000-8000-0000000000a1';
 delete from public.agencies where id = 'b1040000-0000-4000-8000-0000000000a1';
 delete from auth.users where id::text like 'b1040000-%';
@@ -14975,10 +14975,10 @@ drop table t_s104;
 
 -- ================================================================ S105 · Calendário Groscove: agenda central da plataforma, importação e interesse (0098)
 -- Admin cria/edita/publica/programa/cancela/exclui e importa em lote (reimportar o mesmo lote não duplica; "atualizar"
--- atualiza). Agência (gestor e colaborador), marca (com e sem agência), herói (titular, membro, sem agência) leem
+-- atualiza). Agência (gestor e colaborador), marca (com e sem agência), Hero (titular, membro, sem agência) leem
 -- publicados e programados vencidos; rascunho e programado futuro não aparecem; cancelado aparece marcado; pessoa sem
--- portal e visitante nada. Herói titular manifesta/retira interesse (histórico), membro não; marca manifesta e não vê
--- heróis interessados; agência vê só os heróis do próprio casting (e as marcas que atende); admin vê tudo; contagens
+-- portal e visitante nada. Hero titular manifesta/retira interesse (histórico), membro não; marca manifesta e não vê
+-- Heros interessados; agência vê só os Heros do próprio casting (e as marcas que atende); admin vê tudo; contagens
 -- para todos. Co-edição por agência só com a flag (desligada). Feed .ics inclui a plataforma; calendar_events_for_user
 -- não. Sem sobrecarga; funções novas fora do anon; S14 segue 18.
 \ir ../migrations/0098_calendario_groscove.sql
@@ -15003,14 +15003,14 @@ insert into public.brand_members (brand_id, user_id, role, display_name) values
   ('a1050000-0000-4000-8000-0000000000b1','a1050000-0000-4000-8000-000000000005','owner','Dona S105'),
   ('a1050000-0000-4000-8000-0000000000b2','a1050000-0000-4000-8000-000000000006','staff','Equipe S105');
 insert into public.creator_profiles (id, slug, name, status, user_id) values
-  ('a1050000-0000-4000-8000-0000000000c1','s105-heroi-casting','Herói Casting S105','active','a1050000-0000-4000-8000-000000000007'),
-  ('a1050000-0000-4000-8000-0000000000c2','s105-heroi-livre','Herói Livre S105','active','a1050000-0000-4000-8000-000000000009'),
-  ('a1050000-0000-4000-8000-0000000000c3','s105-heroi-b','Herói B S105','active','a1050000-0000-4000-8000-00000000000a');
+  ('a1050000-0000-4000-8000-0000000000c1','s105-heroi-casting','Hero Casting S105','active','a1050000-0000-4000-8000-000000000007'),
+  ('a1050000-0000-4000-8000-0000000000c2','s105-heroi-livre','Hero Livre S105','active','a1050000-0000-4000-8000-000000000009'),
+  ('a1050000-0000-4000-8000-0000000000c3','s105-heroi-b','Hero B S105','active','a1050000-0000-4000-8000-00000000000a');
 insert into public.creator_team_members (creator_profile_id, user_id, role, status) values
   ('a1050000-0000-4000-8000-0000000000c1','a1050000-0000-4000-8000-000000000008','member','active');
 insert into public.talent_profiles (id, agency_id, display_name, creator_id) values
-  ('a1050000-0000-4000-8000-0000000000e1','a1050000-0000-4000-8000-0000000000a1','Herói Casting S105','a1050000-0000-4000-8000-0000000000c1'),
-  ('a1050000-0000-4000-8000-0000000000e3','a1050000-0000-4000-8000-0000000000a2','Herói B S105','a1050000-0000-4000-8000-0000000000c3');
+  ('a1050000-0000-4000-8000-0000000000e1','a1050000-0000-4000-8000-0000000000a1','Hero Casting S105','a1050000-0000-4000-8000-0000000000c1'),
+  ('a1050000-0000-4000-8000-0000000000e3','a1050000-0000-4000-8000-0000000000a2','Hero B S105','a1050000-0000-4000-8000-0000000000c3');
 create temp table t_s105 (k text primary key, v text);
 grant all on t_s105 to anon, authenticated, service_role;
 
@@ -15042,8 +15042,8 @@ select tests.login('a1050000-0000-4000-8000-000000000002','s105-gestor-a@test.lo
 select tests.expect_error('S105 gestor de agência (sem a flag) não cria', $q$select public.platform_event_save(null, '{"title":"x","start_date":"2026-12-01","status":"published"}')$q$, 'forbidden');
 select tests.expect_error('S105 gestor de agência não importa', $q$select public.platform_events_import('{"source_name":"x"}', '[{"source_key":"a","title":"x","start_date":"2026-12-01"}]')$q$, 'forbidden');
 select tests.login('a1050000-0000-4000-8000-000000000007','s105-heroi-titular@test.local');
-select tests.expect_error('S105 herói não cria', $q$select public.platform_event_save(null, '{"title":"x","start_date":"2026-12-01"}')$q$, 'forbidden');
-select tests.expect_error('S105 herói não liga co-edição', $q$select public.admin_set_platform_calendar_editor('a1050000-0000-4000-8000-0000000000a1', true)$q$, 'forbidden');
+select tests.expect_error('S105 Hero não cria', $q$select public.platform_event_save(null, '{"title":"x","start_date":"2026-12-01"}')$q$, 'forbidden');
+select tests.expect_error('S105 Hero não liga co-edição', $q$select public.admin_set_platform_calendar_editor('a1050000-0000-4000-8000-0000000000a1', true)$q$, 'forbidden');
 
 -- admin: cria rascunho, publicado, programado futuro e programado já vencido (com hora e fuso)
 select tests.login('a1050000-0000-4000-8000-000000000001','s105-admin@test.local');
@@ -15129,41 +15129,41 @@ select tests.ok('S105 marca (com agência) lê os 4, com o cancelado marcado', (
 select tests.login('a1050000-0000-4000-8000-000000000006','s105-equipe-marca2@test.local');
 select tests.ok('S105 equipe de marca sem agência lê os 4', (select count(*) from public.calendar_events where scope = 'platform' and title like '%S105%') = 4);
 select tests.login('a1050000-0000-4000-8000-000000000007','s105-heroi-titular@test.local');
-select tests.ok('S105 herói titular (casting) lê os 4', (select count(*) from public.calendar_events where scope = 'platform' and title like '%S105%') = 4);
+select tests.ok('S105 Hero titular (casting) lê os 4', (select count(*) from public.calendar_events where scope = 'platform' and title like '%S105%') = 4);
 select tests.login('a1050000-0000-4000-8000-000000000008','s105-heroi-membro@test.local');
-select tests.ok('S105 membro da equipe do herói lê os 4', (select count(*) from public.calendar_events where scope = 'platform' and title like '%S105%') = 4);
+select tests.ok('S105 membro da equipe do Hero lê os 4', (select count(*) from public.calendar_events where scope = 'platform' and title like '%S105%') = 4);
 select tests.login('a1050000-0000-4000-8000-000000000009','s105-heroi-livre@test.local');
-select tests.ok('S105 herói sem agência lê os 4', (select count(*) from public.calendar_events where scope = 'platform' and title like '%S105%') = 4);
+select tests.ok('S105 Hero sem agência lê os 4', (select count(*) from public.calendar_events where scope = 'platform' and title like '%S105%') = 4);
 select tests.login('a1050000-0000-4000-8000-00000000000b','s105-consumidor@test.local');
 select tests.ok('S105 pessoa sem portal não lê a plataforma', (select count(*) from public.calendar_events where scope = 'platform') = 0);
 
 -- interesse
 select tests.login('a1050000-0000-4000-8000-000000000007','s105-heroi-titular@test.local');
-select tests.ok('S105 herói titular manifesta interesse', public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c1', true) = 'interested');
+select tests.ok('S105 Hero titular manifesta interesse', public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c1', true) = 'interested');
 select tests.ok('S105 manifestar de novo não duplica nem gera histórico', public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c1', true) = 'interested'
   and (select count(*) from public.calendar_event_interest_log) = 1);
-select tests.expect_error('S105 herói não manifesta por outro herói', $q$select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c2', true)$q$, 'forbidden');
-select tests.expect_error('S105 herói não manifesta como marca', $q$select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'brand', 'a1050000-0000-4000-8000-0000000000b1', true)$q$, 'forbidden');
+select tests.expect_error('S105 Hero não manifesta por outro Hero', $q$select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c2', true)$q$, 'forbidden');
+select tests.expect_error('S105 Hero não manifesta como marca', $q$select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'brand', 'a1050000-0000-4000-8000-0000000000b1', true)$q$, 'forbidden');
 select tests.expect_error('S105 rascunho não aceita interesse (não existe para quem lê)', $q$select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'draft'), 'hero', 'a1050000-0000-4000-8000-0000000000c1', true)$q$, 'not_found');
 select tests.expect_error('S105 cancelado não aceita interesse novo', $q$select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'natal'), 'hero', 'a1050000-0000-4000-8000-0000000000c1', true)$q$, 'invalid_state');
 select tests.login('a1050000-0000-4000-8000-000000000008','s105-heroi-membro@test.local');
 select tests.expect_error('S105 membro da equipe não manifesta', $q$select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c1', true)$q$, 'forbidden');
-select tests.ok('S105 membro vê o interesse do herói dele', (select count(*) from public.calendar_event_interests) = 1);
+select tests.ok('S105 membro vê o interesse do Hero dele', (select count(*) from public.calendar_event_interests) = 1);
 select tests.login('a1050000-0000-4000-8000-000000000009','s105-heroi-livre@test.local');
 select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c2', true);
-select tests.ok('S105 herói sem agência manifesta e só vê o dele', (select count(*) from public.calendar_event_interests) = 1);
+select tests.ok('S105 Hero sem agência manifesta e só vê o dele', (select count(*) from public.calendar_event_interests) = 1);
 select tests.login('a1050000-0000-4000-8000-00000000000a','s105-heroi-b@test.local');
 select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c3', true);
 select tests.login('a1050000-0000-4000-8000-000000000005','s105-dono-marca@test.local');
 select tests.ok('S105 marca manifesta interesse', public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'brand', 'a1050000-0000-4000-8000-0000000000b1', true) = 'interested');
-select tests.ok('S105 marca NÃO vê heróis interessados (só o dela) e vê as contagens',
+select tests.ok('S105 marca NÃO vê Heros interessados (só o dela) e vê as contagens',
   (select count(*) from public.calendar_event_interests) = 1 and not exists (select 1 from public.calendar_event_interests where party = 'hero')
   and public.platform_event_interest_summary((select v::uuid from t_s105 where k = 'pub')) = '{"heroes": 3, "brands": 1}'::jsonb);
 select tests.expect_error('S105 marca não manifesta por outra marca', $q$select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'brand', 'a1050000-0000-4000-8000-0000000000b2', true)$q$, 'forbidden');
 select tests.login('a1050000-0000-4000-8000-000000000006','s105-equipe-marca2@test.local');
 select tests.ok('S105 equipe da marca sem agência manifesta', public.platform_event_set_interest((select v::uuid from t_s105 where k = 'past'), 'brand', 'a1050000-0000-4000-8000-0000000000b2', true) = 'interested');
 select tests.login('a1050000-0000-4000-8000-000000000002','s105-gestor-a@test.local');
-select tests.ok('S105 gestor da agência A vê só o herói do próprio casting e a marca que atende',
+select tests.ok('S105 gestor da agência A vê só o Hero do próprio casting e a marca que atende',
   (select count(*) from public.calendar_event_interests) = 2
   and exists (select 1 from public.calendar_event_interests where creator_profile_id = 'a1050000-0000-4000-8000-0000000000c1')
   and exists (select 1 from public.calendar_event_interests where brand_id = 'a1050000-0000-4000-8000-0000000000b1')
@@ -15171,13 +15171,13 @@ select tests.ok('S105 gestor da agência A vê só o herói do próprio casting 
 select tests.login('a1050000-0000-4000-8000-000000000003','s105-colab-a@test.local');
 select tests.ok('S105 colaborador da agência não vê a lista de interessados', (select count(*) from public.calendar_event_interests) = 0);
 select tests.login('a1050000-0000-4000-8000-000000000004','s105-gestor-b@test.local');
-select tests.ok('S105 gestor da agência B vê só o herói dele', (select count(*) from public.calendar_event_interests) = 1
+select tests.ok('S105 gestor da agência B vê só o Hero dele', (select count(*) from public.calendar_event_interests) = 1
   and (select creator_profile_id from public.calendar_event_interests) = 'a1050000-0000-4000-8000-0000000000c3');
 select tests.login('a1050000-0000-4000-8000-00000000000b','s105-consumidor@test.local');
 select tests.expect_error('S105 pessoa sem portal não vê contagens', $q$select public.platform_event_interest_summary((select v::uuid from t_s105 where k = 'pub'))$q$, 'not_found');
 select tests.login('a1050000-0000-4000-8000-000000000007','s105-heroi-titular@test.local');
 insert into t_s105 values ('wd', public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c1', false));
-select tests.ok('S105 herói retira o interesse (histórico guarda as duas mudanças, interesse não vira negócio)',
+select tests.ok('S105 Hero retira o interesse (histórico guarda as duas mudanças, interesse não vira negócio)',
   (select v from t_s105 where k = 'wd') = 'withdrawn'
   and (select array_agg(state order by at, id) from public.calendar_event_interest_log) = array['interested','withdrawn']
   and not exists (select 1 from public.deals where agency_id = 'a1050000-0000-4000-8000-0000000000a1'));
@@ -15201,7 +15201,7 @@ select tests.login('a1050000-0000-4000-8000-000000000009','s105-heroi-livre@test
 insert into t_s105 values ('tok', public.calendar_feed_create());
 select tests.su();
 insert into t_s105 values ('feed', public.calendar_feed_resolve((select v from t_s105 where k = 'tok'))::text);
-select tests.ok('S105 feed .ics do herói traz o Calendário Groscove (cancelado com status), sem rascunho',
+select tests.ok('S105 feed .ics do Hero traz o Calendário Groscove (cancelado com status), sem rascunho',
   (select count(*) from jsonb_array_elements((select v::jsonb -> 'events' from t_s105 where k = 'feed')) x where x ->> 'kind' = 'institutional' and x ->> 'title' like '%S105%') >= 3
   and exists (select 1 from jsonb_array_elements((select v::jsonb -> 'events' from t_s105 where k = 'feed')) x where x ->> 'title' = 'Natal S105 (revisado)' and x ->> 'status' = 'cancelled')
   and not exists (select 1 from jsonb_array_elements((select v::jsonb -> 'events' from t_s105 where k = 'feed')) x where x ->> 'title' in ('Rascunho S105', 'Programado S105', 'Incerto S105')));
@@ -15225,7 +15225,7 @@ delete from auth.users where id::text like 'a1050000-%';
 drop table t_s105;
 
 -- ================================================================ S106 · Layout dinâmico: temas sazonais (0100)
--- Só o admin geral escreve (RPCs auditadas); agência, herói e visitante não. Rascunho invisível para todos; leitura
+-- Só o admin geral escreve (RPCs auditadas); agência, Hero e visitante não. Rascunho invisível para todos; leitura
 -- pública (anon e authenticated) só das linhas publicadas em vigor (ou começando nos próximos 10 min) e só das colunas
 -- de apresentação (nome, notas, evento, estado e autores ficam de fora). Janela: por data ou N dias antes do evento até
 -- o fim dele (fuso do tema), recalculada quando o evento muda; evento cancelado tira o tema; evento excluído congela a
@@ -15239,7 +15239,7 @@ insert into auth.users (id, email) values
 insert into public.role_assignments (user_id, role, scope_type) values ('a1060000-0000-4000-8000-000000000001','admin','global');
 insert into public.agencies (id, slug, name) values ('a1060000-0000-4000-8000-0000000000a1','s106-agencia','Agência S106');
 insert into public.agency_members (agency_id, user_id, role, display_name) values ('a1060000-0000-4000-8000-0000000000a1','a1060000-0000-4000-8000-000000000002','manager','Gil S106');
-insert into public.creator_profiles (id, slug, name, status, user_id) values ('a1060000-0000-4000-8000-0000000000c1','s106-heroi','Herói S106','active','a1060000-0000-4000-8000-000000000003');
+insert into public.creator_profiles (id, slug, name, status, user_id) values ('a1060000-0000-4000-8000-0000000000c1','s106-heroi','Hero S106','active','a1060000-0000-4000-8000-000000000003');
 create temp table t_s106 (k text primary key, v text);
 grant all on t_s106 to anon, authenticated, service_role;
 -- o banco local pode ter temas de outro teste: o cenário só conta os dele
@@ -15274,7 +15274,7 @@ select tests.expect_error('S106 gestor não lê o painel', $q$select public.seas
 select tests.expect_error('S106 gestor não restaura o padrão', $q$select public.seasonal_theme_restore_default()$q$, 'forbidden');
 select tests.expect_error('S106 gestor não escreve direto na tabela', $q$insert into public.seasonal_themes (name) values ('x')$q$, 'permission denied');
 select tests.login('a1060000-0000-4000-8000-000000000003','s106-heroi@test.local');
-select tests.expect_error('S106 herói não liga/desliga o interruptor', $q$select public.seasonal_themes_set_enabled(false)$q$, 'forbidden');
+select tests.expect_error('S106 Hero não liga/desliga o interruptor', $q$select public.seasonal_themes_set_enabled(false)$q$, 'forbidden');
 
 -- admin: rascunho em vigor, publicado em vigor, publicado futuro, publicado começando em 5 min
 select tests.login('a1060000-0000-4000-8000-000000000001','s106-admin@test.local');
@@ -15312,7 +15312,7 @@ insert into t_s106 values ('nowin', public.seasonal_theme_save(null, '{"name":"S
 select tests.expect_error('S106 rascunho sem janela válida não publica', $q$select public.seasonal_theme_set_status((select v::uuid from t_s106 where k = 'nowin'), 'published')$q$, 'invalid_state');
 select tests.expect_error('S106 tema já encerrado não publica', $q$select public.seasonal_theme_set_status(public.seasonal_theme_save(null, jsonb_build_object('name','Velho S106','starts_at', now() - interval '9 days','ends_at', now() - interval '1 day','areas', jsonb_build_array('app'))), 'published')$q$, 'invalid_state');
 
--- leitura pública: visitante, consumidor e herói veem só os publicados em vigor (ou começando em até 10 min), só colunas de apresentação
+-- leitura pública: visitante, consumidor e Hero veem só os publicados em vigor (ou começando em até 10 min), só colunas de apresentação
 select tests.anon();
 select tests.ok('S106 visitante vê o publicado em vigor e o que começa em 5 min; não vê rascunho nem futuro',
   (select count(*) from public.seasonal_themes where id in (select v::uuid from t_s106)) = 2
@@ -15420,7 +15420,7 @@ drop table t_s106;
 -- ================================================================ S107 · Agenda conectada: proposta a partir do evento, conteúdos editoriais e Real-Time Culture (0101)
 -- Vínculo campanha/chamada/patrocínio ↔ evento só por quem edita o item e só com evento que ele vê (plataforma no ar ou da
 -- mesma agência); território → segmento da agência sem sobrescrever; depois de enviada a campanha o vínculo fica. Histórico
--- do evento por perfil (marca só o dela e nunca herói; agência o dela sem rascunho de marca; herói só o patrocínio dele já
+-- do evento por perfil (marca só o dela e nunca Hero; agência o dela sem rascunho de marca; Hero só o patrocínio dele já
 -- publicado; admin tudo menos rascunho de marca; outra agência nada). Oportunidades abertas por evento (só números).
 -- Hashtags do mês / trending do trimestre para quem tem portal. Notícias e dicas: admin para todos, agência para a rede;
 -- rascunho e programado futuro invisíveis; colaborador não escreve; visitante e consumidor nada. S14 segue 18.
@@ -15447,11 +15447,11 @@ insert into public.brand_members (brand_id, user_id, role, display_name) values
   ('a1070000-0000-4000-8000-0000000000b1','a1070000-0000-4000-8000-000000000005','owner','Dona S107'),
   ('a1070000-0000-4000-8000-0000000000b2','a1070000-0000-4000-8000-000000000006','staff','Equipe S107');
 insert into public.creator_profiles (id, slug, name, status, user_id) values
-  ('a1070000-0000-4000-8000-0000000000c1','s107-heroi-a','Herói A S107','active','a1070000-0000-4000-8000-000000000007'),
-  ('a1070000-0000-4000-8000-0000000000c2','s107-heroi-b','Herói B S107','active','a1070000-0000-4000-8000-000000000009');
+  ('a1070000-0000-4000-8000-0000000000c1','s107-heroi-a','Hero A S107','active','a1070000-0000-4000-8000-000000000007'),
+  ('a1070000-0000-4000-8000-0000000000c2','s107-heroi-b','Hero B S107','active','a1070000-0000-4000-8000-000000000009');
 insert into public.talent_profiles (id, agency_id, display_name, creator_id, consent_at) values
-  ('a1070000-0000-4000-8000-0000000000e1','a1070000-0000-4000-8000-0000000000a1','Herói A S107','a1070000-0000-4000-8000-0000000000c1', now() - interval '10 days'),
-  ('a1070000-0000-4000-8000-0000000000e2','a1070000-0000-4000-8000-0000000000a2','Herói B S107','a1070000-0000-4000-8000-0000000000c2', now() - interval '10 days');
+  ('a1070000-0000-4000-8000-0000000000e1','a1070000-0000-4000-8000-0000000000a1','Hero A S107','a1070000-0000-4000-8000-0000000000c1', now() - interval '10 days'),
+  ('a1070000-0000-4000-8000-0000000000e2','a1070000-0000-4000-8000-0000000000a2','Hero B S107','a1070000-0000-4000-8000-0000000000c2', now() - interval '10 days');
 -- eventos: plataforma publicado (futebol), rascunho, programado futuro; compromisso interno da agência A e da B
 insert into public.calendar_events (id, scope, agency_id, kind, title, starts_at, ends_at, all_day, status, published_at, source, source_key, territory, hashtags) values
   ('a1070000-0000-4000-8000-0000000000f1','platform',null,'institutional','Final S107', (current_date + 12)::timestamp at time zone 'America/Sao_Paulo', (current_date + 13)::timestamp at time zone 'America/Sao_Paulo', true, 'published', now() - interval '1 day', 'manual', 'manual:s107-f1', 'futebol', array['FinalS107']),
@@ -15563,7 +15563,7 @@ select tests.login('a1070000-0000-4000-8000-000000000004','s107-gestor-b@test.lo
 select tests.ok('S107 outra agência não vê nada ligado ao evento', jsonb_array_length(public.calendar_event_commercial('a1070000-0000-4000-8000-0000000000f1') -> 'items') = 0);
 select tests.login('a1070000-0000-4000-8000-000000000007','s107-heroi-a@test.local');
 insert into t_s107 values ('h_hero', public.calendar_event_commercial('a1070000-0000-4000-8000-0000000000f1')::text);
-select tests.ok('S107 herói vê só o patrocínio dele já publicado (nem rascunho, nem campanha em que não foi consultado)',
+select tests.ok('S107 Hero vê só o patrocínio dele já publicado (nem rascunho, nem campanha em que não foi consultado)',
   (select count(*) = 1 and bool_and(x ->> 'side' = 'hero' and x ->> 'id' = (select v from t_s107 where k = 's2'))
      from jsonb_array_elements((select v::jsonb -> 'items' from t_s107 where k = 'h_hero')) x));
 select tests.login('a1070000-0000-4000-8000-000000000001','s107-admin@test.local');
@@ -15579,7 +15579,7 @@ select tests.login('a1070000-0000-4000-8000-000000000005','s107-dona-m1@test.loc
 select tests.ok('S107 marca: o evento aparece com 1 patrocínio aberto (a chamada em rascunho não conta)',
   exists (select 1 from jsonb_array_elements(public.calendar_event_opportunities()) x where x ->> 'event_id' = 'a1070000-0000-4000-8000-0000000000f1' and (x ->> 'sponsorships')::int = 1 and (x ->> 'calls')::int = 0));
 select tests.login('a1070000-0000-4000-8000-000000000007','s107-heroi-a@test.local');
-select tests.ok('S107 herói: o patrocínio aberto dele conta',
+select tests.ok('S107 Hero: o patrocínio aberto dele conta',
   exists (select 1 from jsonb_array_elements(public.calendar_event_opportunities()) x where x ->> 'event_id' = 'a1070000-0000-4000-8000-0000000000f1' and (x ->> 'sponsorships')::int = 1));
 select tests.login('a1070000-0000-4000-8000-000000000004','s107-gestor-b@test.local');
 select tests.ok('S107 outra agência não vê as oportunidades da agência A',
@@ -15589,7 +15589,7 @@ select tests.ok('S107 consumidor sem portal: nada', public.calendar_event_opport
 
 -- hashtags do mês e trending topics
 select tests.login('a1070000-0000-4000-8000-000000000007','s107-heroi-a@test.local');
-select tests.ok('S107 herói lê hashtags do mês e o trimestre (Q2) da importação',
+select tests.ok('S107 Hero lê hashtags do mês e o trimestre (Q2) da importação',
   (select m -> 'month' ->> 'label' = '#MAIO 2099' and m -> 'month' -> 'hashtags' = '["#S107","#MAIO"]'::jsonb and m -> 'quarter' ->> 'quarter' = 'Q2'
           and m -> 'quarter' ->> 'summary' = 'Resumo S107' and m -> 'quarter' -> 'trending_topics' = '["#TrendS107"]'::jsonb
      from (select public.platform_culture_meta(2099, 5) as m) s)
@@ -15640,10 +15640,10 @@ select tests.ok('S107 marca atendida lê plataforma publicada + programada venci
 select tests.login('a1070000-0000-4000-8000-000000000006','s107-equipe-m2@test.local');
 select tests.ok('S107 marca de outra agência não lê o conteúdo da agência A', (select count(*) from public.agenda_posts where title like '%S107%') = 2);
 select tests.login('a1070000-0000-4000-8000-000000000007','s107-heroi-a@test.local');
-select tests.ok('S107 herói do casting da agência A lê o publicado dela', exists (select 1 from public.agenda_posts where id = (select v::uuid from t_s107 where k = 'a_pub'))
+select tests.ok('S107 Hero do casting da agência A lê o publicado dela', exists (select 1 from public.agenda_posts where id = (select v::uuid from t_s107 where k = 'a_pub'))
   and (select count(*) from public.agenda_posts where title like '%S107%') = 3);
 select tests.login('a1070000-0000-4000-8000-000000000009','s107-heroi-b@test.local');
-select tests.ok('S107 herói de outra agência não lê o conteúdo da agência A', (select count(*) from public.agenda_posts where title like '%S107%') = 2);
+select tests.ok('S107 Hero de outra agência não lê o conteúdo da agência A', (select count(*) from public.agenda_posts where title like '%S107%') = 2);
 select tests.login('a1070000-0000-4000-8000-000000000008','s107-consumidor@test.local');
 select tests.ok('S107 consumidor sem portal não lê nada', (select count(*) from public.agenda_posts where title like '%S107%') = 0);
 select tests.login('a1070000-0000-4000-8000-000000000001','s107-admin@test.local');
@@ -15762,7 +15762,7 @@ delete from auth.users where id::text like 'a1080000-%';
 drop table t_s108;
 
 -- ================================================================ S109 · Cadastro por perfil sem convite e convites pausados (0103)
--- Herói, Marca e Agência por autosserviço (account_onboardings source 'self'), uma agência/uma marca por conta, limite
+-- Hero, Marca e Agência por autosserviço (account_onboardings source 'self'), uma agência/uma marca por conta, limite
 -- de inícios, cadastro fechado, anon nada; interruptor invites.enabled: com ele desligado TODA RPC que cria convite recusa
 -- ('invites_disabled', gatilho no banco), o convite já emitido continua sendo aceito; religar volta a permitir.
 \ir ../migrations/0103_cadastro_por_perfil_convites_pausados.sql
@@ -15841,17 +15841,17 @@ select tests.ok('S109 marca nasce autogerida e inativa', (select self_managed an
 select tests.login('a1090000-0000-4000-8000-000000000003', 's109-marca@test.local');
 select tests.expect_error('S109 não cria segunda marca', $q$select public.self_onboarding_start('brand')$q$, 'brand_already_owned');
 
--- Herói: sem papel creator só cria com o passo 'hero' em aberto; nasce pendente e a pessoa é titular
+-- Hero: sem papel creator só cria com o passo 'hero' em aberto; nasce pendente e a pessoa é titular
 select tests.login('a1090000-0000-4000-8000-000000000004', 's109-heroi@test.local');
-select tests.expect_error('S109 sem passo nem papel não cria herói', $q$select public.creator_create_my_hero('Intruso S109')$q$, 'creator_role_required');
+select tests.expect_error('S109 sem passo nem papel não cria Hero', $q$select public.creator_create_my_hero('Intruso S109')$q$, 'creator_role_required');
 select public.self_onboarding_start('hero');
-insert into t_s109 values ('hero', public.creator_create_my_hero('Herói S109')::text);
-select tests.ok('S109 herói criado: pendente, titular, papel creator, passo fechado',
+insert into t_s109 values ('hero', public.creator_create_my_hero('Hero S109')::text);
+select tests.ok('S109 Hero criado: pendente, titular, papel creator, passo fechado',
   (select status::text = 'pending' and user_id = 'a1090000-0000-4000-8000-000000000004' from public.creator_profiles where id = (select v::uuid from t_s109 where k = 'hero'))
   and (public.my_hero_team() ->> 'role') = 'owner'
   and exists (select 1 from public.role_assignments where user_id = 'a1090000-0000-4000-8000-000000000004' and role = 'creator' and revoked_at is null)
   and jsonb_array_length(public.onboarding_pending()) = 0);
-select tests.expect_error('S109 não cria segundo herói', $q$select public.self_onboarding_start('hero')$q$, 'has_hero');
+select tests.expect_error('S109 não cria segundo Hero', $q$select public.self_onboarding_start('hero')$q$, 'has_hero');
 
 -- "Agora não" e limite de inícios (5 em 24h)
 select tests.login('a1090000-0000-4000-8000-000000000006', 's109-fora@test.local');
@@ -15884,7 +15884,7 @@ insert into public.agency_brands (agency_id, brand_id, status) values ((select v
 -- convites pausados: cada RPC de criar convite recusa no banco
 select tests.login('a1090000-0000-4000-8000-000000000001', 's109-admin@test.local');
 select tests.expect_error('S109 pausado: admin_invite', $q$select public.admin_invite('n1.s109@test.local', 'agency', 7, '{}'::jsonb)$q$, 'invites_disabled');
-select tests.expect_error('S109 pausado: admin_invite herói novo (nada fica criado)', $q$select public.admin_invite('n2.s109@test.local', 'hero', 7, '{"hero_mode":"new","hero_name":"Pausado S109"}'::jsonb)$q$, 'invites_disabled');
+select tests.expect_error('S109 pausado: admin_invite Hero novo (nada fica criado)', $q$select public.admin_invite('n2.s109@test.local', 'hero', 7, '{"hero_mode":"new","hero_name":"Pausado S109"}'::jsonb)$q$, 'invites_disabled');
 select tests.expect_error('S109 pausado: admin_create_invitation', format('select * from public.admin_create_invitation(%L, %L, null, %L, 7)', 'n3.s109@test.local', 'creator', (select v from t_s109 where k = 'hero')), 'invites_disabled');
 select tests.expect_error('S109 pausado: admin_invite_professional', format('select * from public.admin_invite_professional(%L, %L, 7)', 'n4.s109@test.local',
   (select id from public.professionals where user_id is null order by id limit 1)), 'invites_disabled');
@@ -15893,16 +15893,16 @@ select tests.expect_error('S109 pausado: agência convida equipe', format('selec
 select tests.expect_error('S109 pausado: agência convida marca', format('select public.agency_invite_brand(%L, %L, 7)', (select v from t_s109 where k = 'agency'), 'n6.s109@test.local'), 'invites_disabled');
 select tests.expect_error('S109 pausado: agência convida equipe da marca', format('select public.agency_invite_brand_member(%L, %L, %L, %L, 7)',
   (select v from t_s109 where k = 'agency'), 'a1090000-0000-4000-8000-000000000031', 'n7.s109@test.local', 'staff'), 'invites_disabled');
-select tests.expect_error('S109 pausado: agência convida herói', $q$select public.agency_invite_hero('a1090000-0000-4000-8000-000000000041', 'Herói Pausado S109', 'n8.s109@test.local', 7)$q$, 'invites_disabled');
+select tests.expect_error('S109 pausado: agência convida Hero', $q$select public.agency_invite_hero('a1090000-0000-4000-8000-000000000041', 'Hero Pausado S109', 'n8.s109@test.local', 7)$q$, 'invites_disabled');
 select tests.expect_error('S109 pausado: agência convida talento', $q$select public.agency_invite_talent('a1090000-0000-4000-8000-000000000041', 'n9.s109@test.local', 7)$q$, 'invites_disabled');
 select tests.login('a1090000-0000-4000-8000-000000000003', 's109-marca@test.local');
 select tests.expect_error('S109 pausado: Dono da marca convida equipe', format('select public.brand_invite_member(%L, %L, 7)', (select v from t_s109 where k = 'brand'), 'n10.s109@test.local'), 'invites_disabled');
 select tests.login('a1090000-0000-4000-8000-000000000004', 's109-heroi@test.local');
-select tests.expect_error('S109 pausado: titular convida equipe do herói', format('select * from public.hero_team_invite(%L, %L, 7)', (select v from t_s109 where k = 'hero'), 'n11.s109@test.local'), 'invites_disabled');
+select tests.expect_error('S109 pausado: titular convida equipe do Hero', format('select * from public.hero_team_invite(%L, %L, 7)', (select v from t_s109 where k = 'hero'), 'n11.s109@test.local'), 'invites_disabled');
 select tests.su();
-select tests.ok('S109 pausado: nenhum convite novo nem herói pendente de sobra',
+select tests.ok('S109 pausado: nenhum convite novo nem Hero pendente de sobra',
   not exists (select 1 from public.invitations where email::text like 'n%.s109@test.local')
-  and not exists (select 1 from public.creator_profiles where name in ('Pausado S109', 'Herói Pausado S109')));
+  and not exists (select 1 from public.creator_profiles where name in ('Pausado S109', 'Hero Pausado S109')));
 
 -- convite já emitido continua valendo
 select tests.login('a1090000-0000-4000-8000-000000000005', 's109-convidado@test.local');
@@ -15910,11 +15910,11 @@ insert into t_s109 values ('oldacc', public.accept_invitation((select v::jsonb -
 select tests.su();
 select tests.ok('S109 convite emitido antes da pausa é aceito', (select status::text from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s109 where k = 'old')) = 'accepted');
 
--- admin: lista de novos cadastros (agência, marca e herói, com nome e estado)
+-- admin: lista de novos cadastros (agência, marca e Hero, com nome e estado)
 select tests.login('a1090000-0000-4000-8000-000000000001', 's109-admin@test.local');
 select tests.ok('S109 admin vê os novos cadastros self-service com nome e estado',
   (select count(*) from jsonb_array_elements(public.admin_self_signups(7)) x where x ->> 'email' like 's109-%' and x ->> 'completed_at' is not null and not (x ->> 'cancelled')::boolean) = 3
-  and exists (select 1 from jsonb_array_elements(public.admin_self_signups(7)) x where x ->> 'kind' = 'hero' and x ->> 'name' = 'Herói S109' and x ->> 'status' = 'pending')
+  and exists (select 1 from jsonb_array_elements(public.admin_self_signups(7)) x where x ->> 'kind' = 'hero' and x ->> 'name' = 'Hero S109' and x ->> 'status' = 'pending')
   and exists (select 1 from jsonb_array_elements(public.admin_self_signups(7)) x where x ->> 'kind' = 'agency' and x ->> 'name' = 'Agência S109' and x ->> 'status' = 'active')
   and (select count(*) from jsonb_array_elements(public.admin_self_signups(7)) x where x ->> 'email' = 's109-fora@test.local' and (x ->> 'cancelled')::boolean) = 5);
 select tests.ok('S109 admin pode abrir outra marca (sem o limite de uma)', (public.self_onboarding_start('brand') ->> 'resumed') = 'false');
@@ -15990,7 +15990,7 @@ select tests.ok('S111 validação de entregáveis conhece groscove_ultra',
 -- ================================================================ S112 · Aceitar ou contrapropor a proposta da marca no negócio (0106)
 -- Rodadas no negócio (deal_offer_rounds): só o Adm da agência aceita/contrapropõe (gestor não; colaborador fora do
 -- negócio nem lê); a marca (só o dono) responde à contraproposta: aceita, contrapropõe ou recusa. Aceite grava o valor
--- oferecido (por herói sem dividir pelo máximo) e o período, e leva o negócio a 'negotiation'. Gestor lê só a
+-- oferecido (por Hero sem dividir pelo máximo) e o período, e leva o negócio a 'negotiation'. Gestor lê só a
 -- situação (sem valor nem nota); outra marca, quem não é de nada e o visitante não leem. S14 segue 18.
 \ir ../migrations/0106_negociacao_proposta_marca.sql
 select tests.su();
@@ -16018,8 +16018,8 @@ insert into public.brand_members (brand_id, user_id, role, display_name) values
   ('a1120000-0000-4000-8000-0000000000b1', 'a1120000-0000-4000-8000-000000000005', 'staff', 'Equipe S112'),
   ('a1120000-0000-4000-8000-0000000000b2', 'a1120000-0000-4000-8000-000000000006', 'owner', 'Dono Outra S112');
 insert into public.talent_profiles (id, agency_id, display_name) values
-  ('a1120000-0000-4000-8000-0000000000c1', 'a1120000-0000-4000-8000-0000000000a1', 'Herói Um S112'),
-  ('a1120000-0000-4000-8000-0000000000c2', 'a1120000-0000-4000-8000-0000000000a1', 'Herói Dois S112');
+  ('a1120000-0000-4000-8000-0000000000c1', 'a1120000-0000-4000-8000-0000000000a1', 'Hero Um S112'),
+  ('a1120000-0000-4000-8000-0000000000c2', 'a1120000-0000-4000-8000-0000000000a1', 'Hero Dois S112');
 insert into public.campaign_requests (id, agency_id, brand_id, origin, title, status, submitted_at, deliverables, period_start, period_end) values
   ('a1120000-0000-4000-8000-0000000000d1', 'a1120000-0000-4000-8000-0000000000a1', 'a1120000-0000-4000-8000-0000000000b1', 'brand', 'Campanha S112', 'converted', now() - interval '3 days',
    '[{"kind": "reels", "quantity": 1, "network": "instagram"}]', current_date + 10, current_date + 20),
@@ -16086,14 +16086,14 @@ select tests.login('a1120000-0000-4000-8000-000000000001', 's112-adm@test.local'
 select tests.ok('S112 Adm vê valores e pode responder', public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1') @> '{"values": true, "can_reply": true, "turn": "agency"}');
 select tests.expect_error('S112 agência não recusa (encerra o negócio se quiser)',
   $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'decline', null, null, null, null, null, 'não')$q$, 'invalid_input');
-select tests.expect_error('S112 por herói sem máximo é recusado',
+select tests.expect_error('S112 por Hero sem máximo é recusado',
   $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', 100000, 'por_heroi', null, null, null, null)$q$, 'max_heroes_required');
 select tests.expect_error('S112 contraproposta sem valor é recusada',
   $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', null, 'fixo', null, null, null, null)$q$, 'invalid_input');
 select tests.expect_error('S112 período invertido é recusado',
   $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', 350000, 'fixo', null, current_date + 20, current_date + 10, null)$q$, 'invalid_input');
 select tests.ok('S112 Adm contrapropõe (fixo, período novo)',
-  public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', 350000, 'fixo', null, current_date + 12, current_date + 25, 'Inclui 2 heróis') = 'countered');
+  public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', 350000, 'fixo', null, current_date + 12, current_date + 25, 'Inclui 2 Heros') = 'countered');
 select tests.ok('S112 contraproposta leva a etapa a proposta enviada',
   (select stage from public.deals where id = 'a1120000-0000-4000-8000-0000000000e1') = 'proposal_sent');
 select tests.expect_error('S112 Adm não responde de novo na vez da marca',
@@ -16102,7 +16102,7 @@ select tests.expect_error('S112 Adm não responde de novo na vez da marca',
 -- marca vê a contraproposta
 select tests.login('a1120000-0000-4000-8000-000000000004', 's112-dono@test.local');
 select tests.ok('S112 dono lê a contraproposta com valor e nota e é a vez dele',
-  (select count(*) from public.deal_offer_rounds where deal_id = 'a1120000-0000-4000-8000-0000000000e1' and side = 'agency' and amount_cents = 350000 and note = 'Inclui 2 heróis') = 1
+  (select count(*) from public.deal_offer_rounds where deal_id = 'a1120000-0000-4000-8000-0000000000e1' and side = 'agency' and amount_cents = 350000 and note = 'Inclui 2 Heros') = 1
   and public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1') @> '{"can_reply": true, "turn": "brand"}');
 select tests.ok('S112 dono recebeu o aviso sem valor',
   (select count(*) from public.inbox_notifications where user_id = 'a1120000-0000-4000-8000-000000000004' and kind = 'proposal_received' and params ->> 'status' = 'countered'
@@ -16124,10 +16124,10 @@ select tests.ok('S112 gestor não lê a tabela e a situação vem sem valor nem 
   and (public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1') -> 'rounds' -> 0) @> '{"amount_cents": null, "note": "", "action": "counter"}'
   and public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1') @> '{"turn": "brand"}');
 
--- marca contrapropõe por herói → Adm aceita: valor oferecido, período e etapa
+-- marca contrapropõe por Hero → Adm aceita: valor oferecido, período e etapa
 select tests.login('a1120000-0000-4000-8000-000000000004', 's112-dono@test.local');
-select tests.ok('S112 dono contrapropõe por herói (R$ 1.200,00 × 2)',
-  public.brand_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', 120000, 'por_heroi', 2, current_date + 15, current_date + 30, 'Por herói') = 'countered');
+select tests.ok('S112 dono contrapropõe por Hero (R$ 1.200,00 × 2)',
+  public.brand_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', 120000, 'por_heroi', 2, current_date + 15, current_date + 30, 'Por Hero') = 'countered');
 select tests.ok('S112 contraproposta da marca leva a negociação', (select count(*) from public.deal_offer_rounds where deal_id = 'a1120000-0000-4000-8000-0000000000e1') = 2);
 select tests.login('a1120000-0000-4000-8000-000000000001', 's112-adm@test.local');
 select tests.ok('S112 Adm recebeu o aviso e vê os termos da marca',
@@ -16135,7 +16135,7 @@ select tests.ok('S112 Adm recebeu o aviso e vê os termos da marca',
   and public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1') @> '{"can_reply": true, "turn": "agency", "brand_terms": {"source": "counter", "amount_cents": 120000, "value_model": "por_heroi", "max_heroes": 2}}');
 select tests.ok('S112 Adm aceita a contraproposta da marca', public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'accept') = 'agreed');
 select tests.su();
-select tests.ok('S112 aceite grava o valor por herói sem dividir, o máximo, o período e a etapa negociação',
+select tests.ok('S112 aceite grava o valor por Hero sem dividir, o máximo, o período e a etapa negociação',
   (select value_model = 'por_heroi' and budget_max_cents = 120000 and budget_min_cents is null and max_heroes = 2
    from public.campaign_request_budgets where request_id = 'a1120000-0000-4000-8000-0000000000d1')
   and (select period_start = current_date + 15 and period_end = current_date + 30 from public.campaign_requests where id = 'a1120000-0000-4000-8000-0000000000d1')
@@ -16198,9 +16198,9 @@ delete from auth.users where id::text like 'a1120000-%';
 
 -- ================================================================ S113 · Roteiros de entrega — Fase 1: catálogo, setores, roteiro em dias úteis, painel e avisos (0107)
 -- Dias úteis BR (feriados nacionais calculados, Carnaval/Consciência Negra), modelo Groscove semeado (8 produtos, por
--- gatilho em agência nova), catálogo só o Adm escreve, setores só o Adm define, negócio com cliente só herói (sem marca,
--- sem pedido) ou marca + herói com serviço → etapas em tasks com setor e prazo encadeado; quem é do setor lê e conclui as
--- etapas do setor (sem ver o negócio), a cadeia recalcula e a automática se conclui; herói-cliente vê só as etapas
+-- gatilho em agência nova), catálogo só o Adm escreve, setores só o Adm define, negócio com cliente só Hero (sem marca,
+-- sem pedido) ou marca + Hero com serviço → etapas em tasks com setor e prazo encadeado; quem é do setor lê e conclui as
+-- etapas do setor (sem ver o negócio), a cadeia recalcula e a automática se conclui; Hero-cliente vê só as etapas
 -- visíveis; painel do setor, indicadores (gestor+) e avisos (1 dia útil antes / atraso ao Gestor) sem duplicar os
 -- avisos antigos. Visitante nada; S14 segue 18.
 \ir ../migrations/0107_roteiros_entrega.sql
@@ -16229,9 +16229,9 @@ insert into public.agency_brands (agency_id, brand_id) values ('a1130000-0000-40
 insert into public.brand_members (brand_id, user_id, role, display_name) values
   ('a1130000-0000-4000-8000-0000000000b1', 'a1130000-0000-4000-8000-000000000007', 'owner', 'Dona S113');
 insert into public.talent_profiles (id, agency_id, display_name, user_id) values
-  ('a1130000-0000-4000-8000-0000000000c1', 'a1130000-0000-4000-8000-0000000000a1', 'Herói Cliente S113', 'a1130000-0000-4000-8000-000000000005'),
-  ('a1130000-0000-4000-8000-0000000000c2', 'a1130000-0000-4000-8000-0000000000a1', 'Outro Herói S113', 'a1130000-0000-4000-8000-000000000006'),
-  ('a1130000-0000-4000-8000-0000000000c9', 'a1130000-0000-4000-8000-0000000000a2', 'Herói Outra S113', null);
+  ('a1130000-0000-4000-8000-0000000000c1', 'a1130000-0000-4000-8000-0000000000a1', 'Hero Cliente S113', 'a1130000-0000-4000-8000-000000000005'),
+  ('a1130000-0000-4000-8000-0000000000c2', 'a1130000-0000-4000-8000-0000000000a1', 'Outro Hero S113', 'a1130000-0000-4000-8000-000000000006'),
+  ('a1130000-0000-4000-8000-0000000000c9', 'a1130000-0000-4000-8000-0000000000a2', 'Hero Outra S113', null);
 create table tests.s113 (k text primary key, v text);
 grant all on tests.s113 to anon, authenticated;
 
@@ -16336,14 +16336,14 @@ select tests.ok('S113 Adm define setores (sem repetir)',
   public.agency_member_sectors_set('a1130000-0000-4000-8000-0000000000a1', 'a1130000-0000-4000-8000-000000000003', array['operacao', 'operacao']) = array['operacao']
   and public.agency_member_sectors_set('a1130000-0000-4000-8000-0000000000a1', 'a1130000-0000-4000-8000-000000000002', array['gestor']) = array['gestor']);
 
--- negócio: cliente só herói (sem marca, sem pedido) com serviço → roteiro; marca + herói com Publipost
+-- negócio: cliente só Hero (sem marca, sem pedido) com serviço → roteiro; marca + Hero com Publipost
 select tests.login('a1130000-0000-4000-8000-000000000002', 's113-gestor@test.local');
 select tests.expect_error('S113 negócio sem cliente é recusado',
   $q$select public.agency_deal_open('a1130000-0000-4000-8000-0000000000a1', '{"title": "Sem cliente"}')$q$, 'client_required');
-select tests.expect_error('S113 herói de outra agência é recusado',
-  $q$select public.agency_deal_open('a1130000-0000-4000-8000-0000000000a1', '{"title": "Herói errado", "client_talent_id": "a1130000-0000-4000-8000-0000000000c9"}')$q$, 'not_found');
+select tests.expect_error('S113 Hero de outra agência é recusado',
+  $q$select public.agency_deal_open('a1130000-0000-4000-8000-0000000000a1', '{"title": "Hero errado", "client_talent_id": "a1130000-0000-4000-8000-0000000000c9"}')$q$, 'not_found');
 insert into tests.s113 values ('d_video', public.agency_deal_open('a1130000-0000-4000-8000-0000000000a1', jsonb_build_object(
-  'title', 'Vídeo do Herói S113', 'client_talent_id', 'a1130000-0000-4000-8000-0000000000c1',
+  'title', 'Vídeo do Hero S113', 'client_talent_id', 'a1130000-0000-4000-8000-0000000000c1',
   'service_id', (select id from public.agency_services where agency_id = 'a1130000-0000-4000-8000-0000000000a1' and slug = 'producao-de-video'),
   'start_on', ((now() at time zone 'America/Sao_Paulo')::date - 45)::text))::text);
 insert into tests.s113 values ('d_publi', public.agency_deal_open('a1130000-0000-4000-8000-0000000000a1', jsonb_build_object(
@@ -16352,7 +16352,7 @@ insert into tests.s113 values ('d_publi', public.agency_deal_open('a1130000-0000
 insert into tests.s113 values ('d_brand', public.agency_deal_open('a1130000-0000-4000-8000-0000000000a1', jsonb_build_object(
   'title', 'Só a marca S113', 'brand_id', 'a1130000-0000-4000-8000-0000000000b1'))::text);
 select tests.su();
-select tests.ok('S113 negócio só do herói: sem marca e sem pedido, 20 etapas encadeadas até o Dia 40, só a 1ª vencida',
+select tests.ok('S113 negócio só do Hero: sem marca e sem pedido, 20 etapas encadeadas até o Dia 40, só a 1ª vencida',
   (select brand_id is null and request_id is null and client_talent_id = 'a1130000-0000-4000-8000-0000000000c1' and roadmap_started_on is not null
    from public.deals where id = (select v::uuid from tests.s113 where k = 'd_video'))
   and (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_video') and roadmap_position is not null and side = 'agency' and sector is not null) = 20
@@ -16362,7 +16362,7 @@ select tests.ok('S113 negócio só do herói: sem marca e sem pedido, 20 etapas 
   and (select due_on from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_video') and roadmap_position = 2)
       = public.br_next_business_day((now() at time zone 'America/Sao_Paulo')::date)
   and (select count(*) from public.activities where deal_id = (select v::uuid from tests.s113 where k = 'd_video') and body = 'roadmap_started|Produção de vídeo') = 1);
-select tests.ok('S113 marca + herói: pedido de origem agência, herói-cliente e Publipost no Dia 7 (no ar) / Dia 15',
+select tests.ok('S113 marca + Hero: pedido de origem agência, Hero-cliente e Publipost no Dia 7 (no ar) / Dia 15',
   (select brand_id = 'a1130000-0000-4000-8000-0000000000b1' and request_id is not null and client_talent_id = 'a1130000-0000-4000-8000-0000000000c1'
    from public.deals where id = (select v::uuid from tests.s113 where k = 'd_publi'))
   and (select due_on from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_publi') and milestone = 'go_live')
@@ -16370,7 +16370,7 @@ select tests.ok('S113 marca + herói: pedido de origem agência, herói-cliente 
   and (select max(due_on) from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_publi'))
       = public.br_add_business_days(public.br_roll_business_day((now() at time zone 'America/Sao_Paulo')::date), 14)
   and (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_publi') and status = 'done') = 0);
-select tests.expect_error('S113 negócio sem marca nem herói não passa no banco',
+select tests.expect_error('S113 negócio sem marca nem Hero não passa no banco',
   $q$insert into public.deals (agency_id, title) values ('a1130000-0000-4000-8000-0000000000a1', 'Ninguém S113')$q$, 'deals_client_check');
 
 -- RLS por setor: Operação lê as etapas do setor, não o negócio; sem setor não lê
@@ -16467,17 +16467,17 @@ select tests.ok('S113 trocar o serviço substitui as etapas (Live Session, 19)',
     ((now() at time zone 'America/Sao_Paulo')::date - 20), true) = 19);
 select tests.ok('S113 a troca não deixa etapas do serviço anterior',
   (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s113 where k = 'd_brand') and roadmap_position is not null) = 19);
-select tests.expect_error('S113 negócio só do herói não fica sem cliente', $q$select public.deal_client_set((select v::uuid from tests.s113 where k = 'd_video'), null)$q$, 'invalid_input');
+select tests.expect_error('S113 negócio só do Hero não fica sem cliente', $q$select public.deal_client_set((select v::uuid from tests.s113 where k = 'd_video'), null)$q$, 'invalid_input');
 select public.deal_client_set((select v::uuid from tests.s113 where k = 'd_brand'), 'a1130000-0000-4000-8000-0000000000c2');
 select tests.login('a1130000-0000-4000-8000-000000000004', 's113-sem@test.local');
 select tests.expect_error('S113 colaborador fora da equipe não troca o cliente', $q$select public.deal_client_set((select v::uuid from tests.s113 where k = 'd_brand'), null)$q$, 'forbidden');
 
--- herói-cliente no portal: só as etapas visíveis, sem responsáveis; outros não veem
+-- Hero-cliente no portal: só as etapas visíveis, sem responsáveis; outros não veem
 select tests.su();
 insert into tests.s113 select 'vis_' || k.deal_id::text, count(*)::text from public.tasks k
   where k.agency_id = 'a1130000-0000-4000-8000-0000000000a1' and k.roadmap_position is not null and k.client_visible group by k.deal_id;
 select tests.login('a1130000-0000-4000-8000-000000000005', 's113-heroi@test.local');
-select tests.ok('S113 herói-cliente vê os 2 projetos só com as etapas visíveis ao cliente',
+select tests.ok('S113 Hero-cliente vê os 2 projetos só com as etapas visíveis ao cliente',
   jsonb_array_length(public.client_projects()) = 2
   and (select bool_and(jsonb_array_length(p -> 'steps') = (select v::int from tests.s113 where k = 'vis_' || (p ->> 'deal_id'))
                        and (p -> 'progress') ? 'day' and not (p::text like '%assignee%'))
@@ -16485,10 +16485,10 @@ select tests.ok('S113 herói-cliente vê os 2 projetos só com as etapas visíve
   and (select count(*) from public.tasks) = 0
   and (select count(*) from public.deals where client_talent_id = 'a1130000-0000-4000-8000-0000000000c1') = 0);
 select tests.login('a1130000-0000-4000-8000-000000000006', 's113-outroheroi@test.local');
-select tests.ok('S113 o outro herói vê só o negócio em que virou cliente', jsonb_array_length(public.client_projects()) = 1
+select tests.ok('S113 o outro Hero vê só o negócio em que virou cliente', jsonb_array_length(public.client_projects()) = 1
   and public.client_projects() -> 0 ->> 'title' = 'Só a marca S113');
 select tests.login('a1130000-0000-4000-8000-000000000007', 's113-marca@test.local');
-select tests.ok('S113 marca não lê etapas internas nem projetos de herói', (select count(*) from public.tasks) = 0 and public.client_projects() = '[]'::jsonb);
+select tests.ok('S113 marca não lê etapas internas nem projetos de Hero', (select count(*) from public.tasks) = 0 and public.client_projects() = '[]'::jsonb);
 select tests.login('a1130000-0000-4000-8000-000000000008', 's113-comum@test.local');
 select tests.ok('S113 quem não é de nada não vê projetos', public.client_projects() = '[]'::jsonb);
 
@@ -16527,12 +16527,12 @@ delete from auth.users where id::text like 'a1130000-%';
 drop table tests.s113;
 
 -- ================================================================ S114 · Condições de pagamento, previsto, termos com pagamento e modelo das cotas (0108)
--- Plano de pagamento por negócio (só o Adm grava; gestor/colaborador sem valores; marca vê total e parcelas; herói
+-- Plano de pagamento por negócio (só o Adm grava; gestor/colaborador sem valores; marca vê total e parcelas; Hero
 -- titular só o repasse dele): previsto ('forecast') nasce ao salvar e acompanha os cachês, não vence nem recebe
 -- informe/agenda; enviar termos exige o plano (caso "Mulheres": aprovado, termos em rascunho); a cópia congelada vai
--- para o texto assinado (marca: total e parcelas; herói: o cachê dele; gestor: sem pagamento) e é ela que a
+-- para o texto assinado (marca: total e parcelas; Hero: o cachê dele; gestor: sem pagamento) e é ela que a
 -- contratação usa (valor ACORDADO, comissão = acordado − repasses, identidade conferida); depois o plano trava.
--- Aviso de repasse (herói e Adm), negócio perdido cancela o previsto, cliente só herói fica fora. Cotas: modelo fixo
+-- Aviso de repasse (Hero e Adm), negócio perdido cancela o previsto, cliente só Hero fica fora. Cotas: modelo fixo
 -- (pedido por marca = o que falta ÷ vagas) ou por marca; proposta acima do total é recusada. S14 segue 18.
 \ir ../migrations/0108_condicoes_pagamento.sql
 select tests.su();
@@ -16562,7 +16562,7 @@ insert into public.brand_members (brand_id, user_id, role, display_name) values
   ('a1140000-0000-4000-8000-0000000000b2', 'a1140000-0000-4000-8000-000000000006', 'owner', 'Dono Outra S114');
 insert into public.talent_profiles (id, agency_id, display_name, user_id, consent_at) values
   ('a1140000-0000-4000-8000-0000000000c1', 'a1140000-0000-4000-8000-0000000000a1', 'Heroína Um S114', 'a1140000-0000-4000-8000-000000000007', now() - interval '30 days'),
-  ('a1140000-0000-4000-8000-0000000000c2', 'a1140000-0000-4000-8000-0000000000a1', 'Herói Dois S114', null, now() - interval '30 days');
+  ('a1140000-0000-4000-8000-0000000000c2', 'a1140000-0000-4000-8000-0000000000a1', 'Hero Dois S114', null, now() - interval '30 days');
 insert into public.campaign_requests (id, agency_id, brand_id, origin, title, status, submitted_at, deliverables, period_start, period_end) values
   ('a1140000-0000-4000-8000-0000000000d1', 'a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-0000000000b1', 'brand', 'Mulheres S114', 'converted', now() - interval '10 days',
    '[{"kind": "reels", "quantity": 1, "network": "instagram"}]', current_date + 10, current_date + 30),
@@ -16705,9 +16705,9 @@ select tests.ok('S114 outra marca não vê parcelas', (select count(*) from publ
 select tests.login('a1140000-0000-4000-8000-000000000008', 's114-comum@test.local');
 select tests.expect_error('S114 quem não é de nada não lê o plano', $q$select public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1')$q$, 'not_found');
 
--- herói titular: só o repasse dele (previsto, nota exigida)
+-- Hero titular: só o repasse dele (previsto, nota exigida)
 select tests.login('a1140000-0000-4000-8000-000000000007', 's114-heroi@test.local');
-select tests.ok('S114 herói vê só o próprio repasse com regra e nota exigida',
+select tests.ok('S114 Hero vê só o próprio repasse com regra e nota exigida',
   public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') @> '{"viewer": "talent", "plan": {"payout_rule": "after_receipt", "payout_days": 10, "invoice_talent": true}, "my_payout": {"amount_cents": 100000, "status": "forecast"}}'
   and not (public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') ? 'total_cents')
   and not (public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') ? 'parts')
@@ -16730,8 +16730,8 @@ select tests.ok('S114 marca assina com o hash da prévia',
   public.brand_terms_sign((select v::uuid from t_s114 where k = 'terms'), 'Dona da Marca S114', '529.982.247-25',
     (select v::jsonb ->> 'sha256' from t_s114 where k = 'brand_preview')) is not null);
 select tests.login('a1140000-0000-4000-8000-000000000007', 's114-heroi@test.local');
-select tests.ok('S114 herói assina o cachê dele (sem o valor da marca)',
-  (public.terms_sign_preview((select v::uuid from t_s114 where k = 'terms')) ->> 'text') like '%REPASSE AO HERÓI%Seu cachê: R$ 1.000,00%10 dias após a agência receber%Nota fiscal do herói: exigida%'
+select tests.ok('S114 Hero assina o cachê dele (sem o valor da marca)',
+  (public.terms_sign_preview((select v::uuid from t_s114 where k = 'terms')) ->> 'text') like '%REPASSE AO HERO%Seu cachê: R$ 1.000,00%10 dias após a agência receber%Nota fiscal do Hero: exigida%'
   and (public.terms_sign_preview((select v::uuid from t_s114 where k = 'terms')) ->> 'text') not like '%3.000,00%'
   and public.talent_terms_sign((select v::uuid from t_s114 where k = 'terms'), 'Heroína Um Silva', '529.982.247-25') is not null);
 select tests.login('a1140000-0000-4000-8000-000000000002', 's114-gestor@test.local');
@@ -16765,11 +16765,11 @@ select tests.expect_error('S114 depois da contratação o plano trava (parcelas 
   $q$select public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e1', jsonb_build_object('total_cents', 300000, 'plan', (select v::jsonb from t_s114 where k = 'plan')))$q$, 'plan_locked');
 select tests.ok('S114 plano efetivo', public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') @> '{"status": "effective", "locked": true, "can_edit": false}');
 
--- aviso do repasse (agendado para daqui a 2 dias): herói e Adm, sem valor
+-- aviso do repasse (agendado para daqui a 2 dias): Hero e Adm, sem valor
 select public.agency_payout_schedule((select id from public.financial_entries where deal_talent_id = 'a1140000-0000-4000-8000-0000000000f1' and status <> 'cancelled'), current_date + 2);
 select tests.su();
 select tests.ok('S114 varredura diária roda', (public.deal_payment_scan() ->> 'payout_alerts')::int >= 2);
-select tests.ok('S114 herói e Adm avisados do repasse a vencer (sem valor); herói sem login não recebe',
+select tests.ok('S114 Hero e Adm avisados do repasse a vencer (sem valor); Hero sem login não recebe',
   (select count(*) from public.inbox_notifications where user_id = 'a1140000-0000-4000-8000-000000000007' and kind = 'payout_due' and params ->> 'status' = 'soon'
      and params::text not like '%100000%') = 1
   and (select count(*) from public.inbox_notifications where user_id = 'a1140000-0000-4000-8000-000000000001' and kind = 'payout_due') >= 1
@@ -16777,7 +16777,7 @@ select tests.ok('S114 herói e Adm avisados do repasse a vencer (sem valor); her
 select tests.ok('S114 varredura de novo não repete o aviso', (select count(*) from (select public.deal_payment_scan()) x) = 1
   and (select count(*) from public.inbox_notifications where user_id = 'a1140000-0000-4000-8000-000000000007' and kind = 'payout_due') = 1);
 
--- negócio perdido: previsto cancelado; cliente só herói: fora
+-- negócio perdido: previsto cancelado; cliente só Hero: fora
 select tests.login('a1140000-0000-4000-8000-000000000001', 's114-adm@test.local');
 select public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e3', jsonb_build_object('total_cents', 70000,
   'plan', jsonb_build_object('structure', 'installments', 'installments', 2, 'interval', 'biweekly', 'first_rule', 'date', 'first_on', current_date + 5)));
@@ -16788,7 +16788,7 @@ update public.deals set stage = 'closed', outcome = 'lost', closed_at = now() wh
 select tests.ok('S114 negócio perdido cancela o previsto',
   (select bool_and(status = 'cancelled') and count(*) = 3 from public.financial_entries where deal_id = 'a1140000-0000-4000-8000-0000000000e3'));
 select tests.login('a1140000-0000-4000-8000-000000000001', 's114-adm@test.local');
-select tests.expect_error('S114 cliente só herói fica fora do plano',
+select tests.expect_error('S114 cliente só Hero fica fora do plano',
   $q$select public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e2', '{"total_cents": 50000, "plan": {"structure": "single", "first_rule": "signature"}}')$q$, 'invalid_state');
 
 -- cotas: valor fixo do evento × por marca
@@ -16872,8 +16872,8 @@ drop table t_s114;
 -- ================================================================ S115 · Próximo passo: encerrar como ganho sem trabalho fantasma (0109)
 -- Caso do responsável (04/11): negócio aprovado, termos em rascunho, contrato não confirmado e "Post mm" planejado.
 -- Ganho só contratado e sem entrega aberta (D1, inclusive direto da produção); com pendência só o Adm, com motivo, e as
--- entregas abertas e as tarefas do herói/marca são canceladas na mesma transação (D2); perdido também cancela (D3);
--- o "Hoje" do herói passa a trazer a entrega publicada esperando o comprovante (D6). S14 segue 18.
+-- entregas abertas e as tarefas do Hero/marca são canceladas na mesma transação (D2); perdido também cancela (D3);
+-- o "Hoje" do Hero passa a trazer a entrega publicada esperando o comprovante (D6). S14 segue 18.
 \ir ../migrations/0109_proximo_passo_encerrar_ganho.sql
 select tests.su();
 insert into auth.users (id, email) values
@@ -16934,7 +16934,7 @@ select tests.ok('S115 D1: contratado e tudo concluído encerra como ganho direto
   and not exists (select 1 from public.activities where deal_id = 'a1150000-0000-4000-8000-0000000000e2' and body like 'close_cancelled%'));
 
 select tests.login('a1150000-0000-4000-8000-000000000003', 's115-heroi@test.local');
-select tests.ok('S115 D6: o "Hoje" do herói traz a entrega publicada (falta o comprovante); a concluída não entra',
+select tests.ok('S115 D6: o "Hoje" do Hero traz a entrega publicada (falta o comprovante); a concluída não entra',
   (public.talent_today() -> 'deliverables') @> '[{"id": "a1150000-0000-4000-8000-000000000031", "status": "published"}]'::jsonb
   and not ((public.talent_today() -> 'deliverables') @> '[{"id": "a1150000-0000-4000-8000-000000000021"}]'::jsonb));
 
@@ -16944,7 +16944,7 @@ select tests.expect_error('S115 Adm sem forçar também esbarra na porteira',
 select tests.expect_error('S115 D2: forçar o ganho com pendência exige motivo',
   $q$select public.agency_deal_move('a1150000-0000-4000-8000-0000000000e1', 'closed', 'won', null, true)$q$, 'note_required');
 select public.agency_deal_move('a1150000-0000-4000-8000-0000000000e1', 'closed', 'won', 'Marca fechou por fora, sem o post', true);
-select tests.ok('S115 D2: ganho forçado cancela o "Post mm" e a tarefa do herói na mesma transação; a tarefa interna fica; linha do tempo registra',
+select tests.ok('S115 D2: ganho forçado cancela o "Post mm" e a tarefa do Hero na mesma transação; a tarefa interna fica; linha do tempo registra',
   (select stage = 'closed' and outcome = 'won' from public.deals where id = 'a1150000-0000-4000-8000-0000000000e1')
   and (select status = 'cancelled' from public.deliverables where id = 'a1150000-0000-4000-8000-000000000011')
   and (select status = 'cancelled' from public.tasks where deal_id = 'a1150000-0000-4000-8000-0000000000e1' and side = 'talent')
@@ -16953,12 +16953,12 @@ select tests.ok('S115 D2: ganho forçado cancela o "Post mm" e a tarefa do heró
 
 select tests.login('a1150000-0000-4000-8000-000000000002', 's115-gestor@test.local');
 select public.agency_deal_move('a1150000-0000-4000-8000-0000000000e4', 'closed', 'lost', 'Marca desistiu S115');
-select tests.ok('S115 D3: perdido cancela a entrega e a tarefa abertas do herói',
+select tests.ok('S115 D3: perdido cancela a entrega e a tarefa abertas do Hero',
   (select status = 'cancelled' from public.deliverables where id = 'a1150000-0000-4000-8000-000000000041')
   and (select status = 'cancelled' from public.tasks where deal_id = 'a1150000-0000-4000-8000-0000000000e4'));
 
 select tests.login('a1150000-0000-4000-8000-000000000003', 's115-heroi@test.local');
-select tests.ok('S115 herói: nada de trabalho fantasma dos negócios encerrados no "Hoje"',
+select tests.ok('S115 Hero: nada de trabalho fantasma dos negócios encerrados no "Hoje"',
   not ((public.talent_today() -> 'deliverables') @> '[{"id": "a1150000-0000-4000-8000-000000000011"}]'::jsonb)
   and not ((public.talent_today() -> 'tasks') @> '[{"deal_id": "a1150000-0000-4000-8000-0000000000e1"}]'::jsonb)
   and (select count(*) from public.tasks where talent_id = 'a1150000-0000-4000-8000-0000000000c1' and status in ('todo', 'doing', 'blocked')) = 0);
@@ -16981,11 +16981,11 @@ delete from auth.users where id::text like 'a1150000-%';
 
 -- ================================================================ S116 · Roteiros de entrega — Fase 2: sala do projeto, staff externo, NDA, diária, feedback e clipping (0110)
 -- Sala abre sozinha ao gerar o roteiro; agência lê tudo e escreve interno; staff externo entra por convite próprio (fora
--- do interruptor de convites), só com o MESMO e-mail, e só vê a sala depois do NDA (nome + CPF, hash do texto); herói e
+-- do interruptor de convites), só com o MESMO e-mail, e só vê a sala depois do NDA (nome + CPF, hash do texto); Hero e
 -- marca nunca leem as mensagens internas nem os e-mails; diária vira compromisso e "Cheguei ao local" só da própria pessoa
--- da equipe; etapa concluída vira linha de sistema; marco "dia da produção" pede feedback (0–10) à marca e ao herói-cliente;
+-- da equipe; etapa concluída vira linha de sistema; marco "dia da produção" pede feedback (0–10) à marca e ao Hero-cliente;
 -- arquivo da sala só para a própria reserva e para quem lê; encerrar arquiva, congela o clipping e corta o acesso de
--- staff/herói/marca. Configurações (normas/NDA) só o Adm. Visitante nada; S14 segue 18.
+-- staff/Hero/marca. Configurações (normas/NDA) só o Adm. Visitante nada; S14 segue 18.
 \ir ../migrations/0110_sala_projeto.sql
 select tests.su();
 insert into auth.users (id, email) values
@@ -17007,7 +17007,7 @@ insert into public.agency_brands (agency_id, brand_id) values ('a1160000-0000-40
 insert into public.brand_members (brand_id, user_id, role, display_name) values
   ('a1160000-0000-4000-8000-0000000000b1', 'a1160000-0000-4000-8000-000000000007', 'owner', 'Dona S116');
 insert into public.talent_profiles (id, agency_id, display_name, user_id) values
-  ('a1160000-0000-4000-8000-0000000000c1', 'a1160000-0000-4000-8000-0000000000a1', 'Herói Cliente S116', 'a1160000-0000-4000-8000-000000000005');
+  ('a1160000-0000-4000-8000-0000000000c1', 'a1160000-0000-4000-8000-0000000000a1', 'Hero Cliente S116', 'a1160000-0000-4000-8000-000000000005');
 create table tests.s116 (k text primary key, v text);
 grant all on tests.s116 to anon, authenticated;
 
@@ -17035,14 +17035,14 @@ select tests.ok('S116 estrutura: RLS nas tabelas novas, só leitura, nada para v
                        'agency_project_settings_save', 'agency_project_settings_get', 'deals_project_room_after', 'tasks_project_room_after')))
   and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 
--- negócio marca + herói-cliente com Produção de vídeo: a sala abre sozinha
+-- negócio marca + Hero-cliente com Produção de vídeo: a sala abre sozinha
 select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local');
 insert into tests.s116 values ('d', public.agency_deal_open('a1160000-0000-4000-8000-0000000000a1', jsonb_build_object(
   'title', 'Clipe S116', 'brand_id', 'a1160000-0000-4000-8000-0000000000b1', 'client_talent_id', 'a1160000-0000-4000-8000-0000000000c1',
   'service_id', (select id from public.agency_services where agency_id = 'a1160000-0000-4000-8000-0000000000a1' and slug = 'producao-de-video')))::text);
 select tests.su();
 update public.deals set brand_visible = true where id = (select v::uuid from tests.s116 where k = 'd');
-select tests.ok('S116 sala aberta ao gerar o roteiro, com linha de sistema e aviso ao herói-cliente',
+select tests.ok('S116 sala aberta ao gerar o roteiro, com linha de sistema e aviso ao Hero-cliente',
   (select status = 'open' from public.project_rooms where deal_id = (select v::uuid from tests.s116 where k = 'd'))
   and (select count(*) from public.project_room_messages where deal_id = (select v::uuid from tests.s116 where k = 'd') and kind = 'system' and body like 'room_opened|%') = 1
   and (select count(*) from public.inbox_notifications where user_id = 'a1160000-0000-4000-8000-000000000005' and kind = 'campaign_status_changed' and params ->> 'status' = 'room_opened'
@@ -17115,15 +17115,15 @@ select tests.expect_error('S116 NDA não é assinado duas vezes',
   $q$select public.project_nda_sign((select v::uuid from tests.s116 where k = 'd'), 'Rafael Foto', '529.982.247-25', null, null, null)$q$, 'already_signed');
 select tests.ok('S116 staff posta interno', public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'Levo 2 câmeras', true, null) is not null);
 
--- herói-cliente e marca: sem mensagens internas, sem e-mails
+-- Hero-cliente e marca: sem mensagens internas, sem e-mails
 select tests.login('a1160000-0000-4000-8000-000000000005', 's116-heroi@test.local');
-select tests.ok('S116 herói-cliente lê a sala sem as internas',
+select tests.ok('S116 Hero-cliente lê a sala sem as internas',
   public.project_room_view((select v::uuid from tests.s116 where k = 'd')) ->> 'side' = 'talent'
   and (select count(*) from jsonb_array_elements(public.project_room_view((select v::uuid from tests.s116 where k = 'd')) -> 'messages') x where x ->> 'audience' = 'internal') = 0
   and (select count(*) from public.project_room_messages where audience = 'internal') = 0
   and (select count(*) from public.project_room_messages where kind = 'text') = 1
   and not (public.project_room_view((select v::uuid from tests.s116 where k = 'd')) ->> 'can_internal')::boolean);
-select tests.expect_error('S116 herói não posta interno', $q$select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'segredo', true, null)$q$, 'forbidden');
+select tests.expect_error('S116 Hero não posta interno', $q$select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'segredo', true, null)$q$, 'forbidden');
 select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'Chego às 8h', false, null);
 select tests.login('a1160000-0000-4000-8000-000000000007', 's116-marca@test.local');
 select tests.ok('S116 marca lê a sala sem as internas e sem a lista de staff da tabela',
@@ -17133,11 +17133,11 @@ select tests.ok('S116 marca lê a sala sem as internas e sem a lista de staff da
   and (select count(*) from public.project_room_members) = 0 and (select count(*) from public.project_nda_signatures) = 0);
 select tests.expect_error('S116 marca não posta interno', $q$select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'x', true, null)$q$, 'forbidden');
 
--- "heróis também assinam o NDA"
+-- "Heros também assinam o NDA"
 select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local');
 select public.project_room_update((select v::uuid from tests.s116 where k = 'd'), 'Briefing: clipe de 60 s no estúdio.', true);
 select tests.login('a1160000-0000-4000-8000-000000000005', 's116-heroi@test.local');
-select tests.ok('S116 com nda_heroes o herói precisa assinar', public.project_room_view((select v::uuid from tests.s116 where k = 'd')) ->> 'locked' = 'nda'
+select tests.ok('S116 com nda_heroes o Hero precisa assinar', public.project_room_view((select v::uuid from tests.s116 where k = 'd')) ->> 'locked' = 'nda'
   and (select count(*) from public.project_room_messages) = 0);
 select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local');
 select public.project_room_update((select v::uuid from tests.s116 where k = 'd'), 'Briefing: clipe de 60 s no estúdio.', false);
@@ -17151,7 +17151,7 @@ select tests.expect_error('S116 diária com link de mapa sem https é recusada',
 insert into tests.s116 select 'day', public.project_shoot_day_save((select v::uuid from tests.s116 where k = 'd'), null, jsonb_build_object(
   'starts_at', now() + interval '1 hour', 'location', 'Estúdio Lapa', 'map_url', 'https://maps.test/lapa', 'parking', 'Rua de trás', 'food', 'Almoço 13h', 'people_limit', 15))::text;
 select tests.su();
-select tests.ok('S116 diária: equipe da sala (agência, herói, staff), compromisso na agenda, aviso à equipe e linha na sala',
+select tests.ok('S116 diária: equipe da sala (agência, Hero, staff), compromisso na agenda, aviso à equipe e linha na sala',
   (select array_agg(side order by side) from public.project_shoot_crew where shoot_day_id = (select v::uuid from tests.s116 where k = 'day')) = array['agency', 'staff', 'talent']
   and (select e.kind = 'recording' and e.source = 'manual' and e.deal_id = (select v::uuid from tests.s116 where k = 'd') and e.visible_to_brand and e.visible_to_talent
        from public.calendar_events e join public.project_shoot_days sd on sd.calendar_event_id = e.id where sd.id = (select v::uuid from tests.s116 where k = 'day'))
@@ -17179,7 +17179,7 @@ select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.loc
 select tests.ok('S116 gestor vê quem chegou (1 de 3)',
   (public.project_room_view((select v::uuid from tests.s116 where k = 'd')) -> 'shoot_days' -> 0) @> '{"arrived": 1, "total": 3}');
 
--- etapa concluída vira linha; marco "dia da produção" pede feedback à marca e ao herói-cliente
+-- etapa concluída vira linha; marco "dia da produção" pede feedback à marca e ao Hero-cliente
 do $$
 declare t record;
 begin
@@ -17198,10 +17198,10 @@ select tests.ok('S116 linhas de etapa concluída (interna x visível ao cliente)
 insert into tests.s116 select 'fb_b', id::text from public.project_feedback where deal_id = (select v::uuid from tests.s116 where k = 'd') and party = 'brand';
 insert into tests.s116 select 'fb_t', id::text from public.project_feedback where deal_id = (select v::uuid from tests.s116 where k = 'd') and party = 'talent';
 select tests.login('a1160000-0000-4000-8000-000000000005', 's116-heroi@test.local');
-select tests.expect_error('S116 herói não responde pela marca', $q$select public.project_feedback_answer((select v::uuid from tests.s116 where k = 'fb_b'), 9, null)$q$, 'not_found');
+select tests.expect_error('S116 Hero não responde pela marca', $q$select public.project_feedback_answer((select v::uuid from tests.s116 where k = 'fb_b'), 9, null)$q$, 'not_found');
 select tests.expect_error('S116 nota fora de 0–10 é recusada', $q$select public.project_feedback_answer((select v::uuid from tests.s116 where k = 'fb_t'), 11, null)$q$, 'invalid_input');
 select public.project_feedback_answer((select v::uuid from tests.s116 where k = 'fb_t'), 10, 'Equipe nota 10');
-select tests.ok('S116 herói lê só o próprio feedback', (select count(*) from public.project_feedback) = 1);
+select tests.ok('S116 Hero lê só o próprio feedback', (select count(*) from public.project_feedback) = 1);
 select tests.login('a1160000-0000-4000-8000-000000000007', 's116-marca@test.local');
 select public.project_feedback_answer((select v::uuid from tests.s116 where k = 'fb_b'), 6, 'Atrasou um pouco');
 select tests.login('a1160000-0000-4000-8000-000000000003', 's116-colab@test.local');
@@ -17211,7 +17211,7 @@ select tests.ok('S116 indicador: 2 respostas, média 8, 1 promotor e 1 detrator;
   public.project_feedback_indicator('a1160000-0000-4000-8000-0000000000a1', 180) @> '{"answered": 2, "avg": 8.0, "promoters": 1, "detractors": 1}'
   and (select count(*) from public.inbox_notifications where user_id = 'a1160000-0000-4000-8000-000000000002' and kind = 'campaign_status_changed' and params ->> 'status' = 'feedback_received') = 2);
 
--- arquivos: só a própria reserva; arquivo interno não chega ao herói; guia de uso
+-- arquivos: só a própria reserva; arquivo interno não chega ao Hero; guia de uso
 select tests.login('a1160000-0000-4000-8000-000000000004', 's116-foto@test.local');
 select tests.expect_error('S116 tipo de arquivo fora da lista é recusado',
   $q$select public.project_room_attach_reserve((select v::uuid from tests.s116 where k = 'd'), '{"mime_type": "application/zip", "size_bytes": 10, "name": "x.zip"}')$q$, 'invalid_file_type');
@@ -17226,9 +17226,9 @@ select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 
 select tests.ok('S116 staff baixa o próprio áudio interno (RPC e política do Storage)', public.project_room_file((select v::uuid from tests.s116 where k = 'att_int')) ->> 'path' like '%/room/%.m4a'
   and (select count(*) from storage.objects where bucket_id = 'agency-docs' and name like '%/room/%') = 1);
 select tests.login('a1160000-0000-4000-8000-000000000005', 's116-heroi@test.local');
-select tests.expect_error('S116 herói não baixa arquivo interno', $q$select public.project_room_file((select v::uuid from tests.s116 where k = 'att_int'))$q$, 'not_found');
-select tests.ok('S116 herói não vê o áudio interno no Storage', (select count(*) from storage.objects where bucket_id = 'agency-docs' and name like '%/room/%') = 0);
-select tests.expect_error('S116 herói não publica a reserva de outra pessoa',
+select tests.expect_error('S116 Hero não baixa arquivo interno', $q$select public.project_room_file((select v::uuid from tests.s116 where k = 'att_int'))$q$, 'not_found');
+select tests.ok('S116 Hero não vê o áudio interno no Storage', (select count(*) from storage.objects where bucket_id = 'agency-docs' and name like '%/room/%') = 0);
+select tests.expect_error('S116 Hero não publica a reserva de outra pessoa',
   $q$select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'x', false, (select v::uuid from tests.s116 where k = 'att_int'))$q$, 'not_found');
 select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local');
 insert into tests.s116 select 'guide', public.project_room_attach_reserve((select v::uuid from tests.s116 where k = 'd'), '{"mime_type": "application/pdf", "size_bytes": 99, "name": "guia.pdf"}') ->> 'id';
@@ -17273,8 +17273,8 @@ select tests.expect_error('S116 staff não lê o clipping', $q$select public.pro
 select tests.ok('S116 staff: nada pela RLS e fora de "Meus projetos"', (select count(*) from public.project_room_messages) = 0
   and jsonb_array_length(public.my_project_rooms()) = 0);
 select tests.login('a1160000-0000-4000-8000-000000000005', 's116-heroi@test.local');
-select tests.expect_error('S116 herói perde a sala no fechamento', $q$select public.project_room_view((select v::uuid from tests.s116 where k = 'd'))$q$, 'not_found');
-select tests.ok('S116 herói-cliente lê o clipping congelado e o guia de uso',
+select tests.expect_error('S116 Hero perde a sala no fechamento', $q$select public.project_room_view((select v::uuid from tests.s116 where k = 'd'))$q$, 'not_found');
+select tests.ok('S116 Hero-cliente lê o clipping congelado e o guia de uso',
   public.project_clipping((select v::uuid from tests.s116 where k = 'd')) @> '{"side": "talent", "frozen": true}'
   and public.project_room_file((select v::uuid from tests.s116 where k = 'guide')) ->> 'name' = 'guia.pdf'
   and (select count(*) from storage.objects where bucket_id = 'agency-docs' and name like '%/room/%') = 1);
@@ -17297,12 +17297,12 @@ delete from public.brands where id = 'a1160000-0000-4000-8000-0000000000b1';
 delete from public.agencies where id = 'a1160000-0000-4000-8000-0000000000a1';
 delete from auth.users where id::text like 'a1160000-%';
 
--- ================================================================ S117 · Roteiros de entrega — Fase 3: recorrência, insights, estratégias, nova venda e pagamento do herói-cliente (0111)
+-- ================================================================ S117 · Roteiros de entrega — Fase 3: recorrência, insights, estratégias, nova venda e pagamento do Hero-cliente (0111)
 -- Contrato recorrente gera o ciclo corrente das etapas recorrentes (4 semanais e 2 quinzenais por mês), idempotente, fora
--- da cadeia do roteiro; reprogramar refaz as abertas. Insights 24 h/7 dias: lembrete ao herói e atraso ao responsável,
+-- da cadeia do roteiro; reprogramar refaz as abertas. Insights 24 h/7 dias: lembrete ao Hero e atraso ao responsável,
 -- uma vez por marco; a agência vê só o que pode. Banco de ideias interno: aprovação só da Estratégia/Adm, devolver pede
--- nota, marca e herói não leem, vínculo com a oportunidade publicada = enviada. Nova venda: ligado ou mesmo cliente.
--- Herói-cliente: plano previsto → efetivado pelo Adm → parcelas recebidas quitam; o herói vê só o "a pagar" dele, sem
+-- nota, marca e Hero não leem, vínculo com a oportunidade publicada = enviada. Nova venda: ligado ou mesmo cliente.
+-- Hero-cliente: plano previsto → efetivado pelo Adm → parcelas recebidas quitam; o Hero vê só o "a pagar" dele, sem
 -- comissão; gestor sem valores. Visitante nada; S14 segue 18.
 \ir ../migrations/0111_roteiros_fase3.sql
 select tests.su();
@@ -17325,8 +17325,8 @@ insert into public.agency_brands (agency_id, brand_id) values ('a1170000-0000-40
 insert into public.brand_members (brand_id, user_id, role, display_name) values
   ('a1170000-0000-4000-8000-0000000000b1', 'a1170000-0000-4000-8000-000000000007', 'owner', 'Dona S117');
 insert into public.talent_profiles (id, agency_id, display_name, user_id, consent_at) values
-  ('a1170000-0000-4000-8000-0000000000c1', 'a1170000-0000-4000-8000-0000000000a1', 'Herói Cliente S117', 'a1170000-0000-4000-8000-000000000005', now() - interval '30 days'),
-  ('a1170000-0000-4000-8000-0000000000c2', 'a1170000-0000-4000-8000-0000000000a1', 'Herói Publi S117', 'a1170000-0000-4000-8000-000000000006', now() - interval '30 days');
+  ('a1170000-0000-4000-8000-0000000000c1', 'a1170000-0000-4000-8000-0000000000a1', 'Hero Cliente S117', 'a1170000-0000-4000-8000-000000000005', now() - interval '30 days'),
+  ('a1170000-0000-4000-8000-0000000000c2', 'a1170000-0000-4000-8000-0000000000a1', 'Hero Publi S117', 'a1170000-0000-4000-8000-000000000006', now() - interval '30 days');
 create table tests.s117 (k text primary key, v text);
 grant all on tests.s117 to anon, authenticated;
 
@@ -17423,7 +17423,7 @@ select tests.ok('S117 situação dos insights por marco (24 h, 7 dias, atrasado,
   and public.deliverable_insights_state(now() - interval '2 hours', now(), false, false) = 'waiting');
 insert into tests.s117 values ('scan1', public.insights_reminder_scan()::text);
 insert into tests.s117 values ('scan2', public.insights_reminder_scan()::text);
-select tests.ok('S117 lembrete ao herói (24 h e 7 dias) e atraso ao responsável, uma vez por marco',
+select tests.ok('S117 lembrete ao Hero (24 h e 7 dias) e atraso ao responsável, uma vez por marco',
   (select count(*) from public.inbox_notifications where user_id = 'a1170000-0000-4000-8000-000000000006' and kind = 'deliverable_published'
      and params ->> 'status' in ('insights_24h', 'insights_7d') and link = '/creator/escritorio/oportunidades/a1170000-0000-4000-8000-0000000000f1') = 2
   and (select count(*) from public.inbox_notifications where user_id = 'a1170000-0000-4000-8000-000000000002' and kind = 'deliverable_published'
@@ -17438,10 +17438,10 @@ select tests.login('a1170000-0000-4000-8000-000000000004', 's117-colab@test.loca
 select tests.ok('S117 colaborador fora do negócio não vê os insights do negócio',
   jsonb_array_length(public.agency_insights_pending('a1170000-0000-4000-8000-0000000000a1') -> 'items') = 0);
 select tests.login('a1170000-0000-4000-8000-000000000006', 's117-heroi2@test.local');
-select tests.ok('S117 herói vê os insights dele para enviar', jsonb_array_length(public.my_insights_pending()) = 3);
-select tests.expect_error('S117 herói não lê os pendentes da agência', $q$select public.agency_insights_pending('a1170000-0000-4000-8000-0000000000a1')$q$, 'not_found');
+select tests.ok('S117 Hero vê os insights dele para enviar', jsonb_array_length(public.my_insights_pending()) = 3);
+select tests.expect_error('S117 Hero não lê os pendentes da agência', $q$select public.agency_insights_pending('a1170000-0000-4000-8000-0000000000a1')$q$, 'not_found');
 select tests.login('a1170000-0000-4000-8000-000000000005', 's117-heroi@test.local');
-select tests.ok('S117 outro herói não vê os insights alheios', jsonb_array_length(public.my_insights_pending()) = 0);
+select tests.ok('S117 outro Hero não vê os insights alheios', jsonb_array_length(public.my_insights_pending()) = 0);
 
 -- ---------------------------------------------------------------- estratégias para marcas
 select tests.login('a1170000-0000-4000-8000-000000000004', 's117-colab@test.local');
@@ -17494,7 +17494,7 @@ select tests.login('a1170000-0000-4000-8000-000000000007', 's117-marca@test.loca
 select tests.ok('S117 marca não lê o banco de ideias', (select count(*) from public.strategy_ideas) = 0);
 select tests.expect_error('S117 marca não lista ideias', $q$select public.strategy_ideas_list('a1170000-0000-4000-8000-0000000000a1')$q$, 'not_found');
 select tests.login('a1170000-0000-4000-8000-000000000006', 's117-heroi2@test.local');
-select tests.ok('S117 herói não lê o banco de ideias', (select count(*) from public.strategy_ideas) = 0);
+select tests.ok('S117 Hero não lê o banco de ideias', (select count(*) from public.strategy_ideas) = 0);
 select tests.anon();
 select tests.expect_error('S117 visitante não cria ideia', $q$select public.strategy_idea_save('a1170000-0000-4000-8000-0000000000a1', null, '{}'::jsonb)$q$, 'permission denied');
 
@@ -17516,14 +17516,14 @@ select tests.expect_error('S117 origem não pode ser o próprio negócio',
 select tests.login('a1170000-0000-4000-8000-000000000004', 's117-colab@test.local');
 select tests.expect_error('S117 colaborador não lê os indicadores', $q$select public.agency_growth_indicators('a1170000-0000-4000-8000-0000000000a1')$q$, 'forbidden');
 
--- ---------------------------------------------------------------- pagamento do herói-cliente
+-- ---------------------------------------------------------------- pagamento do Hero-cliente
 select tests.login('a1170000-0000-4000-8000-000000000002', 's117-gestor@test.local');
 select tests.expect_error('S117 gestor não define condições', $q$select public.agency_payment_plan_save((select v::uuid from tests.s117 where k = 'art'),
   jsonb_build_object('total_cents', 300000, 'plan', jsonb_build_object('structure', 'single', 'first_rule', 'date', 'first_on', current_date + 10)))$q$, 'forbidden');
 select tests.login('a1170000-0000-4000-8000-000000000001', 's117-adm@test.local');
 select public.agency_payment_plan_save((select v::uuid from tests.s117 where k = 'art'), jsonb_build_object('total_cents', 300000,
   'plan', jsonb_build_object('structure', 'installments', 'installments', 3, 'interval', 'monthly', 'first_rule', 'date', 'first_on', current_date + 10)));
-select tests.ok('S117 plano do herói-cliente nasce PREVISTO com a receber do herói e comissão (sem marca)',
+select tests.ok('S117 plano do Hero-cliente nasce PREVISTO com a receber do Hero e comissão (sem marca)',
   (select count(*) from public.financial_entries where deal_id = (select v::uuid from tests.s117 where k = 'art') and status = 'forecast') = 2
   and (select talent_id = 'a1170000-0000-4000-8000-0000000000c1' and brand_id is null and amount_cents = 300000 from public.financial_entries
        where deal_id = (select v::uuid from tests.s117 where k = 'art') and kind = 'client_receivable')
@@ -17531,7 +17531,7 @@ select tests.ok('S117 plano do herói-cliente nasce PREVISTO com a receber do he
        where f.deal_id = (select v::uuid from tests.s117 where k = 'art') and f.kind = 'client_receivable') = 3
   and (public.deal_payment_plan_json((select v::uuid from tests.s117 where k = 'art')) ->> 'can_confirm')::boolean);
 select tests.login('a1170000-0000-4000-8000-000000000005', 's117-heroi@test.local');
-select tests.ok('S117 herói-cliente vê o "a pagar" previsto, sem comissão',
+select tests.ok('S117 Hero-cliente vê o "a pagar" previsto, sem comissão',
   jsonb_array_length(public.client_payments()) = 1
   and (public.client_payments() -> 0 ->> 'entry_status') = 'forecast'
   and (public.deal_payment_plan_json((select v::uuid from tests.s117 where k = 'art')) ->> 'viewer') = 'client'
@@ -17540,12 +17540,12 @@ select tests.ok('S117 herói-cliente vê o "a pagar" previsto, sem comissão',
   and (select count(*) from public.financial_entries) = 0
   and (select count(*) from public.inbox_notifications where user_id = 'a1170000-0000-4000-8000-000000000005' and kind = 'payment_plan') = 1);
 select tests.login('a1170000-0000-4000-8000-000000000006', 's117-heroi2@test.local');
-select tests.ok('S117 outro herói não vê o "a pagar" alheio', jsonb_array_length(public.client_payments()) = 0);
-select tests.expect_error('S117 outro herói não lê o plano', $q$select public.deal_payment_plan_json((select v::uuid from tests.s117 where k = 'art'))$q$, 'not_found');
+select tests.ok('S117 outro Hero não vê o "a pagar" alheio', jsonb_array_length(public.client_payments()) = 0);
+select tests.expect_error('S117 outro Hero não lê o plano', $q$select public.deal_payment_plan_json((select v::uuid from tests.s117 where k = 'art'))$q$, 'not_found');
 select tests.login('a1170000-0000-4000-8000-000000000002', 's117-gestor@test.local');
 select tests.ok('S117 gestor vê condições sem valores', not (public.deal_payment_plan_json((select v::uuid from tests.s117 where k = 'art')) ? 'total_cents'));
 select tests.expect_error('S117 gestor não efetiva a cobrança', $q$select public.agency_client_billing_confirm((select v::uuid from tests.s117 where k = 'art'))$q$, 'forbidden');
-select tests.expect_error('S117 gestor não lê o a receber dos heróis', $q$select public.agency_client_receivables('a1170000-0000-4000-8000-0000000000a1')$q$, 'forbidden');
+select tests.expect_error('S117 gestor não lê o a receber dos Heros', $q$select public.agency_client_receivables('a1170000-0000-4000-8000-0000000000a1')$q$, 'forbidden');
 select tests.login('a1170000-0000-4000-8000-000000000001', 's117-adm@test.local');
 select public.agency_client_billing_confirm((select v::uuid from tests.s117 where k = 'art'));
 select tests.ok('S117 efetivada: em aberto, plano travado, identidade fecha',
@@ -17564,9 +17564,9 @@ select public.agency_client_installment_paid((select i.id from public.brand_paym
 select tests.ok('S117 desfazer uma parcela reabre o a receber',
   (select status from public.financial_entries where deal_id = (select v::uuid from tests.s117 where k = 'art') and kind = 'client_receivable') = 'planned');
 select tests.login('a1170000-0000-4000-8000-000000000005', 's117-heroi@test.local');
-select tests.ok('S117 herói vê as parcelas pagas e a aberta',
+select tests.ok('S117 Hero vê as parcelas pagas e a aberta',
   (select count(*) from jsonb_array_elements(public.client_payments() -> 0 -> 'installments') x where x ->> 'status' = 'paid') = 2);
-select tests.expect_error('S117 herói não marca parcela', $q$select public.agency_client_installment_paid((select gen_random_uuid()), true)$q$, 'not_found');
+select tests.expect_error('S117 Hero não marca parcela', $q$select public.agency_client_installment_paid((select gen_random_uuid()), true)$q$, 'not_found');
 
 select tests.su();
 drop table tests.s117;
@@ -17578,11 +17578,11 @@ delete from public.talent_profiles where agency_id = 'a1170000-0000-4000-8000-00
 delete from public.agencies where id = 'a1170000-0000-4000-8000-0000000000a1';
 delete from auth.users where id::text like 'a1170000-%';
 
--- ================================================================ S118 · Acesso nasce junto: herói pelo Casting e marca criada pela agência (0112)
--- Um só "Novo herói" (talento + contato + página pública opcional já ligada) com e-mail e celular obrigatórios; conta
+-- ================================================================ S118 · Acesso nasce junto: Hero pelo Casting e marca criada pela agência (0112)
+-- Um só "Novo Hero" (talento + contato + página pública opcional já ligada) com e-mail e celular obrigatórios; conta
 -- existente → liga na hora e avisa; sem conta → convite 'agency_hero' de 14 dias que funciona com os convites pausados;
 -- só o MESMO e-mail reivindica; token de uso único; corrigir e reenviar trocam o link; situação active/pending/expired/
--- none; um herói por e-mail; página depois pela ficha (login passa ao herói sem perder o consentimento). Marca nova com
+-- none; um Hero por e-mail; página depois pela ficha (login passa ao Hero sem perder o consentimento). Marca nova com
 -- o acesso do contato (Dono na hora ou por convite 'agency_brand'; ao reivindicar vira self_managed). Contato (celular)
 -- só gestor+ e admin geral; colaborador, outra agência, marca e visitante nada. S14 segue 18.
 \ir ../migrations/0112_heroi_conta_vinculada.sql
@@ -17610,9 +17610,9 @@ insert into public.brands (id, slug, name, site_url) values ('a1180000-0000-4000
 insert into public.agency_brands (agency_id, brand_id) values ('a1180000-0000-4000-8000-0000000000a1', 'a1180000-0000-4000-8000-0000000000b1');
 insert into public.brand_members (brand_id, user_id, role, display_name) values
   ('a1180000-0000-4000-8000-0000000000b1', 'a1180000-0000-4000-8000-000000000006', 'owner', 'Dona S118');
--- talento antigo (sem contato) e herói de quem já é titular
+-- talento antigo (sem contato) e Hero de quem já é titular
 insert into public.creator_profiles (id, slug, name, status, user_id) values
-  ('a1180000-0000-4000-8000-0000000000c2', 's118-do-dono', 'Herói do Dono S118', 'active', 'a1180000-0000-4000-8000-000000000004');
+  ('a1180000-0000-4000-8000-0000000000c2', 's118-do-dono', 'Hero do Dono S118', 'active', 'a1180000-0000-4000-8000-000000000004');
 insert into public.talent_profiles (id, agency_id, display_name) values
   ('a1180000-0000-4000-8000-0000000000d1', 'a1180000-0000-4000-8000-0000000000a1', 'Talento Antigo S118');
 create table tests.s118 (k text primary key, v text);
@@ -17651,7 +17651,7 @@ select tests.expect_error('S118 sem celular recusa', $q$select public.agency_her
 select tests.expect_error('S118 fixo (sem 9) recusa', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Novo S118"}', 'novo.s118@test.local', '+551132345678')$q$, 'invalid_phone');
 select tests.expect_error('S118 celular fora do E.164 recusa', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Novo S118"}', 'novo.s118@test.local', '(11) 91234-5678')$q$, 'invalid_phone');
 
--- ---------------------------------------------------------------- Novo herói com página: convite mesmo com convites pausados
+-- ---------------------------------------------------------------- Novo Hero com página: convite mesmo com convites pausados
 insert into tests.s118 select 'novo', public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Novo S118","commercial_status":"active"}',
   '  Novo.S118@Test.Local ', '+5511912345678', null, '{"slug":"s118-novo","pillars":["routine"],"headline":"Chamada S118"}')::text;
 select tests.ok('S118 sem conta: convite gerado com os convites pausados (token de 64) e página já ligada',
@@ -17673,10 +17673,10 @@ select tests.ok('S118 talento, página, convite e contato gravados (kind agency_
   and (select c.email = 'novo.s118@test.local' and c.phone_e164 = '+5511912345678' from public.access_contacts c
        where c.talent_id = ((select v from tests.s118 where k = 'novo')::jsonb ->> 'talent_id')::uuid));
 
--- ---------------------------------------------------------------- um herói por e-mail
+-- ---------------------------------------------------------------- um Hero por e-mail
 select tests.login('a1180000-0000-4000-8000-000000000001', 's118-gestor@test.local');
-select tests.expect_error('S118 e-mail de outro herói recusa (mesmo com outra caixa)', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Dois S118"}', 'NOVO.s118@test.local', '+5511912345679')$q$, 'hero_email_taken');
-select tests.expect_error('S118 e-mail de quem já é titular de outro herói recusa', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Dois S118"}', 's118-dono@test.local', '+5511912345679')$q$, 'hero_email_taken');
+select tests.expect_error('S118 e-mail de outro Hero recusa (mesmo com outra caixa)', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Dois S118"}', 'NOVO.s118@test.local', '+5511912345679')$q$, 'hero_email_taken');
+select tests.expect_error('S118 e-mail de quem já é titular de outro Hero recusa', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Dois S118"}', 's118-dono@test.local', '+5511912345679')$q$, 'hero_email_taken');
 select tests.expect_error('S118 endereço de página repetido recusa', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"Dois S118"}', 'dois.s118@test.local', '+5511912345679', null, '{"slug":"s118-novo","pillars":["routine"]}')$q$, 'duplicate_slug');
 select tests.ok('S118 as recusas não deixam talento pela metade', not exists (select 1 from public.talent_profiles where display_name = 'Dois S118'));
 
@@ -17694,7 +17694,7 @@ select tests.ok('S118 conta existente: login do talento (papel creator escopo ta
   and not exists (select 1 from public.invitations i where i.talent_id = ((select v from tests.s118 where k = 'existe')::jsonb ->> 'talent_id')::uuid));
 select tests.login('a1180000-0000-4000-8000-000000000003', 's118-existe@test.local');
 select tests.ok('S118 a pessoa ligada vê o aviso dela', (select count(*) from public.inbox_notifications where kind = 'hero_account_linked') = 1);
--- página depois, pela ficha: a pessoa vira titular do herói sem perder o consentimento
+-- página depois, pela ficha: a pessoa vira titular do Hero sem perder o consentimento
 select tests.su();
 update public.talent_profiles set consent_at = now() - interval '1 day', consent_version = 'v1' where id = ((select v from tests.s118 where k = 'existe')::jsonb ->> 'talent_id')::uuid;
 select tests.login('a1180000-0000-4000-8000-000000000002', 's118-colab@test.local');
@@ -17703,7 +17703,7 @@ select tests.login('a1180000-0000-4000-8000-000000000001', 's118-gestor@test.loc
 insert into tests.s118 select 'pagina', public.agency_talent_create_page(((select v from tests.s118 where k = 'existe')::jsonb ->> 'talent_id')::uuid, '{"pillars":["training"]}')::text;
 select tests.expect_error('S118 talento que já tem página não ganha outra', format($q$select public.agency_talent_create_page(%L, '{"pillars":["training"]}')$q$, (select v::jsonb ->> 'talent_id' from tests.s118 where k = 'existe')), 'talent_has_creator');
 select tests.su();
-select tests.ok('S118 página depois: ligada ao talento, a pessoa é titular, login passa ao herói e o consentimento fica',
+select tests.ok('S118 página depois: ligada ao talento, a pessoa é titular, login passa ao Hero e o consentimento fica',
   (select t.creator_id = (select v::uuid from tests.s118 where k = 'pagina') and t.user_id is null and t.consent_at is not null and t.consent_revoked_at is null
    from public.talent_profiles t where t.id = ((select v from tests.s118 where k = 'existe')::jsonb ->> 'talent_id')::uuid)
   and (select c.user_id = 'a1180000-0000-4000-8000-000000000003' and c.slug like 'existe-s118%' and c.status = 'active'
@@ -17727,7 +17727,7 @@ select tests.ok('S118 admin geral vê a situação e o contato',
 select tests.login('a1180000-0000-4000-8000-000000000002', 's118-colab@test.local');
 select tests.ok('S118 colaborador não lê contato', (select count(*) from public.access_contacts) = 0);
 select tests.expect_error('S118 colaborador não vê a situação com celular', $q$select * from public.agency_access_status('a1180000-0000-4000-8000-0000000000a1', 'talent')$q$, 'not_found');
-select tests.expect_error('S118 colaborador não cria herói', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"X S118"}', 'x.s118@test.local', '+5511912345670')$q$, 'forbidden');
+select tests.expect_error('S118 colaborador não cria Hero', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"X S118"}', 'x.s118@test.local', '+5511912345670')$q$, 'forbidden');
 select tests.expect_error('S118 colaborador não corrige contato', $q$select public.access_contact_save('talent', 'a1180000-0000-4000-8000-0000000000d1', 'x.s118@test.local', '+5511912345670')$q$, 'forbidden');
 select tests.login('a1180000-0000-4000-8000-000000000005', 's118-fora@test.local');
 select tests.ok('S118 outra agência não lê contato', (select count(*) from public.access_contacts) = 0);
@@ -17735,10 +17735,10 @@ select tests.expect_error('S118 outra agência não corrige contato (not_found)'
 select tests.expect_error('S118 outra agência não reenvia', $q$select public.access_invite_resend('talent', 'a1180000-0000-4000-8000-0000000000d1')$q$, 'not_found');
 select tests.expect_error('S118 outra agência não vê a situação', $q$select * from public.agency_access_status('a1180000-0000-4000-8000-0000000000a1', 'talent')$q$, 'not_found');
 select tests.login('a1180000-0000-4000-8000-000000000006', 's118-marca@test.local');
-select tests.ok('S118 marca não lê contato do herói', (select count(*) from public.access_contacts) = 0);
+select tests.ok('S118 marca não lê contato do Hero', (select count(*) from public.access_contacts) = 0);
 select tests.anon();
 select tests.expect_error('S118 visitante não lê contato', $q$select count(*) from public.access_contacts$q$, 'permission denied');
-select tests.expect_error('S118 visitante não cria herói', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"X S118"}', 'x.s118@test.local', '+5511912345670')$q$, 'permission denied');
+select tests.expect_error('S118 visitante não cria Hero', $q$select public.agency_hero_create('a1180000-0000-4000-8000-0000000000a1', '{"display_name":"X S118"}', 'x.s118@test.local', '+5511912345670')$q$, 'permission denied');
 
 -- ---------------------------------------------------------------- reivindicar: só o mesmo e-mail, uma vez
 select tests.su();
@@ -17747,11 +17747,11 @@ select tests.login('a1180000-0000-4000-8000-000000000007', 's118-intruso@test.lo
 select tests.expect_error('S118 outro e-mail não reivindica pelo link', format($q$select public.accept_invitation(%L)$q$, (select v::jsonb ->> 'token' from tests.s118 where k = 'novo')), 'invitation_email_mismatch');
 select tests.ok('S118 outro e-mail: o aceite do login não pega o convite', jsonb_array_length(public.accept_my_invitations()) = 0);
 select tests.login('a1180000-0000-4000-8000-000000000008', 'novo.s118@test.local');
-select tests.ok('S118 mesmo e-mail: entrar/cadastrar liga a conta ao herói (aceite do login)',
+select tests.ok('S118 mesmo e-mail: entrar/cadastrar liga a conta ao Hero (aceite do login)',
   (select bool_or(x ->> 'scope_type' = 'creator' and x ? 'talent_id') from jsonb_array_elements(public.accept_my_invitations()) x));
 select tests.expect_error('S118 token de uso único', format($q$select public.accept_invitation(%L)$q$, (select v::jsonb ->> 'token' from tests.s118 where k = 'novo')), 'invitation_invalid');
 select tests.su();
-select tests.ok('S118 conta ligada ao herói com o papel de herói',
+select tests.ok('S118 conta ligada ao Hero com o papel de Hero',
   (select user_id from public.creator_profiles where id = ((select v from tests.s118 where k = 'novo')::jsonb ->> 'creator_id')::uuid) = 'a1180000-0000-4000-8000-000000000008'
   and exists (select 1 from public.role_assignments r where r.user_id = 'a1180000-0000-4000-8000-000000000008' and r.role = 'creator' and r.scope_type = 'creator'));
 select tests.login('a1180000-0000-4000-8000-000000000001', 's118-gestor@test.local');
@@ -17766,7 +17766,7 @@ select tests.ok('S118 talento antigo: contato cadastrado gera o convite', (selec
 select tests.ok('S118 só o celular mudou: convite segue (sem link novo)',
   public.access_contact_save('talent', 'a1180000-0000-4000-8000-0000000000d1', 'antigo.s118@test.local', '+5531998765433') ->> 'account' = 'pending');
 insert into tests.s118 select 'a2', public.access_contact_save('talent', 'a1180000-0000-4000-8000-0000000000d1', 'corrigido.s118@test.local', '+5531998765433')::text;
-select tests.expect_error('S118 e-mail já usado por outro herói não serve na correção', $q$select public.access_contact_save('talent', 'a1180000-0000-4000-8000-0000000000d1', 'novo.s118@test.local', '+5531998765433')$q$, 'hero_email_taken');
+select tests.expect_error('S118 e-mail já usado por outro Hero não serve na correção', $q$select public.access_contact_save('talent', 'a1180000-0000-4000-8000-0000000000d1', 'novo.s118@test.local', '+5531998765433')$q$, 'hero_email_taken');
 insert into tests.s118 select 'a3', public.access_invite_resend('talent', 'a1180000-0000-4000-8000-0000000000d1')::text;
 select tests.su();
 select tests.ok('S118 corrigir e reenviar: só o último convite fica pendente, com o e-mail corrigido; os antigos caem',
@@ -17856,8 +17856,8 @@ delete from public.agencies where id::text like 'a1180000-%';
 delete from auth.users where id::text like 'a1180000-%';
 
 -- ================================================================ S120 · Avisos e mensagens: lista única de conversas com contexto, etapa e não lidas (0115)
--- Uma lista por portal com as conversas que já existem (canal marca↔agência, canal herói↔agência, sala do projeto):
--- a agência vê as três (inclusive interno da sala); a marca só o canal dela e a sala sem internas; o herói só o próprio
+-- Uma lista por portal com as conversas que já existem (canal marca↔agência, canal Hero↔agência, sala do projeto):
+-- a agência vê as três (inclusive interno da sala); a marca só o canal dela e a sala sem internas; o Hero só o próprio
 -- canal e a sala sem internas; o staff externo só a sala (com internas) depois do NDA; quem não participa não vê nada.
 -- Não lidas por pessoa (marcador só pela RPC; responder = ler); abrir a conversa limpa o aviso "Nova mensagem" dela.
 -- Filtros (tipo, não lidas, busca) e paginação. Visitante nada; S14 segue 18.
@@ -17879,7 +17879,7 @@ insert into public.agency_brands (agency_id, brand_id) values ('a1200000-0000-40
 insert into public.brand_members (brand_id, user_id, role, display_name) values
   ('a1200000-0000-4000-8000-0000000000b1', 'a1200000-0000-4000-8000-000000000003', 'owner', 'Dona S120');
 insert into public.talent_profiles (id, agency_id, display_name, user_id) values
-  ('a1200000-0000-4000-8000-0000000000c1', 'a1200000-0000-4000-8000-0000000000a1', 'Herói S120', 'a1200000-0000-4000-8000-000000000004');
+  ('a1200000-0000-4000-8000-0000000000c1', 'a1200000-0000-4000-8000-0000000000a1', 'Hero S120', 'a1200000-0000-4000-8000-000000000004');
 create table tests.s120 (k text primary key, v text);
 grant all on tests.s120 to anon, authenticated;
 
@@ -17896,7 +17896,7 @@ select tests.ok('S120 estrutura: marcador com RLS, só leitura do próprio, núc
   and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proconfig is null and p.proname like 'conversation\_%')
   and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 
--- negócio com marca e herói-cliente (Produção de vídeo: a sala abre sozinha), visível à marca, herói consultado
+-- negócio com marca e Hero-cliente (Produção de vídeo: a sala abre sozinha), visível à marca, Hero consultado
 select tests.login('a1200000-0000-4000-8000-000000000001', 's120-gestor@test.local');
 insert into tests.s120 values ('d', public.agency_deal_open('a1200000-0000-4000-8000-0000000000a1', jsonb_build_object(
   'title', 'Lançamento S120', 'brand_id', 'a1200000-0000-4000-8000-0000000000b1', 'client_talent_id', 'a1200000-0000-4000-8000-0000000000c1',
@@ -17908,10 +17908,10 @@ update public.deals set request_id = (select r.id from public.campaign_requests 
 insert into public.deal_talents (agency_id, deal_id, talent_id, status, consulted_at)
 values ('a1200000-0000-4000-8000-0000000000a1', (select v::uuid from tests.s120 where k = 'd'), 'a1200000-0000-4000-8000-0000000000c1', 'consulted', now());
 
--- conversas: agência escreve à marca e ao herói; marca e herói respondem; sala com interna e para todos
+-- conversas: agência escreve à marca e ao Hero; marca e Hero respondem; sala com interna e para todos
 select tests.login('a1200000-0000-4000-8000-000000000001', 's120-gestor@test.local');
 select public.deal_message_post((select v::uuid from tests.s120 where k = 'd'), 'brand_agency', null, 'Olá marca, briefing recebido');
-select public.deal_message_post((select v::uuid from tests.s120 where k = 'd'), 'talent_agency', 'a1200000-0000-4000-8000-0000000000c1', 'Oi herói, topa?');
+select public.deal_message_post((select v::uuid from tests.s120 where k = 'd'), 'talent_agency', 'a1200000-0000-4000-8000-0000000000c1', 'Oi Hero, topa?');
 select public.project_room_post((select v::uuid from tests.s120 where k = 'd'), 'Segredo interno S120', true, null);
 select public.project_room_post((select v::uuid from tests.s120 where k = 'd'), 'Diária no sábado', false, null);
 insert into tests.s120 select 'tok', public.project_staff_invite((select v::uuid from tests.s120 where k = 'd'), 's120-foto@test.local', 'Rafa Foto', 'Fotógrafo', 7) ->> 'token';
@@ -17922,7 +17922,7 @@ select public.deal_message_post((select v::uuid from tests.s120 where k = 'd'), 
 -- tudo roda numa transação só (now() fixo): a ordem real das mensagens vem de horários espaçados
 select tests.su();
 update public.deal_messages m set created_at = now() - make_interval(mins => x.ago)
-from (values ('Olá marca, briefing recebido', 60), ('Oi herói, topa?', 59), ('Perfeito, aguardo a proposta', 50), ('Topo sim!', 49)) x(body, ago)
+from (values ('Olá marca, briefing recebido', 60), ('Oi Hero, topa?', 59), ('Perfeito, aguardo a proposta', 50), ('Topo sim!', 49)) x(body, ago)
 where m.body = x.body and m.agency_id = 'a1200000-0000-4000-8000-0000000000a1';
 update public.project_room_messages m set created_at = now() - make_interval(mins => x.ago)
 from (values ('Segredo interno S120', 58), ('Diária no sábado', 57)) x(body, ago)
@@ -17953,13 +17953,13 @@ select tests.ok('S120 colaborador fora do negócio não vê as conversas', (publ
 
 -- agência: três conversas, com contexto e não lidas só do outro lado
 select tests.login('a1200000-0000-4000-8000-000000000001', 's120-gestor@test.local');
-select tests.ok('S120 agência: canal da marca, canal do herói e sala; título, contraparte, etapa; não lidas do outro lado',
+select tests.ok('S120 agência: canal da marca, canal do Hero e sala; título, contraparte, etapa; não lidas do outro lado',
   (public.conversation_list('agency', 50, 0, null, false, null) ->> 'total')::int = 3
   and exists (select 1 from jsonb_array_elements(public.conversation_list('agency', 50, 0, null, false, null) -> 'items') x
               where x ->> 'kind' = 'campaign' and x ->> 'title' = 'Lançamento S120' and x ->> 'counterpart' = 'Marca S120'
                 and x ->> 'stage' is not null and (x ->> 'unread')::int = 1 and x ->> 'last_body' = 'Perfeito, aguardo a proposta')
   and exists (select 1 from jsonb_array_elements(public.conversation_list('agency', 50, 0, null, false, null) -> 'items') x
-              where x ->> 'kind' = 'opportunity' and x ->> 'counterpart' = 'Herói S120' and x ->> 'talent_status' = 'consulted'
+              where x ->> 'kind' = 'opportunity' and x ->> 'counterpart' = 'Hero S120' and x ->> 'talent_status' = 'consulted'
                 and (x ->> 'unread')::int = 1 and x ->> 'deal_talent_id' is not null)
   and exists (select 1 from jsonb_array_elements(public.conversation_list('agency', 50, 0, null, false, null) -> 'items') x
               where x ->> 'kind' = 'room' and x ->> 'room_status' = 'open' and (x ->> 'unread')::int = 0)
@@ -17968,7 +17968,7 @@ select tests.ok('S120 agência: canal da marca, canal do herói e sala; título,
 select tests.ok('S120 filtros: tipo, não lidas, busca (nome e título) e paginação',
   jsonb_array_length(public.conversation_list('agency', 50, 0, 'room', false, null) -> 'items') = 1
   and jsonb_array_length(public.conversation_list('agency', 50, 0, null, true, null) -> 'items') = 2
-  and jsonb_array_length(public.conversation_list('agency', 50, 0, null, false, 'herói s120') -> 'items') = 1
+  and jsonb_array_length(public.conversation_list('agency', 50, 0, null, false, 'Hero s120') -> 'items') = 1
   and jsonb_array_length(public.conversation_list('agency', 50, 0, null, false, 'lançamento') -> 'items') = 3
   and jsonb_array_length(public.conversation_list('agency', 50, 0, null, false, '100%_') -> 'items') = 0
   and (public.conversation_list('agency', 1, 0, null, false, null) ->> 'has_more')::boolean
@@ -17977,7 +17977,7 @@ select tests.ok('S120 filtros: tipo, não lidas, busca (nome e título) e pagina
 
 -- marca: só o canal dela e a sala sem as internas; abrir marca como lida e limpa o aviso da conversa
 select tests.login('a1200000-0000-4000-8000-000000000003', 's120-marca@test.local');
-select tests.ok('S120 marca: canal com a agência e sala (sem internas); nada do canal do herói',
+select tests.ok('S120 marca: canal com a agência e sala (sem internas); nada do canal do Hero',
   (public.conversation_list('brand', 50, 0, null, false, null) ->> 'total')::int = 2
   and not exists (select 1 from jsonb_array_elements(public.conversation_list('brand', 50, 0, null, false, null) -> 'items') x where x ->> 'kind' = 'opportunity')
   and exists (select 1 from jsonb_array_elements(public.conversation_list('brand', 50, 0, null, false, null) -> 'items') x
@@ -17996,9 +17996,9 @@ select tests.ok('S120 marca abre a sala: conversa e aviso da sala lidos',
                   and link like '%/projetos/%' and read_at is null)
   and (select count(*) from public.conversation_reads) = 1);
 
--- herói: o próprio canal e a sala do cliente, sem internas
+-- Hero: o próprio canal e a sala do cliente, sem internas
 select tests.login('a1200000-0000-4000-8000-000000000004', 's120-heroi@test.local');
-select tests.ok('S120 herói: o próprio canal (agência como contraparte) e a sala sem internas; não vê o canal da marca nem o marcador alheio',
+select tests.ok('S120 Hero: o próprio canal (agência como contraparte) e a sala sem internas; não vê o canal da marca nem o marcador alheio',
   (public.conversation_list('hero', 50, 0, null, false, null) ->> 'total')::int = 2
   and not exists (select 1 from jsonb_array_elements(public.conversation_list('hero', 50, 0, null, false, null) -> 'items') x where x ->> 'kind' = 'campaign')
   and exists (select 1 from jsonb_array_elements(public.conversation_list('hero', 50, 0, null, false, null) -> 'items') x
@@ -18054,11 +18054,11 @@ delete from public.brands where id = 'a1200000-0000-4000-8000-0000000000b1';
 delete from public.agencies where id = 'a1200000-0000-4000-8000-0000000000a1';
 delete from auth.users where id::text like 'a1200000-%';
 
--- ================================================================ S121 · Um e-mail, um perfil de negócio: Herói OU Marca OU Agência (0116)
+-- ================================================================ S121 · Um e-mail, um perfil de negócio: Hero OU Marca OU Agência (0116)
 -- Uma conta só tem UM tipo de perfil de negócio (consumidor é a base e não conta; admin da plataforma fica fora). As
 -- tabelas de vínculo recusam outro tipo (profile_conflict:<tipo que a conta já tem>), o mesmo tipo pode repetir (Dono de
 -- 2 marcas), vínculo revogado não conta; as RPCs herdam a trava: cadastro por perfil, convite novo (recusa no envio),
--- aceite de convite (o convite segue pendente), ligar herói/Dono a conta existente. Staff externo de projeto não é
+-- aceite de convite (o convite segue pendente), ligar Hero/Dono a conta existente. Staff externo de projeto não é
 -- perfil. Funções internas fechadas; S14 segue 18.
 \ir ../migrations/0116_um_perfil_por_conta.sql
 select tests.su();
@@ -18086,7 +18086,7 @@ insert into public.agency_brands (agency_id, brand_id) values ('a1210000-0000-40
 insert into public.brand_members (brand_id, user_id, role, display_name) values
   ('a1210000-0000-4000-8000-0000000000b1', 'a1210000-0000-4000-8000-000000000002', 'owner', 'Bia S121');
 insert into public.creator_profiles (id, slug, name, status, user_id) values
-  ('a1210000-0000-4000-8000-0000000000c1', 's121-heroi', 'Herói S121', 'active', 'a1210000-0000-4000-8000-000000000003'),
+  ('a1210000-0000-4000-8000-0000000000c1', 's121-heroi', 'Hero S121', 'active', 'a1210000-0000-4000-8000-000000000003'),
   ('a1210000-0000-4000-8000-0000000000c2', 's121-sem-dono', 'Sem dono S121', 'active', null);
 insert into public.talent_profiles (id, agency_id, display_name) values
   ('a1210000-0000-4000-8000-0000000000d1', 'a1210000-0000-4000-8000-0000000000a1', 'Talento S121');
@@ -18115,15 +18115,15 @@ select tests.expect_error('S121 agência não vira Dono de marca',
   $q$insert into public.brand_members (brand_id, user_id, role, display_name) values ('a1210000-0000-4000-8000-0000000000b2', 'a1210000-0000-4000-8000-000000000001', 'owner', 'X')$q$, 'profile_conflict:agency');
 select tests.expect_error('S121 marca não entra na equipe da agência',
   $q$insert into public.agency_members (agency_id, user_id, role, display_name) values ('a1210000-0000-4000-8000-0000000000a1', 'a1210000-0000-4000-8000-000000000002', 'staff', 'X')$q$, 'profile_conflict:brand');
-select tests.expect_error('S121 marca não vira titular de herói',
+select tests.expect_error('S121 marca não vira titular de Hero',
   $q$update public.creator_profiles set user_id = 'a1210000-0000-4000-8000-000000000002' where id = 'a1210000-0000-4000-8000-0000000000c2'$q$, 'profile_conflict:brand');
 select tests.expect_error('S121 agência não vira login de talento',
   $q$update public.talent_profiles set user_id = 'a1210000-0000-4000-8000-000000000001' where id = 'a1210000-0000-4000-8000-0000000000d1'$q$, 'profile_conflict:agency');
-select tests.expect_error('S121 herói não entra na equipe da agência',
+select tests.expect_error('S121 Hero não entra na equipe da agência',
   $q$insert into public.agency_members (agency_id, user_id, role, display_name) values ('a1210000-0000-4000-8000-0000000000a1', 'a1210000-0000-4000-8000-000000000003', 'staff', 'X')$q$, 'profile_conflict:hero');
-select tests.expect_error('S121 agência não entra na equipe de um herói',
+select tests.expect_error('S121 agência não entra na equipe de um Hero',
   $q$insert into public.creator_team_members (creator_profile_id, user_id, role, status) values ('a1210000-0000-4000-8000-0000000000c1', 'a1210000-0000-4000-8000-000000000001', 'member', 'active')$q$, 'profile_conflict:agency');
-select tests.expect_error('S121 papel de herói para a marca recusa',
+select tests.expect_error('S121 papel de Hero para a marca recusa',
   $q$insert into public.role_assignments (user_id, role, scope_type) values ('a1210000-0000-4000-8000-000000000002', 'creator', 'global')$q$, 'profile_conflict:brand');
 
 -- mesmo tipo repete; consumidor vira um tipo; admin da plataforma fica fora; vínculo revogado não conta
@@ -18147,7 +18147,7 @@ select tests.expect_error('S121 quem virou marca não volta à agência (reativa
 
 -- cadastro por perfil (self-onboarding): outro tipo recusa; consumidor começa
 select tests.login('a1210000-0000-4000-8000-000000000001', 's121-agencia@test.local');
-select tests.expect_error('S121 agência não começa o cadastro de Herói', $q$select public.self_onboarding_start('hero')$q$, 'profile_conflict:agency');
+select tests.expect_error('S121 agência não começa o cadastro de Hero', $q$select public.self_onboarding_start('hero')$q$, 'profile_conflict:agency');
 select tests.login('a1210000-0000-4000-8000-000000000002', 's121-marca@test.local');
 select tests.expect_error('S121 marca não começa o cadastro de Agência', $q$select public.self_onboarding_start('agency')$q$, 'profile_conflict:brand');
 select tests.login('a1210000-0000-4000-8000-000000000004', 's121-consumidor@test.local');
@@ -18157,14 +18157,14 @@ select tests.ok('S121 consumidor começa o cadastro de Marca', (public.self_onbo
 select tests.login('a1210000-0000-4000-8000-000000000001', 's121-agencia@test.local');
 select tests.expect_error('S121 convite de equipe da agência para e-mail de marca recusa no envio',
   $q$select * from public.agency_invite_member('a1210000-0000-4000-8000-0000000000a1', 's121-marca@test.local', 'staff')$q$, 'profile_conflict:brand');
-select tests.expect_error('S121 Nova marca com contato que é herói recusa (e a marca não nasce)',
+select tests.expect_error('S121 Nova marca com contato que é Hero recusa (e a marca não nasce)',
   $q$select public.agency_brand_create_with_access('a1210000-0000-4000-8000-0000000000a1', '{"name":"Nova S121","slug":"s121-nova","site_url":"https://n.s121.test"}', 'Contato S121', 's121-heroi@test.local', '+5511912340121')$q$, 'profile_conflict:hero');
-select tests.expect_error('S121 Novo herói com e-mail de conta de marca recusa',
-  $q$select public.agency_hero_create('a1210000-0000-4000-8000-0000000000a1', '{"display_name":"Herói Novo S121"}', 's121-marca@test.local', '+5511912340122')$q$, 'profile_conflict:brand');
+select tests.expect_error('S121 Novo Hero com e-mail de conta de marca recusa',
+  $q$select public.agency_hero_create('a1210000-0000-4000-8000-0000000000a1', '{"display_name":"Hero Novo S121"}', 's121-marca@test.local', '+5511912340122')$q$, 'profile_conflict:brand');
 select tests.su();
 select tests.ok('S121 nada ficou pela metade (marca e talento recusados não existem)',
   not exists (select 1 from public.brands where slug = 's121-nova')
-  and not exists (select 1 from public.talent_profiles where display_name = 'Herói Novo S121'));
+  and not exists (select 1 from public.talent_profiles where display_name = 'Hero Novo S121'));
 
 -- aceite: o convite (de marca) foi feito antes de a pessoa virar agência → recusa e o convite segue pendente
 insert into public.invitations (id, email, role, brand_id, member_role, kind, token_hash, expires_at)
@@ -18275,7 +18275,7 @@ delete from public.launch_leads where email like 's122-%';
 -- agency_deal_set_brand_visible: gestor+ ou responsável/equipe do negócio; colaborador fora do negócio e outra agência
 -- recusados; exige marca; encerrado não muda; ocultar só antes da confirmação (depois fica sempre visível); proposta da
 -- própria marca não se oculta. Ao mostrar: atividade "brand_shown", auditoria e aviso campaign_status_changed para a
--- marca. Visível antes da confirmação, a marca não lê nota interna, herói fora da proposta, conversa herói↔agência
+-- marca. Visível antes da confirmação, a marca não lê nota interna, Hero fora da proposta, conversa Hero↔agência
 -- nem orçamento interno. S14 segue 18.
 \ir ../migrations/0121_mostrar_para_marca.sql
 select tests.su();
@@ -18302,8 +18302,8 @@ insert into public.brand_members (brand_id, user_id, role, display_name) values
   ('a1230000-0000-4000-8000-0000000000b1', 'a1230000-0000-4000-8000-000000000005', 'owner', 'Dona S123'),
   ('a1230000-0000-4000-8000-0000000000b1', 'a1230000-0000-4000-8000-000000000007', 'staff', 'Equipe S123');
 insert into public.talent_profiles (id, agency_id, display_name) values
-  ('a1230000-0000-4000-8000-0000000000c1', 'a1230000-0000-4000-8000-0000000000a1', 'Herói Recusou S123'),
-  ('a1230000-0000-4000-8000-0000000000c2', 'a1230000-0000-4000-8000-0000000000a1', 'Herói Interessado S123');
+  ('a1230000-0000-4000-8000-0000000000c1', 'a1230000-0000-4000-8000-0000000000a1', 'Hero Recusou S123'),
+  ('a1230000-0000-4000-8000-0000000000c2', 'a1230000-0000-4000-8000-0000000000a1', 'Hero Interessado S123');
 insert into public.campaign_requests (id, agency_id, brand_id, origin, title, notes, status, submitted_at, deliverables, period_start, period_end) values
   ('a1230000-0000-4000-8000-0000000000d1', 'a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-0000000000b1', 'agency', 'Campanha S123', 'Nota interna S123', 'converted', now() - interval '3 days',
    '[{"kind": "reels", "quantity": 1, "network": "instagram"}]', current_date + 10, current_date + 20),
@@ -18317,7 +18317,7 @@ insert into public.campaign_request_budgets (agency_id, brand_id, request_id, bu
 insert into public.deals (id, agency_id, brand_id, request_id, client_talent_id, title, stage, brand_visible, owner_id, confirmed_at) values
   ('a1230000-0000-4000-8000-0000000000e1', 'a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-0000000000b1', 'a1230000-0000-4000-8000-0000000000d1', null, 'Negócio S123', 'shortlist', false, 'a1230000-0000-4000-8000-000000000003', null),
   ('a1230000-0000-4000-8000-0000000000e2', 'a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-0000000000b1', 'a1230000-0000-4000-8000-0000000000d2', null, 'Negócio Confirmado S123', 'approved', true, null, now()),
-  ('a1230000-0000-4000-8000-0000000000e3', 'a1230000-0000-4000-8000-0000000000a1', null, null, 'a1230000-0000-4000-8000-0000000000c1', 'Só Herói S123', 'briefing_received', false, 'a1230000-0000-4000-8000-000000000002', null),
+  ('a1230000-0000-4000-8000-0000000000e3', 'a1230000-0000-4000-8000-0000000000a1', null, null, 'a1230000-0000-4000-8000-0000000000c1', 'Só Hero S123', 'briefing_received', false, 'a1230000-0000-4000-8000-000000000002', null),
   ('a1230000-0000-4000-8000-0000000000e4', 'a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-0000000000b1', 'a1230000-0000-4000-8000-0000000000d4', null, 'Negócio da Marca S123', 'qualification', true, null, null);
 insert into public.deal_talents (deal_id, talent_id, status, consulted_at) values
   ('a1230000-0000-4000-8000-0000000000e1', 'a1230000-0000-4000-8000-0000000000c1', 'declined', now() - interval '1 day'),
@@ -18379,18 +18379,18 @@ select tests.ok('S123 marca vê o negócio e o pedido',
   and 'a1230000-0000-4000-8000-0000000000d1'::uuid = any (public.my_brand_visible_request_ids())
   and exists (select 1 from jsonb_array_elements(public.brand_campaigns('a1230000-0000-4000-8000-0000000000b1')) x
               where x ->> 'request_id' = 'a1230000-0000-4000-8000-0000000000d1' and x ->> 'brand_status' = 'building'));
-select tests.ok('S123 marca abre a campanha sem nota interna, sem heróis fora da proposta',
+select tests.ok('S123 marca abre a campanha sem nota interna, sem Heros fora da proposta',
   (select (j -> 'deal' ->> 'id') = 'a1230000-0000-4000-8000-0000000000e1' and (j -> 'request' ->> 'notes') = ''
      and jsonb_array_length(j -> 'talents') = 0 and j -> 'requested_talent' = 'null'::jsonb
-     and position('Nota interna' in j::text) = 0 and position('Herói' in j::text) = 0
+     and position('Nota interna' in j::text) = 0 and position('Hero' in j::text) = 0
    from public.brand_campaign_detail('a1230000-0000-4000-8000-0000000000d1') j));
-select tests.ok('S123 marca não lê conversa herói↔agência, orçamento interno, cachês nem histórico',
+select tests.ok('S123 marca não lê conversa Hero↔agência, orçamento interno, cachês nem histórico',
   not exists (select 1 from public.deal_messages where deal_id = 'a1230000-0000-4000-8000-0000000000e1')
   and not exists (select 1 from public.campaign_request_budgets where request_id = 'a1230000-0000-4000-8000-0000000000d1')
   and not exists (select 1 from public.deal_talents where deal_id = 'a1230000-0000-4000-8000-0000000000e1')
   and not exists (select 1 from public.activities where deal_id = 'a1230000-0000-4000-8000-0000000000e1')
   and not exists (select 1 from public.deals where id = 'a1230000-0000-4000-8000-0000000000e1'));
-select tests.ok('S123 painel da marca: campanha sem heróis',
+select tests.ok('S123 painel da marca: campanha sem Heros',
   (select exists (select 1 from jsonb_array_elements(j -> 'campaigns') x where x ->> 'request_id' = 'a1230000-0000-4000-8000-0000000000d1')
      and not exists (select 1 from jsonb_array_elements(j -> 'talents') x where x ->> 'request_id' = 'a1230000-0000-4000-8000-0000000000d1')
    from public.brand_workboard('a1230000-0000-4000-8000-0000000000b1') j));
@@ -18431,7 +18431,7 @@ delete from auth.users where id::text like 'a1230000-%';
 
 -- ================================================================ S124 · Importação do Casting Groscove 2027 (0122)
 -- A agência do admin agencia@gmail.com recebe os 260 nomes do documento (MC Kevin, "Em memória", fica fora) como o
--- "Novo herói": talento + segmento + Instagram + contato (celular provisório) + convite agency_hero. E-mail já de outro
+-- "Novo Hero": talento + segmento + Instagram + contato (celular provisório) + convite agency_hero. E-mail já de outro
 -- tipo de conta (0116) é pulado; conta de consumidor com o e-mail é ligada na hora. Rodar de novo não duplica. Marca não
 -- lê ficha, e-mail nem celular; cartão da marca mostra foto/categoria/temas só pelo kit. S14 segue 18.
 \ir ../migrations/0122_casting_groscove_2027.sql
@@ -18517,9 +18517,9 @@ select tests.ok('S124 2ª rodada não duplica: nada criado, nenhum convite novo'
 -- reivindicação pelo mesmo e-mail (cadastro depois da importação com denisonl@gmail.com)
 insert into auth.users (id, email) values ('a1240000-0000-4000-8000-000000000006', 'denisonl@gmail.com');
 select tests.login('a1240000-0000-4000-8000-000000000006', 'denisonl@gmail.com');
-select tests.ok('S124 quem entra com o e-mail do convite vira o login do herói', jsonb_array_length(public.accept_my_invitations()) = 1);
+select tests.ok('S124 quem entra com o e-mail do convite vira o login do Hero', jsonb_array_length(public.accept_my_invitations()) = 1);
 select tests.su();
-select tests.ok('S124 herói reivindicado', (select t.user_id = 'a1240000-0000-4000-8000-000000000006' from public.talent_profiles t
+select tests.ok('S124 Hero reivindicado', (select t.user_id = 'a1240000-0000-4000-8000-000000000006' from public.talent_profiles t
   where t.agency_id = 'a1240000-0000-4000-8000-0000000000a1' and t.display_name = 'Denison Luz'));
 
 -- quem lê o quê
@@ -18587,7 +18587,7 @@ insert into public.talent_segments (id, agency_id, slug, name, sort_order) value
   ('a1250000-0000-4000-8000-0000000000e2', 'a1250000-0000-4000-8000-0000000000a1', 'esportes', 'Esporte', 30);
 -- páginas que já existem: s125-joao é de OUTRA pessoa (colisão → -2); s125-ana-paula é da mesma pessoa (liga)
 insert into public.creator_profiles (id, slug, name, headline, pillars, is_fictional, rights_status, rights_holder, status, avatar_url, sort_order) values
-  ('a1250000-0000-4000-8000-0000000000c1', 's125-joao', 'João Editorial S125', 'Outro herói', '{training}', false, 'authorized', 'Titular S125', 'active', null, 15),
+  ('a1250000-0000-4000-8000-0000000000c1', 's125-joao', 'João Editorial S125', 'Outro Hero', '{training}', false, 'authorized', 'Titular S125', 'active', null, 15),
   ('a1250000-0000-4000-8000-0000000000c2', 's125-ana-paula', 'Ana Paula S125', 'Atleta', '{training}', false, 'authorized', 'Titular S125', 'active', '/heroes/s125-ana.webp', 16);
 -- talentos no formato da 0122 (foto, categoria, temas, nota com a página do documento)
 insert into public.talent_profiles (id, agency_id, display_name, country, commercial_status, availability, internal_notes, photo_url, category_label, topics) values
@@ -18658,13 +18658,13 @@ select tests.ok('S125 auditoria: resumo casting.publish e agency.hero.create por
   and (select count(*) = 3 from public.admin_audit a where a.action = 'agency.hero.create'
        and a.after_data ->> 'talent_id' in ('a1250000-0000-4000-8000-000000000011', 'a1250000-0000-4000-8000-000000000012', 'a1250000-0000-4000-8000-000000000013')));
 
--- visitante vê as páginas na listagem pública (creator_profiles ativo); a agência vê como "Heróis da agência"
+-- visitante vê as páginas na listagem pública (creator_profiles ativo); a agência vê como "Heros da agência"
 select tests.anon();
-select tests.ok('S125 visitante vê as páginas novas na aba Heróis',
+select tests.ok('S125 visitante vê as páginas novas na aba Heros',
   (select count(*) = 4 from public.creator_profiles where status = 'active' and slug in ('s125-musa', 's125-atleta', 's125-joao-2', 's125-ana-paula')));
 select tests.expect_error('S125 visitante não roda a publicação', $q$select public.casting_groscove_2027_publish('agencia@gmail.com')$q$, 'permission denied');
 select tests.login('a1250000-0000-4000-8000-000000000001', 'agencia@gmail.com');
-select tests.ok('S125 admin da agência tem as 4 páginas como heróis da agência',
+select tests.ok('S125 admin da agência tem as 4 páginas como Heros da agência',
   (select count(*) = 4 from unnest(public.agency_hero_ids()) h
    where h in (select creator_id from public.talent_profiles where agency_id = 'a1250000-0000-4000-8000-0000000000a1' and creator_id is not null)));
 select tests.expect_error('S125 admin da agência não roda a publicação pela API', $q$select public.casting_groscove_2027_publish('agencia@gmail.com')$q$, 'permission denied');
@@ -18697,6 +18697,11 @@ delete from public.agency_members where agency_id::text like 'a1250000-%';
 delete from public.agencies where id::text like 'a1250000-%';
 delete from auth.users where id::text like 'a1250000-%';
 drop table tests.s125;
+
+-- 0124: "Herói" vira "Hero" nos textos gerados pelo banco
+\ir ../migrations/0124_hero_nome.sql
+select tests.ok('S124 nenhuma função pública gera mais "herói"',
+  not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.prosrc ~ 'her[óÓ]i|HERÓI'));
 
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

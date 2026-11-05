@@ -12380,7 +12380,7 @@ isOneToOne: false
       project_feedback_answer: { Args: { p_id: string; p_score: number; p_comment?: string | null }; Returns: undefined };
       project_feedback_indicator: { Args: { p_agency: string; p_days?: number }; Returns: Json };
       project_clipping: { Args: { p_deal: string }; Returns: Json };
-      // 0111: roteiros fase 3 — recorrência, insights, estratégias, nova venda e pagamento do herói-cliente
+      // 0111: roteiros fase 3 — recorrência, insights, estratégias, nova venda e pagamento do Hero-cliente
       deal_origin_set: { Args: { p_deal: string; p_origin: string | null }; Returns: undefined };
       deliverable_insights_state: { Args: { p_published: string; p_now: string; p_has24: boolean; p_has7: boolean }; Returns: string };
       insights_reminder_scan: { Args: Record<PropertyKey, never>; Returns: Json };
@@ -12602,7 +12602,7 @@ isOneToOne: false
       account_business_kinds: { Args: { p_user: string }; Returns: string[] };
       business_profile_guard: { Args: { p_user: string; p_kind: string }; Returns: undefined };
       invitation_business_kind: { Args: { p_kind: string; p_role: string }; Returns: string | null };
-      // 0091: convites por papel, equipe do herói e primeiro acesso
+      // 0091: convites por papel, equipe do Hero e primeiro acesso
       admin_invite: { Args: { p_email: string; p_role: string; p_days: number; p_options?: Json }; Returns: Json };
       admin_invite_talent_options: { Args: Record<PropertyKey, never>; Returns: { talent_id: string; display_name: string; agency_name: string; has_hero: boolean }[] };
       hero_team_invite: { Args: { p_creator: string; p_email: string; p_days?: number | null }; Returns: { invitation_id: string; token: string }[] };

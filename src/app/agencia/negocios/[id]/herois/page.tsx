@@ -78,7 +78,7 @@ export default async function DealTalentsPage({ params }: Props) {
     canEdit
       ? listTalents(ctx.agency.id)
       : Promise.resolve({ available: true, items: [] }),
-    // 0096: modelo de valor e máximo de heróis (gestor+; o valor em R$ só vem para o Adm)
+    // 0096: modelo de valor e máximo de Heros (gestor+; o valor em R$ só vem para o Adm)
     isManager ? getDealValueTerms(deal.id) : Promise.resolve(null),
   ]);
   const supabase = await createClient();
@@ -140,7 +140,7 @@ export default async function DealTalentsPage({ params }: Props) {
     ),
   }));
 
-  // patrocínio na área social (0069): creators contratados de um negócio em produção ou ganho, com herói ligado
+  // patrocínio na área social (0069): creators contratados de um negócio em produção ou ganho, com Hero ligado
   const sponsorable = isManager && (deal.stage === "production" || (deal.stage === "closed" && deal.outcome === "won")) ? rows.filter((r) => r.status === "contracted") : [];
   return (
     <div className="flex flex-col gap-5">
@@ -157,7 +157,7 @@ export default async function DealTalentsPage({ params }: Props) {
         counteroffers={groupByDealTalent(offer?.counteroffers ?? [])}
         canDecideFee={offer?.canDecideFee ?? false}
         canDecideDate={offer?.canDecideDate ?? false}
-        // 0103: com os convites pausados o botão de convidar o herói some da lista
+        // 0103: com os convites pausados o botão de convidar o Hero some da lista
         canInvite={isManager && !ctx.agency.isDemo && (await getInvitesEnabled())}
         valueTerms={valueTerms}
         canCast={isManager}

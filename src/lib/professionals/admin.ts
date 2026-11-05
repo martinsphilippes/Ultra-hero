@@ -4,7 +4,7 @@ import { ORDER_SELECT, PRO_SELECT, toOrder, toProfessional, type ProfessionalCar
 import { responseStats } from "./rules";
 
 // Leituras do admin (0058): todos os profissionais (a RLS libera ao admin), nota de conferência,
-// sugeridos com nomes e as opções para ligar (heróis, receitas, programas).
+// sugeridos com nomes e as opções para ligar (Heros, receitas, programas).
 
 export type AdminProfessionalRow = ProfessionalCardView & { isDemo: boolean; sortOrder: number; orders: number; pending: number; medianMinutes: number | null };
 

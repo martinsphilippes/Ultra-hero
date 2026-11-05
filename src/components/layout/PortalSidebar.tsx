@@ -111,7 +111,7 @@ const ICONS: Record<string, LucideIcon> = {
   finance: Wallet,
   payments: Wallet,
   history: ScrollText,
-  // Portal do Herói (0087 + 0097)
+  // Portal do Hero (0087 + 0097)
   home: House,
   publicPage: Globe,
   opportunities: Sparkles,
@@ -144,7 +144,7 @@ export function PortalNavList({ portal, onNavigate, navKeys }: PortalNavListProp
         {PORTAL_LINKS[portal].filter(({ key }) => !navKeys || navKeys.includes(key)).map(({ key, href, group }, i, list) => {
           const Icon = ICONS[key] ?? LayoutDashboard;
           const active = isActive(pathname, href, root);
-          // grupo novo (Portal do Herói, 0097): título pequeno antes do primeiro item do grupo
+          // grupo novo (Portal do Hero, 0097): título pequeno antes do primeiro item do grupo
           const heading = group && group !== list[i - 1]?.group ? t(`groups.${group}`) : null;
           return (
             <li key={href}>

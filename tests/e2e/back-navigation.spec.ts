@@ -5,7 +5,7 @@ import { loginAs } from "./helpers/login";
 // fora, aba nova), a página usa o destino padrão dela. Só leitura.
 
 test.describe("botão de voltar", () => {
-  test("herói → post → Voltar retorna à página do herói", async ({ page }) => {
+  test("Hero → post → Voltar retorna à página do Hero", async ({ page }) => {
     await page.goto("/personalities");
     const hero = page.locator('main a[href^="/personalities/"]').first();
     const heroHref = (await hero.getAttribute("href"))!;
@@ -21,7 +21,7 @@ test.describe("botão de voltar", () => {
     await expect(page).toHaveURL(new RegExp(`${heroHref}$`));
   });
 
-  test("programas do herói → programa → Voltar retorna aos programas do herói (não ao Explorar)", async ({ page }) => {
+  test("programas do Hero → programa → Voltar retorna aos programas do Hero (não ao Explorar)", async ({ page }) => {
     await page.goto("/personalities/neymar");
     await page.locator('main a[href="/personalities/neymar/programas"]').first().click();
     await expect(page).toHaveURL(/\/personalities\/neymar\/programas$/);
@@ -32,7 +32,7 @@ test.describe("botão de voltar", () => {
     await expect(back).toHaveText(/Voltar/);
     await back.click();
     await expect(page).toHaveURL(/\/personalities\/neymar\/programas$/);
-    // e da página do herói, o Voltar volta à tela anterior também
+    // e da página do Hero, o Voltar volta à tela anterior também
     await page.goBack();
     await expect(page).toHaveURL(/\/personalities\/neymar$/);
   });

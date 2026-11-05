@@ -9,17 +9,17 @@ import { createClient } from "@/lib/supabase/server";
 import type { ActionFailure } from "./action-utils";
 import type { CreatorSupabase } from "./content-insert";
 
-// Contexto das actions do herói. O herói em nome de quem se grava NUNCA vem do cliente:
-//   * "manage" (conteúdos, receitas, vínculos): só o admin, pelo herói escolhido no seletor
+// Contexto das actions do Hero. O Hero em nome de quem se grava NUNCA vem do cliente:
+//   * "manage" (conteúdos, receitas, vínculos): só o admin, pelo Hero escolhido no seletor
 //     (cookie revalidado no banco a cada chamada; o cliente leva o cabeçalho x-acting-hero, que o
-//     banco só honra para admin com herói ativo — 0045). Herói comum: forbidden.
-//   * "post" (Novo post): o herói em uso (my_creator_id(); em mais de uma equipe, o escolhido: x-my-hero), ou o admin pelo
-//     herói escolhido.
+//     banco só honra para admin com Hero ativo — 0045). Hero comum: forbidden.
+//   * "post" (Novo post): o Hero em uso (my_creator_id(); em mais de uma equipe, o escolhido: x-my-hero), ou o admin pelo
+//     Hero escolhido.
 //   * "own" (perfil de chef): só o próprio perfil, como antes; sem modo do admin.
-//   * agência (0070): no "post", o herói dela escolhido no portal da agência (o banco confere o vínculo).
-//   * "content" (0092, Novo conteúdo e Meus conteúdos): o admin pelo herói escolhido, ou o creator (titular ou membro)
-//     pelo herói dele; com mais de uma equipe, o herói escolhido no seletor vai no cabeçalho x-my-hero e o banco só o
-//     honra para membro ativo daquela equipe (my_creator_id). "recipes": igual, sempre no herói padrão (o Storage
+//   * agência (0070): no "post", o Hero dela escolhido no portal da agência (o banco confere o vínculo).
+//   * "content" (0092, Novo conteúdo e Meus conteúdos): o admin pelo Hero escolhido, ou o creator (titular ou membro)
+//     pelo Hero dele; com mais de uma equipe, o Hero escolhido no seletor vai no cabeçalho x-my-hero e o banco só o
+//     honra para membro ativo daquela equipe (my_creator_id). "recipes": igual, sempre no Hero padrão (o Storage
 //     das fotos não recebe o cabeçalho).
 export type CreatorActionScope = "manage" | "post" | "own" | "content" | "recipes";
 
@@ -28,7 +28,7 @@ export type CreatorActionContext = {
   userId: string;
   creatorId: string;
   supabase: CreatorSupabase;
-  /** Herói em nome de quem o admin age (null quando é o próprio herói). */
+  /** Hero em nome de quem o admin age (null quando é o próprio Hero). */
   actingFor: string | null;
 };
 
@@ -44,14 +44,14 @@ export async function creatorActionContext(scope: CreatorActionScope = "manage")
   }
   if (scope === "manage") return { ok: false, error: "forbidden" };
 
-  // agência (0070): só o Novo post (foto e vídeo), pelo herói dela escolhido no portal da agência
+  // agência (0070): só o Novo post (foto e vídeo), pelo Hero dela escolhido no portal da agência
   if (scope === "post" && (await hasRole("agency"))) {
     const acting = await getActingHero();
     if (acting.status === "ok") return { ok: true, userId: user.id, creatorId: acting.hero.id, supabase: await actingClient(acting.hero.id), actingFor: acting.hero.id };
     if (!hasHeroRole(await getRoles())) return { ok: false, error: acting.status === "unavailable" ? "acting_unavailable" : "acting_hero_required" };
   }
 
-  // papel de herói (o creator com escopo "talent" é só do escritório e não reabre o Novo post)
+  // papel de Hero (o creator com escopo "talent" é só do escritório e não reabre o Novo post)
   if (!hasHeroRole(await getRoles())) return { ok: false, error: "forbidden" };
   let myHeroId: string | null = null;
   if (scope === "content" || scope === "post") {

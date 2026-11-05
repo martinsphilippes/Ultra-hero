@@ -10,7 +10,7 @@ import { COMPARE_METRIC_DEFS, COMPARE_METRICS, parseReferenceInput, type Compare
 import { isMissingFollowSchema } from "@/lib/heroes/follows";
 import { createClient } from "@/lib/supabase/server";
 
-// Referências para comparação do herói (0056): escrita direta sob a RLS de admin; cada mudança é
+// Referências para comparação do Hero (0056): escrita direta sob a RLS de admin; cada mudança é
 // auditada pelo gatilho do banco (admin_audit, resource_type 'creator_reference'). Em branco = apaga
 // (o indicador deixa de ser comparado). Só grava o que mudou.
 

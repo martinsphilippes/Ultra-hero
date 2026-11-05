@@ -57,7 +57,7 @@ const SITUATION_BADGE: Record<MyRecipeStatus, string> = {
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-// Minhas Receitas: lista das receitas do herói com busca, filtros (GET, funciona sem JS),
+// Minhas Receitas: lista das receitas do Hero com busca, filtros (GET, funciona sem JS),
 // situação derivada (agendada = publicada com data futura), indicadores reais e ações.
 export default async function MyRecipesPage({ searchParams }: Props) {
   const filters = parseMyRecipesFilters(await searchParams);
@@ -70,7 +70,7 @@ export default async function MyRecipesPage({ searchParams }: Props) {
   const categories = await loadRecipeCategories(supabase, locale);
   const categoryLabel = new Map(categories.map((c) => [c.code, c.label]));
 
-  // filtro de categoria: ids das receitas ligadas (o herói lê os vínculos das próprias receitas)
+  // filtro de categoria: ids das receitas ligadas (o Hero lê os vínculos das próprias receitas)
   let idsInCategory: string[] | null = null;
   if (filters.cat) {
     const { data } = await supabase.from("recipe_category_links").select("content_id").eq("category_code", filters.cat);

@@ -28,7 +28,7 @@ describe("isBlockedInNativeApp", () => {
     }
   });
 
-  it("bloqueia a biblioteca de produtos do herói e a aba Produtos do Explorar", () => {
+  it("bloqueia a biblioteca de produtos do Hero e a aba Produtos do Explorar", () => {
     expect(isBlockedInNativeApp("/personalities/neymar/produtos")).toBe(true);
     expect(isBlockedInNativeApp("/explore", new URLSearchParams("tab=produtos"))).toBe(true);
     expect(isBlockedInNativeApp("/explore", new URLSearchParams("tab=receitas"))).toBe(false);

@@ -16,7 +16,7 @@ import {
 } from "@/lib/invitations/rules";
 
 // Bloco Convites (0091): validade, campos condicionais do formulário do admin, opções da RPC, CNPJ, destino
-// depois do aceite e equipe do herói. As regras do banco (quem convida quem) são testadas no S98.
+// depois do aceite e equipe do Hero. As regras do banco (quem convida quem) são testadas no S98.
 
 const HERO = "11111111-1111-4111-8111-111111111111";
 const base: AdminInviteForm = { email: "pessoa@exemplo.com", role: "consumer", days: 7 };
@@ -42,7 +42,7 @@ describe("validade do convite", () => {
 });
 
 describe("formulário do admin", () => {
-  it("sete papéis: o Creator é o próprio Herói (0097)", () => {
+  it("sete papéis: o Creator é o próprio Hero (0097)", () => {
     expect(ADMIN_INVITE_ROLES).toEqual(["consumer", "admin", "agency", "brand", "hero", "seller", "professional"]);
     expect(ADMIN_INVITE_ROLES).not.toContain("creator");
   });
@@ -54,18 +54,18 @@ describe("formulário do admin", () => {
     expect(adminInviteFields("brand").onboardingNote).toBe(true);
     expect(adminInviteFields("consumer")).toMatchObject({ heroLink: false, heroTeam: false, adminConfirm: false, onboardingNote: false });
   });
-  it("Herói → equipe exige o herói; Herói → casting exige a ficha", () => {
+  it("Hero → equipe exige o Hero; Hero → casting exige a ficha", () => {
     expect(validateAdminInvite({ ...base, role: "hero", heroMode: "team" })).toEqual(["hero_id"]);
     expect(validateAdminInvite({ ...base, role: "hero", heroMode: "team", heroId: HERO })).toEqual([]);
     expect(validateAdminInvite({ ...base, role: "hero", heroMode: "casting" })).toEqual(["talent_id"]);
     expect(validateAdminInvite({ ...base, role: "hero", heroMode: "casting", talentId: HERO })).toEqual([]);
     expect(validateAdminInvite({ ...base, role: "hero", heroMode: "new", heroName: "A" })).toEqual(["hero_name"]);
   });
-  it("Herói: nome obrigatório; creator novo com e-mail diferente do titular", () => {
+  it("Hero: nome obrigatório; creator novo com e-mail diferente do titular", () => {
     expect(validateAdminInvite({ ...base, role: "hero" })).toEqual(["hero_name"]);
-    expect(validateAdminInvite({ ...base, role: "hero", heroName: "Herói X", teamMode: "new", teamEmail: "PESSOA@exemplo.com" })).toEqual(["team_email"]);
-    expect(validateAdminInvite({ ...base, role: "hero", heroName: "Herói X", teamMode: "existing" })).toEqual(["team_user"]);
-    expect(validateAdminInvite({ ...base, role: "hero", heroName: "Herói X", teamMode: "new", teamEmail: "social@exemplo.com" })).toEqual([]);
+    expect(validateAdminInvite({ ...base, role: "hero", heroName: "Hero X", teamMode: "new", teamEmail: "PESSOA@exemplo.com" })).toEqual(["team_email"]);
+    expect(validateAdminInvite({ ...base, role: "hero", heroName: "Hero X", teamMode: "existing" })).toEqual(["team_user"]);
+    expect(validateAdminInvite({ ...base, role: "hero", heroName: "Hero X", teamMode: "new", teamEmail: "social@exemplo.com" })).toEqual([]);
   });
   it("e-mail inválido e validade fora do intervalo", () => {
     expect(validateAdminInvite({ ...base, email: "x" })).toEqual(["email"]);
@@ -100,13 +100,13 @@ describe("destino depois do aceite", () => {
     expect(portalHomeForAccepted([{ scope_type: "agency" }, { role: "brand", scope_type: "onboarding", onboarding: "brand" }])).toBe(ONBOARDING_HOME);
     expect(portalHomeForAccepted([{ scope_type: "onboarding", error: "x" }, { scope_type: "brand" }])).toBe("/marca");
   });
-  it("admin, creator sem herói e consumidor", () => {
+  it("admin, creator sem Hero e consumidor", () => {
     expect(portalHomeForAccepted([{ role: "admin", scope_type: "global" }])).toBe("/admin");
     expect(portalHomeForAccepted([{ role: "creator", scope_type: "global" }])).toBe(HERO_TEAM_HOME);
     expect(HERO_TEAM_HOME).toBe("/heroi");
     expect(portalHomeForAccepted([{ role: "consumer", scope_type: "consumer" }])).toBe("/");
   });
-  it("todo convite de herói (titular, membro da equipe, ficha do casting) leva ao Portal do Herói", () => {
+  it("todo convite de Hero (titular, membro da equipe, ficha do casting) leva ao Portal do Hero", () => {
     expect(portalHomeForAccepted([{ role: "creator", scope_type: "creator", team_role: "member" } as never])).toBe(HERO_PORTAL_HOME);
     expect(portalHomeForAccepted([{ role: "creator", scope_type: "creator", talent_id: "t" }])).toBe(HERO_PORTAL_HOME);
     expect(portalHomeForAccepted([{ role: "creator", scope_type: "talent", talent_id: "t" }])).toBe(HERO_PORTAL_HOME);
@@ -114,7 +114,7 @@ describe("destino depois do aceite", () => {
   });
 });
 
-describe("equipe do herói", () => {
+describe("equipe do Hero", () => {
   const team = parseHeroTeam({
     my_role: "owner",
     members: [

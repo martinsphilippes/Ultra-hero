@@ -15,7 +15,7 @@ function isProtected(pathname: string) {
   return PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
-// Hub do herói: /personalities/[slug] e as bibliotecas /personalities/[slug]/[library].
+// Hub do Hero: /personalities/[slug] e as bibliotecas /personalities/[slug]/[library].
 const HERO_ROUTE = /^\/personalities\/([^/]+)(?:\/([^/]+))?$/;
 
 // As páginas ficam dentro de loading.tsx (streaming), então redirect() e notFound() chegariam ao
@@ -56,7 +56,7 @@ function legacyEvolutionResponse(request: NextRequest): NextResponse | null {
   return NextResponse.redirect(target, 308);
 }
 
-// Portal do Herói (0097): /creator/** (portal do herói e escritório), /marca/creators, /agencia/negocios/<id>/creators
+// Portal do Hero (0097): /creator/** (portal do Hero e escritório), /marca/creators, /agencia/negocios/<id>/creators
 // e /admin/creators mudaram de endereço. 308 permanente com a query, antes da sessão (e-mails, avisos e push antigos).
 function legacyHeroPortalResponse(request: NextRequest): NextResponse | null {
   const next = legacyHeroPortalTarget(request.nextUrl.pathname);

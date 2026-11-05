@@ -1,7 +1,7 @@
 -- =============================================================================
--- Groscove Ultra · 0112 · Acesso nasce junto: herói (um só "Novo herói", pelo Casting) e marca criada pela agência
--- Pedidos do responsável (04/11): "Pra criar um herói, tem que criar uma conta vinculada ao herói criado
--- automaticamente; obrigatoriamente colocar o telefone e e-mail" — e depois: um só "Novo herói" (no Casting, que é a
+-- Groscove Ultra · 0112 · Acesso nasce junto: Hero (um só "Novo Hero", pelo Casting) e marca criada pela agência
+-- Pedidos do responsável (04/11): "Pra criar um Hero, tem que criar uma conta vinculada ao Hero criado
+-- automaticamente; obrigatoriamente colocar o telefone e e-mail" — e depois: um só "Novo Hero" (no Casting, que é a
 -- pessoa), com a página pública opcional no mesmo passo; e a "Nova marca" da agência também gera o acesso do contato
 -- da marca. Cenário S118. Idempotente; nada de drop de tabela/coluna; nenhuma função nova executável por anon
 -- (S14 segue 18).
@@ -13,13 +13,13 @@
 --     hash, uso único), com kind próprio — 'agency_hero' (forma do convite de talento da 0087: papel creator +
 --     talent_id + agency_id) e 'agency_brand' (forma do convite de equipe da marca da 0064: papel brand + brand_id +
 --     agency_id + member_role 'owner'). Vale 14 dias. O aceite (accept_invitation_core, SEM mudança) já faz o vínculo
---     certo: talento com página → conta no herói (creator_profiles.user_id + papel creator escopo creator); sem página →
+--     certo: talento com página → conta no Hero (creator_profiles.user_id + papel creator escopo creator); sem página →
 --     login do talento (talent_profiles.user_id + escopo talent); marca → Dono (brand_members + papel brand). Os três
 --     caminhos que já existem servem: link do e-mail (/invite), primeiro acesso pela tela de entrar com o e-mail
 --     convidado (0077) e qualquer login/cadastro com o MESMO e-mail (accept_my_invitations). O núcleo confere o e-mail
 --     da sessão com o do convite: outro e-mail nunca reivindica.
 --   • Já existe conta com o e-mail → liga na hora (mesmas regras do aceite: conta demo não entra em agência real; uma
---     pessoa, um talento; uma pessoa, um herói) e avisa no sino (tipos novos 'hero_account_linked' e
+--     pessoa, um talento; uma pessoa, um Hero) e avisa no sino (tipos novos 'hero_account_linked' e
 --     'brand_access_granted'); o app manda também o e-mail. A RPC lê auth.users só por dentro (security definer) e
 --     nunca devolve dados da conta (só o e-mail mascarado, como agency_talent_access).
 --   • Convites pausados (0103): estes dois kinds NÃO passam pelo interruptor (como o staff externo da 0110): é a
@@ -28,18 +28,18 @@
 --   • Contato em tabela própria (access_contacts), fora de creator_profiles (pública) e de talent_profiles (que o
 --     colaborador lê): e-mail minúsculo e celular E.164 (+55 DDD 9XXXXXXXX). Leitura só gestor+ da agência e admin
 --     geral (dado pessoal: nem público, nem marca, nem colaborador). Escrita só pelas RPCs.
---   • Um herói por e-mail: o e-mail de contato não se repete entre talentos não arquivados (hero_email_taken; trava por
---     e-mail contra corrida) e não pode ser de quem já é titular de outro herói ou tem outro talento. Marca: o mesmo
+--   • Um Hero por e-mail: o e-mail de contato não se repete entre talentos não arquivados (hero_email_taken; trava por
+--     e-mail contra corrida) e não pode ser de quem já é titular de outro Hero ou tem outro talento. Marca: o mesmo
 --     contato pode ser Dono de várias marcas (sem trava de unicidade).
 --   • "Nova marca nasce fora do app" (D7: brands.status 'inactive', fora da vitrine pública) continua; quando o contato
 --     vira Dono (na hora ou no aceite) a marca passa a self_managed (como o aceite do pedido de vínculo da 0091): o
 --     portal da marca segue funcionando mesmo se a agência sair. Publicar na vitrine continua sendo do admin.
---   • Um só "Novo herói": agency_hero_create grava o talento (agency_talent_save), os segmentos, o contato e, se pedido,
+--   • Um só "Novo Hero": agency_hero_create grava o talento (agency_talent_save), os segmentos, o contato e, se pedido,
 --     a página pública JÁ LIGADA ao talento — tudo numa transação. A página também nasce depois pelo botão da ficha
 --     (agency_talent_create_page). Talento com login próprio: a página nasce com a pessoa como titular e o login passa
---     do talento para o herói sem apagar consentimento/documentos (talent_login_changed ganha a exceção
+--     do talento para o Hero sem apagar consentimento/documentos (talent_login_changed ganha a exceção
 --     app.talent_same_person, ligada só por talent_page_create).
---   • agency_create_hero (0070/0073) é removida: a tela Heróis não cria mais herói (só lista, edita e publica).
+--   • agency_create_hero (0070/0073) é removida: a tela Heros não cria mais Hero (só lista, edita e publica).
 --   • Reenviar (access_invite_resend) e corrigir o e-mail (access_contact_save) revogam o convite pendente e emitem
 --     outro (link novo). Um convite de titular pelo casting com outro e-mail é recusado (hero_email_mismatch).
 --     Situação: agency_access_status (active | pending | expired | none).
@@ -85,7 +85,7 @@ alter table public.invitations add constraint invitations_kind_check check (kind
 create or replace function public.invitations_flag_guard()
 returns trigger language plpgsql security definer set search_path = '' as $$
 begin
-  -- 0112: o acesso do herói/da marca criados pela agência não passa pela pausa (só as RPCs da 0112 gravam estes kinds)
+  -- 0112: o acesso do Hero/da marca criados pela agência não passa pela pausa (só as RPCs da 0112 gravam estes kinds)
   if new.kind in ('agency_hero', 'agency_brand') then return new; end if;
   if not public.invites_enabled() then raise exception 'invites_disabled' using errcode = 'P0001'; end if;
   return new;
@@ -93,7 +93,7 @@ end $$;
 revoke execute on function public.invitations_flag_guard() from public, anon, authenticated;
 grant execute on function public.invitations_flag_guard() to service_role;
 
--- convite de titular (casting/admin) para talento com contato: o MESMO e-mail (membro da equipe do herói não conta)
+-- convite de titular (casting/admin) para talento com contato: o MESMO e-mail (membro da equipe do Hero não conta)
 create or replace function public.invitations_access_contact_guard()
 returns trigger language plpgsql security definer set search_path = '' as $$
 declare v_talent uuid; v_email text;
@@ -129,7 +129,7 @@ drop trigger if exists invitations_brand_claimed on public.invitations;
 create trigger invitations_brand_claimed after update of status on public.invitations
   for each row execute function public.invitations_brand_claimed();
 
--- login do talento passando para o herói da MESMA pessoa (página criada depois): não é troca de pessoa
+-- login do talento passando para o Hero da MESMA pessoa (página criada depois): não é troca de pessoa
 create or replace function public.talent_login_changed()
 returns trigger language plpgsql security definer set search_path = '' as $$
 begin
@@ -185,7 +185,7 @@ begin
   if not public.access_contact_valid(v_email, btrim(coalesce(p_phone, ''))) then raise exception 'invalid_phone' using errcode = '22023'; end if;
   if p_kind = 'brand' and char_length(btrim(coalesce(p_name, ''))) not between 2 and 80 then raise exception 'name_required' using errcode = '22023'; end if;
   if p_kind = 'talent' then
-    -- um herói por e-mail (trava por e-mail: dois cadastros ao mesmo tempo não passam)
+    -- um Hero por e-mail (trava por e-mail: dois cadastros ao mesmo tempo não passam)
     perform pg_advisory_xact_lock(hashtext('access_email:' || v_email));
     if exists (select 1 from public.access_contacts c join public.talent_profiles t on t.id = c.talent_id
                where c.email = v_email and t.archived_at is null and c.talent_id is distinct from p_target) then
@@ -235,7 +235,7 @@ begin
     if coalesce(v_t.user_id, v_t.creator_user) is not null then return jsonb_build_object('account', 'active'); end if;
     if v_t.creator_status = 'suspended' then raise exception 'partner_suspended' using errcode = 'P0001'; end if;
     if v_user is not null then
-      -- uma pessoa, um herói; uma pessoa, um talento (as regras do aceite)
+      -- uma pessoa, um Hero; uma pessoa, um talento (as regras do aceite)
       if exists (select 1 from public.creator_profiles c where c.user_id = v_user and c.id is distinct from v_t.creator_id) then
         raise exception 'hero_email_taken' using errcode = 'P0001';
       end if;
@@ -333,7 +333,7 @@ begin
   if v_slug !~ '^[a-z0-9]+(-[a-z0-9]+)*$' or char_length(v_slug) > 60 then raise exception 'invalid_input' using errcode = '22023'; end if;
   if exists (select 1 from public.creator_profiles where slug = v_slug) then raise exception 'duplicate_slug' using errcode = 'P0001'; end if;
   if v_t.user_id is not null then
-    -- a pessoa do login vira a titular do herói: uma pessoa, um herói
+    -- a pessoa do login vira a titular do Hero: uma pessoa, um Hero
     if exists (select 1 from public.creator_profiles c where c.user_id = v_t.user_id) then raise exception 'has_hero' using errcode = 'P0001'; end if;
   end if;
   select a.name into v_agency_name from public.agencies a where a.id = p_agency;
@@ -342,7 +342,7 @@ begin
   values (v_slug, btrim(v_t.display_name), v_headline, v_bio, v_pillars, false, 'authorized', v_agency_name, 'active', v_t.user_id)
   returning id into v_id;
   if v_t.user_id is not null then
-    -- o login passa do talento para o herói da MESMA pessoa (sem apagar consentimento e documentos)
+    -- o login passa do talento para o Hero da MESMA pessoa (sem apagar consentimento e documentos)
     perform set_config('app.talent_same_person', 'on', true);
     update public.talent_profiles set user_id = null, creator_id = v_id where id = p_talent;
     perform set_config('app.talent_same_person', 'off', true);
@@ -352,7 +352,7 @@ begin
     values (v_t.user_id, 'creator', 'creator', v_id, auth.uid())
     on conflict (user_id, role, scope_id) do update set revoked_at = null;
   else
-    -- sem pessoa ainda: o convite pendente continua valendo e, no aceite, a conta vai para o herói
+    -- sem pessoa ainda: o convite pendente continua valendo e, no aceite, a conta vai para o Hero
     update public.talent_profiles set creator_id = v_id where id = p_talent;
   end if;
   perform set_config('app.trusted', 'off', true);
@@ -364,10 +364,10 @@ revoke execute on function public.talent_page_create(uuid, uuid, jsonb) from pub
 grant execute on function public.talent_page_create(uuid, uuid, jsonb) to service_role;
 
 -- 5) RPCs da tela ----------------------------------------------------------------------------------------------------
--- a tela Heróis não cria mais herói: a versão antiga sai (ninguém cria herói sem contato pela API)
+-- a tela Heros não cria mais Hero: a versão antiga sai (ninguém cria Hero sem contato pela API)
 drop function if exists public.agency_create_hero(uuid, text, text, public.pillar[], text, text);
 
--- "Novo herói" (Casting): talento + segmentos + contato (+ página pública opcional) + conta, numa transação
+-- "Novo Hero" (Casting): talento + segmentos + contato (+ página pública opcional) + conta, numa transação
 create or replace function public.agency_hero_create(p_agency uuid, p_talent jsonb, p_email text, p_phone text,
   p_segment_ids uuid[] default null, p_page jsonb default null)
 returns jsonb language plpgsql security definer set search_path = '' as $$

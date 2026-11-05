@@ -124,7 +124,7 @@
       "content": "Contenidos",
       "ingredients": "Ingredientes"
     },
-    "description": "Sugerencias de los héroes para el producto correspondiente de cada ingrediente. Solo el vínculo validado aparece en la lista de compras; validar uno nuevo suspende el anterior del mismo ingrediente.",
+    "description": "Sugerencias de los Heros para el producto correspondiente de cada ingrediente. Solo el vínculo validado aparece en la lista de compras; validar uno nuevo suspende el anterior del mismo ingrediente.",
     "filters": {
       "status": "Estado",
       "recipe": "Receta",

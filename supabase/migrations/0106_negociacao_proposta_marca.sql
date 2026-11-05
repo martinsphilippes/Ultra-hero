@@ -6,7 +6,7 @@
 --
 -- Decisões:
 --   • Mesmo desenho das rodadas da chamada da marca (0089/0096, brand_call_rounds), agora no negócio: tabela
---     deal_offer_rounds (lado, ação, valor, modelo fixo/por herói + máximo, período, nota, quem e quando). Só as RPCs
+--     deal_offer_rounds (lado, ação, valor, modelo fixo/por Hero + máximo, período, nota, quem e quando). Só as RPCs
 --     gravam (security definer); ninguém escreve direto.
 --   • Termos da marca = a última contraproposta da marca ou, sem nenhuma, a proposta original (campaign_request_budgets:
 --     "Valor oferecido" = budget_max_cents, modelo e máximo; período do campaign_request). Só campanhas de origem
@@ -16,15 +16,15 @@
 --   • Agência: só o Adm (lê valores) aceita ou contrapropõe, com o negócio aberto e antes da confirmação (etapa < 8).
 --     Recusar não existe para a agência: ela já pode encerrar o negócio como perdido.
 --     Contraproposta → etapa 'proposal_sent' (se estava antes); aceite → 'negotiation' (se estava antes). A etapa
---     'proposal_sent' já bloqueia consultar heróis (0079): é o "proposta na mão da marca"; a resposta da marca leva a
+--     'proposal_sent' já bloqueia consultar Heros (0079): é o "proposta na mão da marca"; a resposta da marca leva a
 --     'negotiation' e libera de novo (ou o gestor move a etapa à mão, como já podia).
 --   • Marca: só o DONO responde (aceitar e contrapropor comprometem dinheiro; recusar também fica com ele, como na
 --     0090). Só quando a última rodada é uma contraproposta da agência. Aceitar → acordo e etapa 'negotiation';
 --     contrapropor → etapa 'negotiation'; recusar (motivo opcional) → o negócio segue aberto e a agência decide.
---   • Acordo: grava os termos acordados no "Valor oferecido" (fixo: mínimo = máximo = valor; por herói: máximo = valor
---     por herói, mínimo vazio, máximo de heróis) e o período (se a rodada trouxe) no pedido e no negócio. O gatilho da
---     0096 (campaign_request_budgets_value_trg) lê uma atualização do valor por herói como "total ÷ máximo"; para não
---     dividir o valor acordado, a gravação é em dois passos (o valor entra com o modelo fixo e o modelo por herói vem
+--   • Acordo: grava os termos acordados no "Valor oferecido" (fixo: mínimo = máximo = valor; por Hero: máximo = valor
+--     por Hero, mínimo vazio, máximo de Heros) e o período (se a rodada trouxe) no pedido e no negócio. O gatilho da
+--     0096 (campaign_request_budgets_value_trg) lê uma atualização do valor por Hero como "total ÷ máximo"; para não
+--     dividir o valor acordado, a gravação é em dois passos (o valor entra com o modelo fixo e o modelo por Hero vem
 --     depois, sem tocar no valor). Elenco acima do máximo acordado recusa com max_heroes. A verba interna da marca
 --     (brand_budgets, 0082) não muda.
 --   • Período vazio numa rodada = mantém o da campanha.
@@ -156,7 +156,7 @@ begin
   returning id into v_round;
 
   if p_action = 'accept' then
-    -- valor oferecido = acordado; em dois passos para o gatilho da 0096 não dividir o valor por herói
+    -- valor oferecido = acordado; em dois passos para o gatilho da 0096 não dividir o valor por Hero
     if exists (select 1 from public.campaign_request_budgets b where b.request_id = d.request_id) then
       update public.campaign_request_budgets set value_model = 'fixo', max_heroes = null, budget_min_cents = null, budget_max_cents = p_amount, updated_by = auth.uid()
       where request_id = d.request_id;

@@ -27,7 +27,7 @@ export function indicatorsExportHref(section: IndicatorSection, period: Indicato
   return `/admin/indicadores/export?secao=${section}&days=${period}`;
 }
 
-/** RPC(s) de cada seção. O ranking dos heróis sai da mesma leitura da seção Por herói. */
+/** RPC(s) de cada seção. O ranking dos Heros sai da mesma leitura da seção Por Hero. */
 export const SECTION_RPCS = {
   herois: ["admin_indicators_heroes"],
   atalhos: ["admin_indicators_shortcuts"],
@@ -58,7 +58,7 @@ const str = (v: unknown): string => (typeof v === "string" ? v : "");
 export type DailyPoint = { day: string; value: number };
 const daily = (v: unknown): DailyPoint[] => arr(v).map((d) => ({ day: str(d.day), value: num(d.value) })).filter((d) => d.day !== "");
 
-// ---------------------------------------------------------------- por herói
+// ---------------------------------------------------------------- por Hero
 export type HeroIndicator = {
   id: string;
   slug: string;
@@ -76,7 +76,7 @@ export type HeroIndicator = {
   shortcutOpens: number;
   collectibleBids: number;
   collectibleViews: number;
-  /** Visitas à página do herói (0061). */
+  /** Visitas à página do Hero (0061). */
   pageViews: number;
 };
 export type HeroesData = { rows: HeroIndicator[]; dailyFollows: DailyPoint[]; dailyPageViews: DailyPoint[]; pageViewsSince: string | null };
@@ -114,7 +114,7 @@ export function parseHeroes(raw: unknown): HeroesData {
 export const recipeTaps = (h: HeroIndicator) => h.recipeFazer + h.recipeComprarPronto + h.recipeListaCompras;
 /** Visualizações (conteúdo + programa + colecionável). */
 export const heroViews = (h: HeroIndicator) => h.contentViews + h.programViews + h.collectibleViews;
-/** Ações do herói no período: tudo que a pessoa fez nele (seguir, ver, tocar, abrir atalho, dar lance). */
+/** Ações do Hero no período: tudo que a pessoa fez nele (seguir, ver, tocar, abrir atalho, dar lance). */
 export const heroActions = (h: HeroIndicator) =>
   h.newFollowers + heroViews(h) + recipeTaps(h) + h.proVerPerfil + h.proContratar + h.shortcutOpens + h.collectibleBids;
 
@@ -132,7 +132,7 @@ export function heroTotals(rows: HeroIndicator[]) {
   };
 }
 
-/** Top heróis por ações (só quem teve alguma). Empate: mais seguidores, depois nome. */
+/** Top Heros por ações (só quem teve alguma). Empate: mais seguidores, depois nome. */
 export function rankHeroes(rows: HeroIndicator[], limit = 10): { hero: HeroIndicator; actions: number }[] {
   return rows
     .map((hero) => ({ hero, actions: heroActions(hero) }))
@@ -141,7 +141,7 @@ export function rankHeroes(rows: HeroIndicator[], limit = 10): { hero: HeroIndic
     .slice(0, limit);
 }
 
-/** Top heróis por visitas à página (só quem teve alguma). Empate: mais seguidores, depois nome. */
+/** Top Heros por visitas à página (só quem teve alguma). Empate: mais seguidores, depois nome. */
 export function rankHeroesByPageViews(rows: HeroIndicator[], limit = 10): HeroIndicator[] {
   return rows
     .filter((h) => h.pageViews > 0)
@@ -172,7 +172,7 @@ export function parseShortcuts(raw: unknown): ShortcutsData {
   };
 }
 
-/** Atalho aberto (POST /api/shortcut-opens): herói (uuid) + fonte conhecida. */
+/** Atalho aberto (POST /api/shortcut-opens): Hero (uuid) + fonte conhecida. */
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export type ShortcutOpen = { creatorId: string; sourceKey: LibraryKey };
 export function parseShortcutOpen(input: unknown): ShortcutOpen | null {
@@ -183,7 +183,7 @@ export function parseShortcutOpen(input: unknown): ShortcutOpen | null {
   return { creatorId: creatorId.toLowerCase(), sourceKey };
 }
 
-/** Visita à página do herói (POST /api/hero-page-views): só o herói (uuid), nada da pessoa. */
+/** Visita à página do Hero (POST /api/hero-page-views): só o Hero (uuid), nada da pessoa. */
 export function parseHeroPageView(input: unknown): { creatorId: string } | null {
   if (typeof input !== "object" || input === null || Array.isArray(input)) return null;
   const { creatorId } = input as Record<string, unknown>;

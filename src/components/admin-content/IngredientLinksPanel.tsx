@@ -11,7 +11,7 @@ import { IngredientLinkActions } from "./IngredientLinkActions";
 import { firstParam, pickEnum, type SearchParams } from "./lib/search-params";
 import { suspensionReasonKey } from "@/lib/recipes/ingredient-products";
 
-// Aba "Ingredientes" de /admin/links (fase 5): fila das sugestões dos heróis para o produto de cada
+// Aba "Ingredientes" de /admin/links (fase 5): fila das sugestões dos Heros para o produto de cada
 // ingrediente (recipe_ingredient_products, 0027). Abre na fila (sugeridos); validar, suspender e
 // recusar passam pela RPC auditada. Só o validado chega à lista de compras.
 

@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Groscove Ultra · 0109 · "Próximo passo" e encerrar como ganho sem trabalho fantasma · cenário S115
 -- Pedido do responsável (04/11): a marca viu em "Ações por etapa" o "Post mm" em "Em criação" enquanto o "Hoje" do
--- herói dizia "Nada pendente": a agência encerrou o negócio como ganho à força com os termos em rascunho, contrato
+-- Hero dizia "Nada pendente": a agência encerrou o negócio como ganho à força com os termos em rascunho, contrato
 -- não confirmado e a entrega ainda planejada. "Tem que ter como resolver fácil". Idempotente; nada de drop de
 -- tabela/coluna; search_path fixo; nenhuma função nova (S14 segue 18). Só recria duas funções que já existiam.
 --
@@ -11,14 +11,14 @@
 --     uma chamada só (o gestor não precisa mover para "Entrega" antes).
 --   • D2 Encerrar como ganho COM pendência (não contratado ou entrega em aberto) continua só para o Adm com p_force,
 --     agora com MOTIVO obrigatório (≥ 5 caracteres) e, na mesma transação, cancela as entregas em aberto e as tarefas
---     abertas do herói e da marca do negócio. Nenhum portal fica mostrando trabalho que não vai acontecer.
---   • D3 Encerrar como perdido/cancelado também cancela entregas e tarefas abertas do herói e da marca (antes elas
---     ficavam "planejadas" para sempre na lista de tarefas do herói). Tarefas internas da agência ficam como estão
+--     abertas do Hero e da marca do negócio. Nenhum portal fica mostrando trabalho que não vai acontecer.
+--   • D3 Encerrar como perdido/cancelado também cancela entregas e tarefas abertas do Hero e da marca (antes elas
+--     ficavam "planejadas" para sempre na lista de tarefas do Hero). Tarefas internas da agência ficam como estão
 --     (relatório/encerramento seguem com a equipe).
 --   • D4 Reabrir não "descancela" nada: a agência recria ou reabre as entregas pela aba Entregas, se for o caso.
 --   • D5 Linha do tempo: atividade de sistema "close_cancelled|N" quando algo foi cancelado; auditoria leva a contagem.
---   • D6 "Hoje" do herói (talent_today) passa a trazer também a entrega PUBLICADA (falta o comprovante), que o
---     Próximo passo pede ao herói; o resto da leitura fica igual à 0082.
+--   • D6 "Hoje" do Hero (talent_today) passa a trazer também a entrega PUBLICADA (falta o comprovante), que o
+--     Próximo passo pede ao Hero; o resto da leitura fica igual à 0082.
 -- =============================================================================
 
 create or replace function public.agency_deal_move(p_deal uuid, p_to text, p_outcome text default null, p_note text default null, p_force boolean default false)
@@ -51,7 +51,7 @@ begin
       if public.deal_stage_index(d.stage) >= 10 and not public.agency_can(v_agency, 'admin') then raise exception 'forbidden' using errcode = '42501'; end if;
     end if;
     update public.deals set stage = 'closed', outcome = p_outcome, stage_changed_at = now(), closed_at = now() where id = p_deal;
-    -- D2/D3: nada de trabalho fantasma nos portais da marca e do herói
+    -- D2/D3: nada de trabalho fantasma nos portais da marca e do Hero
     if p_outcome <> 'won' or v_forced then
       update public.deliverables set status = 'cancelled' where deal_id = p_deal and status not in ('done', 'cancelled');
       get diagnostics v_cancelled = row_count;
@@ -92,7 +92,7 @@ end $$;
 revoke execute on function public.agency_deal_move(uuid, text, text, text, boolean) from public, anon;
 grant execute on function public.agency_deal_move(uuid, text, text, text, boolean) to authenticated, service_role;
 
--- D6: "Hoje" do herói — igual à 0082, com a entrega publicada (falta o comprovante)
+-- D6: "Hoje" do Hero — igual à 0082, com a entrega publicada (falta o comprovante)
 create or replace function public.talent_today()
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare v_t uuid; v_tz text; v_deals uuid[];

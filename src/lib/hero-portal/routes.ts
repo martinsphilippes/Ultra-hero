@@ -1,4 +1,4 @@
-// Portal do Herói (0097): o "creator" era o próprio herói, então as duas áreas (o portal do herói em /creator e o
+// Portal do Hero (0097): o "creator" era o próprio Hero, então as duas áreas (o portal do Hero em /creator e o
 // escritório em /creator/escritorio) viraram um portal só, em /heroi. Módulo puro (middleware e testes).
 //
 // Os endereços antigos continuam valendo para sempre: links de e-mails já enviados, avisos do sino gravados no
@@ -17,7 +17,7 @@ const RULES: Rule[] = [
   { from: /^\/creator\/escritorio\/ganhos$/, to: () => "/heroi/financeiro" },
   { from: /^\/creator\/escritorio\/notificacoes$/, to: () => "/heroi/avisos" },
   { from: /^\/creator\/escritorio(\/.*)?$/, to: (m) => `/heroi${m[1] ?? ""}` },
-  // área do herói (0045/0087/0092/0094)
+  // área do Hero (0045/0087/0092/0094)
   { from: /^\/creator\/post\/new$/, to: () => "/heroi/post/novo" },
   { from: /^\/creator\/content\/new$/, to: () => "/heroi/conteudos/novo" },
   { from: /^\/creator\/content\/([^/]+)\/edit$/, to: (m) => `/heroi/conteudos/${m[1]}/editar` },
@@ -47,7 +47,7 @@ export function legacyHeroPortalTarget(pathname: string): string | null {
   return null;
 }
 
-/** Link de aviso do lado do herói (escritório antigo ou portal novo): o push e o sino tratam igual. */
+/** Link de aviso do lado do Hero (escritório antigo ou portal novo): o push e o sino tratam igual. */
 export function isHeroPortalLink(link: string | null | undefined): boolean {
   if (!link) return false;
   return link === HERO_PORTAL_ROOT || link.startsWith(`${HERO_PORTAL_ROOT}/`) || link.startsWith("/creator/escritorio");

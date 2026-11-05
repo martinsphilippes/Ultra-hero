@@ -2,7 +2,7 @@
   "bell": "Avisos",
   "bellUnread": "Avisos não lidos: {count}",
   "title": "Avisos",
-  "sheetDescription": "Os avisos da sua agência, da sua marca ou do Portal do Herói chegam aqui.",
+  "sheetDescription": "Os avisos da sua agência, da sua marca ou do Portal do Hero chegam aqui.",
   "pageDescription": "Tudo o que aconteceu com você nos portais de gestão.",
   "seeAll": "Ver todos",
   "markAll": "Marcar todas como lidas",
@@ -64,7 +64,7 @@
       "body": "Houve uma atualização em {deal}."
     },
     "opportunity_answered": {
-      "title": "Resposta do herói",
+      "title": "Resposta do Hero",
       "body": "{talent} respondeu à oportunidade de {deal}."
     },
     "contract_acceptance_requested": {
@@ -161,7 +161,7 @@
     },
     "sponsorship_published": {
       "title": "Oportunidade de patrocínio",
-      "body": "Herói {talent}: {title}. Responda até {date}."
+      "body": "Hero {talent}: {title}. Responda até {date}."
     },
     "sponsorship_interest": {
       "title": "Marca quer patrocinar",
@@ -180,7 +180,7 @@
       "body": "{brand} publicou {title}. Propostas até {date}."
     },
     "brand_call_interest": {
-      "title": "Herói com interesse",
+      "title": "Hero com interesse",
       "body": "{talent} tem interesse no pedido {title}."
     },
     "brand_call_negotiation": {
@@ -228,8 +228,8 @@
       "body": "{status, select, late {O repasse de {deal} ({talent}) está vencido.} today {O repasse de {deal} ({talent}) vence hoje.} other {O repasse de {deal} ({talent}) vence em até 3 dias.}}"
     },
     "hero_account_linked": {
-      "title": "Sua conta de herói está pronta",
-      "body": "{name} cadastrou {talent} e ligou à sua conta. Abra o Portal do Herói."
+      "title": "Sua conta de Hero está pronta",
+      "body": "{name} cadastrou {talent} e ligou à sua conta. Abra o Portal do Hero."
     },
     "brand_access_granted": {
       "title": "Você é Dono de {brand}",

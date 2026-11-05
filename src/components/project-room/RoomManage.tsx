@@ -20,7 +20,7 @@ type Props = {
   timezone: string;
 };
 
-// Ferramentas da agência na sala: briefing fixado, "heróis também assinam o NDA", nova diária, pedir feedback ao cliente
+// Ferramentas da agência na sala: briefing fixado, "Heros também assinam o NDA", nova diária, pedir feedback ao cliente
 // e arquivar/reabrir (gestor+). O fechamento do negócio arquiva sozinho.
 export function RoomManage({ dealId, briefing, ndaHeroes, status, canManage, isManager, dealClosed, people, timezone }: Props) {
   const t = useTranslations("projectRoom.manage");

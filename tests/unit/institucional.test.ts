@@ -223,7 +223,7 @@ describe("textos do teaser de lançamento", () => {
       expect(text).not.toMatch(/demonstra|\bdemo\b|simulad|simulat|creator|ag[eê]nci|agency|pagamento|payment|pago\b/i);
     }
     expect(String(get(messages[locale], "form.privacy"))).toMatch(/<privacy>.+<\/privacy>/);
-    // metadados sem spoiler: nada de portal, marca/herói/agência
+    // metadados sem spoiler: nada de portal, marca/Hero/agência
     const meta = [get(messages[locale], "meta.title"), get(messages[locale], "meta.description")].join(" ");
     expect(meta).not.toMatch(/portal|her[oó]i|hero|marca/i);
   });
@@ -256,7 +256,7 @@ describe("/sobre · Conheça o Groscove Ultra (apresentação clássica)", () =>
   it("pt-BR traz o título, a proposta de valor e as seções de antes", () => {
     const pt = about["pt-BR"];
     expect(get(pt, "meta.title")).toBe("Conheça o Groscove Ultra");
-    expect(get(pt, "hero.title")).toBe("A plataforma onde marca, herói e agência fecham negócio rápido.");
+    expect(get(pt, "hero.title")).toBe("A plataforma onde marca, Hero e agência fecham negócio rápido.");
     expect(get(pt, "what.title")).toBe("O que é o Ultra");
     expect(get(pt, "calendar.title")).toBe("Calendário Groscove");
     expect(get(pt, "agency.items.castBuilder.title")).toBe("Montador de elenco");

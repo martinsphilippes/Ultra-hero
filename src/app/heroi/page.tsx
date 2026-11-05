@@ -26,9 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
 const QUICK =
   "flex min-h-14 items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-fg hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
-// Início do Portal do Herói (0097). Herói com página: atalhos de conteúdo e, sem agência, a agenda e o financeiro
+// Início do Portal do Hero (0097). Hero com página: atalhos de conteúdo e, sem agência, a agenda e o financeiro
 // próprios (0094). Num casting: o "Hoje" e os cartões da agência (oportunidades, tarefas, entregas, ganhos…). O admin
-// vê o painel do herói escolhido em "Publicar como hero".
+// vê o painel do Hero escolhido em "Publicar como hero".
 export default async function HeroPortalHome() {
   if (await hasRole("admin")) return <AdminHeroDashboard />;
   const [t, tn, roles, talent] = await Promise.all([getTranslations("creator.home"), getTranslations("nav.creator"), getRoles(), getTalentContext()]);
@@ -43,7 +43,7 @@ export default async function HeroPortalHome() {
     );
   }
 
-  // herói em uso (titular ou membro): o mesmo do cartão "Você trabalha para" do Perfil
+  // Hero em uso (titular ou membro): o mesmo do cartão "Você trabalha para" do Perfil
   let heroName: string | null = null;
   let hasHeroPage = false;
   let work = null;
@@ -58,7 +58,7 @@ export default async function HeroPortalHome() {
     if (inUse && !casting) work = await loadHeroShortcutData(inUse, null);
   }
 
-  // 05/11: "Sua vez" no topo — o próximo passo de cada oportunidade que é ação do herói (leitura em lote)
+  // 05/11: "Sua vez" no topo — o próximo passo de cada oportunidade que é ação do Hero (leitura em lote)
   const turns = casting ? await heroTurns() : null;
 
   const quick = [
@@ -73,7 +73,7 @@ export default async function HeroPortalHome() {
       {casting ? <AgencyHeader talent={talent.talent} /> : <PageHeader eyebrow={t("eyebrow")} title={heroName ?? t("title")} description={t("intro")} />}
       {turns?.available ? <TurnCard party="hero" items={turns.items} /> : null}
       {hero && !hasHeroPage ? (
-        // sem herói ainda (ex.: convite aceito sem herói): o herói nasce na Equipe do portal, pendente de aprovação
+        // sem Hero ainda (ex.: convite aceito sem Hero): o Hero nasce na Equipe do portal, pendente de aprovação
         <Link href="/heroi/equipe" className={QUICK} data-testid="hero-portal-create">
           <Users className="size-5 shrink-0 text-accent-text" aria-hidden="true" />
           <span className="flex min-w-0 flex-1 flex-col">

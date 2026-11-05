@@ -25,9 +25,9 @@ type Props = {
   brands: Option[];
   /** Situação: nova, rascunho ou aberta (aberta só salva; nova e rascunho salvam rascunho ou publicam). */
   status?: "new" | "draft" | "open";
-  /** Já há respostas: o herói não muda (as marcas responderam a ele). */
+  /** Já há respostas: o Hero não muda (as marcas responderam a ele). */
   heroLocked?: boolean;
-  /** Busca de heróis (padrão: servidor); os testes de tela trocam por dados de exemplo. */
+  /** Busca de Heros (padrão: servidor); os testes de tela trocam por dados de exemplo. */
   search?: (input: { q: string; offset?: number }) => Promise<OpportunityHeroSearchResult>;
   /** Adm da agência: vê e grava o valor pedido das cotas (gestor cria sem valor; o Adm completa). */
   canValues: boolean;
@@ -35,7 +35,7 @@ type Props = {
   lockedTierIds?: string[];
 };
 
-// Oportunidade de patrocínio (0085), formulário da agência (gestor+): herói (0095), data/hora ou período, local,
+// Oportunidade de patrocínio (0085), formulário da agência (gestor+): Hero (0095), data/hora ou período, local,
 // descrição, alcance, redes, prazo para responder e quem vê. 0088: cotas (1 a 3: nome, valor pedido só para o Adm,
 // contrapartidas uma por linha e quantas marcas levam) e o público do evento (mesmos campos da campanha). Mobile
 // first: um campo por linha no celular, botões grandes.

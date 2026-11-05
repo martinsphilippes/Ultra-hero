@@ -1,21 +1,21 @@
 // "Próximo passo" da campanha (pedido do responsável, 04/11: "tem que ter como resolver fácil"). Lógica pura, sem
 // banco: dado o estado de um negócio com marca (etapa/resultado, negociação 0106, condições de pagamento 0108, termos e
-// aceites, contratação, entregas por herói), diz para CADA lado (agência, marca, herói) o que ele faz agora — ou por
-// quem ele está esperando. As três telas (ficha do negócio, campanha da marca, oportunidade do herói) usam a mesma
+// aceites, contratação, entregas por Hero), diz para CADA lado (agência, marca, Hero) o que ele faz agora — ou por
+// quem ele está esperando. As três telas (ficha do negócio, campanha da marca, oportunidade do Hero) usam a mesma
 // regra, então ninguém vê "Em criação" de um lado e "Nada pendente" do outro sem explicação.
 //
 // Decisões (sem perguntar ao responsável):
 //   • Ordem do fluxo: proposta (negociação 0106 → elenco e consulta → confirmação pelo Adm) → termos (condições de
-//     pagamento → envio → aceite da marca e de cada herói, em paralelo) → contratação (gestor confirma) → produção
-//     (herói cria e envia) → aprovação (marca aprova ou pede ajuste) → publicação (herói publica e envia comprovante;
+//     pagamento → envio → aceite da marca e de cada Hero, em paralelo) → contratação (gestor confirma) → produção
+//     (Hero cria e envia) → aprovação (marca aprova ou pede ajuste) → publicação (Hero publica e envia comprovante;
 //     agência conclui a entrega) → concluída (gestor encerra como ganho).
 //   • A vez de cada lado respeita o papel: proposta e condições só o Adm; termos, contratação e encerramento o gestor+;
 //     aceite dos termos só o dono da marca; quem não pode agir vê "aguardando o Adm/gestor/dono".
 //   • Negociação aberta com a vez da marca segura a confirmação (confirmar fecha a negociação).
-//   • Em produção, a pendência mostrada é a entrega com o prazo mais próximo (sem prazo vai por último); o herói vê só
+//   • Em produção, a pendência mostrada é a entrega com o prazo mais próximo (sem prazo vai por último); o Hero vê só
 //     as dele. Comprovante (publicada → comprovada) não tem prazo próprio.
 //   • A barra de progresso marca a fase da entrega MAIS atrasada no fluxo (ainda em criação > aprovação > publicação).
-//   • Visões parciais: a marca e o herói não leem tudo (ex.: o herói não sabe quem mais aceitou). Campo desconhecido
+//   • Visões parciais: a marca e o Hero não leem tudo (ex.: o Hero não sabe quem mais aceitou). Campo desconhecido
 //     vem como null e a mensagem cai para a forma genérica ("aguardando a agência confirmar a contratação").
 import { deliverableDeadline } from "@/lib/today/logic";
 import { stageIndex, type DealOutcome, type DealStage } from "./stages";
@@ -124,7 +124,7 @@ const wait = (code: NextWait, deadline: string | null = null, params: NextParams
 const done = (code: NextDone, target: FlowTarget | null = null): NextStep => ({ mode: "done", code, target, deadline: null, params: {} });
 
 const OPEN_DONE = new Set<DeliverableStatus>(["done", "cancelled"]);
-/** Vez do herói: criar/ajustar, publicar, comprovar. */
+/** Vez do Hero: criar/ajustar, publicar, comprovar. */
 const HERO_TURN = new Set<DeliverableStatus>(["planned", "in_production", "changes_requested", "approved", "published"]);
 const CREATING = new Set<DeliverableStatus>(["planned", "in_production", "changes_requested"]);
 const PUBLISHING = new Set<DeliverableStatus>(["approved", "published", "proof_submitted"]);
@@ -335,7 +335,7 @@ export function flowDeliverables(list: DelivLike[] | null | undefined): FlowDeli
 const ACTIVE_HERO = new Set(["consulted", "interested", "talk_requested", "proposed", "contracted"]);
 export const isActiveHero = (status: string) => ACTIVE_HERO.has(status);
 
-/** Etapa aproximada para quem não lê a etapa (marca antes da execução; herói antes da contratação). */
+/** Etapa aproximada para quem não lê a etapa (marca antes da execução; Hero antes da contratação). */
 export function stageFromBrandStatus(status: string): { stage: DealStage; outcome: DealOutcome | null } {
   if (status === "done") return { stage: "closed", outcome: "won" };
   if (status === "cancelled") return { stage: "closed", outcome: "cancelled" };

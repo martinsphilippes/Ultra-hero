@@ -2,13 +2,13 @@
 -- Groscove Ultra · 0075 · Blocos por pilar no Novo post
 --   Decisão do responsável (01/11/2026): o pilar escolhido no Novo post define o que mais o post
 --   carrega. Rotina: só foto/vídeo, título e legenda. Treino: explicação e passos "a fazer", que cada
---   seguidor marca para si. Nutrição: receita já cadastrada do herói, produto da loja ou prato livre.
+--   seguidor marca para si. Nutrição: receita já cadastrada do Hero, produto da loja ou prato livre.
 --   Gastronomia: cardápio do chef (1 a 5 opções, cada uma podendo apontar para uma receita).
 --
 --   * post_blocks: um bloco por tipo por conteúdo (data jsonb com forma e tamanhos conferidos por
 --     post_block_data_ok). Leitura segue a regra única de acesso ao conteúdo (can_access_content);
---     escrita só pela RPC post_block_set (dono do conteúdo, ou o admin pelo herói: my_creator_id).
---     Referências (receita do próprio herói publicada; produto publicado) são conferidas na RPC.
+--     escrita só pela RPC post_block_set (dono do conteúdo, ou o admin pelo Hero: my_creator_id).
+--     Referências (receita do próprio Hero publicada; produto publicado) são conferidas na RPC.
 --   * post_step_checks: marcação por pessoa dos passos do treino (RPC post_step_toggle; a pessoa
 --     lê só as próprias). Some junto com a conta e com o conteúdo.
 -- Regras: nada de drop/truncate; search_path fixo; grants explícitos; nenhuma função nova com
@@ -120,10 +120,10 @@ do $$ begin
   end if;
 end $$;
 
--- ---------------------------------------------------------------- 3) gravar o bloco (dono do conteúdo; admin ou agência pelo herói, via my_creator_id)
+-- ---------------------------------------------------------------- 3) gravar o bloco (dono do conteúdo; admin ou agência pelo Hero, via my_creator_id)
 -- Um post tem um pilar, logo um bloco: gravar um tipo apaga os outros. p_data nulo apaga o tipo;
 -- p_kind nulo apaga todos (post que volta para Rotina depois de uma tentativa com bloco). Receita:
--- conteúdo do tipo receita, do mesmo herói, no ar. Produto: publicado e sem moderação pendente.
+-- conteúdo do tipo receita, do mesmo Hero, no ar. Produto: publicado e sem moderação pendente.
 -- Conteúdo arquivado não recebe bloco.
 create or replace function public.post_block_set(p_content uuid, p_kind text, p_data jsonb)
 returns void language plpgsql security definer set search_path = public as $$
@@ -134,7 +134,7 @@ begin
   if p_kind is null and p_data is not null then raise exception 'invalid_block'; end if;
   select * into c from public.content where id = p_content for update;
   if not found then raise exception 'not_found'; end if;
-  -- coalesce: sem herói ligado my_creator_id() é nulo, e "nulo = x" não pode virar "pode"
+  -- coalesce: sem Hero ligado my_creator_id() é nulo, e "nulo = x" não pode virar "pode"
   if not (public.is_admin() or coalesce(c.creator_id = public.my_creator_id(), false)) then
     raise exception 'forbidden' using errcode = '42501';
   end if;

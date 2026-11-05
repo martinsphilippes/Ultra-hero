@@ -15,7 +15,7 @@ import { FeedPost } from "./FeedPost";
 type Props = { tab: FeedTab; follow: FollowContext };
 
 // Início = feed infinito, post a post. "Todos": a ordem do Explorar (igual para todos); "Seguindo":
-// só os heróis que a pessoa segue, do mais recente ao mais antigo.
+// só os Heros que a pessoa segue, do mais recente ao mais antigo.
 export async function HomeFeed({ tab, follow }: Props) {
   const [t, tf, locale] = await Promise.all([getTranslations("discover.home.feed"), getTranslations("follows.feed"), getLocale()]);
   const seed = daySeed();

@@ -15,7 +15,7 @@ import { memberOption } from "@/lib/ui/entity";
 type Manager = { userId: string; name: string; role?: string | null; jobTitle?: string | null };
 type PageValues = { slug: string; pillars: Pillar[]; headline: string; bio: string };
 
-// Um só "Novo herói" (0112): a pessoa (ficha do casting) com e-mail e celular obrigatórios — o acesso nasce junto
+// Um só "Novo Hero" (0112): a pessoa (ficha do casting) com e-mail e celular obrigatórios — o acesso nasce junto
 // (conta existente ligada na hora ou convite no e-mail) — gestor, segmentos e, se quiser, a página pública já ligada.
 export function NewHeroForm({ managers, segments }: { managers: Manager[]; segments: { id: string; name: string }[] }) {
   const t = useTranslations("agency.casting.newHero");

@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { RecipeCard } from "../catalog/RecipeCard";
 import { RecipeCardActions } from "./RecipeCardActions";
 
-// Cards da Alimentação do herói (0051): assinatura com o herói da vitrine e as ações (Fazer, Lista de
+// Cards da Alimentação do Hero (0051): assinatura com o Hero da vitrine e as ações (Fazer, Lista de
 // compras, Comprar pronto). Usado na primeira página (servidor) e no "carregar mais" (action).
 
 export type ShowcaseHeroRef = ShowcasePerson & { id: string };

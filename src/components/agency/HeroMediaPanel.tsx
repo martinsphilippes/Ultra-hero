@@ -16,7 +16,7 @@ type Props = {
   avatarHint: string;
 };
 
-// Foto e capa do herói escolhido pela agência (0070): os mesmos seletores do perfil, com as ações do herói.
+// Foto e capa do Hero escolhido pela agência (0070): os mesmos seletores do perfil, com as ações do Hero.
 export function HeroMediaPanel({ name, avatarUrl, coverUrl, avatarState, coverState, avatarHint }: Props) {
   const [avatar, setAvatar] = useState(avatarUrl);
   const [cover, setCover] = useState(coverUrl);

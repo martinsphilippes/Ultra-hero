@@ -1,6 +1,6 @@
 -- =============================================================================
 -- Ultra Hero · 0057 · Colecionáveis (lances ao vivo de itens assinados) — sem pagamento online
---   Itens raros assinados pelos heróis vão a lance com tempo marcado. Na UI o nome é sempre
+--   Itens raros assinados pelos Heros vão a lance com tempo marcado. Na UI o nome é sempre
 --   "Colecionáveis" (nunca "leilão"); "lance" e "arrematar" aparecem dentro da página.
 --   Docs: docs/decisions/colecionaveis.md.
 --
@@ -20,7 +20,7 @@
 --   dos configurados; novo valor = preço atual + incremento (o 1º lance = preço inicial + incremento);
 --   quem já está vencendo não cobre o próprio lance; ≤ 1 lance a cada 2 s por pessoa e item;
 --   lance nos 2 últimos minutos leva o fim para now() + 2 min (anti-sniping); conta suspensa,
---   admin e o próprio herói do item não dão lance.
+--   admin e o próprio Hero do item não dão lance.
 --   Encerramento por tempo: a fase é calculada na leitura (collectible_phase); collectible_finalize
 --   grava o resultado de forma idempotente (chamado ao abrir a página e pela rotina diária).
 --   Não há pagamento nem pedido: é uma dinâmica. A equipe entra em contato com o vencedor e marca

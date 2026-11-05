@@ -6,7 +6,7 @@ import type { ActionResult } from "@/components/editors/types";
 import { failFrom } from "../_lib/action-utils";
 import { creatorActionContext } from "../_lib/creator-action";
 
-// Sugestão de vínculo conteúdo ↔ produto em nome do herói: desde a 0045 só o admin, pelo herói
+// Sugestão de vínculo conteúdo ↔ produto em nome do Hero: desde a 0045 só o admin, pelo Hero
 // escolhido. O admin valida; mudanças significativas no produto suspendem vínculos validados.
 
 export type ProductHit = {
@@ -51,7 +51,7 @@ export async function suggestLink(input: { contentId: string; productId: string;
   const ctx = await creatorActionContext();
   if (!ctx.ok) return ctx;
   const { supabase, creatorId, userId } = ctx;
-  // só conteúdo do herói escolhido (o admin enxerga todos)
+  // só conteúdo do Hero escolhido (o admin enxerga todos)
   const { data: content } = await supabase.from("content").select("creator_id").eq("id", parsed.data.contentId).maybeSingle();
   if (!content || content.creator_id !== creatorId) return { ok: false, error: "forbidden" };
   const { error } = await supabase.from("content_product_links").insert({
@@ -75,7 +75,7 @@ export async function deleteLink(input: { id: string }): Promise<ActionResult> {
   if (!parsed.success) return { ok: false, error: "invalid_input" };
   const ctx = await creatorActionContext();
   if (!ctx.ok) return ctx;
-  // só sugestões ainda "sugeridas" do herói escolhido (o admin enxerga todas)
+  // só sugestões ainda "sugeridas" do Hero escolhido (o admin enxerga todas)
   const { error, count } = await ctx.supabase
     .from("content_product_links")
     .delete({ count: "exact" })

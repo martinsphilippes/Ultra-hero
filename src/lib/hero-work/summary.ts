@@ -9,12 +9,12 @@ import { dueThisMonth, earningsDueThisMonth, effectiveStatus } from "./finance";
 import { heroRights } from "./rules";
 import { listOpenServices, listServiceDates, listUpcomingHeroEvents } from "./server";
 
-// Resumo do herói no Perfil (0094): próximo compromisso e "a receber este mês". Para o herói com agência, vem do
-// escritório (agenda e ganhos do casting; só o cachê do creator); para o independente, das tabelas do próprio herói.
+// Resumo do Hero no Perfil (0094): próximo compromisso e "a receber este mês". Para o Hero com agência, vem do
+// escritório (agenda e ganhos do casting; só o cachê do creator); para o independente, das tabelas do próprio Hero.
 // A equipe vê só a agenda: nada de valores para quem não é titular.
 
 export type HeroShortcutData = {
-  /** O herói em uso é o do casting (a agenda e os ganhos da agência aparecem junto, 0097). */
+  /** O Hero em uso é o do casting (a agenda e os ganhos da agência aparecem junto, 0097). */
   hasAgency: boolean;
   canSeeFinance: boolean;
   next: { title: string; startsAt: string; allDay: boolean } | null;

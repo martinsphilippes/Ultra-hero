@@ -65,7 +65,7 @@ export default async function AdminProgramVersionPage({ params }: Params) {
       .order("created_at", { ascending: false }),
     // conceito à parte: sem a 0048 no banco o painel mostra o aviso em vez de quebrar a página
     conceptColumnSupported(supabase).then(async (ok) => (ok ? await supabase.from("program_versions").select("concept").eq("id", versionId).maybeSingle() : null)),
-    // herói do programa: as etapas só podem ser conteúdos dele (0052)
+    // Hero do programa: as etapas só podem ser conteúdos dele (0052)
     supabase.from("programs").select("creator:creator_profiles(id, name)").eq("id", id).maybeSingle(),
   ]);
   const version = (versionRes.data as unknown as Version | null) ?? null;

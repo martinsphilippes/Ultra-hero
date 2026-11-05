@@ -15,7 +15,7 @@
     "hint": "Reveja a apresentação de cada área.",
     "areas": {
       "app": "O app",
-      "heroi": "Portal do Herói",
+      "heroi": "Portal do Hero",
       "marca": "Portal da Marca",
       "agencia": "Portal da Agência"
     },
@@ -27,7 +27,7 @@
       "title": "Boas-vindas ao Groscove Ultra",
       "steps": {
         "heroes": {
-          "title": "Heróis",
+          "title": "Heros",
           "body": "Siga atletas, chefs e especialistas e veja de perto como eles vivem."
         },
         "social": {
@@ -40,12 +40,12 @@
         },
         "shop": {
           "title": "Comprar",
-          "body": "Loja e colecionáveis assinados pelos heróis chegam em breve."
+          "body": "Loja e colecionáveis assinados pelos Heros chegam em breve."
         }
       }
     },
     "heroi": {
-      "title": "Boas-vindas ao Portal do Herói",
+      "title": "Boas-vindas ao Portal do Hero",
       "steps": {
         "opportunities": {
           "title": "Oportunidades",
@@ -77,8 +77,8 @@
           "body": "Peça uma campanha com objetivo, verba e datas."
         },
         "hire": {
-          "title": "Como contratar heróis",
-          "body": "Escolha heróis no catálogo; a agência cuida da negociação."
+          "title": "Como contratar Heros",
+          "body": "Escolha Heros no catálogo; a agência cuida da negociação."
         },
         "approvals": {
           "title": "Aprovações",
@@ -99,7 +99,7 @@
       "steps": {
         "casting": {
           "title": "Casting",
-          "body": "Seus heróis com media kit, redes e disponibilidade."
+          "body": "Seus Heros com media kit, redes e disponibilidade."
         },
         "pipeline": {
           "title": "Pipeline e negócios",
@@ -115,7 +115,7 @@
         },
         "room": {
           "title": "Sala do projeto e mensagens",
-          "body": "Marca, heróis e equipe no mesmo lugar, cada um no seu canal."
+          "body": "Marca, Heros e equipe no mesmo lugar, cada um no seu canal."
         }
       }
     }

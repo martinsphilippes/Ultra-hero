@@ -1,19 +1,19 @@
 -- =============================================================================
--- Groscove Ultra · 0056 · Seguir heróis e comparar "Você vs Hero"
---   Pedido do responsável: o consumidor segue heróis (Início, aba Hero e página do herói), gere os
+-- Groscove Ultra · 0056 · Seguir Heros e comparar "Você vs Hero"
+--   Pedido do responsável: o consumidor segue Heros (Início, aba Hero e página do Hero), gere os
 --   que segue no Perfil e escolhe UM deles para comparar os próprios indicadores (sono, passos,
 --   treinos, carga, dias ativos, conteúdos e receitas). Ver docs/decisions/seguir-e-comparar.md.
 --
 --   "Seguir" = public.hero_favorites (0054): a mesma relação que já dispara o push de post novo.
 --   Nada é duplicado; esta migração só acrescenta o que faltava:
---   1) profiles.compare_creator_id: o "Hero de comparação". Só aceita herói que a pessoa segue
+--   1) profiles.compare_creator_id: o "Hero de comparação". Só aceita Hero que a pessoa segue
 --      (gatilho) e é limpo quando ela deixa de seguir (gatilho em hero_favorites).
---   2) creator_follower_counts (creator_id, followers): contagem pública por herói, mantida por
+--   2) creator_follower_counts (creator_id, followers): contagem pública por Hero, mantida por
 --      gatilho security definer, sem identidades (a RLS de hero_favorites continua só-dono).
 --   3) creator_reference_metrics (creator_id, metric_key, value, unit, source): "Referência do
---      herói" definida pela EQUIPE (não é dado medido de ninguém). Leitura pública para herói ativo;
+--      Hero" definida pela EQUIPE (não é dado medido de ninguém). Leitura pública para Hero ativo;
 --      escrita só do admin (RLS), auditada em admin_audit. source = 'reference' por enquanto (se um
---      dia o herói ligar um relógio de verdade, a fonte muda sem trocar a tabela).
+--      dia o Hero ligar um relógio de verdade, a fonte muda sem trocar a tabela).
 --   4) Conta anonimizada (LGPD) deixa de seguir (e perde o Hero de comparação).
 --
 -- Embeds da API (PGRST201, ver 0055): profiles ganha UMA FK para creator_profiles (não havia caminho
@@ -32,7 +32,7 @@ drop trigger if exists trg_a_profiles_guard on public.profiles;
 create trigger trg_a_profiles_guard before update on public.profiles
   for each row execute function public.guard_protected_columns('{display_name,avatar_url,locale,theme,timezone,onboarding_completed,full_name,phone_e164,compare_creator_id}');
 
--- só um herói que a pessoa segue
+-- só um Hero que a pessoa segue
 create or replace function public.profiles_compare_requires_follow()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
@@ -65,7 +65,7 @@ create table if not exists public.creator_reference_metrics (
       'sleep_hours', 'steps_day', 'workouts_week', 'cardio_load_day', 'active_days_week', 'contents_week', 'recipes_week')),
   value numeric(10, 2) not null,
   unit text not null,
-  -- 'reference' = definida pela equipe; outras fontes (relógio do herói) entram depois
+  -- 'reference' = definida pela equipe; outras fontes (relógio do Hero) entram depois
   source text not null default 'reference' constraint creator_reference_metrics_source_check check (source in ('reference')),
   updated_by uuid references auth.users (id) on delete set null,
   created_at timestamptz not null default now(),
@@ -97,13 +97,13 @@ grant all on table public.creator_follower_counts, public.creator_reference_metr
 alter table public.creator_follower_counts enable row level security;
 alter table public.creator_reference_metrics enable row level security;
 
--- contagem: pública para herói ativo (o admin vê todas)
+-- contagem: pública para Hero ativo (o admin vê todas)
 drop policy if exists creator_follower_counts_select on public.creator_follower_counts;
 create policy creator_follower_counts_select on public.creator_follower_counts for select to anon, authenticated
   using (exists (select 1 from public.creator_profiles p where p.id = creator_follower_counts.creator_id and p.status = 'active')
          or (select public.is_admin()));
 
--- referências: leitura pública para herói ativo; escrita só do admin
+-- referências: leitura pública para Hero ativo; escrita só do admin
 drop policy if exists creator_reference_metrics_select on public.creator_reference_metrics;
 create policy creator_reference_metrics_select on public.creator_reference_metrics for select to anon, authenticated
   using (exists (select 1 from public.creator_profiles p where p.id = creator_reference_metrics.creator_id and p.status = 'active'));
@@ -156,7 +156,7 @@ create trigger trg_hero_favorites_forget_user after update of anonymized_at on p
   execute function public.hero_favorites_forget_user();
 
 -- ---------------------------------------------------------------- 8) auditoria das referências
--- resource_type 'creator_reference', resource_id = id do herói (trilha por herói).
+-- resource_type 'creator_reference', resource_id = id do Hero (trilha por Hero).
 create or replace function public.creator_reference_metrics_audit()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
@@ -176,7 +176,7 @@ create trigger trg_audit_creator_reference_metrics after insert or update or del
   for each row execute function public.creator_reference_metrics_audit();
 
 -- ---------------------------------------------------------------- 9) seed: referências de demonstração
--- Valores editáveis pelo admin (não são dados medidos dos heróis). Só entra para herói que ainda não
+-- Valores editáveis pelo admin (não são dados medidos dos Heros). Só entra para Hero que ainda não
 -- tem nenhuma referência e cujo admin nunca mexeu nelas (sem trilha em admin_audit).
 insert into public.creator_reference_metrics (creator_id, metric_key, value, unit)
 select cp.id, m.metric_key, m.value, m.unit

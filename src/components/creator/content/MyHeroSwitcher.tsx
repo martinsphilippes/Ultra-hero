@@ -9,8 +9,8 @@ import { heroOption } from "@/lib/ui/entity";
 
 export type HeroChoice = { id: string; name: string; slug: string; avatar_url: string | null };
 
-// Creator em mais de uma equipe de herói (0092): um seletor simples. Trocar grava a escolha (cookie revalidado no
-// servidor e no banco) e recarrega a tela já pelo herói novo. Com um herói só, não aparece.
+// Creator em mais de uma equipe de Hero (0092): um seletor simples. Trocar grava a escolha (cookie revalidado no
+// servidor e no banco) e recarrega a tela já pelo Hero novo. Com um Hero só, não aparece.
 export function MyHeroSwitcher({ heroes, heroId }: { heroes: HeroChoice[]; heroId: string }) {
   const t = useTranslations("creator.newContent");
   const tp = useTranslations("pickers");

@@ -82,7 +82,7 @@ grant execute on function public.admin_create_program_version(uuid, uuid) to aut
 
 -- ---------------------------------------------------------------- textos (dados de demonstração)
 -- Conceito em pt-BR para os 24 programas do seed (0008 e 0035) e em en/es para os 16 que já têm tradução.
--- Chave = slug do programa + versão ATUAL (não depende do herói: programa arquivado ou de herói oculto
+-- Chave = slug do programa + versão ATUAL (não depende do Hero: programa arquivado ou de Hero oculto
 -- também recebe). Só preenche onde o conceito ainda é nulo: reexecutar não sobrescreve edição do admin.
 drop table if exists seed_concept;
 create temporary table seed_concept (slug text, locale text, concept jsonb);

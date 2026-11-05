@@ -6,7 +6,7 @@ import { useTransition } from "react";
 import { Button, useToast } from "@/components/ui";
 import { publishSponsorshipAction } from "@/lib/finance/actions";
 
-// Publica a marca como patrocinadora do herói ligado ao creator (gestor+, ação humana; nunca automática).
+// Publica a marca como patrocinadora do Hero ligado ao creator (gestor+, ação humana; nunca automática).
 export function SponsorshipButton({ dealTalentId, dealId, name }: { dealTalentId: string; dealId: string; name: string }) {
   const t = useTranslations("agency.sponsorship");
   const { toast } = useToast();

@@ -57,7 +57,7 @@ export async function loadCulture(opts: { territory: Territory | null; viewer: C
   };
 }
 
-/** Estado do interesse da marca/herói nos eventos mostrados (a RLS só devolve o próprio). */
+/** Estado do interesse da marca/Hero nos eventos mostrados (a RLS só devolve o próprio). */
 async function myInterests(viewer: CultureViewer, eventIds: string[]): Promise<Map<string, InterestState>> {
   const out = new Map<string, InterestState>();
   if (viewer.party === null || eventIds.length === 0) return out;

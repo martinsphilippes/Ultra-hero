@@ -103,7 +103,7 @@ describe("cópia local do rascunho", () => {
   const local = { ...complete(), title: "Panqueca editada offline" };
   it("chave por receita e formato versionado; lixo é ignorado", () => {
     expect(draftStorageKey("c1", "abc")).toBe("uh-recipe-draft:c1:abc");
-    // receita nova: cada herói tem a sua cópia (aparelho compartilhado não vaza o rascunho)
+    // receita nova: cada Hero tem a sua cópia (aparelho compartilhado não vaza o rascunho)
     expect(draftStorageKey("heroi-a", "new")).not.toBe(draftStorageKey("heroi-b", "new"));
     const raw = serializeDraft(local, "2026-10-22T10:00:00Z", 1_000);
     expect(parseStoredDraft(raw)).toMatchObject({ v: 1, savedAt: 1_000, baseUpdatedAt: "2026-10-22T10:00:00Z" });

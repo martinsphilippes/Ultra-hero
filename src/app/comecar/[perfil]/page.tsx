@@ -34,7 +34,7 @@ export default async function StartProfilePage({ params }: { params: Params }) {
   const open = (Array.isArray(data) ? data : []).some((x) => (x as { kind?: string }).kind === profile);
   if (open) redirect(PROFILE_ONBOARDING_PATH);
 
-  // agência e herói: um por conta; marca: dá para ser Equipe de outra, mas Dono só de uma (o banco confere)
+  // agência e Hero: um por conta; marca: dá para ser Equipe de outra, mas Dono só de uma (o banco confere)
   const roleNames = roles.map((r) => r.role as string);
   const current = roleNames.includes("admin") ? null : businessKindOfRoles(roleNames);
   if (current && current !== profile) {

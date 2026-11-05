@@ -14,8 +14,8 @@ import { loadDeal } from "./_lib";
 type Props = { children: ReactNode; params: Promise<{ id: string }> };
 
 // Ficha do negócio com abas por rota (Visão geral, Roteiro, Creators, Entregas, Conversa, Documentos).
-// 0110: abas Sala e Fechamento. 0107: aba Roteiro (serviço, etapas por setor e prazos em dias úteis); negócio só do herói (sem marca) esconde as abas
-// que dependem da marca (heróis do elenco, termos, entregas e conversa com a marca).
+// 0110: abas Sala e Fechamento. 0107: aba Roteiro (serviço, etapas por setor e prazos em dias úteis); negócio só do Hero (sem marca) esconde as abas
+// que dependem da marca (Heros do elenco, termos, entregas e conversa com a marca).
 export default async function DealLayout({ children, params }: Props) {
   const { id } = await params;
   const [{ deal, canEdit }, t, locale] = await Promise.all([loadDeal(id), getTranslations("agency.deal"), getLocale() as Promise<Locale>]);
@@ -40,7 +40,7 @@ export default async function DealLayout({ children, params }: Props) {
         description={
           <span className="flex flex-wrap items-center gap-2">
             <StageBadge stage={deal.stage} outcome={deal.outcome} size="md" />
-            {/* 04/11: herói cliente com "(cliente)"; heróis escalados (deal_talents) contados à parte */}
+            {/* 04/11: Hero cliente com "(cliente)"; Heros escalados (deal_talents) contados à parte */}
             <span className="text-fg" data-testid="deal-client">{dealClientLabel(t, deal.brand.name, deal.clientTalent?.name)}</span>
             {hasBrand ? (
               <span className="text-fg-muted" data-testid="deal-cast-count">

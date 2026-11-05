@@ -27,7 +27,7 @@ const TZ = "America/Sao_Paulo";
 const UUID = "11111111-1111-4111-8111-111111111111";
 const base = {
   id: null,
-  // 0095: o herói (ficha do casting) e se publica
+  // 0095: o Hero (ficha do casting) e se publica
   hero: { kind: "talent" as const, talentId: UUID, creatorId: null, name: "Ana", slug: null, avatarUrl: null, headline: null, pillars: [], consent: "active" as const, profile: "", email: "" },
   publish: true,
   title: "Maratona do Rio",

@@ -1,4 +1,4 @@
-// "A pagar" do herói-cliente e "a receber" da agência por herói-cliente (0111, D5): leitura das RPCs client_payments
+// "A pagar" do Hero-cliente e "a receber" da agência por Hero-cliente (0111, D5): leitura das RPCs client_payments
 // e agency_client_receivables (lógica pura, testável). Valores simulados em centavos; nada é cobrança real.
 
 export type ClientInstallment = { id: string; seq: number; amountCents: number; dueOn: string | null; status: "open" | "paid"; paidAt: string | null };

@@ -8,7 +8,7 @@
 -- Barreira de finalidade por GRANT (RN-15), não por convenção:
 --   * schema health fora da API (não entra em "Exposed schemas"); sem grant para anon,
 --     authenticated NEM service_role (a service_role ignora RLS e é usada pelo motor de
---     recomendação, admin e heróis) → qualquer select direto dá 42501;
+--     recomendação, admin e Heros) → qualquer select direto dá 42501;
 --   * escrita só pelo papel health_ingest (sem BYPASSRLS), usado apenas nas rotas de ingestão,
 --     OAuth e cron de wearables (src/lib/health/db.ts, server-only);
 --   * a pessoa lê e age por RPCs public.* security definer com search_path vazio, filtrando
@@ -191,7 +191,7 @@ Ao conectar um relógio, anel ou pulseira (Garmin, Oura, WHOOP ou Polar), você 
 
 O que lemos: só o que o aparelho mede sozinho, de forma automática ou num treino iniciado nele. Nunca lemos o que é digitado (água, alimentação, peso, humor, ciclo, esforço que você informa), funções médicas reguladas (ECG, ritmo irregular, apneia, pressão) nem rota de GPS.
 
-Para quê: só para mostrar a você o Hoje, os detalhes e as tendências. Não usamos para anúncios, venda ou recomendação de produtos, estatísticas de uso, inteligência artificial externa, heróis ou fornecedores, e não compartilhamos com ninguém.
+Para quê: só para mostrar a você o Hoje, os detalhes e as tendências. Não usamos para anúncios, venda ou recomendação de produtos, estatísticas de uso, inteligência artificial externa, Heros ou fornecedores, e não compartilhamos com ninguém.
 
 Por quanto tempo: dados diários por até 13 meses; o que a marca nos envia em formato bruto, por até 7 dias (Garmin: 30 dias, para corrigir erros). Ao desconectar, retirar uma categoria ou retirar este consentimento, apagamos na hora. Se você desautorizar o Ultra Hero no app da marca e não reconectar, apagamos em 30 dias. Cópias de segurança somem em até 7 dias.
 

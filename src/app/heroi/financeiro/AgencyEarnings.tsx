@@ -8,8 +8,8 @@ import { EARNING_GROUPS, earningTotals, sortEarnings } from "@/lib/finance/earni
 import { myPayouts } from "@/lib/finance/queries";
 import { getTalentContext } from "@/lib/talent/server";
 
-// Ganhos do herói com a agência (0082): a receber (entregue, não pago), previsão (em produção) e pagos, com a
-// situação de cada pagamento e a nota fiscal. Só o cachê do herói (nunca o valor da marca nem a comissão). Valores
+// Ganhos do Hero com a agência (0082): a receber (entregue, não pago), previsão (em produção) e pagos, com a
+// situação de cada pagamento e a nota fiscal. Só o cachê do Hero (nunca o valor da marca nem a comissão). Valores
 // simulados; o app nativo esconde os valores (regra da 0072).
 export async function AgencyEarnings() {
   const ctx = await getTalentContext();

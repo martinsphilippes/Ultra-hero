@@ -12,7 +12,7 @@ type Client = SupabaseClient<Database>;
 export type MyFollows = {
   /** hero_favorites existe e foi lido. */
   available: boolean;
-  /** Ids dos heróis seguidos, do mais recente ao mais antigo. */
+  /** Ids dos Heros seguidos, do mais recente ao mais antigo. */
   ids: string[];
 };
 
@@ -41,7 +41,7 @@ export async function loadCompareCreatorId(supabase: Client, userId: string): Pr
   }
 }
 
-/** Número de seguidores de um herói (público, sem identidades). null = indisponível. */
+/** Número de seguidores de um Hero (público, sem identidades). null = indisponível. */
 export async function loadFollowerCount(supabase: Client, creatorId: string): Promise<number | null> {
   try {
     const { data, error } = await supabase.from("creator_follower_counts").select("followers").eq("creator_id", creatorId).maybeSingle();
@@ -54,7 +54,7 @@ export async function loadFollowerCount(supabase: Client, creatorId: string): Pr
 
 export type ReferenceRow = { key: CompareMetricKey; value: number; unit: string; updatedAt: string | null };
 
-/** Referências de comparação de um herói (definidas pela equipe). null = indisponível. */
+/** Referências de comparação de um Hero (definidas pela equipe). null = indisponível. */
 export async function loadReferences(supabase: Client, creatorId: string): Promise<ReferenceRow[] | null> {
   try {
     const { data, error } = await supabase.from("creator_reference_metrics").select("metric_key, value, unit, updated_at").eq("creator_id", creatorId);
@@ -69,7 +69,7 @@ export async function loadReferences(supabase: Client, creatorId: string): Promi
 
 export type FollowedHero = { id: string; slug: string; name: string; headline: string | null; avatarUrl: string | null };
 
-/** Heróis seguidos com nome e foto (herói suspenso some pela RLS de creator_profiles). null = indisponível. */
+/** Heros seguidos com nome e foto (Hero suspenso some pela RLS de creator_profiles). null = indisponível. */
 export async function loadFollowedHeroes(supabase: Client, userId: string): Promise<FollowedHero[] | null> {
   try {
     const { data, error } = await supabase

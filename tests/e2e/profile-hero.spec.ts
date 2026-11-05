@@ -2,9 +2,9 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { loginAs } from "./helpers/login";
 
-// Perfil do herói no topo da tela Perfil (/profile), no formato do Instagram: cabeçalho público (foto,
+// Perfil do Hero no topo da tela Perfil (/profile), no formato do Instagram: cabeçalho público (foto,
 // nome, selo, bio recolhida; os Portais, quando a conta tem algum, ficam acima de tudo), "Editar perfil" / "Ver página pública" e o editor
-// recolhido na mesma tela. Um avatar só para o herói, só com foto real (sem foto, as iniciais), e a
+// recolhido na mesma tela. Um avatar só para o Hero, só com foto real (sem foto, as iniciais), e a
 // capa só com foto real; nenhuma ilustração. SÓ LEITURA: o banco dos E2E é o remoto; nada é salvo aqui.
 
 async function seriousViolations(page: Page, scope: string) {
@@ -26,8 +26,8 @@ async function expectFocusVisible(target: Locator) {
   expect(await target.evaluate((el) => getComputedStyle(el).outlineStyle)).not.toBe("none");
 }
 
-test.describe("perfil do herói no topo do /profile", () => {
-  test("herói: cabeçalho público no topo, editor fechado por padrão, abre e fecha com o foco certo, um avatar só", async ({ page }, testInfo) => {
+test.describe("perfil do Hero no topo do /profile", () => {
+  test("Hero: cabeçalho público no topo, editor fechado por padrão, abre e fecha com o foco certo, um avatar só", async ({ page }, testInfo) => {
     await loginAs(page, "creator");
     if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/profile");
@@ -39,14 +39,14 @@ test.describe("perfil do herói no topo do /profile", () => {
     const publicLink = page.getByRole("link", { name: "Ver página pública" });
     const editor = page.locator("#editar-perfil");
 
-    // cabeçalho: avatar, nome (h2) e bio recolhida; herói real (0044) não tem selo de personagem fictício
+    // cabeçalho: avatar, nome (h2) e bio recolhida; Hero real (0044) não tem selo de personagem fictício
     await expect(header).toBeVisible();
     await expect(header).toHaveAttribute("id", "perfil-publico");
     await expect(header.getByRole("heading", { level: 2 })).toBeVisible();
     await expect(header.getByText("Perfil ilustrativo", { exact: true })).toHaveCount(0);
     await expect(header.getByTestId("hero-bio")).toBeVisible();
     await expect(main.getByRole("heading", { level: 1, name: "Perfil" })).toBeVisible();
-    // nenhum link antes do Novo post (o herói só posta; o resto do portal é da administração, 0045)
+    // nenhum link antes do Novo post (o Hero só posta; o resto do portal é da administração, 0045)
     await expect(header.locator("a")).toHaveCount(0);
     await expect(main.locator("a").first()).toHaveAttribute("data-testid", "hero-new-post");
     await expect(page.getByTestId("profile-portal-creator")).toHaveCount(0);
@@ -57,8 +57,8 @@ test.describe("perfil do herói no topo do /profile", () => {
     // sem as seções antigas de baixo: "Dados" e a visão geral repetiam nome e foto
     await expect(page.getByRole("heading", { name: "Dados", exact: true })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /Editar perfil/ })).toHaveCount(1);
-    // a seção antiga "Seu perfil de herói" saiu do meio da página
-    await expect(page.getByRole("heading", { name: "Seu perfil de herói" })).toHaveCount(0);
+    // a seção antiga "Seu perfil de Hero" saiu do meio da página
+    await expect(page.getByRole("heading", { name: "Seu perfil de Hero" })).toHaveCount(0);
 
     // dois botões lado a lado, alvos >= 44 px
     const [toggleBox, linkBox] = [(await toggle.boundingBox())!, (await publicLink.boundingBox())!];
@@ -73,7 +73,7 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(toggle).toHaveAttribute("aria-controls", "editar-perfil");
     await expect(editor).toBeHidden();
 
-    // "Sua conta" do herói, dentro do editor: nome, idioma e tema (o avatar é o do perfil público)
+    // "Sua conta" do Hero, dentro do editor: nome, idioma e tema (o avatar é o do perfil público)
     const data = page.locator("#dados");
     await expect(data.getByTestId("avatar-photo")).toHaveCount(0);
     await expect(data.locator('input[type="radio"][name="avatar"]')).toHaveCount(0);
@@ -145,7 +145,7 @@ test.describe("perfil do herói no topo do /profile", () => {
 
   // Um avatar só e só foto real: o mesmo rosto (a foto ou, sem foto, as iniciais) no cabeçalho, no
   // menu, na prévia do editor e na página pública. Compara a imagem de cada lugar, sem o otimizador.
-  test("herói: o mesmo avatar (foto real ou iniciais) no cabeçalho, no menu, na prévia do editor e na página pública", async ({ page }) => {
+  test("Hero: o mesmo avatar (foto real ou iniciais) no cabeçalho, no menu, na prévia do editor e na página pública", async ({ page }) => {
     await loginAs(page, "creator");
     await page.goto("/profile");
     await page.waitForLoadState("networkidle");
@@ -189,18 +189,18 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(page.locator("#editar-perfil").getByTestId("chef-profile")).toBeVisible();
   });
 
-  test("o herói não tem mais painel: /heroi volta ao Perfil; o Novo post não tem menu nem Meu perfil", async ({ page }) => {
+  test("o Hero não tem mais painel: /heroi volta ao Perfil; o Novo post não tem menu nem Meu perfil", async ({ page }) => {
     await loginAs(page, "creator");
     await page.goto("/heroi");
     await expect(page).toHaveURL(/\/profile$/);
     await page.goto("/heroi/post/novo");
     await expect(page.locator("main").getByText("Meu perfil")).toHaveCount(0);
     await expect(page.locator('a[href="/heroi/pagina"]')).toHaveCount(0);
-    // o portal do herói não tem menu: o Novo post mora no Perfil
+    // o portal do Hero não tem menu: o Novo post mora no Perfil
     await expect(page.getByRole("navigation", { name: "Portal" })).toHaveCount(0);
   });
 
-  test("conta comum: topo com foto e nome, um só Editar perfil com nome, foto, idioma e tema; nada do herói", async ({ page }) => {
+  test("conta comum: topo com foto e nome, um só Editar perfil com nome, foto, idioma e tema; nada do Hero", async ({ page }) => {
     await loginAs(page, "free");
     await page.goto("/profile");
     const main = page.locator("main");
@@ -219,7 +219,7 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(data.getByLabel("Nome exibido")).toBeVisible();
     await expect(page.getByTestId("avatar-in-hero-editor")).toHaveCount(0);
     await expect(data.getByTestId("avatar-photo")).toBeVisible();
-    await expect(data.getByTestId("avatar-photo")).not.toContainText("página pública de herói");
+    await expect(data.getByTestId("avatar-photo")).not.toContainText("página pública de Hero");
     await expect(data.getByRole("radiogroup", { name: "Ilustrações" })).toHaveCount(0);
     await expect(data.locator('input[name="avatar"]')).toHaveCount(0);
     await page.waitForLoadState("networkidle");

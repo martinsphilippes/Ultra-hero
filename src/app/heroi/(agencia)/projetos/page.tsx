@@ -18,13 +18,13 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title") };
 }
 
-// Projetos em que o herói é cliente da agência (0107: assessoria, mentoria, business plan, vídeo…): andamento em dias
+// Projetos em que o Hero é cliente da agência (0107: assessoria, mentoria, business plan, vídeo…): andamento em dias
 // úteis e as etapas visíveis ao cliente (as internas da agência não aparecem).
 export default async function HeroProjectsPage() {
   const ctx = await getTalentContext();
   if (ctx.state !== "ok") return null;
   const [t, tr, list, rooms, payments] = await Promise.all([getTranslations("roadmap.hero"), getTranslations("projectRoom.mine"), getClientProjects(), getMyRooms(), clientPayments()]);
-  // 0110: salas dos projetos em que o herói é cliente ou foi contratado (abertas)
+  // 0110: salas dos projetos em que o Hero é cliente ou foi contratado (abertas)
   const myRooms = rooms.items.filter((r) => r.side === "talent");
   if (!list.available) {
     return (
@@ -44,7 +44,7 @@ export default async function HeroProjectsPage() {
           <MyRoomsList rooms={myRooms} portal="talent" />
         </section>
       ) : null}
-      {/* 0111: o que o herói paga à agência pelos projetos em que é cliente (registro simulado) */}
+      {/* 0111: o que o Hero paga à agência pelos projetos em que é cliente (registro simulado) */}
       <ClientPayments items={payments.items} side="talent" today={localDay(new Date(), "America/Sao_Paulo")} />
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-semibold text-fg">{t("title")}</h2>

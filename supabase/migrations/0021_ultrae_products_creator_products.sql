@@ -1,4 +1,4 @@
--- 0021: produtos Ultra.e Life (marca própria, com imagem real) e alocação direta produto↔herói.
+-- 0021: produtos Ultra.e Life (marca própria, com imagem real) e alocação direta produto↔Hero.
 -- Fonte dos dados: site da marca (ultra-branding-analysis.replit.app) e loja oficial, em 21/10/2026.
 -- As compras no Ultra Hero continuam simuladas; a loja oficial fica em attributes.external_url.
 -- Nota: o CHECK de product_categories.kind não é alterado (exigiria DROP, que o conector remoto
@@ -52,8 +52,8 @@ insert into public.products (id, seller_org_id, category_id, slug, title, descri
 on conflict (id) do update set title = excluded.title, description = excluded.description, image_url = excluded.image_url,
   price_cents_demo = excluded.price_cents_demo, attributes = excluded.attributes, food_info = excluded.food_info, category_id = excluded.category_id;
 
--- 4) Alocação direta produto↔herói ("produtos do herói"), além do vínculo por conteúdo que já existe.
--- Reusa link_status: suggested (herói sugere), validated (admin aprova, aparece), suspended/rejected (some).
+-- 4) Alocação direta produto↔Hero ("produtos do Hero"), além do vínculo por conteúdo que já existe.
+-- Reusa link_status: suggested (Hero sugere), validated (admin aprova, aparece), suspended/rejected (some).
 create table if not exists public.creator_products (
   id uuid primary key default gen_random_uuid(),
   creator_id uuid not null references public.creator_profiles (id) on delete cascade,
@@ -124,7 +124,7 @@ end $$;
 revoke execute on function public.admin_set_creator_product(uuid, uuid, public.link_status, text, int) from public, anon;
 grant execute on function public.admin_set_creator_product(uuid, uuid, public.link_status, text, int) to authenticated, service_role;
 
--- 5) Todos os heróis recebem os sete produtos, já validados (ordem fixa da vitrine da marca).
+-- 5) Todos os Heros recebem os sete produtos, já validados (ordem fixa da vitrine da marca).
 insert into public.creator_products (creator_id, product_id, status, sort_order, validated_at)
 select c.id, p.id, 'validated',
        case p.slug when 'e-water-citrus' then 10 when 'e-water-tangerina' then 20 when 'e-creatina-gummy' then 30 when 'e-creatina-po' then 40

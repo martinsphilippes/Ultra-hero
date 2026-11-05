@@ -7,7 +7,7 @@ import { useState, useTransition, type FormEvent } from "react";
 import { createMyHeroAction } from "@/app/heroi/equipe/actions";
 import { Button, FormField, Input } from "@/components/ui";
 
-// "Criar meu herói" (0091): o creator sem herói cria a página pública dele; ela nasce pendente e o admin
+// "Criar meu Hero" (0091): o creator sem Hero cria a página pública dele; ela nasce pendente e o admin
 // aprova antes de ir ao ar. A pessoa vira titular (pode montar a equipe depois).
 export function CreateMyHeroForm() {
   const t = useTranslations("invites.myHero");

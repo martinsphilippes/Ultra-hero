@@ -101,7 +101,7 @@ function leavingLink(event: MouseEvent): boolean {
   return url.pathname !== window.location.pathname || url.search !== window.location.search;
 }
 
-// Composer de post do herói, pensado para o celular: escolher → enviar e escrever → publicado.
+// Composer de post do Hero, pensado para o celular: escolher → enviar e escrever → publicado.
 // Vídeo: o envio (tus, direto para o Cloudflare) roda em segundo plano enquanto a pessoa escreve.
 // Foto (0043): reduzida no aparelho e enviada pelo servidor ao bucket post-photos; não depende do Stream.
 export function PostComposer({ configured, photoState, defaultPillar, blockOptions, blockHrefs, campaign = null }: Props) {

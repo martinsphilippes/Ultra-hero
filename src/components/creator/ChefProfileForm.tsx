@@ -20,7 +20,7 @@ type Props = {
 const STATUS_KEY = { none: "statusNone", pending: "statusPending", approved: "statusApproved", rejected: "statusRejected" } as const;
 
 // Especialidades (até 6, públicas) e pedido de credenciais (P7): o texto só aparece no perfil
-// depois da aprovação do admin, com o rótulo "Credenciais informadas pelo herói".
+// depois da aprovação do admin, com o rótulo "Credenciais informadas pelo Hero".
 export function ChefProfileForm({ specialties: initialSpecialties, request, status, readOnly = false }: Props) {
   const t = useTranslations("recipes.chef");
   const te = useTranslations("creator.errors");

@@ -175,7 +175,7 @@ describe("planejamento do roteiro (espelho de public.roadmap_recalc)", () => {
 });
 
 describe("cliente, serviço e formulário", () => {
-  it("cliente marca/herói/os dois e serviços que combinam", () => {
+  it("cliente marca/Hero/os dois e serviços que combinam", () => {
     expect(clientKindOf(true, false)).toBe("brand");
     expect(clientKindOf(false, true)).toBe("talent");
     expect(clientKindOf(true, true)).toBe("both");

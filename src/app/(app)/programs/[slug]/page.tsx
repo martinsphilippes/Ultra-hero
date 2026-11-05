@@ -178,7 +178,7 @@ export default async function ProgramPage({ params }: Params) {
   // Apoio (0059): produtos ligados (só onde o comércio vale) e profissionais sugeridos no programa.
   const hireEnv = await loadHireEnv();
   const commerceAllowed = nutritionProductsAllowed({ commerceEnabled: hireEnv.commerceEnabled, nativeApp: hireEnv.nativeApp });
-  // Marcas do herói e equipamentos recomendados (0062): links externos, valem também no app das lojas.
+  // Marcas do Hero e equipamentos recomendados (0062): links externos, valem também no app das lojas.
   const [programProducts, professionals, brandChips, equipment, tb] = await Promise.all([
     commerceAllowed ? loadProgramProducts(supabase, { programId: program.id, userId: user?.id ?? null }) : [],
     programProfessionals(program.id),
@@ -196,7 +196,7 @@ export default async function ProgramPage({ params }: Params) {
   });
   const creatorId = program.creator?.id ?? null;
 
-  // Nutricional: conteúdos de nutrição/receitas do programa e os próprios do herói + produtos de comida.
+  // Nutricional: conteúdos de nutrição/receitas do programa e os próprios do Hero + produtos de comida.
   const programContents = Array.from(new Set(items.map((i) => i.content_id)))
     .map((id) => contentById.get(id))
     .filter((c): c is ContentCardData => Boolean(c));
@@ -380,7 +380,7 @@ export default async function ProgramPage({ params }: Params) {
             </Link>
           )}
 
-          {/* Marcas do herói (0062), logo abaixo do nome */}
+          {/* Marcas do Hero (0062), logo abaixo do nome */}
           {program.creator && brandChips.length > 0 ? <BrandStrip brands={brandChips} heroName={program.creator.name} /> : null}
 
           {currentRes?.data && enrolledVersion ? (

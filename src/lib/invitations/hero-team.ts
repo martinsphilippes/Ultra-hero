@@ -1,4 +1,4 @@
-// Leitura da equipe do herói (hero_team_list / my_hero_team, 0091): JSON do banco → tipos da tela. Pura.
+// Leitura da equipe do Hero (hero_team_list / my_hero_team, 0091): JSON do banco → tipos da tela. Pura.
 
 export type HeroTeamRole = "owner" | "member";
 export type HeroTeamMember = { userId: string; role: HeroTeamRole; name: string; email: string | null; since: string; me: boolean };

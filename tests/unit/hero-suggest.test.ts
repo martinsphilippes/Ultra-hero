@@ -66,7 +66,7 @@ describe("selos", () => {
 });
 
 describe("parseHeroSearch", () => {
-  const row = { id: "h1", slug: "s", name: "Herói", avatar_url: " ", headline: "x", pillars: ["training", 3, "routine"], followers: 1200, scope: "outside", socials: { instagram: "@a", youtube: "", site: null } };
+  const row = { id: "h1", slug: "s", name: "Hero", avatar_url: " ", headline: "x", pillars: ["training", 3, "routine"], followers: 1200, scope: "outside", socials: { instagram: "@a", youtube: "", site: null } };
   it("lê a página e o has_more", () => {
     const page = parseHeroSearch({ items: [row], has_more: true });
     expect(page.hasMore).toBe(true);
@@ -82,14 +82,14 @@ describe("parseHeroSearch", () => {
     expect(parseHeroSearch(null)).toEqual({ items: [], hasMore: false });
     expect(parseHeroSearch("x")).toEqual({ items: [], hasMore: false });
   });
-  it("mergePlatformPages não repete herói", () => {
+  it("mergePlatformPages não repete Hero", () => {
     const a = parseHeroSearch({ items: [row] }).items;
     const b = parseHeroSearch({ items: [row, { ...row, id: "h2" }] }).items;
     expect(mergePlatformPages(a, b as PlatformHero[]).map((h) => h.id)).toEqual(["h1", "h2"]);
   });
 });
 
-describe("herói digitado", () => {
+describe("Hero digitado", () => {
   it("limpa o nome como o banco: sem < > nem controle, espaços únicos", () => {
     expect(cleanHeroName("  Ana   <Souza>\n")).toBe("Ana Souza");
     expect(cleanHeroName("<>")).toBe("");
@@ -126,7 +126,7 @@ describe("herói digitado", () => {
 
 describe("lista enviada à RPC e limites", () => {
   const r = [met("segment", true)];
-  it("monta fichas, heróis de fora e digitados sem repetir", () => {
+  it("monta fichas, Heros de fora e digitados sem repetir", () => {
     const items = buildSuggestItems({
       talents: [{ id: "t1", reasons: r }, { id: "t1", reasons: [] }],
       heroes: [{ id: "h1" }, { id: "h1" }],

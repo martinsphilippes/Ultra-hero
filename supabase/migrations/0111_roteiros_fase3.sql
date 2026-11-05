@@ -1,6 +1,6 @@
 -- =============================================================================
 -- Groscove Ultra · 0111 · Roteiros de entrega — FASE 3: recorrência, insights, estratégias, indicadores e
--- condições de pagamento do herói-cliente · cenário S117
+-- condições de pagamento do Hero-cliente · cenário S117
 -- Fonte: PDF "Nosso processo de entrega 2027" (Publipost, Assessoria de imprensa/artística, "Envio de estratégias p/
 -- marcas") + especificação aprovada (o responsável autorizou tudo). Idempotente; nada de drop de tabela/coluna;
 -- search_path fixo; nenhuma função nova executável por anon (S14 segue 18). Só RPCs security definer escrevem.
@@ -9,13 +9,13 @@
 --   • D1 Insights do publipost: vale para todo entregável publicado (status published/proof_submitted/done) nos
 --     últimos 30 dias. "Insights" = uma leitura de métricas (0083, deliverable_metrics; qualquer fonte) medida a
 --     partir de 1 dia depois da publicação (24 h) e outra a partir de 7 dias (7 dias); o print é o comprovante que já
---     existe (proof_url/proof_document_id). Lembrete ao herói (titular com login) 24 h e 7 dias depois da publicação
+--     existe (proof_url/proof_document_id). Lembrete ao Hero (titular com login) 24 h e 7 dias depois da publicação
 --     (aviso 'deliverable_published' com status insights_24h|insights_7d — tipo que JÁ existe: o check de
 --     inbox_notifications não muda, porque migrações antigas reaplicadas pela suíte refazem a lista). Carência de 2
 --     dias: depois disso o insight fica "atrasado" e o responsável do negócio (senão os gestores) recebe
 --     insights_late (uma vez por marco). A leitura de 7 dias cobre a de 24 h. Pela varredura diária existente
 --     (/api/cron/agency → insights_reminder_scan). A agência vê pendentes/atrasados no Início (agency_insights_pending:
---     gestor+ tudo, colaborador só os negócios dele); o herói vê os dele (my_insights_pending).
+--     gestor+ tudo, colaborador só os negócios dele); o Hero vê os dele (my_insights_pending).
 --   • D2 Serviço recorrente: contrato do negócio em deal_recurrences (ciclo semanal|quinzenal|mensal, início, fim
 --     opcional, ativo). Cada ciclo gera cópias das etapas RECORRENTES do roteiro do próprio negócio (tasks com
 --     recurrence weekly/biweekly/monthly; diária não se multiplica — "acompanhamento diário" segue uma etapa só) em
@@ -30,28 +30,28 @@
 --     Mudar ciclo/início apaga as ocorrências ainda abertas (as concluídas ficam) e gera de novo; encurtar o fim ou
 --     desativar apaga as abertas que caem depois. Quem configura: gestor+ ou responsável/equipe do negócio.
 --   • D3 Estratégias para marcas (processo mensal): banco de ideias (strategy_ideas) por agência e mês, com marca
---     (atendida pela agência) ou nome da empresa-alvo (prospecção), segmento, herói do casting, data do Calendário
+--     (atendida pela agência) ou nome da empresa-alvo (prospecção), segmento, Hero do casting, data do Calendário
 --     Groscove (evento da plataforma) e texto. Situação: idea → review → approved → ready → sent (ideia, em análise,
 --     aprovada, material pronto, enviada). Quem aprova: setor Estratégia (agency_members.sectors) ou o Adm; devolver
---     para ajuste pede nota. Interno da agência (marca e herói nunca leem). Envio à marca: REUSO da oportunidade de
---     patrocínio a partir de evento (0085/0101: herói + data + marca escolhida como público) — é o fluxo que já leva
---     herói, data do calendário e marca-alvo, com negociação, aceite e negócio no fim. A ideia se liga à
+--     para ajuste pede nota. Interno da agência (marca e Hero nunca leem). Envio à marca: REUSO da oportunidade de
+--     patrocínio a partir de evento (0085/0101: Hero + data + marca escolhida como público) — é o fluxo que já leva
+--     Hero, data do calendário e marca-alvo, com negociação, aceite e negócio no fim. A ideia se liga à
 --     oportunidade (strategy_idea_link) e vira "enviada" quando a oportunidade é publicada (gatilho). A proposta
---     proativa de negócio e a chamada da marca não servem: a primeira não tem data/herói de evento e a segunda é
+--     proativa de negócio e a chamada da marca não servem: a primeira não tem data/Hero de evento e a segunda é
 --     iniciada pela marca. Relatório automático do casting por período (strategy_casting_report): posts do app
---     (content publicado pelo perfil de criador do herói) + entregas publicadas nas campanhas da agência.
+--     (content publicado pelo perfil de criador do Hero) + entregas publicadas nas campanhas da agência.
 --     IA opcional: coluna ai_assisted + gancho no app (src/lib/strategy/ai.ts) que responde "não configurado".
 --   • D4 Indicadores (gestor+): nova venda = negócios ganhos no período que tiveram um "próximo negócio" — ligado
 --     explicitamente (deals.origin_deal_id, preenchido pelo botão "próximo negócio" do clipping) ou aberto para o
---     MESMO cliente (marca ou herói-cliente) até 180 dias depois do fechamento. Satisfação (0110) e no prazo por
+--     MESMO cliente (marca ou Hero-cliente) até 180 dias depois do fechamento. Satisfação (0110) e no prazo por
 --     serviço (0107) continuam nas leituras que já existem.
---   • D5 Condições de pagamento do herói-cliente (0108 recusava negócio sem marca): o plano vale também quando o
---     cliente é o herói (o herói paga a agência: assessoria, mentoria, business plan). Lançamento novo
---     'client_receivable' (talent_id = herói-cliente, brand_id nulo) + comissão = tudo o que entra (sem repasse,
---     a menos que haja heróis contratados no negócio). Sem termos nem contratação para negócio só do herói: o plano
+--   • D5 Condições de pagamento do Hero-cliente (0108 recusava negócio sem marca): o plano vale também quando o
+--     cliente é o Hero (o Hero paga a agência: assessoria, mentoria, business plan). Lançamento novo
+--     'client_receivable' (talent_id = Hero-cliente, brand_id nulo) + comissão = tudo o que entra (sem repasse,
+--     a menos que haja Heros contratados no negócio). Sem termos nem contratação para negócio só do Hero: o plano
 --     salvo é PREVISTO ("aguardando confirmação") e o Adm efetiva a cobrança (agency_client_billing_confirm); então
 --     as parcelas ficam em aberto, a agência marca cada uma como recebida (agency_client_installment_paid) e, todas
---     pagas, o lançamento quita. O herói vê "a pagar" (client_payments, sem comissão nem nada interno); a agência vê
+--     pagas, o lançamento quita. O Hero vê "a pagar" (client_payments, sem comissão nem nada interno); a agência vê
 --     "a receber" (agency_client_receivables). Negócios com marca seguem idênticos (mesmas funções, mesmo caminho).
 -- =============================================================================
 
@@ -122,7 +122,7 @@ $$;
 revoke execute on function public.deliverable_insights_rows(int) from public, anon, authenticated;
 grant execute on function public.deliverable_insights_rows(int) to service_role;
 
--- varredura diária (service role): lembrete ao herói (24 h e 7 dias) e atraso ao responsável do negócio
+-- varredura diária (service role): lembrete ao Hero (24 h e 7 dias) e atraso ao responsável do negócio
 create or replace function public.insights_reminder_scan()
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare r record; v_user uuid; v_hero int := 0; v_agency int := 0; v_params jsonb; v_mark text;
@@ -178,7 +178,7 @@ end $$;
 revoke execute on function public.agency_insights_pending(uuid) from public, anon;
 grant execute on function public.agency_insights_pending(uuid) to authenticated, service_role;
 
--- os do próprio herói (titular ou equipe, pelas mesmas regras de deal_talents do escritório)
+-- os do próprio Hero (titular ou equipe, pelas mesmas regras de deal_talents do escritório)
 create or replace function public.my_insights_pending()
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare v_ids uuid[];
@@ -543,7 +543,7 @@ end $$;
 revoke execute on function public.deal_roadmap(uuid) from public, anon;
 grant execute on function public.deal_roadmap(uuid) to authenticated, service_role;
 
--- herói-cliente: + 'recurring' (ocorrências visíveis ao cliente do ciclo corrente e do anterior)
+-- Hero-cliente: + 'recurring' (ocorrências visíveis ao cliente do ciclo corrente e do anterior)
 create or replace function public.client_projects()
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare v_talent uuid := public.my_talent_id(); v_out jsonb;
@@ -942,7 +942,7 @@ end $$;
 revoke execute on function public.agency_growth_indicators(uuid, int) from public, anon;
 grant execute on function public.agency_growth_indicators(uuid, int) to authenticated, service_role;
 
--- 6) condições de pagamento do herói-cliente (D5) -----------------------------------------------------------------------
+-- 6) condições de pagamento do Hero-cliente (D5) -----------------------------------------------------------------------
 alter table public.financial_entries alter column brand_id drop not null;
 alter table public.financial_entries drop constraint if exists financial_entries_kind_check;
 alter table public.financial_entries add constraint financial_entries_kind_check check (kind in ('brand_receivable', 'commission', 'talent_payout', 'client_receivable'));
@@ -951,9 +951,9 @@ alter table public.financial_entries add constraint financial_entries_client_che
   (kind <> 'client_receivable' or (brand_id is null and talent_id is not null and deal_talent_id is null))
   and (brand_id is not null or kind in ('client_receivable', 'commission', 'talent_payout')));
 alter table public.brand_payment_installments alter column brand_id drop not null;
--- o herói lê só pela RPC (client_payments); a política do herói continua só para os repasses dele
+-- o Hero lê só pela RPC (client_payments); a política do Hero continua só para os repasses dele
 
--- escreve os lançamentos do plano (MESMA assinatura da 0108): sem marca, o a receber é do herói-cliente
+-- escreve os lançamentos do plano (MESMA assinatura da 0108): sem marca, o a receber é do Hero-cliente
 create or replace function public.deal_payment_write(p_deal uuid, p_total bigint, p_plan jsonb, p_status text)
 returns int language plpgsql security definer set search_path = '' as $$
 declare d public.deals%rowtype; v_effective boolean := p_status <> 'forecast'; v_fees bigint; v_comm bigint; v_rate int; ev jsonb; v_parts jsonb;
@@ -1001,7 +1001,7 @@ end $$;
 revoke execute on function public.deal_payment_write(uuid, bigint, jsonb, text) from public, anon, authenticated;
 grant execute on function public.deal_payment_write(uuid, bigint, jsonb, text) to service_role;
 
--- previsto (MESMA assinatura da 0108): também para o herói-cliente
+-- previsto (MESMA assinatura da 0108): também para o Hero-cliente
 create or replace function public.deal_payment_forecast(p_deal uuid)
 returns int language plpgsql security definer set search_path = '' as $$
 declare d public.deals%rowtype; pl public.deal_payment_plans%rowtype; v_n int := 0;
@@ -1022,7 +1022,7 @@ end $$;
 revoke execute on function public.deal_payment_forecast(uuid) from public, anon, authenticated;
 grant execute on function public.deal_payment_forecast(uuid) to service_role;
 
--- salvar as condições (MESMA assinatura da 0108): negócio só do herói passa (o herói é avisado, sem a comissão)
+-- salvar as condições (MESMA assinatura da 0108): negócio só do Hero passa (o Hero é avisado, sem a comissão)
 create or replace function public.agency_payment_plan_save(p_deal uuid, p_data jsonb)
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare v_agency uuid; d public.deals%rowtype; v_total bigint; v_plan jsonb; v_tz text; v_today date; v_day date; v_before public.deal_payment_plans%rowtype;
@@ -1077,7 +1077,7 @@ end $$;
 revoke execute on function public.agency_payment_plan_save(uuid, jsonb) from public, anon;
 grant execute on function public.agency_payment_plan_save(uuid, jsonb) to authenticated, service_role;
 
--- efetivar a cobrança do herói-cliente (Adm): o previsto vira em aberto com as datas do plano
+-- efetivar a cobrança do Hero-cliente (Adm): o previsto vira em aberto com as datas do plano
 create or replace function public.agency_client_billing_confirm(p_deal uuid)
 returns int language plpgsql security definer set search_path = '' as $$
 declare v_agency uuid; d public.deals%rowtype; pl public.deal_payment_plans%rowtype; v_n int; v_user uuid;
@@ -1104,7 +1104,7 @@ end $$;
 revoke execute on function public.agency_client_billing_confirm(uuid) from public, anon;
 grant execute on function public.agency_client_billing_confirm(uuid) to authenticated, service_role;
 
--- parcela do herói-cliente recebida (ou desfeita) pelo Adm; todas recebidas → lançamento quitado
+-- parcela do Hero-cliente recebida (ou desfeita) pelo Adm; todas recebidas → lançamento quitado
 create or replace function public.agency_client_installment_paid(p_installment uuid, p_paid boolean)
 returns text language plpgsql security definer set search_path = '' as $$
 declare i public.brand_payment_installments%rowtype; e public.financial_entries%rowtype; v_open int;
@@ -1145,7 +1145,7 @@ end $$;
 revoke execute on function public.agency_client_installment_paid(uuid, boolean) from public, anon;
 grant execute on function public.agency_client_installment_paid(uuid, boolean) to authenticated, service_role;
 
--- parcelas de um a receber do herói-cliente (interna)
+-- parcelas de um a receber do Hero-cliente (interna)
 create or replace function public.client_receivable_json(p_entry uuid)
 returns jsonb language sql stable security definer set search_path = '' as $$
   select jsonb_build_object('entry_id', f.id, 'deal_id', f.deal_id, 'title', d.title, 'talent_id', f.talent_id, 'talent_name', t.display_name,
@@ -1163,7 +1163,7 @@ $$;
 revoke execute on function public.client_receivable_json(uuid) from public, anon, authenticated;
 grant execute on function public.client_receivable_json(uuid) to service_role;
 
--- "a pagar" do herói-cliente (só os dele; previsto aparece como previsto; sem comissão nem nada interno)
+-- "a pagar" do Hero-cliente (só os dele; previsto aparece como previsto; sem comissão nem nada interno)
 create or replace function public.client_payments()
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare v_talent uuid := public.my_talent_id();
@@ -1177,7 +1177,7 @@ end $$;
 revoke execute on function public.client_payments() from public, anon;
 grant execute on function public.client_payments() to authenticated, service_role;
 
--- "a receber" dos heróis-clientes para o Adm da agência
+-- "a receber" dos Heros-clientes para o Adm da agência
 create or replace function public.agency_client_receivables(p_agency uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 begin
@@ -1192,7 +1192,7 @@ end $$;
 revoke execute on function public.agency_client_receivables(uuid) from public, anon;
 grant execute on function public.agency_client_receivables(uuid) to authenticated, service_role;
 
--- datas relativas no cron (MESMA assinatura da 0108): o a receber do herói-cliente também acompanha
+-- datas relativas no cron (MESMA assinatura da 0108): o a receber do Hero-cliente também acompanha
 create or replace function public.deal_payment_refresh(p_deal uuid)
 returns int language plpgsql security definer set search_path = '' as $$
 declare pl public.deal_payment_plans%rowtype; recv public.financial_entries%rowtype; ev jsonb; v_parts jsonb; v_n int := 0; v_k int; v_last date;
@@ -1235,7 +1235,7 @@ end $$;
 revoke execute on function public.deal_payment_refresh(uuid) from public, anon, authenticated;
 grant execute on function public.deal_payment_refresh(uuid) to service_role;
 
--- resumo do Adm (MESMA assinatura da 0108): o a receber do herói-cliente entra no "a receber"
+-- resumo do Adm (MESMA assinatura da 0108): o a receber do Hero-cliente entra no "a receber"
 create or replace function public.agency_finance_summary(p_agency uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare v_today date;
@@ -1264,7 +1264,7 @@ end $$;
 revoke execute on function public.agency_finance_summary(uuid) from public, anon;
 grant execute on function public.agency_finance_summary(uuid) to authenticated, service_role;
 
--- leitura por quem vê (MESMA assinatura da 0108): + herói-cliente ('client': total e parcelas, sem comissão nem repasses)
+-- leitura por quem vê (MESMA assinatura da 0108): + Hero-cliente ('client': total e parcelas, sem comissão nem repasses)
 create or replace function public.deal_payment_plan_json(p_deal uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare d public.deals%rowtype; v_viewer text; v_values boolean := false; v_dt public.deal_talents%rowtype; pl public.deal_payment_plans%rowtype;

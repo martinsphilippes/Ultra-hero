@@ -15,10 +15,10 @@ import { adminHrefFor, parseSelfSignups, selfSignupState } from "@/lib/auth/self
 import { invitesEnabledFrom, isInvitesDisabledError } from "@/lib/invitations/flag-rules";
 import { isOnboardingKind, isWizardKind } from "@/lib/invitations/rules";
 
-// 0103: cadastro por perfil (Herói, Marca, Agência ou só o app) e convites pausados.
+// 0103: cadastro por perfil (Hero, Marca, Agência ou só o app) e convites pausados.
 
 describe("perfis da tela de entrada", () => {
-  it("quatro cartões na ordem; no app das lojas só Herói e app (marca e agência são só web)", () => {
+  it("quatro cartões na ordem; no app das lojas só Hero e app (marca e agência são só web)", () => {
     expect(profilesForSurface(false)).toEqual(["hero", "brand", "agency", "consumer"]);
     expect(profilesForSurface(true)).toEqual(["hero", "consumer"]);
   });
@@ -35,7 +35,7 @@ describe("perfis da tela de entrada", () => {
     expect(isBusinessProfile("hero")).toBe(true);
   });
 
-  it("destino por perfil: consumidor segue o destino; Herói, Marca e Agência vão ao passo a passo e depois ao portal", () => {
+  it("destino por perfil: consumidor segue o destino; Hero, Marca e Agência vão ao passo a passo e depois ao portal", () => {
     expect(destinationAfterSignup("consumer", "/personalities")).toBe("/personalities");
     for (const p of ["hero", "brand", "agency"] as const) expect(destinationAfterSignup(p, "/personalities")).toBe("/primeiro-acesso");
     expect(PROFILE_HOME).toEqual({ hero: "/heroi", brand: "/marca", agency: "/agencia" });
@@ -93,7 +93,7 @@ describe("interruptor Convites ativos", () => {
 });
 
 describe("passo a passo e novos cadastros", () => {
-  it("o passo a passo aceita herói; o convite do admin continua só com os 4 papéis de empresa", () => {
+  it("o passo a passo aceita Hero; o convite do admin continua só com os 4 papéis de empresa", () => {
     expect(isWizardKind("hero")).toBe(true);
     expect(isWizardKind("agency")).toBe(true);
     expect(isOnboardingKind("hero")).toBe(false);
@@ -101,7 +101,7 @@ describe("passo a passo e novos cadastros", () => {
 
   it("lista do admin: lê o retorno, estado e atalho para ver/suspender/aprovar", () => {
     const rows = parseSelfSignups([
-      { id: "1", kind: "hero", created_at: "2026-11-04T10:00:00Z", completed_at: "2026-11-04T10:01:00Z", cancelled: false, email: "a@x.com", result_id: "h1", name: "Herói", status: "pending" },
+      { id: "1", kind: "hero", created_at: "2026-11-04T10:00:00Z", completed_at: "2026-11-04T10:01:00Z", cancelled: false, email: "a@x.com", result_id: "h1", name: "Hero", status: "pending" },
       { id: "2", kind: "brand", created_at: "2026-11-04T10:00:00Z", completed_at: null, cancelled: false, email: "b@x.com", result_id: null, name: null, status: null },
       { id: "3", kind: "agency", created_at: "2026-11-04T10:00:00Z", completed_at: "2026-11-04T10:00:00Z", cancelled: true, email: "c@x.com", result_id: null },
       { id: "4", kind: "seller" },

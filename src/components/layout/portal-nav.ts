@@ -1,5 +1,5 @@
 // Links dos portais (só href + chave de tradução; ícones ficam no componente cliente).
-// "creator" é a chave interna do Portal do Herói (0097: portal único em /heroi, com barra lateral e menu no celular).
+// "creator" é a chave interna do Portal do Hero (0097: portal único em /heroi, com barra lateral e menu no celular).
 // "project" (0110): portal mínimo do staff externo (fotógrafo, maquiador…) em /projetos — só as salas em que foi chamado.
 export type Portal = "admin" | "creator" | "seller" | "professional" | "agency" | "brand" | "project";
 
@@ -17,8 +17,8 @@ export const PORTAL_ROOT: Record<Portal, string> = {
 /** group: grupo do menu (textos em nav.groups.<group>); sem grupo, o item fica no topo. */
 export type PortalLink = { key: string; href: string; group?: string };
 
-/** Itens do Portal do Herói para a pessoa (puro, testável). Herói = papel de herói (titular ou membro da equipe);
- *  casting = está num casting de agência (ficha com login próprio ou herói ligado). */
+/** Itens do Portal do Hero para a pessoa (puro, testável). Hero = papel de Hero (titular ou membro da equipe);
+ *  casting = está num casting de agência (ficha com login próprio ou Hero ligado). */
 export function heroPortalNavKeys(opts: { hero: boolean; casting: boolean }): string[] {
   const keys = ["home"];
   if (opts.hero) keys.push("post", "newContent", "content", "recipes");
@@ -60,19 +60,19 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "orders", href: "/admin/orders" },
     { key: "shipments", href: "/admin/shipments" },
     { key: "feedback", href: "/admin/feedback" },
-    // Denúncias (0071): conteúdo e heróis denunciados no app; resposta em até 24 horas
+    // Denúncias (0071): conteúdo e Heros denunciados no app; resposta em até 24 horas
     { key: "reports", href: "/admin/denuncias" },
     { key: "metrics", href: "/admin/metrics" },
-    // Indicadores (Etapa 5, 0060): por herói, atalho, conversão, profissionais, colecionáveis, ranking
+    // Indicadores (Etapa 5, 0060): por Hero, atalho, conversão, profissionais, colecionáveis, ranking
     { key: "indicators", href: "/admin/indicadores" },
     // Interessados no lançamento (0117): lista "Seja o primeiro a saber" do teaser (/conheca) e a planilha
     { key: "leads", href: "/admin/interessados" },
     { key: "audit", href: "/admin/audit" },
     { key: "settings", href: "/admin/settings" },
   ],
-  // Portal do Herói (0097): o "creator" era o próprio herói, então o portal do herói e o escritório do casting
+  // Portal do Hero (0097): o "creator" era o próprio Hero, então o portal do Hero e o escritório do casting
   // viraram um só, em /heroi, com os itens em grupos. O layout escolhe os itens (heroPortalNavKeys): os da agência
-  // só para quem está num casting; os de conteúdo só para quem tem herói. Vínculos de produtos é do admin
+  // só para quem está num casting; os de conteúdo só para quem tem Hero. Vínculos de produtos é do admin
   // ("Publicar como hero"), por isso não está aqui; patrocínios aparecem na Agenda (não há tela própria).
   creator: [
     { key: "home", href: "/heroi" },
@@ -109,7 +109,7 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
   // Agência (0064): o menu é filtrado pelo papel no servidor (agencyNavKeys; só o Adm vê Equipe).
   agency: [
     { key: "dashboard", href: "/agencia" },
-    // Heróis (0070): perfis públicos que a agência gerencia e publica em nome deles
+    // Heros (0070): perfis públicos que a agência gerencia e publica em nome deles
     { key: "heroes", href: "/agencia/herois" },
     // Pipeline comercial (0066): briefing → consulta → confirmação; a ficha do negócio mora em /agencia/negocios
     { key: "pipeline", href: "/agencia/pipeline" },

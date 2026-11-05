@@ -12,7 +12,7 @@ export type PickerHero = { id: string; slug: string; name: string; avatar_url: s
 
 type Props = {
   heroes: PickerHero[];
-  /** Último herói escolhido (cookie revalidado no banco), mostrado e listado primeiro. */
+  /** Último Hero escolhido (cookie revalidado no banco), mostrado e listado primeiro. */
   current: PickerHero | null;
   /** ?heroi=<atalho>: abre o seletor já no fluxo (vindo de "Trocar hero"). */
   initialCard: HeroCard | null;
@@ -30,8 +30,8 @@ const ICONS: Record<HeroCard, LucideIcon> = {
 };
 
 // "Publicar como hero" no topo do início do admin: três atalhos (Novo post, Novo conteúdo, Painel) e,
-// ao tocar, o seletor do herói (bottom sheet no celular, painel lateral no desktop). Sempre pergunta;
-// o último herói aparece primeiro, marcado como atual. Conteúdos, receitas e vínculos ficam no Painel.
+// ao tocar, o seletor do Hero (bottom sheet no celular, painel lateral no desktop). Sempre pergunta;
+// o último Hero aparece primeiro, marcado como atual. Conteúdos, receitas e vínculos ficam no Painel.
 export function HeroPublishing({ heroes, current, initialCard, available }: Props) {
   const t = useTranslations("adminOps.heroPublishing");
   const router = useRouter();

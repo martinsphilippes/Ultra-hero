@@ -257,7 +257,7 @@ export async function fetchMyBids(supabase: Client): Promise<{ available: boolea
   }
 }
 
-/** Itens ao vivo ou agendados de um herói (banner na página dele). */
+/** Itens ao vivo ou agendados de um Hero (banner na página dele). */
 export async function fetchHeroCollectibles(supabase: Client, creatorId: string): Promise<CollectibleView[]> {
   try {
     const now = Date.now();

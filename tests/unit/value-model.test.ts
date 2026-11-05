@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ceilingCents, feeBudgetCents, normalizeTerms, slotsLeft, splitEvenly, splitProportional, validateTerms, valueLabelKey } from "@/lib/value-model/model";
 
-// Modelo de valor (0096): fixo = total dividido entre os heróis; por herói = valor × máximo (obrigatório).
+// Modelo de valor (0096): fixo = total dividido entre os Heros; por Hero = valor × máximo (obrigatório).
 
 describe("modelo de valor", () => {
   it("fixo nunca guarda máximo e aceita valor vazio", () => {
@@ -11,7 +11,7 @@ describe("modelo de valor", () => {
     expect(validateTerms(normalizeTerms("fixo", null, null), { requireAmount: true })).toBe("invalid_input");
   });
 
-  it("por herói exige valor > 0 e máximo de 1 a 50", () => {
+  it("por Hero exige valor > 0 e máximo de 1 a 50", () => {
     const t = (amount: number | null, max: number | null) => validateTerms({ model: "por_heroi", amountCents: amount, maxHeroes: max });
     expect(t(null, 3)).toBe("value_per_hero_required");
     expect(t(0, 3)).toBe("value_per_hero_required");
@@ -25,14 +25,14 @@ describe("modelo de valor", () => {
     expect(t(10_000_000_000, 2)).toBe("invalid_input"); // teto passa do limite do banco
   });
 
-  it("teto de investimento = valor × máximo (por herói) ou o próprio valor (fixo)", () => {
+  it("teto de investimento = valor × máximo (por Hero) ou o próprio valor (fixo)", () => {
     expect(ceilingCents({ model: "por_heroi", amountCents: 200_000, maxHeroes: 3 })).toBe(600_000);
     expect(ceilingCents({ model: "por_heroi", amountCents: 200_000, maxHeroes: null })).toBeNull();
     expect(ceilingCents({ model: "fixo", amountCents: 900_000, maxHeroes: null })).toBe(900_000);
     expect(ceilingCents({ model: "fixo", amountCents: null, maxHeroes: null })).toBeNull();
   });
 
-  it("vagas que restam só existem no modelo por herói", () => {
+  it("vagas que restam só existem no modelo por Hero", () => {
     expect(slotsLeft({ model: "por_heroi", amountCents: 1, maxHeroes: 3 }, 1)).toBe(2);
     expect(slotsLeft({ model: "por_heroi", amountCents: 1, maxHeroes: 3 }, 5)).toBe(0);
     expect(slotsLeft({ model: "fixo", amountCents: 1, maxHeroes: null }, 5)).toBeNull();

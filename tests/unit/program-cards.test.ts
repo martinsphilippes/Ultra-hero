@@ -108,7 +108,7 @@ describe("card Nutricional", () => {
     expect(nutritionScreens({ contents: 2, products: 3, productsAllowed: false })).toEqual(["contents"]);
   });
 
-  it("junta conteúdos do programa e do herói sem repetir, até o limite", () => {
+  it("junta conteúdos do programa e do Hero sem repetir, até o limite", () => {
     const a = { id: "a" };
     const b = { id: "b" };
     const c = { id: "c" };

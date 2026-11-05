@@ -5,8 +5,8 @@ export function isTalentOnly(roles: readonly { role: string; scope_type: string 
   return creator.length > 0 && creator.every((r) => r.scope_type === "talent");
 }
 
-/** Papéis que valem para as telas do herói: o creator com escopo "talent" (escritório) não reabre a
- *  edição nem o Novo post de um herói (revisão de segurança da etapa B). */
+/** Papéis que valem para as telas do Hero: o creator com escopo "talent" (escritório) não reabre a
+ *  edição nem o Novo post de um Hero (revisão de segurança da etapa B). */
 export function heroRoleNames(roles: readonly { role: string; scope_type: string | null }[]): string[] {
   return roles.filter((r) => !(r.role === "creator" && r.scope_type === "talent")).map((r) => r.role);
 }

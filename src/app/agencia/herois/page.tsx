@@ -20,8 +20,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title") };
 }
 
-// Heróis da agência (0070): os perfis públicos que ela gerencia e publica. Gestor+ abre cada um; os contratos de
-// imagem ficam com a agência (Termos do Parceiro). 0112: o herói nasce só pelo Casting ("Novo herói": a pessoa, o
+// Heros da agência (0070): os perfis públicos que ela gerencia e publica. Gestor+ abre cada um; os contratos de
+// imagem ficam com a agência (Termos do Parceiro). 0112: o Hero nasce só pelo Casting ("Novo Hero": a pessoa, o
 // acesso e a página opcional); aqui fica a lista, a situação do acesso, a edição da página e o publicar em nome dele.
 export default async function AgencyHeroesPage() {
   const ctx = await requireAgency("manager");
@@ -37,12 +37,12 @@ export default async function AgencyHeroesPage() {
   const heroes = (data ?? []).flatMap((row) =>
     row.creator ? [{ ...row.creator, talentId: row.id, needsRights: needsImageAuthorization(row.creator), consentOk: Boolean(row.consent_at && !row.consent_revoked_at) }] : [],
   );
-  // 0091: convite de herói — creators do casting sem login (o selo do acesso diz quem já tem conta)
+  // 0091: convite de Hero — creators do casting sem login (o selo do acesso diz quem já tem conta)
   const [{ data: casting }, { data: access }, ti, accounts] = await Promise.all([
     supabase.from("talent_profiles").select("id, display_name, creator_id, creator:creator_profiles(name)").eq("agency_id", ctx.agency.id).is("archived_at", null).order("display_name"),
     supabase.rpc("agency_talent_access", { p_agency: ctx.agency.id }),
     getTranslations("invites.agency"),
-    // 0112: situação do acesso de cada herói (e-mail e celular só para gestor+)
+    // 0112: situação do acesso de cada Hero (e-mail e celular só para gestor+)
     loadAccessStatus(supabase, ctx.agency.id, "talent"),
   ]);
   const withLogin = new Set((access ?? []).filter((a) => a.access === "login").map((a) => a.talent_id));
@@ -59,7 +59,7 @@ export default async function AgencyHeroesPage() {
         actions={
           locked ? null : (
             <div className="flex flex-wrap gap-2">
-              {/* 0112: um só "Novo herói", pelo Casting (a pessoa + acesso + página opcional) */}
+              {/* 0112: um só "Novo Hero", pelo Casting (a pessoa + acesso + página opcional) */}
               <Button asChild size="sm" leadingIcon={<Plus />}>
                 <Link href="/agencia/casting/novo" data-testid="heroes-new">
                   {t("newHero")}

@@ -8,20 +8,20 @@
 --
 -- Decisões (sem perguntar ao responsável):
 --   • Fontes unificadas (as únicas tabelas de conversa do sistema): deal_messages (0066) — canal marca↔agência
---     ('campaign') e canal herói↔agência por herói ('opportunity') — e project_room_messages (0110, 'room', sala do
+--     ('campaign') e canal Hero↔agência por Hero ('opportunity') — e project_room_messages (0110, 'room', sala do
 --     projeto multi-parte). Rodadas de negociação (deal_offer_rounds 0106, brand_call_rounds 0089), respostas de
 --     patrocínio (0085) e comentários por versão de entrega (0083) NÃO são conversas: são decisões com valor/estado
 --     próprios e já geram avisos no sino; ficam fora da lista (a etapa do negócio aparece no chip de cada conversa).
---   • Chave da conversa (texto estável, usada também pelo app): 'deal:<negócio>:brand', 'deal:<negócio>:talent:<herói>',
+--   • Chave da conversa (texto estável, usada também pelo app): 'deal:<negócio>:brand', 'deal:<negócio>:talent:<Hero>',
 --     'room:<negócio>'.
 --   • Quem vê o quê (mesmas regras das RLS/RPCs de origem, por portal — quem é de dois portais vê cada lista no seu):
 --       agência  = gestor+ da agência ou responsável/equipe do negócio (my_project_agency_deal_ids): canal da marca e
---                  canais dos heróis que têm mensagem; salas abertas e arquivadas, inclusive mensagens internas;
+--                  canais dos Heros que têm mensagem; salas abertas e arquivadas, inclusive mensagens internas;
 --       marca    = membros com o negócio visível (brand_visible) e com pedido (a página da campanha é por pedido): canal
 --                  da marca (vazio também, se o negócio está aberto: é onde ela começa a conversa); salas abertas, só
 --                  público 'all' (nunca as internas);
---       herói    = o próprio canal de cada oportunidade consultada (vazio também se aberta e não recusada/removida) e
---                  as salas abertas em que é herói-cliente ou contratado, só 'all';
+--       Hero    = o próprio canal de cada oportunidade consultada (vazio também se aberta e não recusada/removida) e
+--                  as salas abertas em que é Hero-cliente ou contratado, só 'all';
 --       staff    = salas abertas em que é membro ativo, com as internas.
 --     Sala que pede NDA ainda não assinado aparece travada (locked), sem prévia nem contagem: o título e a agência já
 --     aparecem em "Meus projetos" (my_project_rooms, 0110).
@@ -56,7 +56,7 @@ drop policy if exists conversation_reads_select_own on public.conversation_reads
 create policy conversation_reads_select_own on public.conversation_reads for select to authenticated
   using (user_id = (select auth.uid()));
 
--- índice para "última mensagem do canal do herói" (o de 0066 cobre deal_id, channel, created_at)
+-- índice para "última mensagem do canal do Hero" (o de 0066 cobre deal_id, channel, created_at)
 create index if not exists deal_messages_talent_thread_idx on public.deal_messages (deal_id, talent_id, created_at) where channel = 'talent_agency';
 
 -- 2) núcleo: as conversas da pessoa num portal (interno; só as RPCs abaixo chamam) ------------------------------------
@@ -82,7 +82,7 @@ begin
     where p_portal = 'agency' and d.id = any (v_agency_deals)
       and exists (select 1 from public.deal_messages m where m.deal_id = d.id and m.channel = 'brand_agency')
     union all
-    -- agência: um canal por herói com mensagem
+    -- agência: um canal por Hero com mensagem
     select 'deal:' || x.deal_id::text || ':talent:' || x.talent_id::text, 'opportunity', x.deal_id, x.talent_id,
            (select dt.id from public.deal_talents dt where dt.deal_id = x.deal_id and dt.talent_id = x.talent_id), false, 'agency', false
     from (select distinct m.deal_id, m.talent_id from public.deal_messages m
@@ -103,14 +103,14 @@ begin
     from public.project_rooms r join public.deals d on d.id = r.deal_id
     where p_portal = 'brand' and r.status = 'open' and d.brand_visible and d.brand_id = any (v_brands)
     union all
-    -- herói: o próprio canal de cada oportunidade consultada
+    -- Hero: o próprio canal de cada oportunidade consultada
     select 'deal:' || dt.deal_id::text || ':talent:' || dt.talent_id::text, 'opportunity', dt.deal_id, dt.talent_id, dt.id, false, 'talent', false
     from public.deal_talents dt join public.deals d on d.id = dt.deal_id
     where p_portal = 'hero' and v_talent is not null and dt.talent_id = v_talent and dt.consulted_at is not null
       and ((d.stage <> 'closed' and dt.status not in ('declined', 'removed'))
            or exists (select 1 from public.deal_messages m where m.deal_id = dt.deal_id and m.channel = 'talent_agency' and m.talent_id = dt.talent_id))
     union all
-    -- herói: salas abertas como herói-cliente ou contratado (travada se a agência pediu NDA dos heróis e falta assinar)
+    -- Hero: salas abertas como Hero-cliente ou contratado (travada se a agência pediu NDA dos Heros e falta assinar)
     select 'room:' || r.deal_id::text, 'room', r.deal_id, null, null, false, 'talent',
            r.nda_heroes and not exists (select 1 from public.project_nda_signatures s where s.deal_id = r.deal_id and s.user_id = v_uid)
     from public.project_rooms r join public.deals d on d.id = r.deal_id
@@ -253,7 +253,7 @@ begin
   insert into public.conversation_reads (user_id, conv_key, read_at) values (v_uid, v_key, now())
   on conflict (user_id, conv_key) do update set read_at = excluded.read_at;
 
-  -- avisos "Nova mensagem" desta conversa (sala x canal pelo link; canal do herói também pelo deal_talent)
+  -- avisos "Nova mensagem" desta conversa (sala x canal pelo link; canal do Hero também pelo deal_talent)
   select coalesce(array_agg(dt.id), '{}'::uuid[]) into v_dts from public.deal_talents dt
   where dt.deal_id = v_deal and (v_talent is null or dt.talent_id = v_talent);
   update public.inbox_notifications n set read_at = now()

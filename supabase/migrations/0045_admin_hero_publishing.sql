@@ -1,36 +1,36 @@
 -- =============================================================================
--- Ultra Hero · 0045 · Só o administrador publica pelos heróis ("Publicar como hero")
---   Decisão do responsável: o herói (não admin) fica só com o "Novo post" rápido; conteúdos,
---   receitas, vínculos e painel passam a ser do admin, que escolhe o herói antes de cada fluxo.
+-- Ultra Hero · 0045 · Só o administrador publica pelos Heros ("Publicar como hero")
+--   Decisão do responsável: o Hero (não admin) fica só com o "Novo post" rápido; conteúdos,
+--   receitas, vínculos e painel passam a ser do admin, que escolhe o Hero antes de cada fluxo.
 --
 -- Desenho: o servidor do app manda, só nas telas/ações do fluxo "Publicar como hero" do admin, o
 --   cabeçalho HTTP `x-acting-hero: <creator_id>` (o PostgREST o expõe em request.headers). O banco
---   honra o cabeçalho SÓ quando quem chama é admin (is_admin()) e o herói existe e está ativo:
---   acting_hero_id() devolve o herói; my_creator_id() passa a devolver esse herói para o admin.
---   Assim todas as RPCs, políticas e gatilhos que já conferem "herói dono" (0025–0028, 0036, 0043)
---   valem para o admin agindo pelo herói X, sem variantes novas, e nunca para outra pessoa:
---     * herói, consumidor ou visitante com o cabeçalho: ignorado (is_admin() falso) — my_creator_id()
---       continua sendo o próprio herói (ou nulo);
+--   honra o cabeçalho SÓ quando quem chama é admin (is_admin()) e o Hero existe e está ativo:
+--   acting_hero_id() devolve o Hero; my_creator_id() passa a devolver esse Hero para o admin.
+--   Assim todas as RPCs, políticas e gatilhos que já conferem "Hero dono" (0025–0028, 0036, 0043)
+--   valem para o admin agindo pelo Hero X, sem variantes novas, e nunca para outra pessoa:
+--     * Hero, consumidor ou visitante com o cabeçalho: ignorado (is_admin() falso) — my_creator_id()
+--       continua sendo o próprio Hero (ou nulo);
 --     * admin sem o cabeçalho (moderação, /admin/*): nada muda;
---     * herói suspenso/inexistente ou valor que não é uuid: ignorado.
+--     * Hero suspenso/inexistente ou valor que não é uuid: ignorado.
 --   O cabeçalho é escopo por requisição: não fica estado no banco entre chamadas.
 --
--- Auditoria (admin_audit): escolher o herói (admin_act_as_hero) e cada escrita feita agindo pelo
---   herói — conteúdo criado/excluído/mudança de status e vínculo conteúdo–produto criado/excluído —
---   ganham uma linha 'hero_act.*' com o herói em after_data.acting_creator e actor_type 'admin'.
+-- Auditoria (admin_audit): escolher o Hero (admin_act_as_hero) e cada escrita feita agindo pelo
+--   Hero — conteúdo criado/excluído/mudança de status e vínculo conteúdo–produto criado/excluído —
+--   ganham uma linha 'hero_act.*' com o Hero em after_data.acting_creator e actor_type 'admin'.
 --
 -- Também:
---   * post_photo_upload_claim (0043) aceita o admin agindo por um herói ativo (a foto fica na pasta
+--   * post_photo_upload_claim (0043) aceita o admin agindo por um Hero ativo (a foto fica na pasta
 --     do admin; a publicação já confere o envio por auth.uid()).
 --   * Storage recipe-media (0028): o navegador do admin envia a foto direto ao bucket; o Storage não
 --     recebe o cabeçalho, então uma política nova deixa SÓ o admin enviar para a pasta
---     <creator_id>/<content_id>/ de um rascunho de receita de herói ativo, fora de revisão.
+--     <creator_id>/<content_id>/ de um rascunho de receita de Hero ativo, fora de revisão.
 -- Regras: nada de drop/truncate; search_path fixo; grants explícitos; nenhuma função nova com
 -- execute para anon (a lista pública do S14 continua com 17); nenhuma tabela nova; políticas com
 -- (select ...).
 -- =============================================================================
 
--- ---------------------------------------------------------------- 1) herói em nome de quem o admin age
+-- ---------------------------------------------------------------- 1) Hero em nome de quem o admin age
 -- Lê o cabeçalho antes de tudo (sem cabeçalho, nem consulta): o custo para quem não é admin é nulo.
 create or replace function public.acting_hero_id()
 returns uuid language plpgsql stable security definer set search_path = public as $$
@@ -53,7 +53,7 @@ revoke execute on function public.acting_hero_id() from public, anon;
 grant execute on function public.acting_hero_id() to authenticated, service_role;
 
 -- Mesma assinatura e grants da 0001/0016 (anon segue executando: está na lista pública do S14).
--- O admin agindo por um herói vale primeiro; fora disso, o perfil ativo vinculado, como antes.
+-- O admin agindo por um Hero vale primeiro; fora disso, o perfil ativo vinculado, como antes.
 create or replace function public.my_creator_id()
 returns uuid language sql stable security definer set search_path = public as $$
   select coalesce(
@@ -61,8 +61,8 @@ returns uuid language sql stable security definer set search_path = public as $$
     (select c.id from public.creator_profiles c where c.user_id = auth.uid() and c.status = 'active' limit 1))
 $$;
 
--- ---------------------------------------------------------------- 2) escolher o herói (auditado)
--- O app chama ao tocar num herói do seletor: confere admin e herói ativo e registra a escolha.
+-- ---------------------------------------------------------------- 2) escolher o Hero (auditado)
+-- O app chama ao tocar num Hero do seletor: confere admin e Hero ativo e registra a escolha.
 create or replace function public.admin_act_as_hero(p_creator uuid)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare c public.creator_profiles%rowtype;
@@ -77,8 +77,8 @@ end $$;
 revoke execute on function public.admin_act_as_hero(uuid) from public, anon;
 grant execute on function public.admin_act_as_hero(uuid) to authenticated, service_role;
 
--- ---------------------------------------------------------------- 3) auditoria das escritas em nome do herói
--- Conteúdo: criar, excluir e mudar status/revisão/agendamento/herói (o autosave do editor não entra).
+-- ---------------------------------------------------------------- 3) auditoria das escritas em nome do Hero
+-- Conteúdo: criar, excluir e mudar status/revisão/agendamento/Hero (o autosave do editor não entra).
 -- Vínculo conteúdo–produto: criar e excluir.
 create or replace function public.acting_hero_audit()
 returns trigger language plpgsql security definer set search_path = public as $$
@@ -115,8 +115,8 @@ create or replace trigger trg_z_content_product_links_acting_audit
   after insert or delete on public.content_product_links
   for each row execute function public.acting_hero_audit();
 
--- ---------------------------------------------------------------- 4) foto do post: admin agindo por herói ativo
--- Igual à 0043, com uma regra a mais: além do herói ativo vinculado, o admin com acting_hero_id().
+-- ---------------------------------------------------------------- 4) foto do post: admin agindo por Hero ativo
+-- Igual à 0043, com uma regra a mais: além do Hero ativo vinculado, o admin com acting_hero_id().
 create or replace function public.post_photo_upload_claim(p_bytes int, p_mime text)
 returns text language plpgsql security definer set search_path = public as $$
 declare v_uid uuid := auth.uid(); v_id uuid; v_ext text; v_path text;
@@ -125,8 +125,8 @@ begin
   if not coalesce(public.public_settings() -> 'post_photos.uploads_enabled' = 'true'::jsonb, false) then
     raise exception 'uploads_disabled';
   end if;
-  -- mesma regra de herói ativo da capa (0042): papel de herói (ou admin) e perfil ativo vinculado;
-  -- ou o admin publicando por um herói ativo (0045)
+  -- mesma regra de Hero ativo da capa (0042): papel de Hero (ou admin) e perfil ativo vinculado;
+  -- ou o admin publicando por um Hero ativo (0045)
   if public.hero_cover_active_creator(v_uid) is null and public.acting_hero_id() is null then
     raise exception 'not_a_hero' using errcode = '42501';
   end if;
@@ -149,7 +149,7 @@ revoke execute on function public.post_photo_upload_claim(int, text) from public
 grant execute on function public.post_photo_upload_claim(int, text) to authenticated, service_role;
 
 -- ---------------------------------------------------------------- 5) foto de receita: envio do admin
--- Caminho <creator_id>/<content_id>/<uuid>.<ext> de rascunho de receita (fora de revisão) de herói
+-- Caminho <creator_id>/<content_id>/<uuid>.<ext> de rascunho de receita (fora de revisão) de Hero
 -- ativo, e quem envia é admin. Invoker: a leitura de content passa pela RLS (o admin vê tudo).
 create or replace function public.recipe_media_admin_path_ok(p_name text)
 returns boolean language plpgsql stable set search_path = public as $$

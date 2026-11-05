@@ -3,8 +3,8 @@
 import { useEffect } from "react";
 import type { LibraryKey } from "@/lib/catalog/creator-libraries";
 
-// Abertura de atalho do herói (0060): manda para /api/shortcut-opens sem esperar (sendBeacon).
-// Uma vez por herói e atalho a cada carregamento da aba; nada da pessoa vai junto. Não renderiza nada.
+// Abertura de atalho do Hero (0060): manda para /api/shortcut-opens sem esperar (sendBeacon).
+// Uma vez por Hero e atalho a cada carregamento da aba; nada da pessoa vai junto. Não renderiza nada.
 const sent = new Set<string>();
 
 export function ShortcutOpenTracker({ creatorId, sourceKey }: { creatorId: string; sourceKey: LibraryKey }) {

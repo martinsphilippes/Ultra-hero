@@ -11,7 +11,7 @@ import { fichaLinks, publishBlock, type HeroInfo } from "@/lib/sponsorship/hero-
 
 type Props = { id: string; hero: HeroInfo };
 
-// Rascunho da oportunidade (0095): as marcas e o herói ainda não veem. Publicar exige o consentimento do herói (o banco
+// Rascunho da oportunidade (0095): as marcas e o Hero ainda não veem. Publicar exige o consentimento do Hero (o banco
 // confere de novo); sem ele, o aviso e os atalhos da ficha e dos Documentos. Descartar cancela sem avisar ninguém.
 export function SponsorshipDraftPanel({ id, hero }: Props) {
   const t = useTranslations("sponsorship.agency.draft");

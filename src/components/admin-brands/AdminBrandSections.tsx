@@ -4,7 +4,7 @@ import { brandOptions, contentBrandsAdmin, creatorBrandsAdmin, productOptions, p
 import { ContentBrandLinksEditor, CreatorBrandsEditor, ProgramBrandProductsEditor } from "./LinkEditors";
 import { SmartTagEditor } from "./SmartTagEditor";
 
-// Seções de marcas/produtos (0062) nas telas que já existem no admin: herói, programa e conteúdo.
+// Seções de marcas/produtos (0062) nas telas que já existem no admin: Hero, programa e conteúdo.
 // Sem a 0062 no banco, a seção mostra o aviso no lugar do editor.
 
 function Unavailable({ text }: { text: string }) {

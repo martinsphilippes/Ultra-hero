@@ -1,6 +1,6 @@
 -- =============================================================================
--- Groscove Ultra · 0044b · Foto da CONTA das pessoas ligadas aos heróis reais
---   A 0044 trocou a foto dos heróis (creator_profiles), mas a foto da conta (profiles.avatar_url),
+-- Groscove Ultra · 0044b · Foto da CONTA das pessoas ligadas aos Heros reais
+--   A 0044 trocou a foto dos Heros (creator_profiles), mas a foto da conta (profiles.avatar_url),
 --   usada no menu do topo, ainda apontava para o arquivo do personagem antigo, que foi apagado.
 --   Só troca o que ainda aponta para os arquivos antigos. Reaplicável; sem drop/delete.
 -- =============================================================================

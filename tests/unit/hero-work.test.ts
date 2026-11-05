@@ -19,7 +19,7 @@ import { daysOverdue, dueThisMonth, earningsDueThisMonth, effectiveStatus, finan
 import { heroRights } from "@/lib/hero-work/rules";
 import { HERO_EVENT_KINDS, heroEventSchema, heroServiceSchema, isHeroEventKind, isProofPath, proofExtension } from "@/lib/hero-work/vocab";
 
-// 0094: agenda e financeiro do herói independente — status vencido, previsão, agrupamento, agenda e regras de acesso.
+// 0094: agenda e financeiro do Hero independente — status vencido, previsão, agrupamento, agenda e regras de acesso.
 
 const SP = "America/Sao_Paulo";
 const HERO = "11111111-1111-4111-8111-111111111111";
@@ -109,7 +109,7 @@ describe("painel financeiro e previsão", () => {
     const withLate = [...list, svc({ id: "k", amountCents: 60_00, dueOn: "2026-11-01" })];
     expect(dueThisMonth(withLate, TODAY)).toEqual({ cents: 560_00, count: 2 });
   });
-  it("ganhos do herói com agência: repasse aberto com data prevista no mês (agendada manda sobre o vencimento)", () => {
+  it("ganhos do Hero com agência: repasse aberto com data prevista no mês (agendada manda sobre o vencimento)", () => {
     const e = [
       { status: "planned", amountCents: 1000_00, scheduledOn: null, dueOn: "2026-11-20" },
       { status: "due", amountCents: 500_00, scheduledOn: "2026-11-25", dueOn: "2026-12-10" },
@@ -160,8 +160,8 @@ const ev = (over: Partial<HeroEvent> & { id: string }): HeroEvent => ({
   ...over,
 });
 
-describe("agenda do herói", () => {
-  it("cada tipo do herói tem um tipo de agenda; evento e serviço são só do herói", () => {
+describe("agenda do Hero", () => {
+  it("cada tipo do Hero tem um tipo de agenda; evento e serviço são só do Hero", () => {
     for (const k of HERO_EVENT_KINDS) expect(EVENT_KINDS).toContain(HERO_KIND_TO_EVENT_KIND[k]);
     expect(HERO_KIND_TO_EVENT_KIND.shoot).toBe("recording");
     expect(HERO_KIND_TO_EVENT_KIND.delivery).toBe("deliverable");
@@ -183,7 +183,7 @@ describe("agenda do herói", () => {
     expect(item.hero.source).toBe("service");
     expect(item.subtitle).toBe("Escola");
   });
-  it("a grade (groupEventsByDay) põe o serviço no dia certo, no fuso do herói", () => {
+  it("a grade (groupEventsByDay) põe o serviço no dia certo, no fuso do Hero", () => {
     const item = serviceDateToCalendar({ id: SVC, title: "Reels", client: "Loja", serviceOn: "2026-11-12" }, SP)!;
     const byDay = groupEventsByDay([item], SP);
     expect([...byDay.keys()]).toEqual(["2026-11-12"]);
@@ -214,7 +214,7 @@ describe("agenda do herói", () => {
     expect(newHeroEventDefaults(HERO, "2026-11-20", TODAY)).toMatchObject({ date: "2026-11-20", startTime: "09:00", endTime: "10:00", allDay: false, kind: "other", id: null, creatorId: HERO });
     expect(newHeroEventDefaults(HERO, "lixo", TODAY).date).toBe(TODAY);
   });
-  it("formulário → instantes no fuso do herói (com hora e dia inteiro com fim exclusivo)", () => {
+  it("formulário → instantes no fuso do Hero (com hora e dia inteiro com fim exclusivo)", () => {
     expect(heroEventRange({ date: "2026-11-10", endDate: "", startTime: "14:00", endTime: "16:30", allDay: false }, SP)).toEqual({ startsAt: "2026-11-10T14:00:00-03:00", endsAt: "2026-11-10T16:30:00-03:00" });
     expect(heroEventRange({ date: "2026-11-10", endDate: "2026-11-11", startTime: "", endTime: "", allDay: true }, SP)).toEqual({ startsAt: "2026-11-10T00:00:00-03:00", endsAt: "2026-11-12T00:00:00-03:00" });
     expect(heroEventRange({ date: "2026-11-10", endDate: "2026-11-09", startTime: "", endTime: "", allDay: true }, SP)).toBeNull();
@@ -259,7 +259,7 @@ describe("formulários, comprovante e quem pode o quê", () => {
     expect(heroServiceSchema.safeParse({ ...baseService, status: "overdue" }).success).toBe(false);
     expect(heroServiceSchema.safeParse({ ...baseService, dueOn: "10/11/2026" }).success).toBe(false);
   });
-  it("caminho do comprovante: herói/serviço/arquivo, só tipos aceitos", () => {
+  it("caminho do comprovante: Hero/serviço/arquivo, só tipos aceitos", () => {
     const ok = `${HERO}/${SVC}/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.pdf`;
     expect(isProofPath(ok, HERO, SVC)).toBe(true);
     expect(isProofPath(ok, "99999999-9999-4999-8999-999999999999", SVC)).toBe(false);

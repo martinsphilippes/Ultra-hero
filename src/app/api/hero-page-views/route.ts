@@ -4,8 +4,8 @@ import { parseHeroPageView } from "@/lib/indicators";
 import { createBumpLimiter } from "@/lib/recipes/showcase";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 
-// Visitas à página do herói (0061): somadas por dia e herói. Nada da pessoa (sem id, sem IP).
-// Resposta sempre 204; só o service role soma (hero_page_view_bump confere se o herói está ativo).
+// Visitas à página do Hero (0061): somadas por dia e Hero. Nada da pessoa (sem id, sem IP).
+// Resposta sempre 204; só o service role soma (hero_page_view_bump confere se o Hero está ativo).
 // Mesmo desenho de /api/shortcut-opens.
 
 const allow = createBumpLimiter(600, 60_000);

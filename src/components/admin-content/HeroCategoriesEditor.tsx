@@ -18,11 +18,11 @@ export type HeroCategoryRow = {
   slug: string;
   name: HeroCategoryNames;
   is_active: boolean;
-  /** Heróis ligados (qualquer status). */
+  /** Heros ligados (qualquer status). */
   heroCount: number;
-  /** Heróis ativos ligados (0 = chip escondido na aba Hero). */
+  /** Heros ativos ligados (0 = chip escondido na aba Hero). */
   visibleCount: number;
-  /** Nomes dos heróis ligados, para conferência. */
+  /** Nomes dos Heros ligados, para conferência. */
   heroNames: string[];
 };
 

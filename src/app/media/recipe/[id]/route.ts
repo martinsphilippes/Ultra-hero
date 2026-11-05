@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 
 // Proxy das fotos de receita (bucket privado recipe-media, 0028). A visibilidade é decidida a cada
 // requisição pela RLS de recipe_media com o cliente de quem pede: galeria de receita no ar para
-// todos, foto de etapa só com acesso à receita, rascunho só para o herói dono e o admin. Nenhum
+// todos, foto de etapa só com acesso à receita, rascunho só para o Hero dono e o admin. Nenhum
 // código aqui usa a service role. Os bytes são conferidos contra o tipo gravado antes de servir.
 
 export const dynamic = "force-dynamic";

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { QuickActions } from "@/components/ui";
 import { campaignCreateHref } from "@/lib/hero-work/campaign";
 
-// "Criar para esta campanha" (pedido do responsável, 04/11): na tela da campanha do herói, o que ele pode criar,
+// "Criar para esta campanha" (pedido do responsável, 04/11): na tela da campanha do Hero, o que ele pode criar,
 // cada atalho abrindo o criador que já existe com ?campanha= (faixa da campanha, texto com as marcas do briefing e,
 // ao publicar, a volta para cá com o link pronto para a entrega). Post rápido em destaque; os demais em 3 colunas.
 export function CampaignCreate({ campaignId }: { campaignId: string }) {

@@ -34,7 +34,7 @@ export default async function AdminAgendaEventPage({ params }: { params: Promise
     eventCommercial(id),
     listVisiblePosts({ eventId: id, limit: 10 }),
   ]);
-  // 0101: compatibilidade (todos os heróis × todas as marcas com interesse), histórico comercial e notícias do evento
+  // 0101: compatibilidade (todos os Heros × todas as marcas com interesse), histórico comercial e notícias do evento
   const compat = compatFromInterests(interests);
   const live = event.status !== "draft" && event.publishedAt !== null && new Date(event.publishedAt).getTime() <= Date.now();
   return (

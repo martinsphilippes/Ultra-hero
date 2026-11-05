@@ -8,7 +8,7 @@
 --   externo e preço opcional (informativo). Por isso tabelas novas:
 --   brands                    marca (nome, slug, logo, site, status, relação padrão, is_demo)
 --   brand_products            produto externo da marca (link https, preço opcional)
---   creator_brands            herói ↔ marca, com o tipo de relação
+--   creator_brands            Hero ↔ marca, com o tipo de relação
 --   content_brands            conteúdo/post ↔ marca citada
 --   content_brand_products    conteúdo/post ↔ produto recomendado (bloco sob o conteúdo)
 --   program_brand_products    programa ↔ equipamento/produto recomendado
@@ -19,7 +19,7 @@
 -- Relações: sponsor (patrocinador), mentioned (marca mencionada), identified (produto identificado).
 --   Nada de patrocínio inventado: o seed só tem marcas fictícias (is_demo), só com "produto
 --   identificado" e só em fotos de banco de imagem (sem a pessoa real nelas).
--- Leitura pública: só linha ativa, de marca ativa, de herói ativo e de conteúdo/programa no ar.
+-- Leitura pública: só linha ativa, de marca ativa, de Hero ativo e de conteúdo/programa no ar.
 --   Escrita: só por RPC do admin (security definer, is_admin() no início), sempre auditada.
 -- Regras gerais: idempotente; search_path fixo; grants explícitos; RLS ligada; políticas com
 --   (select ...); chave primária própria (id) em toda tabela-ponte (lição da 0055, PGRST201);
@@ -407,7 +407,7 @@ end $$;
 revoke execute on function public.admin_brand_product_delete(uuid) from public, anon;
 grant execute on function public.admin_brand_product_delete(uuid) to authenticated, service_role;
 
--- Marcas do herói: troca a lista inteira. p_items = [{"brand_id", "relationship", "status"}], na
+-- Marcas do Hero: troca a lista inteira. p_items = [{"brand_id", "relationship", "status"}], na
 -- ordem (até 12, sem repetir). Lista vazia tira todas.
 create or replace function public.admin_creator_brands_save(p_creator uuid, p_items jsonb)
 returns int language plpgsql security definer set search_path = public as $$
@@ -639,7 +639,7 @@ end $$;
 -- example.com). Nenhum patrocínio: só "produto identificado", e marcações só em fotos de banco de
 -- imagem (copo d'água, prato, faca e chaira) — nunca sobre a pessoa real. Reaplicar não sobrescreve o
 -- que o admin editou: marca/produto existente fica como está; ligações só entram se o admin nunca
--- mexeu naquele herói/programa/conteúdo (auditoria).
+-- mexeu naquele Hero/programa/conteúdo (auditoria).
 -- (marca ou produto que o admin apagou não volta ao reaplicar)
 insert into public.brands (id, slug, name, logo_url, site_url, status, default_relationship, is_demo)
 select public.seed_uuid('brand:' || s.slug), s.slug, s.name, '/brands/' || s.slug || '.svg', 'https://example.com/' || s.slug, 'active', 'identified', true
@@ -679,7 +679,7 @@ where exists (select 1 from public.brands b where b.id = public.seed_uuid('brand
   and not exists (select 1 from public.admin_audit a where a.action = 'brand_product.delete' and a.resource_id = public.seed_uuid('brand_product:' || s.key)::text)
 on conflict do nothing;
 
--- herói ↔ marca: só "produto identificado" (há produto da marca marcado numa foto dele)
+-- Hero ↔ marca: só "produto identificado" (há produto da marca marcado numa foto dele)
 insert into public.creator_brands (id, creator_id, brand_id, relationship, status, sort_order)
 select public.seed_uuid('creator_brand:' || s.key), c.id, public.seed_uuid('brand:' || s.brand), 'identified', 'active', s.sort
 from (values

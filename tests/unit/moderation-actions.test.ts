@@ -50,7 +50,7 @@ describe("reportAction", () => {
 });
 
 describe("bloquear e desbloquear", () => {
-  it("chama block_hero e unblock_hero com o herói", async () => {
+  it("chama block_hero e unblock_hero com o Hero", async () => {
     expect(await blockHeroAction(HERO)).toEqual({ ok: true });
     expect(await unblockHeroAction(HERO)).toEqual({ ok: true });
     expect(state.calls.map((c) => c.fn)).toEqual(["block_hero", "unblock_hero"]);

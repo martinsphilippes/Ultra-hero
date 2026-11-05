@@ -106,7 +106,7 @@ begin
     v_scope_type := 'brand'; v_scope_id := v_inv.brand_id;
   elsif v_inv.role::text = 'creator' and v_inv.talent_id is not null then
     perform pg_advisory_xact_lock(hashtext('talent_person:' || v_uid::text));
-    -- talento sem página pública (D2). D10: no máximo um talento por pessoa (próprio ou pelo herói)
+    -- talento sem página pública (D2). D10: no máximo um talento por pessoa (próprio ou pelo Hero)
     if exists (select 1 from public.talent_profiles t left join public.creator_profiles c on c.id = t.creator_id
                where t.id <> v_inv.talent_id and (t.user_id = v_uid or c.user_id = v_uid)) then
       perform set_config('app.trusted', 'off', true);
@@ -125,7 +125,7 @@ begin
     v_scope_type := 'talent'; v_scope_id := v_inv.talent_id;
   else
     perform pg_advisory_xact_lock(hashtext('talent_person:' || v_uid::text));
-    -- D10: herói que já está num casting não vira o segundo talento de quem já tem um
+    -- D10: Hero que já está num casting não vira o segundo talento de quem já tem um
     if exists (select 1 from public.talent_profiles t where t.creator_id = v_inv.creator_profile_id)
        and exists (select 1 from public.talent_profiles t2 left join public.creator_profiles c2 on c2.id = t2.creator_id
                    where t2.creator_id is distinct from v_inv.creator_profile_id and (t2.user_id = v_uid or c2.user_id = v_uid)) then

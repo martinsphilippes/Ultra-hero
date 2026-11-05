@@ -17,8 +17,8 @@ import { rpcErrorCode } from "@/lib/supabase/helpers";
 
 // Capa do conteúdo no editor do admin: foto tirada na hora ou escolhida no celular (de um vídeo, o
 // navegador tira um quadro). Mesmo desenho de segurança da foto do post (0043): os bytes passam pelo
-// servidor, que confere tipo e dimensões pelos magic bytes, reserva o envio no banco pelo herói
-// escolhido (post_photo_upload_claim honra o admin agindo por um herói ativo: 0045; kill switch e
+// servidor, que confere tipo e dimensões pelos magic bytes, reserva o envio no banco pelo Hero
+// escolhido (post_photo_upload_claim honra o admin agindo por um Hero ativo: 0045; kill switch e
 // cota valem), grava no bucket público post-photos com o service role e devolve a URL pública. A URL
 // só entra em content.cover_url quando o formulário é salvo; sem uso em 1 h, a limpeza diária apaga.
 
@@ -56,15 +56,15 @@ function rpcFailure(error: { code?: string; message?: string } | null): ContentC
   if (error.code === "PGRST202" || error.code === "PGRST205" || error.code === "42883" || error.code === "42P01") return "photo_not_configured";
   const code = rpcErrorCode(error.message);
   if (KNOWN.has(code)) return code as ContentCoverError;
-  // sem permissão no banco (herói escolhido inativo, cabeçalho não honrado): a tela pede outro herói
+  // sem permissão no banco (Hero escolhido inativo, cabeçalho não honrado): a tela pede outro Hero
   return error.code === "42501" ? "not_a_hero" : "generic";
 }
 
 export async function uploadContentCover(formData: FormData): Promise<ContentCoverResult> {
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
-  // admin (0045): o herói em nome de quem a capa é reservada vem do seletor. 0092: o creator (titular ou membro)
-  // também, pelo Novo conteúdo dele — o banco confere que o herói pedido é o dele (my_creator_id com x-my-hero).
+  // admin (0045): o Hero em nome de quem a capa é reservada vem do seletor. 0092: o creator (titular ou membro)
+  // também, pelo Novo conteúdo dele — o banco confere que o Hero pedido é o dele (my_creator_id com x-my-hero).
   const isAdmin = await hasRole("admin");
   if (!isAdmin && !hasHeroRole(await getRoles())) return { ok: false, error: "forbidden" };
   const base = supabaseBaseUrl();
@@ -83,9 +83,9 @@ export async function uploadContentCover(formData: FormData): Promise<ContentCov
   if (!check.ok) return { ok: false, error: check.error };
 
   try {
-    // cabeçalho x-acting-hero: o banco só o honra para o admin com herói ativo (acting_hero_id, 0045).
-    // Confere antes de reservar: um admin que também é herói passaria na reserva pelo próprio perfil, e
-    // a capa ficaria reservada "por ninguém" para um herói inativo ou inexistente.
+    // cabeçalho x-acting-hero: o banco só o honra para o admin com Hero ativo (acting_hero_id, 0045).
+    // Confere antes de reservar: um admin que também é Hero passaria na reserva pelo próprio perfil, e
+    // a capa ficaria reservada "por ninguém" para um Hero inativo ou inexistente.
     const supabase = isAdmin ? await actingClient(parsed.data.creatorId) : await createClient({ myHeroId: parsed.data.creatorId });
     const { data: acting, error: actingError } = await supabase.rpc(isAdmin ? "acting_hero_id" : "my_creator_id");
     if (actingError) return { ok: false, error: rpcFailure(actingError) };

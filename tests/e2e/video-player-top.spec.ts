@@ -3,7 +3,7 @@ import { loginAs } from "./helpers/login";
 
 // Página de vídeo: o player fica no topo, no lugar da capa (não há mais uma capa grande em cima e o
 // player embaixo). Só leitura. Usa um vídeo de demonstração gratuito (player simulado) e o vídeo
-// postado pelo herói (Cloudflare Stream), quando existir no ambiente.
+// postado pelo Hero (Cloudflare Stream), quando existir no ambiente.
 const PROVIDER_NOT_CONFIGURED = /provedor ainda não configurado/;
 
 for (const slug of ["mobilidade-de-quadril-em-8-minutos-t2", "lasanha-xwmqs5"]) {

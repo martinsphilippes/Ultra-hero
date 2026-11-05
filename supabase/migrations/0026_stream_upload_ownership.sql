@@ -1,8 +1,8 @@
 -- =============================================================================
 -- Ultra Hero · 0026 · Dono do vídeo do Cloudflare Stream amarrado no banco
---   Até a 0025 a checagem "o uid é deste herói" vivia só na server action: pelo PostgREST o herói
+--   Até a 0025 a checagem "o uid é deste Hero" vivia só na server action: pelo PostgREST o Hero
 --   conseguia gravar no próprio rascunho qualquer media_ref cloudflare_stream (o uid de outro
---   herói é público no cover_url) e publicar pela RPC, republicando como seu o vídeo alheio.
+--   Hero é público no cover_url) e publicar pela RPC, republicando como seu o vídeo alheio.
 --   Agora todo uid nasce em stream_uploads, gravado só pelo servidor (service role) no momento
 --   em que o ticket de upload é criado, e o banco exige esse vínculo para gravar e publicar.
 -- Regras desta migração: nada de drop/truncate; search_path fixo; grants explícitos; políticas
@@ -30,7 +30,7 @@ create index if not exists stream_uploads_content_idx on public.stream_uploads (
 
 alter table public.stream_uploads enable row level security;
 
--- Leitura: o próprio herói (contagem do limite por hora na action) e o admin. Escrita: ninguém
+-- Leitura: o próprio Hero (contagem do limite por hora na action) e o admin. Escrita: ninguém
 -- pela API; o service role (bypassrls) grava no ticket, no descarte e na limpeza.
 do $$ begin
   if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'stream_uploads' and policyname = 'stream_uploads_select') then
@@ -45,8 +45,8 @@ grant select on table public.stream_uploads to authenticated;
 grant all on table public.stream_uploads to service_role;
 
 -- Vídeos que já existiam antes desta migração: vínculo do uid com o dono do conteúdo, desde que
--- o uid apareça em conteúdos de um só herói (uid compartilhado entre heróis, ou também usado por
--- conteúdo da plataforma, sem herói, não é herdado: o filtro fica no HAVING, não no WHERE).
+-- o uid apareça em conteúdos de um só Hero (uid compartilhado entre Heros, ou também usado por
+-- conteúdo da plataforma, sem Hero, não é herdado: o filtro fica no HAVING, não no WHERE).
 -- Roda antes do gatilho de limite para não contar o histórico como envio novo. expires_at
 -- 'infinity': vídeo antigo não tem ticket vencido, então a limpeza diária nunca o pega (senão um
 -- rascunho antigo seria apagado na primeira execução). O not exists deixa a reaplicação inócua
@@ -61,7 +61,7 @@ having count(distinct c.creator_id) = 1 and bool_and(c.creator_id is not null)
 on conflict (uid) do nothing;
 
 -- ---------------------------------------------------------------- 2) limite de envios por hora
--- Mais de 10 tickets do mesmo herói na última hora: abuso (ou laço no cliente). O lock por herói
+-- Mais de 10 tickets do mesmo Hero na última hora: abuso (ou laço no cliente). O lock por Hero
 -- serializa inserções concorrentes, senão duas requisições simultâneas passariam juntas da conta.
 create or replace function public.stream_uploads_rate_limit()
 returns trigger language plpgsql set search_path = public as $$
@@ -78,7 +78,7 @@ grant execute on function public.stream_uploads_rate_limit() to authenticated, s
 create or replace trigger trg_a_stream_uploads_rate_limit before insert on public.stream_uploads
   for each row execute function public.stream_uploads_rate_limit();
 
--- ---------------------------------------------------------------- 3) corpo só com uid do próprio herói
+-- ---------------------------------------------------------------- 3) corpo só com uid do próprio Hero
 -- Mesmo padrão dos guards de 0010/0017: sistema (sem JWT), admin e funções confiáveis passam.
 -- security definer para enxergar o vínculo e o conteúdo sem depender da RLS de quem grava.
 -- Um uid serve a um conteúdo só: o envio tem de estar livre (content_id nulo) ou ligado a este
@@ -121,13 +121,13 @@ create or replace trigger trg_a_content_bodies_stream before insert or update on
 
 -- ---------------------------------------------------------------- 4) publicar exige o vínculo
 -- Mesma assinatura e lógica da 0025; acrescenta: vídeo do Stream só vai ao ar com stream_uploads
--- do próprio herói para aquele uid (não descartado). Defesa em profundidade além do gatilho:
+-- do próprio Hero para aquele uid (não descartado). Defesa em profundidade além do gatilho:
 -- cobre corpo gravado antes desta migração ou por caminho confiável.
 create or replace function public.creator_publish_content(p_content uuid)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare c public.content%rowtype; v_uid uuid := auth.uid(); v_creator uuid;
         v_provider public.media_provider; v_ref text; v_round int;
-        v_feedback constant text := 'Publicação direta pelo herói';
+        v_feedback constant text := 'Publicação direta pelo Hero';
 begin
   if v_uid is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
   v_creator := public.my_creator_id();
@@ -176,13 +176,13 @@ revoke execute on function public.creator_publish_content(uuid) from public, ano
 grant execute on function public.creator_publish_content(uuid) to authenticated, service_role;
 
 -- ---------------------------------------------------------------- 5) descartar rascunho de vídeo
--- O herói não apaga conteúdo pela RLS (content_delete_admin). Esta RPC apaga só o rascunho de
--- vídeo do Stream do próprio herói que nunca foi ao ar (published_at nulo: algo que já esteve
+-- O Hero não apaga conteúdo pela RLS (content_delete_admin). Esta RPC apaga só o rascunho de
+-- vídeo do Stream do próprio Hero que nunca foi ao ar (published_at nulo: algo que já esteve
 -- publicado pode ter links e histórico; despublicado não é descartável). Os filhos de content
 -- cascateiam; program_items/completions/substituições são restrict e viram 'content_in_use'.
 -- O envio fica marcado como descartado (content_id vira nulo pelo FK) e o servidor apaga o
 -- vídeo no Cloudflare com o uid devolvido; se falhar, a limpeza diária tenta de novo.
--- Só devolve (e descarta) o uid quando o envio é DESTE rascunho: do herói, não descartado, livre
+-- Só devolve (e descarta) o uid quando o envio é DESTE rascunho: do Hero, não descartado, livre
 -- ou ligado a este conteúdo e sem outro corpo usando o mesmo uid. Corpo com uid clonado de um post
 -- publicado (ou sem vínculo) apaga só o rascunho; o vídeo do outro conteúdo fica intacto.
 create or replace function public.creator_discard_video_draft(p_content uuid)
@@ -262,7 +262,7 @@ grant execute on function public.creator_set_draft_slug(uuid, text) to authentic
 -- Só candidatos de verdade, filtrados no banco (filtrar em JS deixava publicados e vídeos prontos
 -- ocupando para sempre a janela e a limpeza parava): envio vencido, não descartado, cujo uid não
 -- é usado por conteúdo que está ou já esteve no ar. draft_id é o rascunho nunca publicado do
--- mesmo herói cujo corpo ainda usa o uid (o que pode ser apagado junto); referenced diz se algum
+-- mesmo Hero cujo corpo ainda usa o uid (o que pode ser apagado junto); referenced diz se algum
 -- corpo ainda usa o uid (sem uso nenhum o vídeo é órfão e sai sem consultar o Cloudflare).
 -- Ordem por checked_at (nulos antes): rascunhos com vídeo pronto conferidos vão para o fim da fila.
 -- security invoker e só para o service role (o cron); fora da lista pública do S14.
@@ -293,7 +293,7 @@ revoke execute on function public.stream_cleanup_candidates(timestamptz, int) fr
 grant execute on function public.stream_cleanup_candidates(timestamptz, int) to service_role;
 
 -- ---------------------------------------------------------------- 8) descarte pela limpeza diária
--- A fila é lida de uma vez e cada item espera o Cloudflare (até 15 s): nesse meio-tempo o herói
+-- A fila é lida de uma vez e cada item espera o Cloudflare (até 15 s): nesse meio-tempo o Hero
 -- pode ter trocado a mídia ou publicado. Esta função confere tudo de novo, com as linhas travadas,
 -- e só então apaga o rascunho e marca o envio. Devolve false quando algo mudou (o cron não apaga o
 -- vídeo e a próxima execução reavalia). p_draft nulo: só marca, e só se nenhum corpo usa o uid.

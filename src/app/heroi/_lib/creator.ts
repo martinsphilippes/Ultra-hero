@@ -26,11 +26,11 @@ export type CreatorContext = {
   creatorId: string | null;
   profile: CreatorProfile | null;
   reason: "ok" | CreatorUnavailableReason;
-  /** 0091: papel na equipe do herói (o membro posta, mas não edita perfil, foto nem capa). */
+  /** 0091: papel na equipe do Hero (o membro posta, mas não edita perfil, foto nem capa). */
   teamRole?: "owner" | "member" | null;
 };
 
-/** Contexto das telas do portal com o cliente certo (com o cabeçalho do herói no modo do admin). */
+/** Contexto das telas do portal com o cliente certo (com o cabeçalho do Hero no modo do admin). */
 export type PortalCreatorContext = CreatorContext & { supabase: CreatorSupabase; acting: boolean };
 
 const PROFILE_SELECT = "id, slug, name, headline, bio, pillars, avatar_url, cover_url, is_fictional, status, socials, rights_note";
@@ -39,8 +39,8 @@ export const getMyCreator = cache(async (): Promise<CreatorContext> => {
   const user = await getUser();
   if (!user) return { userId: null, creatorId: null, profile: null, reason: "unlinked" };
   const supabase = await createClient();
-  // 0091: o herói pode ser da pessoa (titular) ou de uma equipe em que ela está (membro); my_creator_id já
-  // considera os dois (só ativo). Sem herói ativo, o da equipe (pendente/inativo) explica o motivo.
+  // 0091: o Hero pode ser da pessoa (titular) ou de uma equipe em que ela está (membro); my_creator_id já
+  // considera os dois (só ativo). Sem Hero ativo, o da equipe (pendente/inativo) explica o motivo.
   const [{ data: creatorId }, { data: team }] = await Promise.all([supabase.rpc("my_creator_id"), supabase.rpc("my_hero_team")]);
   const id = typeof creatorId === "string" && creatorId ? creatorId : null;
   const teamHero = team && typeof team === "object" && !Array.isArray(team) ? (team as { creator_id?: string; role?: string }) : null;
@@ -58,7 +58,7 @@ export const getMyCreator = cache(async (): Promise<CreatorContext> => {
   };
 });
 
-// Admin no fluxo "Publicar como hero": o herói escolhido (revalidado no banco). Sem escolha
+// Admin no fluxo "Publicar como hero": o Hero escolhido (revalidado no banco). Sem escolha
 // válida, volta ao seletor do início do admin; banco sem a 0045, estado "indisponível".
 async function actingContext(card: HeroCard): Promise<PortalCreatorContext> {
   const user = await getUser();
@@ -73,19 +73,19 @@ async function actingContext(card: HeroCard): Promise<PortalCreatorContext> {
 }
 
 /**
- * Telas de gestão do portal (painel, receitas, vínculos): só o admin, pelo herói escolhido.
- * O herói comum (e qualquer outra conta) volta para o Perfil, onde fica só o "Novo post".
+ * Telas de gestão do portal (painel, receitas, vínculos): só o admin, pelo Hero escolhido.
+ * O Hero comum (e qualquer outra conta) volta para o Perfil, onde fica só o "Novo post".
  */
 export async function getManagedCreator(card: HeroCard): Promise<PortalCreatorContext> {
   if (!(await hasRole("admin"))) redirect("/profile");
   return actingContext(card);
 }
 
-/** Novo post: o próprio herói, ou o admin pelo herói escolhido. */
+/** Novo post: o próprio Hero, ou o admin pelo Hero escolhido. */
 export async function getPostingCreator(): Promise<PortalCreatorContext> {
   if (await hasRole("admin")) return actingContext("post");
   const [ctx, heroes] = await Promise.all([getMyCreator(), listMyHeroes()]);
-  // 0092: quem está em mais de uma equipe posta pelo herói escolhido (o banco só honra para membro ativo)
+  // 0092: quem está em mais de uma equipe posta pelo Hero escolhido (o banco só honra para membro ativo)
   const chosen = heroes.length > 1 ? await chosenHeroId(heroes, ctx.creatorId) : ctx.creatorId;
   if (chosen && chosen !== ctx.creatorId) {
     const supabase = await createClient({ myHeroId: chosen });
@@ -95,10 +95,10 @@ export async function getPostingCreator(): Promise<PortalCreatorContext> {
   return { ...ctx, supabase: await createClient(), acting: false };
 }
 
-/** Herói de que a pessoa faz parte (titular ou membro ativo, herói ativo). */
+/** Hero de que a pessoa faz parte (titular ou membro ativo, Hero ativo). */
 export type MyHero = { id: string; name: string; slug: string; avatar_url: string | null; role: "owner" | "member"; status: HeroStatus };
 
-/** Todos os heróis da pessoa (titular ou membro ativo da equipe), com situação — inclusive pendente e suspenso (cartão do Perfil). */
+/** Todos os Heros da pessoa (titular ou membro ativo da equipe), com situação — inclusive pendente e suspenso (cartão do Perfil). */
 export const listMyHeroesAll = cache(async (): Promise<MyHero[]> => {
   const user = await getUser();
   if (!user) return [];
@@ -123,31 +123,31 @@ export const listMyHeroesAll = cache(async (): Promise<MyHero[]> => {
     .sort((a, b) => (a.role === b.role ? 0 : a.role === "owner" ? -1 : 1));
 });
 
-/** Heróis em que dá para criar (ativo ou pendente), titular primeiro: o seletor de quem está em mais de uma equipe (0091/0092). */
+/** Heros em que dá para criar (ativo ou pendente), titular primeiro: o seletor de quem está em mais de uma equipe (0091/0092). */
 export const listMyHeroes = cache(async (): Promise<MyHero[]> => (await listMyHeroesAll()).filter((h) => heroSelectable(h.status)));
 
-/** Herói em uso por quem está em mais de uma equipe: o escolhido (cookie), se ainda vale, senão o padrão do banco. */
+/** Hero em uso por quem está em mais de uma equipe: o escolhido (cookie), se ainda vale, senão o padrão do banco. */
 export async function chosenHeroId(heroes: readonly { id: string }[], fallback: string | null): Promise<string | null> {
   const raw = (await cookies()).get(MY_HERO_COOKIE)?.value;
   return pickMyHero(heroes, isUuid(raw) ? raw.toLowerCase() : null, fallback);
 }
 
-/** Contexto de "Meus conteúdos"/"Novo conteúdo"/receitas: herói em uso, heróis da pessoa e o que ela pode remover. */
+/** Contexto de "Meus conteúdos"/"Novo conteúdo"/receitas: Hero em uso, Heros da pessoa e o que ela pode remover. */
 export type ContentWorkspace = PortalCreatorContext & {
   heroes: MyHero[];
   teamRole: "owner" | "member" | null;
   /** Tirar do ar/arquivar/excluir o que já esteve no ar (titular ou admin; o banco confere). */
   canRemove: boolean;
   isAdmin: boolean;
-  /** Herói padrão da pessoa (my_creator_id sem escolha): receitas saem por ele. */
+  /** Hero padrão da pessoa (my_creator_id sem escolha): receitas saem por ele. */
   defaultHeroId: string | null;
 };
 
 /**
- * Telas de conteúdo do portal (0092): o admin segue pelo herói escolhido em "Publicar como hero"; o creator (titular
- * ou membro, com papel de herói) usa o herói dele. `followChoice`: honra o herói escolhido no seletor (cookie
+ * Telas de conteúdo do portal (0092): o admin segue pelo Hero escolhido em "Publicar como hero"; o creator (titular
+ * ou membro, com papel de Hero) usa o Hero dele. `followChoice`: honra o Hero escolhido no seletor (cookie
  * revalidado no banco pelo cabeçalho x-my-hero); as receitas não seguem (o Storage não recebe o cabeçalho). Conta
- * sem papel de herói volta ao Perfil.
+ * sem papel de Hero volta ao Perfil.
  */
 export async function getContentWorkspace(card: HeroCard, options: { followChoice: boolean }): Promise<ContentWorkspace> {
   if (await hasRole("admin")) {

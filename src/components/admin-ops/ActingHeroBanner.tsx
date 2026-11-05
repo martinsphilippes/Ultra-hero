@@ -10,7 +10,7 @@ import { heroCardForPath, heroPickerHref } from "@/lib/acting-hero/constants";
 type Props = { hero: { name: string; avatar_url: string | null } };
 
 // Faixa do fluxo "Publicar como hero": deixa claro em nome de quem o admin está publicando e leva ao
-// seletor para trocar, voltando ao mesmo atalho com o novo herói.
+// seletor para trocar, voltando ao mesmo atalho com o novo Hero.
 export function ActingHeroBanner({ hero }: Props) {
   const t = useTranslations("adminOps.heroPublishing.banner");
   const pathname = usePathname();

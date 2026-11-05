@@ -14,7 +14,7 @@ import {
   type OverrideRow,
 } from "@/lib/heroes/library-tabs";
 
-// Atalhos da página do herói (0050): padrões, configuração da categoria principal, exceção do herói.
+// Atalhos da página do Hero (0050): padrões, configuração da categoria principal, exceção do Hero.
 
 const ESPORTE = "cat-esporte";
 const MUSICA = "cat-musica";
@@ -127,7 +127,7 @@ describe("só a categoria principal", () => {
   });
 });
 
-describe("exceção do herói", () => {
+describe("exceção do Hero", () => {
   const rows = [tab("programas", { label: { "pt-BR": "Treinos" }, icon: "trophy", sortOrder: 5 }), tab("produtos", { isVisible: false })];
 
   it("vence a categoria campo a campo; null herda", () => {

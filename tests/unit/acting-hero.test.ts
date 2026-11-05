@@ -3,7 +3,7 @@ import { chooseActingHero } from "@/app/admin/hero-actions";
 import { ACTING_HERO_COOKIE, ACTING_HERO_HEADER, HERO_CARDS, HERO_SHORTCUTS, heroCardForPath, heroCardHref, heroPickerHref, isHeroCard } from "@/lib/acting-hero/constants";
 import { getActingHero } from "@/lib/acting-hero/server";
 
-// "Publicar como hero" (0045): para onde cada atalho leva, como o herói escolhido é lido (cookie só
+// "Publicar como hero" (0045): para onde cada atalho leva, como o Hero escolhido é lido (cookie só
 // lembra; o banco confere com o mesmo cabeçalho que as actions mandam) e a escolha pelo seletor.
 
 const HERO = "a3bb189e-8bf9-4888-9912-ace4e6543002";
@@ -56,8 +56,8 @@ beforeEach(() => {
   state.rpcs = [];
   state.confirm = { data: HERO, error: null };
   state.probe = { data: null, error: null };
-  state.choose = { data: { id: HERO, slug: "heroi", name: "Herói" }, error: null };
-  state.hero = { id: HERO, slug: "heroi", name: "Herói", avatar_url: null };
+  state.choose = { data: { id: HERO, slug: "heroi", name: "Hero" }, error: null };
+  state.hero = { id: HERO, slug: "heroi", name: "Hero", avatar_url: null };
 });
 
 describe("atalhos", () => {
@@ -93,23 +93,23 @@ describe("atalhos", () => {
 });
 
 describe("getActingHero", () => {
-  it("admin com cookie válido: confirma no banco com o cabeçalho do herói", async () => {
+  it("admin com cookie válido: confirma no banco com o cabeçalho do Hero", async () => {
     expect(await getActingHero()).toEqual({ status: "ok", hero: state.hero });
     expect(state.rpcs).toEqual([{ fn: "acting_hero_id", acting: HERO, args: undefined }]);
   });
 
-  it("não admin: nunca age por herói (nem consulta o banco)", async () => {
+  it("não admin: nunca age por Hero (nem consulta o banco)", async () => {
     state.admin = false;
     expect(await getActingHero()).toEqual({ status: "none" });
     expect(state.rpcs).toEqual([]);
   });
 
-  it("banco não confirma (herói suspenso ou outro id): sem herói", async () => {
+  it("banco não confirma (Hero suspenso ou outro id): sem Hero", async () => {
     state.confirm = { data: null, error: null };
     expect(await getActingHero()).toEqual({ status: "none" });
   });
 
-  it("cookie que não é uuid: sem herói e sem cabeçalho", async () => {
+  it("cookie que não é uuid: sem Hero e sem cabeçalho", async () => {
     state.cookie = "../../etc";
     expect(await getActingHero()).toEqual({ status: "none" });
     expect(state.clients).toEqual([null]);
@@ -129,7 +129,7 @@ describe("chooseActingHero", () => {
     expect(state.set[0]).toMatchObject({ name: ACTING_HERO_COOKIE, value: HERO, options: { httpOnly: true, sameSite: "lax", path: "/" } });
   });
 
-  it("não admin, herói inválido ou entrada estranha: nada é gravado", async () => {
+  it("não admin, Hero inválido ou entrada estranha: nada é gravado", async () => {
     state.admin = false;
     expect(await chooseActingHero(HERO, "post")).toEqual({ ok: false, error: "forbidden" });
     state.admin = true;

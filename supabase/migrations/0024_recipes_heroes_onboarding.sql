@@ -1,14 +1,14 @@
--- 0024 · Receitas por herói e etapa demonstrativa de receitas.
+-- 0024 · Receitas por Hero e etapa demonstrativa de receitas.
 --
--- 1) creator_recipe_links: o herói indica receitas assinadas por um chef (outro herói). A receita continua
---    do chef (content.creator_id = assinatura); o vínculo só diz que este herói a indica. Só o admin cria e
+-- 1) creator_recipe_links: o Hero indica receitas assinadas por um chef (outro Hero). A receita continua
+--    do chef (content.creator_id = assinatura); o vínculo só diz que este Hero a indica. Só o admin cria e
 --    muda status (RPC auditada); o público vê só os vínculos validados.
 -- 2) recipe_onboarding: etapa demonstrativa em 4 passos (aviso, restrições e alergias, interesses,
 --    confirmação) que libera as receitas no app inteiro. Uma linha por pessoa, só do dono (RLS). Restrições
 --    e alergias vêm de listas fixas (sem texto livre) e servem só para lembrar a pessoa na página da receita;
 --    somem com a conta (on delete cascade).
 
--- ---------------------------------------------------------------- 1) vínculo herói ↔ receita
+-- ---------------------------------------------------------------- 1) vínculo Hero ↔ receita
 create table if not exists public.creator_recipe_links (
   id uuid primary key default gen_random_uuid(),
   creator_id uuid not null references public.creator_profiles (id) on delete cascade,
@@ -37,7 +37,7 @@ do $$ begin
   end if;
 end $$;
 
--- Admin liga (ou muda o status de) uma receita a um herói. Só receitas, e nunca do próprio herói
+-- Admin liga (ou muda o status de) uma receita a um Hero. Só receitas, e nunca do próprio Hero
 -- (a receita própria já aparece assinada por ele).
 create or replace function public.admin_set_creator_recipe(p_creator uuid, p_content uuid, p_status public.link_status, p_sort int default null)
 returns uuid language plpgsql security definer set search_path = public as $$
@@ -65,7 +65,7 @@ end $$;
 revoke execute on function public.admin_set_creator_recipe(uuid, uuid, public.link_status, int) from public, anon;
 grant execute on function public.admin_set_creator_recipe(uuid, uuid, public.link_status, int) to authenticated, service_role;
 
--- Seed: todo herói indica as receitas dos chefs que não são dele (validadas, na ordem de publicação).
+-- Seed: todo Hero indica as receitas dos chefs que não são dele (validadas, na ordem de publicação).
 insert into public.creator_recipe_links (creator_id, content_id, status, sort_order, validated_at)
 select cp.id, c.id, 'validated', (row_number() over (partition by cp.id order by c.published_at desc nulls last, c.id))::int * 10, now()
 from public.creator_profiles cp

@@ -13,8 +13,8 @@ type Props = {
   recipe: RecipeCardData;
   priority?: boolean;
   /**
-   * Na Alimentação de um herói: o herói da vitrine. Receita de outro chef aparece como "Receita de
-   * {chef} · indicada por {herói}"; sem chef, "Indicada por {herói}". O link leva ?vitrine=.
+   * Na Alimentação de um Hero: o Hero da vitrine. Receita de outro chef aparece como "Receita de
+   * {chef} · indicada por {Hero}"; sem chef, "Indicada por {Hero}". O link leva ?vitrine=.
    */
   showcaseHero?: ShowcasePerson | null;
   /** Ações da vitrine (Fazer, Comprar pronto, Lista de compras), abaixo da assinatura. */
@@ -22,7 +22,7 @@ type Props = {
   headingLevel?: "h2" | "h3";
 };
 
-// Card de receita (catálogo, biblioteca do herói e relacionadas): foto 4:5, título, chef, tempo total,
+// Card de receita (catálogo, biblioteca do Hero e relacionadas): foto 4:5, título, chef, tempo total,
 // porções, dificuldade e os alérgenos e dietas declarados pelo chef. Aberto a todos, inclusive ao
 // visitante (P2); a página da receita é que pede a etapa demonstrativa. Nenhum selo de adequação.
 export async function RecipeCard({ recipe, priority, showcaseHero = null, actions, headingLevel: Heading = "h3" }: Props) {
@@ -41,7 +41,7 @@ export async function RecipeCard({ recipe, priority, showcaseHero = null, action
     : recipe.allergens.length === 0
       ? t("allergensNone")
       : t("allergensDeclared", { list: recipe.allergens.map((a) => ta(a)).join(", ") });
-  // assinatura (0051): o chef escolhido pelo admin ou o autor; o herói da vitrine indica
+  // assinatura (0051): o chef escolhido pelo admin ou o autor; o Hero da vitrine indica
   const signature = recipeSignature({ author: recipe.creator, signer: recipe.signer, showcaseHero });
   const chef = signature.chef;
   const indicatedBy = signature.hero;

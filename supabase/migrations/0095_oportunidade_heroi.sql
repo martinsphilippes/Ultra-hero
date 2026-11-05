@@ -1,49 +1,49 @@
 -- =============================================================================
--- Groscove Ultra · 0095 · Oportunidade de patrocínio por HERÓI (busca na plataforma, ficha criada ao salvar,
--- herói digitado, rascunho sem consentimento). Cenário RLS S102. Idempotente. S14 segue 18 (nada novo para o visitante).
--- Depende da 0065 (casting), 0085/0088 (oportunidade e cotas), 0087/0091 (convite e login do creator), 0093 (sugerir heróis).
+-- Groscove Ultra · 0095 · Oportunidade de patrocínio por HERO (busca na plataforma, ficha criada ao salvar,
+-- Hero digitado, rascunho sem consentimento). Cenário RLS S102. Idempotente. S14 segue 18 (nada novo para o visitante).
+-- Depende da 0065 (casting), 0085/0088 (oportunidade e cotas), 0087/0091 (convite e login do creator), 0093 (sugerir Heros).
 --
--- Pedido do responsável: "Essa parte do elenco não tem a ver com elenco, tem a ver com o herói! Tem que definir o herói
--- para gerar a oportunidade." O primeiro campo do formulário passa a ser o HERÓI (a página pública do creator para quem
--- o evento acontece), escolhido entre os heróis da plataforma (como no diálogo "Sugerir heróis"), sem a trava do elenco
+-- Pedido do responsável: "Essa parte do elenco não tem a ver com elenco, tem a ver com o Hero! Tem que definir o Hero
+-- para gerar a oportunidade." O primeiro campo do formulário passa a ser o HERO (a página pública do creator para quem
+-- o evento acontece), escolhido entre os Heros da plataforma (como no diálogo "Sugerir Heros"), sem a trava do elenco
 -- com consentimento.
 --
 -- Decisões:
---  1) Herói guardado POR FICHA: a oportunidade continua guardando talent_id (a ficha do casting da agência) e o herói é
+--  1) Hero guardado POR FICHA: a oportunidade continua guardando talent_id (a ficha do casting da agência) e o Hero é
 --     lido por talent_profiles.creator_id. Não há coluna creator_id duplicada na oportunidade: ela ficaria velha se a
---     ficha de um digitado fosse ligada a um herói depois (agency_talent_link_creator). Toda leitura devolve o objeto
---     "hero" (creator_id, slug, nome, foto, chamada, nichos) montado em sponsorship_hero_json. Herói digitado = ficha sem
---     herói: só o nome.
---  2) Origem do herói ao salvar (p_data.hero): {kind:'talent', talent_id} (ficha do casting), {kind:'hero', creator_id}
---     (herói da plataforma fora do casting: a agência cria a ficha ligada a ele, commercial_status 'prospect', SEM
---     consentimento, como na 0093) ou {kind:'typed', name, profile?, email?} (ficha sem herói). A lógica de criar a
---     ficha está em agency_hero_ficha (interna, a mesma regra da 0093: um herói num casting só, regra D10 da pessoa,
---     agência de demonstração não usa herói real, nome limpo, perfil @ ou https, e-mail válido). p_data.talent_id
---     (formato antigo) segue valendo. Herói suspenso ou pendente não existe para a agência (not_found).
+--     ficha de um digitado fosse ligada a um Hero depois (agency_talent_link_creator). Toda leitura devolve o objeto
+--     "hero" (creator_id, slug, nome, foto, chamada, nichos) montado em sponsorship_hero_json. Hero digitado = ficha sem
+--     Hero: só o nome.
+--  2) Origem do Hero ao salvar (p_data.hero): {kind:'talent', talent_id} (ficha do casting), {kind:'hero', creator_id}
+--     (Hero da plataforma fora do casting: a agência cria a ficha ligada a ele, commercial_status 'prospect', SEM
+--     consentimento, como na 0093) ou {kind:'typed', name, profile?, email?} (ficha sem Hero). A lógica de criar a
+--     ficha está em agency_hero_ficha (interna, a mesma regra da 0093: um Hero num casting só, regra D10 da pessoa,
+--     agência de demonstração não usa Hero real, nome limpo, perfil @ ou https, e-mail válido). p_data.talent_id
+--     (formato antigo) segue valendo. Hero suspenso ou pendente não existe para a agência (not_found).
 --  3) CONSENTIMENTO: a regra de segurança não muda, só muda QUANDO vale. Consentimento vigente (consent_at sem revogação)
---     e herói ativo são exigidos para a oportunidade ficar VISÍVEL às marcas (status 'open'). Rascunho ('draft') nasce
+--     e Hero ativo são exigidos para a oportunidade ficar VISÍVEL às marcas (status 'open'). Rascunho ('draft') nasce
 --     e se edita sem consentimento, mas é invisível a marcas e ao creator: a agenda dele não mostra, o sino não avisa,
 --     as políticas de leitura da marca/creator excluem rascunho (brand_sponsorship_ids_for, sponsorship_brand_in_audience,
 --     políticas do creator e dos alvos). Publicar sem consentimento: consent_required (e a ficha criada no mesmo salvamento
 --     volta, é uma transação). O consentimento chega pelo termo assinado em Documentos ou pelo convite para o creator
 --     aceitar no escritório; depois disso a agência publica com agency_sponsorship_publish ou salvando com publish=true.
---     Se o consentimento for revogado depois de publicada, a marca continua vendo a oportunidade, mas o herói aparece só
+--     Se o consentimento for revogado depois de publicada, a marca continua vendo a oportunidade, mas o Hero aparece só
 --     com o nome (sem foto, nicho nem link), como o cartão do catálogo (talent_brand_card).
 --  4) agency_sponsorship_save (MESMA assinatura, sem sobrecarga): p_data.publish (boolean). Criando: ausente = publica
 --     (compatível com as chamadas antigas); false = rascunho. Editando rascunho: publish=true publica, senão segue
 --     rascunho. Editando aberta: segue aberta (despublicar depois que as marcas viram não existe). Só 'draft' e 'open' se
 --     editam (como antes só 'open'). Prazo no futuro vale ao criar, ao mudar e ao publicar.
---  5) agency_sponsorship_publish(p_id): publica um rascunho (gestor+): confere consentimento, herói ativo e prazo; avisa o
+--  5) agency_sponsorship_publish(p_id): publica um rascunho (gestor+): confere consentimento, Hero ativo e prazo; avisa o
 --     público (o aviso tem dedupe por marca). agency_sponsorship_decide: rascunho só se cancela (descarta), sem avisos
 --     (ninguém viu). Auditoria: sponsorship.save com o status, sponsorship.publish ao publicar.
---  6) agency_opportunity_hero_search(p_agency, p_q, p_limit, p_offset): a caixa "Herói" do formulário. Gestor+ da
---     agência; 20 por página (teto 50), busca no servidor por nome ou endereço sem acento. Devolve heróis ATIVOS da
+--  6) agency_opportunity_hero_search(p_agency, p_q, p_limit, p_offset): a caixa "Hero" do formulário. Gestor+ da
+--     agência; 20 por página (teto 50), busca no servidor por nome ou endereço sem acento. Devolve Heros ATIVOS da
 --     plataforma com selo: 'casting' (já tem ficha na agência: traz talent_id e consentimento active|revoked|none),
 --     'outside' (fora do casting, selecionável), 'other_agency' e 'person_in_casting' (indisponíveis, como na 0093), mais as
---     fichas do casting sem herói (digitadas antes). Só campos públicos do herói; nada de direitos, conta ou e-mail.
+--     fichas do casting sem Hero (digitadas antes). Só campos públicos do Hero; nada de direitos, conta ou e-mail.
 --     Suspenso/pendente não aparece. A agência de demonstração só vê o próprio casting (D6).
 --  7) Leituras: agency_sponsorships e agency_sponsorship_detail devolvem "hero" (e o detalhe, o consentimento da ficha);
---     brand_sponsorships devolve "hero" só com consentimento vigente e herói ativo; talent_sponsorships não lista rascunho.
+--     brand_sponsorships devolve "hero" só com consentimento vigente e Hero ativo; talent_sponsorships não lista rascunho.
 --  8) Todas as funções novas: search_path vazio, security definer, execute revogado de public/anon; as internas só service_role.
 -- =============================================================================
 
@@ -117,8 +117,8 @@ end $$;
 revoke execute on function public.sponsorship_sync_event(uuid) from public, anon, authenticated;
 grant execute on function public.sponsorship_sync_event(uuid) to service_role;
 
--- 3) o herói de uma ficha em json (interna) ------------------------------------------------------------------------------
--- p_brand = true (marca): a página do herói (id, endereço, foto, chamada, nichos) só com consentimento vigente e herói
+-- 3) o Hero de uma ficha em json (interna) ------------------------------------------------------------------------------
+-- p_brand = true (marca): a página do Hero (id, endereço, foto, chamada, nichos) só com consentimento vigente e Hero
 -- ativo; sem isso, só o nome. p_brand = false (agência): sempre, mais o consentimento da ficha (active|revoked|none).
 create or replace function public.sponsorship_hero_json(p_talent uuid, p_brand boolean)
 returns jsonb language sql stable security definer set search_path = '' as $$
@@ -142,7 +142,7 @@ $$;
 revoke execute on function public.sponsorship_hero_json(uuid, boolean) from public, anon, authenticated;
 grant execute on function public.sponsorship_hero_json(uuid, boolean) to service_role;
 
--- 4) ficha do herói escolhido (interna): reaproveita ou cria, com as regras da 0093 -------------------------------------
+-- 4) ficha do Hero escolhido (interna): reaproveita ou cria, com as regras da 0093 -------------------------------------
 -- p_item: {kind:'talent', talent_id} | {kind:'hero', creator_id} | {kind:'typed', name, profile?, email?}. O chamador já
 -- conferiu que o usuário é gestor+ da agência. Devolve a ficha e se foi criada agora.
 create or replace function public.agency_hero_ficha(p_agency uuid, p_item jsonb, p_source text, p_ref text)
@@ -164,7 +164,7 @@ begin
 
   elsif v_kind = 'hero' then
     begin v_creator := (p_item ->> 'creator_id')::uuid; exception when others then raise exception 'invalid_input' using errcode = '22023'; end;
-    -- só herói ativo (suspenso e pendente não existem para a agência)
+    -- só Hero ativo (suspenso e pendente não existem para a agência)
     select c.id, c.name, c.user_id into v_hero from public.creator_profiles c where c.id = v_creator and c.status = 'active';
     if v_hero.id is null then raise exception 'not_found' using errcode = 'P0002'; end if;
     perform pg_advisory_xact_lock(hashtext('hero_casting:' || v_creator::text));
@@ -172,10 +172,10 @@ begin
     if v_owner is not null then perform pg_advisory_xact_lock(hashtext('talent_person:' || v_owner::text)); end if;
     select t.id into v_talent from public.talent_profiles t where t.creator_id = v_creator and t.agency_id = p_agency and t.archived_at is null;
     if v_talent is null then
-      -- D6: nenhum herói real em agência inventada
+      -- D6: nenhum Hero real em agência inventada
       if v_demo then raise exception 'demo_locked' using errcode = 'P0001'; end if;
       if exists (select 1 from public.talent_profiles t where t.creator_id = v_creator) then raise exception 'creator_already_in_casting' using errcode = 'P0001'; end if;
-      -- D10: a pessoa dona do herói já tem ficha (login próprio sem página ou outro herói dela num casting)
+      -- D10: a pessoa dona do Hero já tem ficha (login próprio sem página ou outro Hero dela num casting)
       if v_owner is not null and exists (
            select 1 from public.talent_profiles t left join public.creator_profiles c2 on c2.id = t.creator_id
            where t.user_id = v_owner or c2.user_id = v_owner) then
@@ -230,7 +230,7 @@ end $$;
 revoke execute on function public.agency_hero_ficha(uuid, jsonb, text, text) from public, anon, authenticated;
 grant execute on function public.agency_hero_ficha(uuid, jsonb, text, text) to service_role;
 
--- 5) busca de heróis para a oportunidade ---------------------------------------------------------------------------------
+-- 5) busca de Heros para a oportunidade ---------------------------------------------------------------------------------
 create or replace function public.agency_opportunity_hero_search(p_agency uuid, p_q text default '', p_limit int default 20, p_offset int default 0)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare v_q text; v_like text; v_limit int; v_off int; v_rows jsonb; v_more boolean; v_demo boolean;
@@ -245,7 +245,7 @@ begin
   v_like := '%' || replace(replace(replace(lower(public.f_unaccent(v_q)), '\', '\\'), '%', '\%'), '_', '\_') || '%';
 
   with casting as (
-    -- fichas do casting (com herói ativo ou sem herói); herói suspenso/pendente some
+    -- fichas do casting (com Hero ativo ou sem Hero); Hero suspenso/pendente some
     select 'talent'::text as kind, t.id as talent_id, c.id as creator_id, c.slug, coalesce(c.name, t.display_name) as name, c.avatar_url, c.headline,
            coalesce(c.pillars, '{}'::public.pillar[]) as pillars, coalesce(c.socials, '{}'::jsonb) as socials,
            (select f.followers from public.creator_follower_counts f where f.creator_id = c.id) as followers,
@@ -255,7 +255,7 @@ begin
     from public.talent_profiles t left join public.creator_profiles c on c.id = t.creator_id
     where t.agency_id = p_agency and t.archived_at is null and (c.id is null or c.status = 'active')
   ), platform as (
-    -- D6: a agência de demonstração não enxerga heróis reais
+    -- D6: a agência de demonstração não enxerga Heros reais
     select 'hero'::text as kind, null::uuid as talent_id, c.id as creator_id, c.slug, c.name, c.avatar_url, c.headline,
            coalesce(c.pillars, '{}'::public.pillar[]) as pillars, coalesce(c.socials, '{}'::jsonb) as socials,
            (select f.followers from public.creator_follower_counts f where f.creator_id = c.id) as followers,
@@ -298,7 +298,7 @@ end $$;
 revoke execute on function public.agency_opportunity_hero_search(uuid, text, int, int) from public, anon;
 grant execute on function public.agency_opportunity_hero_search(uuid, text, int, int) to authenticated, service_role;
 
--- 6) criar/editar com herói (MESMA assinatura da 0085/0088). p_data além das anteriores: hero {kind, ...} e publish (boolean).
+-- 6) criar/editar com Hero (MESMA assinatura da 0085/0088). p_data além das anteriores: hero {kind, ...} e publish (boolean).
 create or replace function public.agency_sponsorship_save(p_agency uuid, p_id uuid, p_data jsonb)
 returns uuid language plpgsql security definer set search_path = '' as $$
 declare v_before public.sponsorship_opportunities%rowtype; v_id uuid := p_id; v_talent uuid; v_start timestamptz; v_end timestamptz; v_respond timestamptz;
@@ -353,7 +353,7 @@ begin
     coalesce(public.sponsorship_audience_clean(jsonb_strip_nulls(jsonb_build_object('target_audience', p_data -> 'target_audience',
       'target_age_bands', p_data -> 'target_age_bands', 'target_states', p_data -> 'target_states', 'region_note', p_data -> 'region_note'))),
       '{}'::jsonb) end;
-  -- herói (0095): ficha do casting, herói da plataforma fora do casting (a ficha nasce aqui) ou herói digitado
+  -- Hero (0095): ficha do casting, Hero da plataforma fora do casting (a ficha nasce aqui) ou Hero digitado
   if p_data ? 'hero' and jsonb_typeof(p_data -> 'hero') <> 'null' then
     if jsonb_typeof(p_data -> 'hero') <> 'object' then raise exception 'invalid_input' using errcode = '22023'; end if;
     v_hero := p_data -> 'hero';
@@ -543,7 +543,7 @@ begin
   perform public.sponsorship_close_out(p_id, v_action, v_winners, v_note, public.talent_audit_actor('agency', o.agency_id));
 end $$;
 
--- 9) leituras com o herói (MESMAS assinaturas)
+-- 9) leituras com o Hero (MESMAS assinaturas)
 create or replace function public.agency_sponsorships(p_agency uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 begin

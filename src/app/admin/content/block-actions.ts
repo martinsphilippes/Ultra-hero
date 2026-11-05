@@ -6,7 +6,7 @@ import { loadComposerOptions, type ComposerOptions } from "@/lib/post-blocks/que
 import { createClient } from "@/lib/supabase/server";
 
 // Opções dos blocos do "Novo conteúdo" do admin (0075/0076): receitas publicadas, produtos da loja e
-// programas publicados do herói escolhido. Muda junto com o herói responsável; só o admin chama.
+// programas publicados do Hero escolhido. Muda junto com o Hero responsável; só o admin chama.
 
 const EMPTY: ComposerOptions = { recipes: [], products: [], programs: [] };
 

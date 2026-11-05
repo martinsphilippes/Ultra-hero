@@ -3,12 +3,12 @@
 //
 // Decisões (sem perguntar ao responsável):
 //   • A conversa abre na página que já existe (nada de chat paralelo): canal da marca → aba Conversa do negócio
-//     (agência) ou seção Conversa da campanha (marca); canal do herói → Conversa do negócio no canal dele (agência) ou
-//     seção Conversa da oportunidade (herói); sala → sala do projeto de cada portal. Essas páginas já mostram título,
+//     (agência) ou seção Conversa da campanha (marca); canal do Hero → Conversa do negócio no canal dele (agência) ou
+//     seção Conversa da oportunidade (Hero); sala → sala do projeto de cada portal. Essas páginas já mostram título,
 //     etapa e o resto do contexto, e marcam a conversa como lida ao abrir.
 //   • Chip de etapa no vocabulário que cada lado já conhece: agência = etapa do pipeline (commercial.stages); marca e
-//     salas (marca, herói, staff) = situação vista pela marca (brandStatus: recebida, montando elenco, proposta,
-//     contratação, em produção, concluída); herói no canal dele = a situação dele no negócio (talentStatus). Negócio
+//     salas (marca, Hero, staff) = situação vista pela marca (brandStatus: recebida, montando elenco, proposta,
+//     contratação, em produção, concluída); Hero no canal dele = a situação dele no negócio (talentStatus). Negócio
 //     encerrado = resultado (ganho/perdido/cancelado). Sala travada = "Assine o NDA"; arquivada = "Sala arquivada".
 //   • URL: ?aba=mensagens|avisos. Sem "aba", ?filtro=… continua abrindo Avisos (os cartões do início já usam
 //     ?filtro=nao-lidas); sem nada, abre Mensagens (o que o responsável pediu para ficar à mão).
@@ -178,7 +178,7 @@ export function contextHref(portal: MessagingPortal, c: Pick<Conversation, "kind
 }
 
 // ---------------------------------------------------------------- chips
-/** Rótulo do tipo (messaging.kinds.<chave>): o canal do herói é "Herói" para a agência e "Oportunidade" para o herói. */
+/** Rótulo do tipo (messaging.kinds.<chave>): o canal do Hero é "Hero" para a agência e "Oportunidade" para o Hero. */
 export function kindLabelKey(portal: MessagingPortal, kind: ConversationKind): "campaign" | "hero" | "opportunity" | "room" {
   if (kind === "opportunity") return portal === "agency" ? "hero" : "opportunity";
   return kind;

@@ -1,4 +1,4 @@
-// Seguir heróis (0056): helpers puros (feed, botão e detecção do banco sem a migração).
+// Seguir Heros (0056): helpers puros (feed, botão e detecção do banco sem a migração).
 
 /** Abas do feed do Início, guardadas na URL (?feed=seguindo|todos). */
 export const FEED_TABS = ["seguindo", "todos"] as const;
@@ -11,7 +11,7 @@ export function parseFeedParam(value: string | string[] | undefined): FeedTab | 
 }
 
 /**
- * Aba do feed: a da URL quando existe; senão "Seguindo" para quem segue ao menos um herói e "Todos"
+ * Aba do feed: a da URL quando existe; senão "Seguindo" para quem segue ao menos um Hero e "Todos"
  * para o resto. Sem a 0056 no banco (follows indisponível) é sempre "Todos".
  */
 export function resolveFeedTab(input: { param: FeedTab | null; followCount: number; available: boolean; signedIn: boolean }): FeedTab {

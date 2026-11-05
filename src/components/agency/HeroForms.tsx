@@ -19,7 +19,7 @@ function slugify(name: string): string {
     .slice(0, 60);
 }
 
-// Perfil do herói gerenciado pela agência (0070): criar (com o endereço público) ou editar texto e pilares.
+// Perfil do Hero gerenciado pela agência (0070): criar (com o endereço público) ou editar texto e pilares.
 export function HeroProfileForm({ heroId, initial }: { heroId?: string; initial?: Omit<HeroValues, "slug"> & { slug?: string } }) {
   const t = useTranslations("agency.heroes.form");
   const tp = useTranslations("common.pillars");
@@ -45,7 +45,7 @@ export function HeroProfileForm({ heroId, initial }: { heroId?: string; initial?
     event.preventDefault();
     setError(null);
     startTransition(async () => {
-      // 0112: criar é só pelo Casting ("Novo herói"); aqui o formulário edita a página
+      // 0112: criar é só pelo Casting ("Novo Hero"); aqui o formulário edita a página
       if (!heroId) return;
       const result = await updateHeroAction({ id: heroId, ...values });
       if (!result.ok) {
@@ -107,7 +107,7 @@ export function HeroProfileForm({ heroId, initial }: { heroId?: string; initial?
   );
 }
 
-// Abrir a gestão de um herói: grava a escolha (auditada) e vai para a página dele.
+// Abrir a gestão de um Hero: grava a escolha (auditada) e vai para a página dele.
 export function ManageHeroButton({ heroId, label }: { heroId: string; label: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();

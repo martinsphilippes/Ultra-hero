@@ -1,14 +1,14 @@
 import { z } from "zod";
 import { quickSignupSchema } from "./quick-signup";
 
-// Cadastro por perfil (0103): na primeira página a pessoa escolhe "Como você vai usar o Ultra?" — Herói, Marca,
+// Cadastro por perfil (0103): na primeira página a pessoa escolhe "Como você vai usar o Ultra?" — Hero, Marca,
 // Agência ou só o app (consumidor, o cadastro rápido de sempre). Módulo puro (testável): perfis, endereço de cada
 // um, para onde vai depois e a validação do formulário. Mensagens dos schemas = CHAVES de auth.errors.*.
 
 /** Perfis da tela de entrada, na ordem dos cartões. */
 export const SIGNUP_PROFILES = ["hero", "brand", "agency", "consumer"] as const;
 export type SignupProfile = (typeof SIGNUP_PROFILES)[number];
-/** Perfis com passo a passo (empresa/herói a criar): viram account_onboardings 'self'. */
+/** Perfis com passo a passo (empresa/Hero a criar): viram account_onboardings 'self'. */
 export type BusinessProfile = Exclude<SignupProfile, "consumer">;
 export const BUSINESS_PROFILES = ["hero", "brand", "agency"] as const satisfies readonly BusinessProfile[];
 

@@ -31,7 +31,7 @@ async function getAdminUser(supabase: Awaited<ReturnType<typeof createClient>>, 
   return data?.[0] ?? null;
 }
 
-// Destino do papel com escopo: herói, fornecedor, profissional e os da gestão (0064).
+// Destino do papel com escopo: Hero, fornecedor, profissional e os da gestão (0064).
 const SCOPE_LINK: Record<string, string> = {
   creator: "admin.creators",
   seller_org: "admin.sellers",

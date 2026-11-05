@@ -1,19 +1,19 @@
 -- =============================================================================
--- 0097 — Portal do Herói único: "creator" é o próprio herói
--- Decisão do responsável: o CREATOR nada mais é do que o HERÓI. Para o usuário não existe mais "creator": a área do
--- herói (/creator) e o escritório do casting (/creator/escritorio) viraram um portal só, o Portal do Herói (/heroi),
--- e o convite do admin passou a ter 7 papéis (sem "Creator" separado de "Herói").
+-- 0097 — Portal do Hero único: "creator" é o próprio Hero
+-- Decisão do responsável: o CREATOR nada mais é do que o HERO. Para o usuário não existe mais "creator": a área do
+-- Hero (/creator) e o escritório do casting (/creator/escritorio) viraram um portal só, o Portal do Hero (/heroi),
+-- e o convite do admin passou a ter 7 papéis (sem "Creator" separado de "Hero").
 -- O que muda no banco (pouco, de propósito):
 --   * admin_invite(p_email, p_role, p_days, p_options) — mesma assinatura. O papel 'hero' ganha p_options.hero_mode:
---       'new'     (padrão, = 0091): herói novo pendente de aprovação, a pessoa vira titular, equipe opcional;
---       'team'    : entrar na equipe de um herói existente (= ramo 'creator'/'existing' da 0091: titular se o herói não
+--       'new'     (padrão, = 0091): Hero novo pendente de aprovação, a pessoa vira titular, equipe opcional;
+--       'team'    : entrar na equipe de um Hero existente (= ramo 'creator'/'existing' da 0091: titular se o Hero não
 --                   tem titular nem convite de titular pendente; senão membro);
---       'casting' : herói que já está no casting de uma agência → convite de acesso à ficha (mesma forma e mesmas
---                   regras do convite da agência, agency_invite_talent da 0087: sem login na ficha, herói ligado sem
---                   conta, sem convite de herói pendente; o convite novo substitui os pendentes da mesma ficha).
+--       'casting' : Hero que já está no casting de uma agência → convite de acesso à ficha (mesma forma e mesmas
+--                   regras do convite da agência, agency_invite_talent da 0087: sem login na ficha, Hero ligado sem
+--                   conta, sem convite de Hero pendente; o convite novo substitui os pendentes da mesma ficha).
 --     O ramo 'creator' continua aceito (telas antigas, convites já emitidos seguem pelo mesmo aceite).
 --   * admin_invite_talent_options(): fichas do casting que podem receber o convite (só o admin geral; o admin não lê
---     talent_profiles pela RLS). Devolve só nome, agência e se tem herói ligado — nada de valores nem contatos.
+--     talent_profiles pela RLS). Devolve só nome, agência e se tem Hero ligado — nada de valores nem contatos.
 -- O que NÃO muda: tabelas e identificadores internos (creator_profiles, talent_profiles, app_role 'creator', RPCs,
 -- pastas). Renomear o banco não traz ganho ao usuário e arrisca tudo. Os links que as funções gravam nos avisos
 -- (inbox_notifications.link = '/creator/escritorio/...') também ficam: o app traduz para /heroi ao mostrar e o
@@ -49,7 +49,7 @@ begin
     -- a empresa/perfil nasce no primeiro acesso
     v_out := jsonb_build_array(public.invitation_issue(v_email, p_role, 'onboarding', p_days, '{}'::jsonb));
   elsif p_role = 'creator' or (p_role = 'hero' and coalesce(v_opt ->> 'hero_mode', 'new') = 'team') then
-    -- 'creator' (0091, convites antigos) ou Herói → equipe de um herói existente
+    -- 'creator' (0091, convites antigos) ou Hero → equipe de um Hero existente
     v_mode := case when p_role = 'hero' then 'existing' else coalesce(v_opt ->> 'hero_mode', 'none') end;
     if v_mode = 'none' then
       v_out := jsonb_build_array(public.invitation_issue(v_email, 'creator', 'creator', p_days, '{}'::jsonb));
@@ -58,7 +58,7 @@ begin
       if v_hero is null then raise exception 'invalid_input' using errcode = '22023'; end if;
       select c.user_id into v_owner from public.creator_profiles c where c.id = v_hero and c.status <> 'suspended';
       if not found then raise exception 'not_found' using errcode = 'P0002'; end if;
-      -- herói sem titular (e sem convite de titular pendente): a pessoa vira titular; senão, membro
+      -- Hero sem titular (e sem convite de titular pendente): a pessoa vira titular; senão, membro
       v_out := jsonb_build_array(public.invitation_issue(v_email, 'creator', 'creator', p_days, jsonb_build_object(
         'creator_profile_id', v_hero,
         'team_role', case when v_owner is null and not exists (select 1 from public.invitations i where i.creator_profile_id = v_hero
@@ -72,7 +72,7 @@ begin
       raise exception 'invalid_input' using errcode = '22023';
     end if;
   elsif p_role = 'hero' and v_opt ->> 'hero_mode' = 'casting' then
-    -- herói que já está no casting de uma agência: convite de acesso à ficha (mesmas regras de agency_invite_talent)
+    -- Hero que já está no casting de uma agência: convite de acesso à ficha (mesmas regras de agency_invite_talent)
     begin v_talent := (v_opt ->> 'talent_id')::uuid; exception when others then raise exception 'invalid_input' using errcode = '22023'; end;
     if v_talent is null then raise exception 'invalid_input' using errcode = '22023'; end if;
     select t.id, t.agency_id, t.user_id, t.creator_id, t.archived_at, c.user_id as creator_user, c.status::text as creator_status,

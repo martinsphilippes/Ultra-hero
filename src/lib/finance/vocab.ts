@@ -2,14 +2,14 @@ import { z } from "zod";
 
 // Financeiro simulado (0069): listas fechadas iguais aos checks do banco e a conta que o banco também faz.
 // F = soma dos cachês dos creators contratados; taxa em pontos-base; C = F × taxa; V = F + C (o que a marca paga).
-// 0111: "client_receivable" = a receber do herói-cliente (negócio só do herói: ele paga a agência)
+// 0111: "client_receivable" = a receber do Hero-cliente (negócio só do Hero: ele paga a agência)
 export const ENTRY_KINDS = ["brand_receivable", "commission", "talent_payout", "client_receivable"] as const;
 export type EntryKind = (typeof ENTRY_KINDS)[number];
 // 0108: "forecast" = previsto (condições salvas, aguardando a contratação): não vence nem muda à mão
 export const ENTRY_STATUSES = ["forecast", "planned", "due", "settled", "cancelled"] as const;
 export type EntryStatus = (typeof ENTRY_STATUSES)[number];
 // "invoices" (0082): repasses com nota fiscal enviada esperando o Adm
-// 0108: "receivable" (a receber das marcas), "payable" (a pagar aos heróis) e "forecast" (previstos)
+// 0108: "receivable" (a receber das marcas), "payable" (a pagar aos Heros) e "forecast" (previstos)
 export const ENTRY_FILTERS = ["open", "receivable", "payable", "invoices", "overdue", "forecast", "settled", "cancelled", "all"] as const;
 export type EntryFilter = (typeof ENTRY_FILTERS)[number];
 export const MAX_RATE_BP = 5000;

@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import type { RoomAccess } from "@/lib/project-room/queries";
 import { clippingHref, roomHref } from "@/lib/project-room/vocab";
 
-// Atalho para a sala do projeto (aberta) ou para o clipping (arquivada) no portal da marca e do herói (0110).
+// Atalho para a sala do projeto (aberta) ou para o clipping (arquivada) no portal da marca e do Hero (0110).
 export async function RoomLinkCard({ portal, dealId, access }: { portal: "brand" | "talent"; dealId: string; access: RoomAccess }) {
   const t = await getTranslations("projectRoom.link");
   const open = access.status === "open";

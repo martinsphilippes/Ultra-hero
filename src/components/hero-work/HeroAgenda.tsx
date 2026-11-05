@@ -32,7 +32,7 @@ type Props = {
   canSeeFinance: boolean;
 };
 
-// Agenda do herói: a grade mensal e a lista do dia da agenda das agências (AgendaCalendar), com o que o herói precisa
+// Agenda do Hero: a grade mensal e a lista do dia da agenda das agências (AgendaCalendar), com o que o Hero precisa
 // executar em cada item (contratante, local, observações, checklist). O titular cria, edita e exclui; a equipe lê.
 export function HeroAgenda({ creatorId, events, extraParams, editable, services, timeZone, year, month, today, requestedDay, canWrite, canSeeFinance }: Props) {
   const t = useTranslations("heroWork.agenda");

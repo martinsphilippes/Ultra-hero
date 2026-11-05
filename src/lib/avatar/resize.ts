@@ -1,7 +1,7 @@
 import { AVATAR_SIZE, MAX_UPLOAD_BYTES, type AvatarMime } from "./constants";
 
 // Prepara a imagem no aparelho (só no navegador): recorte central na proporção do destino (foto de
-// perfil 512x512; capa do herói 1600x900), WebP (JPEG quando o navegador não codifica WebP, como o
+// perfil 512x512; capa do Hero 1600x900), WebP (JPEG quando o navegador não codifica WebP, como o
 // Safari). O re-encode pelo canvas descarta EXIF e GPS por construção; a orientação da câmera é
 // aplicada na decodificação.
 

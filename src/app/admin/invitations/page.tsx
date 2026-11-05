@@ -25,7 +25,7 @@ type SearchParams = Promise<{ status?: string; page?: string; new?: string; role
 const PAGE_SIZE = 25;
 
 type InvitationRow = {
-  /** 0091: forma do convite (admin, consumer, onboarding, hero, hero_team…) e papel na equipe do herói. */
+  /** 0091: forma do convite (admin, consumer, onboarding, hero, hero_team…) e papel na equipe do Hero. */
   kind?: string | null;
   team_role?: string | null;
   id: string;
@@ -83,11 +83,11 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
     withPro.error ? listQuery(base) : Promise.resolve(withPro),
     supabase.from("creator_profiles").select("id, name, user_id, slug, avatar_url").order("name"),
     supabase.from("seller_organizations").select("id, name").order("name"),
-    // pessoas com papel creator (para a equipe do herói); o admin lê todos os papéis
+    // pessoas com papel creator (para a equipe do Hero); o admin lê todos os papéis
     supabase.from("role_assignments").select("user_id").eq("role", "creator").is("revoked_at", null).limit(500),
     getTranslations("invites.roles"),
   ]);
-  // 0097: fichas do casting que podem receber o convite de acesso (Herói → já no casting); sem a migração, lista vazia
+  // 0097: fichas do casting que podem receber o convite de acesso (Hero → já no casting); sem a migração, lista vazia
   const talentsRes = await supabase.rpc("admin_invite_talent_options");
   const talents = (talentsRes.error ? [] : (talentsRes.data ?? [])).map((r) => ({ id: r.talent_id, name: r.display_name, agency: r.agency_name, hasHero: r.has_hero }));
   const creatorUserIds = Array.from(new Set((creatorRolesRes.data ?? []).map((r) => r.user_id)));
@@ -176,7 +176,7 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
 
   const creators = (creatorsRes.data ?? []).map((c) => ({ id: c.id, name: c.name, linked: Boolean(c.user_id), slug: c.slug, avatarUrl: c.avatar_url }));
   const sellers = (sellersRes.data ?? []).map((s) => ({ id: s.id, name: s.name }));
-  // 0097: links antigos com role=creator (botão "convidar" na tela do herói) abrem o Herói → equipe desse herói
+  // 0097: links antigos com role=creator (botão "convidar" na tela do Hero) abrem o Hero → equipe desse Hero
   const initialRole: AdminInviteRole = isAdminInviteRole(sp.role) ? sp.role : "hero";
   const nameById = new Map((creatorProfiles ?? []).map((p) => [p.id, p.display_name]));
   const creatorUsers = creatorUserIds.map((id) => ({ id, name: nameById.get(id) || id.slice(0, 8) })).sort((a, b) => a.name.localeCompare(b.name));

@@ -31,7 +31,7 @@ type Props = {
   /** Métricas e comentários no segundo (0083): leituras e comentários do negócio inteiro (filtrados por entregável aqui). */
   media?: DeliverableMediaData | null;
   /**
-   * Herói voltando da criação para a campanha (?publicado=): link público do que publicou. Aparece o quadro
+   * Hero voltando da criação para a campanha (?publicado=): link público do que publicou. Aparece o quadro
    * "Enviar como entrega" com as entregas que esperam um link (enviar ou publicar) e o diálogo já abre com ele.
    */
   prefillUrl?: string | null;

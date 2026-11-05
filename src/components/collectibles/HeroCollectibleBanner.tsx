@@ -10,7 +10,7 @@ import { photoUnoptimized } from "./CollectibleCard";
 import { Countdown } from "./Countdown";
 import { LiveBadge } from "./LiveBadge";
 
-// Página do herói: cartão pequeno "Colecionáveis" quando ele tem item ao vivo ou agendado
+// Página do Hero: cartão pequeno "Colecionáveis" quando ele tem item ao vivo ou agendado
 // (o que acaba primeiro). Sem item ou sem a 0057, não aparece nada.
 export async function HeroCollectibleBanner({ creatorId }: { creatorId: string }) {
   const supabase = await createClient();

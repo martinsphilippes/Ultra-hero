@@ -5,8 +5,8 @@ import { canCreateForCampaign, parseCampaignParam, toHeroCampaign, type HeroCamp
 
 /**
  * Contexto de campanha dos criadores (?campanha=<id da oportunidade>), validado no servidor: a RPC
- * talent_opportunities só devolve oportunidades do herói logado; fora disso (id de outro, campanha encerrada ou
- * herói ainda não confirmado) volta null e o criador abre como sempre, sem faixa nem texto pronto.
+ * talent_opportunities só devolve oportunidades do Hero logado; fora disso (id de outro, campanha encerrada ou
+ * Hero ainda não confirmado) volta null e o criador abre como sempre, sem faixa nem texto pronto.
  */
 export async function loadHeroCampaign(raw: string | string[] | undefined | null): Promise<HeroCampaign | null> {
   const id = parseCampaignParam(raw);
@@ -19,7 +19,7 @@ export async function loadHeroCampaign(raw: string | string[] | undefined | null
   return toHeroCampaign(o);
 }
 
-/** Agenda do herói: negócio → tela da campanha (/heroi/oportunidades/<id da oportunidade>). */
+/** Agenda do Hero: negócio → tela da campanha (/heroi/oportunidades/<id da oportunidade>). */
 export async function campaignHrefByDeal(): Promise<Map<string, string>> {
   const list = await listOpportunities();
   const map = new Map<string, string>();

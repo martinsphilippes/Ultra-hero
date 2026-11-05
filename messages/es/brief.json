@@ -1,9 +1,9 @@
 {
   "title": "Briefing del contenido",
-  "hint": "Lo que el héroe debe poner en el post. Separa con espacio, coma o línea.",
+  "hint": "Lo que el Hero debe poner en el post. Separa con espacio, coma o línea.",
   "saved": "Briefing guardado.",
   "save": "Guardar briefing",
-  "agencyHint": "El héroe ve este briefing junto a las entregas y revisa cada ítem antes de enviar.",
+  "agencyHint": "El Hero ve este briefing junto a las entregas y revisa cada ítem antes de enviar.",
   "invalid": "No se agregó: {items}",
   "empty": "Sin briefing estructurado.",
   "fields": {
@@ -61,13 +61,13 @@
     "link": "Puse el enlace {value}",
     "coupon": "Puse el cupón {value}",
     "donts": "No hice nada de la lista “qué no hacer”",
-    "recordedTalent": "{count, plural, one {El héroe revisó # ítem} other {El héroe revisó # ítems}}",
+    "recordedTalent": "{count, plural, one {El Hero revisó # ítem} other {El Hero revisó # ítems}}",
     "recordedBrand": "{count, plural, one {La marca revisó # ítem de publicidad} other {La marca revisó # ítems de publicidad}}",
     "show": "Ver ítems"
   },
   "templates": {
     "title": "Empezar desde una plantilla",
-    "hint": "Las plantillas guardan objetivo, público, entregables y briefing. Sin título, fechas, héroe ni valor.",
+    "hint": "Las plantillas guardan objetivo, público, entregables y briefing. Sin título, fechas, Hero ni valor.",
     "use": "Usar",
     "delete": "Eliminar",
     "deleteConfirm": "¿Eliminar la plantilla “{name}”?",
@@ -76,7 +76,7 @@
     "used": "Borrador creado desde la plantilla.",
     "saveAs": "Guardar como plantilla",
     "dialogTitle": "Guardar como plantilla",
-    "dialogHint": "Guarda objetivo, público, entregables y briefing. Sin título, fechas, héroe ni valor.",
+    "dialogHint": "Guarda objetivo, público, entregables y briefing. Sin título, fechas, Hero ni valor.",
     "nameLabel": "Nombre de la plantilla",
     "nameHint": "Con el mismo nombre, la plantilla anterior se reemplaza.",
     "nameInvalid": "Usa de 3 a 80 caracteres.",

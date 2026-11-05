@@ -1,13 +1,13 @@
 -- =============================================================================
 -- Ultra Hero · 0051 · Alimentação completa (Etapa 2, docs/decisions/hero-showcase.md)
---   Reaproveita o que já existe: a receita é do herói autor (content.creator_id, que já assinava como
---   chef) e aparece na vitrine de outros heróis pelos vínculos creator_recipe_links (0024, só o admin
+--   Reaproveita o que já existe: a receita é do Hero autor (content.creator_id, que já assinava como
+--   chef) e aparece na vitrine de outros Heros pelos vínculos creator_recipe_links (0024, só o admin
 --   valida, auditado). Esta migration só preenche as lacunas:
 --   1) recipe_signers: o admin escolhe quem ASSINA a receita. Sem linha = o autor assina (como antes);
---      linha com chef_id = esse herói chef assina; linha com chef_id nulo = sem chef ("indicada por").
+--      linha com chef_id = esse Hero chef assina; linha com chef_id nulo = sem chef ("indicada por").
 --   2) recipe_ready_products: no máximo 1 produto "Comprar pronto" por receita (ex.: marmita).
 --   3) recipe_action_counters: toques agregados por dia em fazer / comprar pronto / lista de compras,
---      por (herói da vitrine, origem, ação, receita). Sem id de pessoa e sem IP (LGPD). Nenhum grant
+--      por (Hero da vitrine, origem, ação, receita). Sem id de pessoa e sem IP (LGPD). Nenhum grant
 --      para anon/authenticated: só o servidor do app (service role) soma, por recipe_action_bump.
 -- Leitura pública só do que está no ar (receita publicada; produto visível pela RLS de products).
 -- Escrita só do admin (RLS com (select is_admin())), auditada em admin_audit por gatilho.
@@ -18,7 +18,7 @@
 -- ---------------------------------------------------------------- 1) tabelas
 create table if not exists public.recipe_signers (
   content_id uuid primary key references public.content (id) on delete cascade,
-  -- nulo = sem chef (a receita só é indicada); herói excluído vira "sem chef"
+  -- nulo = sem chef (a receita só é indicada); Hero excluído vira "sem chef"
   chef_id uuid references public.creator_profiles (id) on delete set null,
   updated_by uuid references auth.users (id) on delete set null,
   created_at timestamptz not null default now(),
@@ -88,7 +88,7 @@ create policy recipe_ready_products_admin on public.recipe_ready_products for al
   using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- ---------------------------------------------------------------- 4) validação (security invoker)
--- Só receita; o chef escolhido precisa ser um herói ativo (o "sem chef" é chef_id nulo).
+-- Só receita; o chef escolhido precisa ser um Hero ativo (o "sem chef" é chef_id nulo).
 create or replace function public.recipe_showcase_guard()
 returns trigger language plpgsql security invoker set search_path = public as $$
 begin
@@ -145,8 +145,8 @@ create trigger trg_audit_recipe_ready_products after insert or update or delete 
   for each row execute function public.recipe_showcase_audit();
 
 -- ---------------------------------------------------------------- 6) contador de toques (só o service role)
--- Soma 1 no dia (horário de Brasília). Só conta receita publicada na vitrine do herói (autor ou
--- vínculo validado) de herói ativo; fora disso não faz nada (devolve false). Security invoker: quem
+-- Soma 1 no dia (horário de Brasília). Só conta receita publicada na vitrine do Hero (autor ou
+-- vínculo validado) de Hero ativo; fora disso não faz nada (devolve false). Security invoker: quem
 -- executa é o service role (sem RLS); anon e authenticated não executam.
 create or replace function public.recipe_action_bump(p_creator uuid, p_source text, p_action text, p_content uuid)
 returns boolean language plpgsql security invoker set search_path = public as $$

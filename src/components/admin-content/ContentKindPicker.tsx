@@ -17,17 +17,17 @@ const ICONS: Record<ContentKind, LucideIcon> = { structured: FileText, post: Cam
 type Props = {
   value: ContentKind;
   onChange: (kind: ContentKind) => void;
-  /** Herói responsável escolhido acima (post e receita abrem o portal em nome dele). */
+  /** Hero responsável escolhido acima (post e receita abrem o portal em nome dele). */
   creatorId: string | null;
   /** 0092: o creator vê só estruturado, post e receita, que abrem o composer e o Portal do Chef dele. */
   audience?: ContentAudience;
-  /** Aviso no tipo Receita (creator com outro herói escolhido: a receita sai pelo herói padrão). */
+  /** Aviso no tipo Receita (creator com outro Hero escolhido: a receita sai pelo Hero padrão). */
   recipeNote?: string | null;
 };
 
 // "O que você vai criar?" no Novo conteúdo do admin: o conteúdo estruturado fica nesta tela; post
-// rápido e receita abrem o editor próprio em nome do herói (admin_act_as_hero, 0045); programa abre o
-// cadastro de programa já com o herói escolhido.
+// rápido e receita abrem o editor próprio em nome do Hero (admin_act_as_hero, 0045); programa abre o
+// cadastro de programa já com o Hero escolhido.
 export function ContentKindPicker({ value, onChange, creatorId, audience = "admin", recipeNote = null }: Props) {
   const t = useTranslations(audience === "admin" ? "adminContent.content.kind" : "creator.newContent.kind");
   const kinds = contentKindsFor(audience);

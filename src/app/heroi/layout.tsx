@@ -13,12 +13,12 @@ import { getMyCreator } from "./_lib/creator";
 import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
 import { WelcomeTourMount } from "@/components/welcome/WelcomeTourMount";
 
-// Portal do Herói (0097): o "creator" era o próprio herói, então a área do herói (posts, conteúdos, receitas, equipe,
+// Portal do Hero (0097): o "creator" era o próprio Hero, então a área do Hero (posts, conteúdos, receitas, equipe,
 // agenda e financeiro próprios, 0091–0094) e o escritório do casting (oportunidades, tarefas, agenda e ganhos da
 // agência, media kit, portfólio, documentos, consentimento, avisos, 0065/0087) viraram um portal só, com barra
-// lateral no tablet/desktop, menu no celular, sino no topo e "Voltar ao app". Exige o papel de herói (app_role
+// lateral no tablet/desktop, menu no celular, sino no topo e "Voltar ao app". Exige o papel de Hero (app_role
 // 'creator'; o admin também passa). Os itens da agência só aparecem para quem está num casting; os de conteúdo, para
-// quem tem herói (titular ou membro). O admin segue com o menu dele no fluxo "Publicar como hero".
+// quem tem Hero (titular ou membro). O admin segue com o menu dele no fluxo "Publicar como hero".
 export default async function HeroPortalLayout({ children }: { children: ReactNode }) {
   const { user, roles } = await requireRole("creator", "/heroi");
   if (await hasRole("admin")) {
@@ -43,7 +43,7 @@ export default async function HeroPortalLayout({ children }: { children: ReactNo
       ) : null}
       <SeasonalTheme area="portals" />
       {children}
-      {/* boas-vindas do Portal do Herói (não no ramo do admin "Publicar como hero") */}
+      {/* boas-vindas do Portal do Hero (não no ramo do admin "Publicar como hero") */}
       <WelcomeTourMount area="heroi" />
     </PortalShell>
   );

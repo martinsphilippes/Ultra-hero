@@ -5,7 +5,7 @@ import { createBumpLimiter } from "@/lib/recipes/showcase";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 
 // Indicador de contratação (0058): toques em "Contratar" e "Ver perfil" somados por dia, profissional,
-// herói, origem e ação. Nada da pessoa (sem id, sem IP). Resposta sempre 204; só o service role soma
+// Hero, origem e ação. Nada da pessoa (sem id, sem IP). Resposta sempre 204; só o service role soma
 // (professional_tap_bump confere se o profissional está aprovado). Mesmo desenho de /api/recipe-actions.
 
 const allow = createBumpLimiter(600, 60_000);
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     // sem a 0058 a função não existe: o erro é ignorado
     await createAdminClient().rpc("professional_tap_bump", {
       p_professional: tap.professionalId,
-      // p_creator não tem valor padrão no banco: sem herói vai como null explícito (undefined some do JSON e dá 404)
+      // p_creator não tem valor padrão no banco: sem Hero vai como null explícito (undefined some do JSON e dá 404)
       p_creator: tap.creatorId,
       p_source: tap.source,
       p_action: tap.action,

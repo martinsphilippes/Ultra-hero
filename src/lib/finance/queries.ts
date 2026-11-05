@@ -80,7 +80,7 @@ export async function listEntries(agencyId: string, filter: EntryFilter = "open"
   const run = async (select: string) => {
     let query = supabase.from("financial_entries").select(select).eq("agency_id", agencyId).order("due_on", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true }).limit(500);
     if (filter === "open") query = query.in("status", ["planned", "due"]);
-    // 0108: a receber (marcas) e a pagar (heróis) em aberto, por vencimento; previstos à parte
+    // 0108: a receber (marcas) e a pagar (Heros) em aberto, por vencimento; previstos à parte
     if (filter === "receivable") query = query.in("kind", ["brand_receivable", "client_receivable"]).in("status", ["planned", "due"]);
     if (filter === "payable") query = query.eq("kind", "talent_payout").in("status", ["planned", "due"]);
     if (filter === "forecast") query = query.eq("status", "forecast");
@@ -220,7 +220,7 @@ export async function agencyPaymentSettings(agencyId: string): Promise<{ availab
 // ---------------------------------------------------------------- 0108: condições de pagamento
 
 /** Condições de pagamento de um negócio como quem lê pode ver (Adm com valores; gestor/equipe sem; marca total e
- *  parcelas; herói só o repasse dele). null sem acesso ou sem a migração. */
+ *  parcelas; Hero só o repasse dele). null sem acesso ou sem a migração. */
 export async function dealPaymentPlan(dealId: string | null | undefined): Promise<PaymentPlanView | null> {
   if (!dealId || !/^[0-9a-f-]{36}$/i.test(dealId)) return null;
   const supabase = await createClient();
@@ -229,9 +229,9 @@ export async function dealPaymentPlan(dealId: string | null | undefined): Promis
   return toPaymentPlanView(data);
 }
 
-// ---------------------------------------------------------------- 0111: herói-cliente paga a agência
+// ---------------------------------------------------------------- 0111: Hero-cliente paga a agência
 
-/** "A pagar" do herói-cliente (só os dele; sem comissão). */
+/** "A pagar" do Hero-cliente (só os dele; sem comissão). */
 export async function clientPayments(): Promise<{ available: boolean; items: ClientReceivable[] }> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("client_payments");
@@ -239,7 +239,7 @@ export async function clientPayments(): Promise<{ available: boolean; items: Cli
   return { available: true, items: toClientReceivables(data) };
 }
 
-/** "A receber" dos heróis-clientes (só o Adm). */
+/** "A receber" dos Heros-clientes (só o Adm). */
 export async function agencyClientReceivables(agencyId: string): Promise<{ available: boolean; items: ClientReceivable[] }> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("agency_client_receivables", { p_agency: agencyId });

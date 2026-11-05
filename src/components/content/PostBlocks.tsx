@@ -14,7 +14,7 @@ type Props = {
 };
 
 // Blocos de um conteúdo (0075/0076), embaixo da foto, do vídeo ou do texto: treino com passos marcáveis
-// por pessoa, receitas/produtos/pratos da nutrição, cardápio do chef e o programa do herói. Só para
+// por pessoa, receitas/produtos/pratos da nutrição, cardápio do chef e o programa do Hero. Só para
 // quem pode consumir. O bloco do pilar vem antes do programa.
 export async function PostBlocks({ contentId, blocks, checked, references }: Props) {
   if (blocks.length === 0) return null;

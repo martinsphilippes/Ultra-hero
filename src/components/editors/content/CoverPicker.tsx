@@ -23,7 +23,7 @@ export type CoverPickerProps = {
   error?: string;
   /** Envio de foto (kill switch e service role), lido no servidor. */
   state: PostPhotoState;
-  /** Herói escolhido no editor: a capa é reservada em nome dele (obrigatório para enviar). */
+  /** Hero escolhido no editor: a capa é reservada em nome dele (obrigatório para enviar). */
   creatorId: string | null;
   disabled?: boolean;
 };

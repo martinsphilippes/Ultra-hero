@@ -10,7 +10,7 @@ export type HeroCategoryOption = { id: string; label: string; is_active: boolean
 
 type Props = { creatorId: string; options: HeroCategoryOption[]; initial: string[] };
 
-// Categorias do herói (até 2, em ordem): a 1ª é a principal; a 2ª é opcional.
+// Categorias do Hero (até 2, em ordem): a 1ª é a principal; a 2ª é opcional.
 export function HeroCategoriesField({ creatorId, options, initial }: Props) {
   const t = useTranslations("adminContent.heroCategories.field");
   const router = useRouter();

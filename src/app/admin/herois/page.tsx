@@ -31,7 +31,7 @@ export default async function AdminCreatorsPage() {
   const supabase = await createClient();
   const { data, error } = await supabase.from("creator_profiles").select("id, slug, name, pillars, status, user_id, is_fictional, avatar_url, sort_order, rights_status, rights_valid_until").order("sort_order").order("name");
   if (error) throw new Error(error.message);
-  // 0092: heróis aguardando aprovação primeiro, com o aviso e o botão Aprovar em cada linha
+  // 0092: Heros aguardando aprovação primeiro, com o aviso e o botão Aprovar em cada linha
   const rows = ((data ?? []) as CreatorRow[]).slice().sort((a, b) => Number(b.status === "pending") - Number(a.status === "pending"));
   const pendingCount = rows.filter((r) => r.status === "pending").length;
   const tst = await getTranslations("adminOps.creators.status");

@@ -112,7 +112,7 @@ describe("destino de cada conversa por portal", () => {
   const campaign = conv();
   const hero = conv({ kind: "opportunity", key: dealTalentKey(D, T), talent_id: T, deal_talent_id: DT });
   const room = conv({ kind: "room", key: roomKey(D) });
-  it("agência: aba Conversa (canal do herói pelo ?canal) e sala", () => {
+  it("agência: aba Conversa (canal do Hero pelo ?canal) e sala", () => {
     expect(conversationHref("agency", campaign)).toBe(`/agencia/negocios/${D}/conversa`);
     expect(conversationHref("agency", hero)).toBe(`/agencia/negocios/${D}/conversa?canal=${T}`);
     expect(conversationHref("agency", room)).toBe(`/agencia/negocios/${D}/sala`);
@@ -124,7 +124,7 @@ describe("destino de cada conversa por portal", () => {
     expect(conversationHref("brand", room)).toBe(`/marca/projetos/${D}`);
     expect(contextHref("brand", campaign)).toBe(`/marca/campanhas/${R}`);
   });
-  it("herói: seção Conversa da oportunidade e sala do herói; staff: sala do staff", () => {
+  it("Hero: seção Conversa da oportunidade e sala do Hero; staff: sala do staff", () => {
     expect(conversationHref("hero", hero)).toBe(`/heroi/oportunidades/${DT}#opp-messages`);
     expect(conversationHref("hero", room)).toBe(`/heroi/projetos/${D}`);
     expect(conversationHref("staff", room)).toBe(`/projetos/${D}`);
@@ -133,13 +133,13 @@ describe("destino de cada conversa por portal", () => {
 });
 
 describe("chips de tipo e etapa", () => {
-  it("canal do herói é 'Herói' para a agência e 'Oportunidade' para o herói", () => {
+  it("canal do Hero é 'Hero' para a agência e 'Oportunidade' para o Hero", () => {
     expect(kindLabelKey("agency", "opportunity")).toBe("hero");
     expect(kindLabelKey("hero", "opportunity")).toBe("opportunity");
     expect(kindLabelKey("brand", "campaign")).toBe("campaign");
     expect(kindLabelKey("staff", "room")).toBe("room");
   });
-  it("agência vê a etapa do pipeline; marca a situação dela; herói a situação dele", () => {
+  it("agência vê a etapa do pipeline; marca a situação dela; Hero a situação dele", () => {
     expect(stageChip("agency", conv({ stage: "negotiation" }))).toMatchObject({ group: "stages", value: "negotiation", tone: "info" });
     expect(stageChip("agency", conv({ stage: "production" }))).toMatchObject({ group: "stages", value: "production", tone: "success" });
     expect(stageChip("brand", conv({ stage: "negotiation" }))).toMatchObject({ group: "brandStatus", value: "proposal" });

@@ -13,7 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 import { failFrom } from "../_lib/action-utils";
 
 // Atualiza só as colunas liberadas do perfil da personalidade (guard no banco bloqueia o resto).
-// Capa não passa por aqui (só pelo envio de foto real, cover-actions). Um avatar só para o herói: um
+// Capa não passa por aqui (só pelo envio de foto real, cover-actions). Um avatar só para o Hero: um
 // avatar que chegue aqui vale também no app (profiles.avatar_url), com a mesma regra do updateProfile
 // (nenhum ou a foto atual e própria; foto nova só entra pelo envio, que já grava os dois lados;
 // ilustração não é mais aceita). Tirar a foto (avatar vazio) a apaga do ar.
@@ -27,7 +27,7 @@ import { failFrom } from "../_lib/action-utils";
 export async function updateCreatorProfile(values: CreatorProfileInput): Promise<ActionResult> {
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
-  // mesma regra da tela (herói ou admin): quem perdeu o papel não edita o perfil público por POST direto
+  // mesma regra da tela (Hero ou admin): quem perdeu o papel não edita o perfil público por POST direto
   if (heroProfileFor(heroRoleNames(await getRoles()), true) === null) return { ok: false, error: "forbidden" };
   const parsed = parseCreatorProfile(values);
   if (!parsed.ok) return { ok: false, error: "invalid_input" };
@@ -83,7 +83,7 @@ export async function updateCreatorProfile(values: CreatorProfileInput): Promise
   return { ok: true };
 }
 
-// o formulário do herói mora no /profile (topo, "Editar perfil")
+// o formulário do Hero mora no /profile (topo, "Editar perfil")
 function revalidateHero(slug: string) {
   revalidatePath("/profile");
   revalidatePath("/heroi");

@@ -20,7 +20,7 @@ type Props = {
   pushReady: boolean;
 };
 
-// Heróis que sigo: deixar de seguir (com volta: a linha fica com "Seguir") e escolher UM Hero de
+// Heros que sigo: deixar de seguir (com volta: a linha fica com "Seguir") e escolher UM Hero de
 // comparação entre os seguidos (rádio).
 export function FollowedHeroesManager({ heroes, compareId, compareAvailable, pushReady }: Props) {
   const t = useTranslations("follows.manage");

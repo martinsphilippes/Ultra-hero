@@ -44,7 +44,7 @@ import { CALENDAR_POINTS, FAQ_ITEMS, FEATURE_GROUPS, HOW_STEPS, SECTION_ANCHORS,
 import { ABOUT_ENABLED, ABOUT_PATH, INSTITUTIONAL_EXPLORE_PATH, INSTITUTIONAL_LOGIN_HREF, INSTITUTIONAL_SIGNUP_HREF } from "@/lib/institutional/root";
 import "./sobre.css";
 
-// /sobre · "Conheça o Groscove Ultra": a apresentação completa (Herói, Marca, Agência e o app) para quem já está no
+// /sobre · "Conheça o Groscove Ultra": a apresentação completa (Hero, Marca, Agência e o app) para quem já está no
 // app. É a antiga página institucional da /conheca (branch ultra-classico), restaurada com o mesmo conteúdo e as
 // mesmas animações quando a /conheca virou o teaser de lançamento (pedido do dono, 05/11: os dois em lugares
 // diferentes). Pública (sem login); no domínio de marketing (MARKETING_HOSTS) não existe (volta ao teaser) e no app
@@ -285,7 +285,7 @@ export default async function AboutClassicPage() {
             <p className="type-body-sm rounded-xl border border-accent/30 bg-accent/10 p-4 text-fg">{t("how.note")}</p>
           </section>
 
-          {/* Heróis, Marcas, Agência, App */}
+          {/* Heros, Marcas, Agência, App */}
           {FEATURE_GROUPS.map((group) => (
             <div key={group.id} className="flex flex-col gap-10">
               {/* entre um perfil e outro: a logomarca diminui, aumenta e fixa */}

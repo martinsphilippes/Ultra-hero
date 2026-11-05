@@ -94,7 +94,7 @@ export function nutritionProductsAllowed({ commerceEnabled, nativeApp }: { comme
 
 /**
  * O card Nutricional só aparece com algum material: conteúdos nutricionais (do programa ou do próprio
- * herói como autor) ou produtos de comida permitidos (ligados ao programa ou ao herói).
+ * Hero como autor) ou produtos de comida permitidos (ligados ao programa ou ao Hero).
  */
 export function nutritionVisible({ contents, products, productsAllowed }: { contents: number; products: number; productsAllowed: boolean }): boolean {
   return contents > 0 || (productsAllowed && products > 0);
@@ -110,8 +110,8 @@ export function nutritionScreens({ contents, products, productsAllowed }: { cont
 }
 
 /**
- * Conteúdos do Nutricional: os de nutrição/receitas do programa, depois os PRÓPRIOS do herói (autor).
- * Receitas só indicadas pelo herói (creator_recipe_links de outro autor) ficam de fora (Etapa 4).
+ * Conteúdos do Nutricional: os de nutrição/receitas do programa, depois os PRÓPRIOS do Hero (autor).
+ * Receitas só indicadas pelo Hero (creator_recipe_links de outro autor) ficam de fora (Etapa 4).
  */
 export function programNutritionContents<T extends { id: string; type: ContentType; pillar: Pillar }>(
   { programContents, heroOwnContents }: { programContents: readonly T[]; heroOwnContents: readonly T[] },
@@ -120,7 +120,7 @@ export function programNutritionContents<T extends { id: string; type: ContentTy
   return mergeUnique([programContents.filter(isNutritionContent), heroOwnContents.filter(isNutritionContent)], limit);
 }
 
-/** Produtos do Nutricional: os ligados ao programa primeiro, depois os do herói, sem repetir. */
+/** Produtos do Nutricional: os ligados ao programa primeiro, depois os do Hero, sem repetir. */
 export function mergeLinkedProducts<T extends { product: { id: string } }>(linked: readonly T[], others: readonly T[], limit: number): T[] {
   const seen = new Set<string>();
   const out: T[] = [];
@@ -134,7 +134,7 @@ export function mergeLinkedProducts<T extends { product: { id: string } }>(linke
 }
 
 /**
- * Junta conteúdos sem repetir, na ordem das listas (primeiro os do programa, depois os do herói),
+ * Junta conteúdos sem repetir, na ordem das listas (primeiro os do programa, depois os do Hero),
  * até o limite.
  */
 export function mergeUnique<T extends { id: string }>(lists: readonly (readonly T[])[], limit: number): T[] {

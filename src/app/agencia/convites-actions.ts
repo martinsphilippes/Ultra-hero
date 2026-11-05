@@ -10,8 +10,8 @@ import { sendInviteEmail } from "@/lib/email/invite";
 import { createClient } from "@/lib/supabase/server";
 
 // Convites da agência (0091): marca por e-mail (marca nova → passo a passo já ligado à agência; dono de marca
-// existente → pedido de vínculo que ele aceita) e herói (titular para herói do casting sem dono, ou herói novo
-// pendente para creator do casting sem herói). Gestor+; as RPCs conferem de novo.
+// existente → pedido de vínculo que ele aceita) e Hero (titular para Hero do casting sem dono, ou Hero novo
+// pendente para creator do casting sem Hero). Gestor+; as RPCs conferem de novo.
 
 export type AgencyInviteResult = { ok: true; message: string; link: string; emailed: boolean } | { ok: false; error: string };
 

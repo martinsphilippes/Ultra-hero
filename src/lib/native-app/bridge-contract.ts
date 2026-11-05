@@ -15,7 +15,7 @@ export type WebToNative =
   | { type: "share"; title?: string; text?: string; url?: string }
   /** Tema da página, para a barra de status do sistema acompanhar (claro/escuro). */
   | { type: "theme"; theme: "light" | "dark" }
-  /** Pede a permissão de notificação ao sistema (no contexto: favoritar herói, tela de avisos). */
+  /** Pede a permissão de notificação ao sistema (no contexto: favoritar Hero, tela de avisos). */
   | { type: "push-permission" }
   /** Só devolve o token se a permissão já foi dada; nunca abre o pedido do sistema. */
   | { type: "push-sync" };

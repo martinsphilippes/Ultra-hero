@@ -1,18 +1,18 @@
 -- =============================================================================
--- Ultra Hero · 0050 · Atalhos da página do herói configuráveis (Etapa 1, docs/decisions/hero-showcase.md)
---   A página do herói mostra atalhos (Dia a dia, Nutrição, Alimentação, Treinos, Gastronomia,
+-- Ultra Hero · 0050 · Atalhos da página do Hero configuráveis (Etapa 1, docs/decisions/hero-showcase.md)
+--   A página do Hero mostra atalhos (Dia a dia, Nutrição, Alimentação, Treinos, Gastronomia,
 --   Programas, Produtos). As FONTES (o que alimenta cada atalho) ficam fixas no código; o admin só
 --   muda a apresentação: rótulo (pt-BR/en/es), ícone (lista fixa), ordem e visível/oculto.
---   - hero_library_tabs: configuração POR CATEGORIA do herói (hero_categories, 0049).
---   - creator_library_overrides: exceção POR HERÓI, por cima da categoria (null = herda).
---   O app usa a categoria principal (posição 1) do herói; a exceção do herói vence; sem categoria
+--   - hero_library_tabs: configuração POR CATEGORIA do Hero (hero_categories, 0049).
+--   - creator_library_overrides: exceção POR HERO, por cima da categoria (null = herda).
+--   O app usa a categoria principal (posição 1) do Hero; a exceção do Hero vence; sem categoria
 --   ou sem linha: os padrões do código. Nada é semeado: os padrões vivem no código (Esporte com
---   "Programas" → "Treinos" daria dois atalhos "Treinos" nos heróis que já têm vídeos de treino).
+--   "Programas" → "Treinos" daria dois atalhos "Treinos" nos Heros que já têm vídeos de treino).
 --
 -- Chave estável da fonte (source_key) = segmento da URL: dia-a-dia, nutricao, alimentacao, treinos,
 --   gastronomia, programas, produtos. Renomear o rótulo não muda a URL.
 -- Rótulo: jsonb {"pt-BR","en","es"} (pt-BR obrigatório quando há rótulo; null = rótulo padrão).
--- Leitura pública: SELECT simples (atalhos de categoria ativa; exceções de herói ativo).
+-- Leitura pública: SELECT simples (atalhos de categoria ativa; exceções de Hero ativo).
 -- Escrita só do admin, pela RLS com (select is_admin()); trocas atômicas por RPC security invoker
 --   (sem execute para o visitante) que só mexem no que mudou (auditoria limpa).
 -- Auditoria: gatilho security definer grava em admin_audit (sem execute para ninguém: a lista do
@@ -92,7 +92,7 @@ drop policy if exists hero_library_tabs_admin on public.hero_library_tabs;
 create policy hero_library_tabs_admin on public.hero_library_tabs for all to authenticated
   using ((select public.is_admin())) with check ((select public.is_admin()));
 
--- exceção visível: herói ativo
+-- exceção visível: Hero ativo
 drop policy if exists creator_library_overrides_select_active on public.creator_library_overrides;
 create policy creator_library_overrides_select_active on public.creator_library_overrides for select to anon, authenticated
   using (exists (select 1 from public.creator_profiles p where p.id = creator_library_overrides.creator_id and p.status = 'active'));
@@ -102,7 +102,7 @@ create policy creator_library_overrides_admin on public.creator_library_override
 
 -- ---------------------------------------------------------------- 4) auditoria das mudanças do admin
 -- Atalho da categoria: resource_type 'hero_library_tab', resource_id = id da categoria.
--- Exceção do herói: resource_type 'creator_library_override', resource_id = id do herói.
+-- Exceção do Hero: resource_type 'creator_library_override', resource_id = id do Hero.
 create or replace function public.hero_library_tabs_audit()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare v_row jsonb;

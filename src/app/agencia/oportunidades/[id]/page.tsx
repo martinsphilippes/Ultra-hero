@@ -34,9 +34,9 @@ type Props = { params: Promise<{ id: string }> };
 
 const RESPONSE_VARIANT: Record<"interested" | "declined" | "pending", BadgeVariant> = { interested: "success", declined: "neutral", pending: "warning" };
 
-// Ficha da oportunidade (0085), gestor+: o herói (0095), resumo, marca por marca (quis, recusou, sem resposta; quem e
+// Ficha da oportunidade (0085), gestor+: o Hero (0095), resumo, marca por marca (quis, recusou, sem resposta; quem e
 // quando; a campanha que nasceu do interesse), a decisão e a edição enquanto rascunho ou aberta. Rascunho: painel com
-// publicar (exige o consentimento do herói; atalhos da ficha e dos Documentos) e descartar.
+// publicar (exige o consentimento do Hero; atalhos da ficha e dos Documentos) e descartar.
 export default async function AgencySponsorshipPage({ params }: Props) {
   const ctx = await requireAgency("manager");
   const { id } = await params;

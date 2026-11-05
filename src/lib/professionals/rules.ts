@@ -188,7 +188,7 @@ export function hireAction(ctx: HireContext): HireAction {
 }
 
 /**
- * Nutricionistas sugeridos para uma receita: os ligados à receita, depois os do herói da vitrine,
+ * Nutricionistas sugeridos para uma receita: os ligados à receita, depois os do Hero da vitrine,
  * depois qualquer nutricionista aprovado (fallback). Sem repetição, até `limit`.
  */
 export function pickSuggested<T extends { id: string }>(groups: { recipe: T[]; hero: T[]; any: T[] }, limit = 3): { items: T[]; source: "recipe" | "hero" | "any" | null } {

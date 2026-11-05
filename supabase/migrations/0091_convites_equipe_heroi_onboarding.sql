@@ -1,25 +1,25 @@
 -- =============================================================================
--- Groscove Ultra · 0091 · Convites: quem convida quem, equipe do herói e primeiro acesso por onboarding
+-- Groscove Ultra · 0091 · Convites: quem convida quem, equipe do Hero e primeiro acesso por onboarding
 -- Pedido do responsável (03/11). Cenário S98. Idempotente; nada de drop de tabela/coluna; nenhuma função nova com
 -- execute para anon (S14 segue 18). As RPCs recriadas mantêm a MESMA assinatura (sem sobrecarga).
 --
 -- Decisões (sem perguntar ao responsável):
---   • Equipe do herói (creator_team_members): várias pessoas (creators) por herói, papel 'owner' (titular, um só) ou
+--   • Equipe do Hero (creator_team_members): várias pessoas (creators) por Hero, papel 'owner' (titular, um só) ou
 --     'member'. creator_profiles.user_id continua sendo o titular (compatibilidade) e é a FONTE da verdade do
 --     titular: um gatilho espelha a coluna na equipe (vira 'owner'; o titular anterior continua como 'member').
 --     Transferir = trocar creator_profiles.user_id pela RPC hero_team_transfer (o gatilho 0065 do talento trata a
 --     troca de pessoa como sempre). Os titulares atuais entram como 'owner' na migração.
---   • O membro age como o herói onde tudo já confere "herói dono" por my_creator_id() (posts, rascunhos, vídeos,
+--   • O membro age como o Hero onde tudo já confere "Hero dono" por my_creator_id() (posts, rascunhos, vídeos,
 --     publicação: 22 políticas e 26 funções) e abre o escritório do talento ligado (my_talent_id). Ficam só com o
 --     titular: dados do perfil, foto, capa (políticas/RPCs pelo user_id, sem mudança), consentimento de uso de imagem
 --     no casting (talent_set_consent: é a imagem da pessoa titular) e quem entra/sai da equipe. Avisos do escritório
 --     continuam indo ao titular (talent_user_id).
---   • Creator sem herói: o convite de creator "sem herói" dá o papel creator global; a pessoa cria o herói dela
---     (creator_create_my_hero) que nasce PENDENTE (o admin aprova em /admin/creators, como a publicação de herói).
+--   • Creator sem Hero: o convite de creator "sem Hero" dá o papel creator global; a pessoa cria o Hero dela
+--     (creator_create_my_hero) que nasce PENDENTE (o admin aprova em /admin/creators, como a publicação de Hero).
 --   • Convite do admin (admin_invite): só e-mail, papel e validade (1–30 dias; Admin no máximo 2 dias = 48h, com
 --     confirmação explícita "controle total" e auditoria própria). Papéis: consumer, admin, agency, brand, creator,
---     hero, seller (Fornecedor), professional. Creator: herói nenhum | existente (titular se sem dono, senão membro)
---     | novo (criado pendente). Herói: cria o herói pendente com o nome; equipe depois | creator existente (entra já
+--     hero, seller (Fornecedor), professional. Creator: Hero nenhum | existente (titular se sem dono, senão membro)
+--     | novo (criado pendente). Hero: cria o Hero pendente com o nome; equipe depois | creator existente (entra já
 --     como membro) | creator novo (segundo convite, membro). admin_create_invitation (0001) continua para links
 --     antigos/telas antigas; o aceite de convites já emitidos segue igual.
 --   • Primeiro acesso por onboarding: convite de agência/marca/fornecedor/profissional SEM empresa (kind
@@ -38,11 +38,11 @@
 --     (convite kind 'brand_link' que o dono aceita; D18: uma agência ativa por marca → brand_linked_elsewhere); se não
 --     → convite de marca nova (onboarding) que já nasce ligada à agência. Decisão: a resposta diz qual dos dois foi
 --     feito (vaza só para gestor+ de agência ativa se aquele e-mail é dono de marca).
---   • Agência convida herói (agency_invite_hero): herói do casting sem titular → mesma regra da 0087
---     (agency_invite_talent); creator do casting sem herói e sem login → cria o herói pendente ligado ao talento e
---     convida o titular. Talento com login próprio cria o herói dele pelo próprio portal (talent_has_login).
+--   • Agência convida Hero (agency_invite_hero): Hero do casting sem titular → mesma regra da 0087
+--     (agency_invite_talent); creator do casting sem Hero e sem login → cria o Hero pendente ligado ao talento e
+--     convida o titular. Talento com login próprio cria o Hero dele pelo próprio portal (talent_has_login).
 --   • Revogação: agency_invitation_revoke (mesma assinatura) passa a cobrir convite de marca sem agência (dono),
---     pedido de vínculo/marca nova (gestor+) e convite da equipe do herói (titular ou admin).
+--     pedido de vínculo/marca nova (gestor+) e convite da equipe do Hero (titular ou admin).
 --   • Sem tipos de aviso novos (o check do sino não muda): os fluxos novos não mandam aviso.
 -- =============================================================================
 
@@ -83,7 +83,7 @@ alter table public.invitations add constraint invitations_scope check (
       and seller_org_id is null and creator_profile_id is null and professional_id is null and talent_id is null)
   or (role::text = 'brand' and brand_id is not null and agency_id is not null and member_role in ('owner', 'staff')
       and seller_org_id is null and creator_profile_id is null and professional_id is null and talent_id is null)
-  -- 0091: sem escopo (admin, consumidor, creator sem herói, onboarding de agência/fornecedor/profissional)
+  -- 0091: sem escopo (admin, consumidor, creator sem Hero, onboarding de agência/fornecedor/profissional)
   or (coalesce(kind, '') in ('admin', 'consumer', 'creator', 'onboarding')
       and ((kind = 'admin' and role::text = 'admin') or (kind = 'consumer' and role::text = 'consumer')
            or (kind = 'creator' and role::text = 'creator')
@@ -102,7 +102,7 @@ alter table public.invitations add constraint invitations_scope check (
 );
 create index if not exists invitations_creator_idx on public.invitations (creator_profile_id) where creator_profile_id is not null;
 
--- 2) equipe do herói ------------------------------------------------------------------------------------------------
+-- 2) equipe do Hero ------------------------------------------------------------------------------------------------
 create table if not exists public.creator_team_members (
   creator_profile_id uuid not null references public.creator_profiles (id) on delete cascade,
   user_id uuid not null references auth.users (id) on delete cascade,
@@ -127,7 +127,7 @@ insert into public.creator_team_members (creator_profile_id, user_id, role, stat
 select c.id, c.user_id, 'owner', 'active' from public.creator_profiles c where c.user_id is not null
 on conflict (creator_profile_id, user_id) do update set role = 'owner', status = 'active', removed_at = null;
 
--- heróis em que a pessoa logada está (ativa). Para políticas.
+-- Heros em que a pessoa logada está (ativa). Para políticas.
 create or replace function public.my_team_creator_ids()
 returns uuid[] language sql stable security definer set search_path = '' as $$
   select coalesce(array_agg(m.creator_profile_id), '{}'::uuid[]) from public.creator_team_members m
@@ -136,7 +136,7 @@ $$;
 revoke execute on function public.my_team_creator_ids() from public, anon;
 grant execute on function public.my_team_creator_ids() to authenticated, service_role;
 
--- heróis em que a pessoa logada é titular (para a política dos convites da equipe)
+-- Heros em que a pessoa logada é titular (para a política dos convites da equipe)
 create or replace function public.my_owned_creator_ids()
 returns uuid[] language sql stable security definer set search_path = '' as $$
   select coalesce(array_agg(c.id), '{}'::uuid[]) from public.creator_profiles c where c.user_id = auth.uid()
@@ -144,7 +144,7 @@ $$;
 revoke execute on function public.my_owned_creator_ids() from public, anon;
 grant execute on function public.my_owned_creator_ids() to authenticated, service_role;
 
--- papel da pessoa logada na equipe do herói ('owner' | 'member' | null). Interna das RPCs.
+-- papel da pessoa logada na equipe do Hero ('owner' | 'member' | null). Interna das RPCs.
 create or replace function public.creator_team_role(p_creator uuid, p_user uuid)
 returns text language sql stable security definer set search_path = '' as $$
   select case when c.user_id = p_user then 'owner'
@@ -159,12 +159,12 @@ drop policy if exists creator_team_select on public.creator_team_members;
 create policy creator_team_select on public.creator_team_members for select to authenticated
   using (user_id = (select auth.uid()) or creator_profile_id = any ((select public.my_team_creator_ids())::uuid[]) or (select public.is_admin()));
 
--- o membro lê o próprio herói mesmo pendente (o público lê só os ativos)
+-- o membro lê o próprio Hero mesmo pendente (o público lê só os ativos)
 drop policy if exists creators_select_team on public.creator_profiles;
 create policy creators_select_team on public.creator_profiles for select to authenticated
   using (id = any ((select public.my_team_creator_ids())::uuid[]));
 
--- gestor+ da agência lê os heróis do casting dela mesmo pendentes (o herói criado por convite nasce pendente)
+-- gestor+ da agência lê os Heros do casting dela mesmo pendentes (o Hero criado por convite nasce pendente)
 drop policy if exists creators_select_agency on public.creator_profiles;
 create policy creators_select_agency on public.creator_profiles for select to authenticated
   using (id = any ((select public.agency_hero_ids())::uuid[]));
@@ -193,7 +193,7 @@ drop trigger if exists trg_creator_profiles_team_owner on public.creator_profile
 create trigger trg_creator_profiles_team_owner after insert or update of user_id on public.creator_profiles
   for each row execute function public.creator_team_sync_owner();
 
--- 3) herói/escritório da pessoa: titular primeiro, depois membro -------------------------------------------------------
+-- 3) Hero/escritório da pessoa: titular primeiro, depois membro -------------------------------------------------------
 create or replace function public.my_creator_id()
 returns uuid language sql stable security definer set search_path = public as $$
   select coalesce(
@@ -214,7 +214,7 @@ returns uuid language sql stable security definer set search_path = '' as $$
   left join public.creator_profiles c on c.id = t.creator_id
   where t.archived_at is null and auth.uid() is not null
     and (((t.user_id = auth.uid() or c.user_id = auth.uid()) and public.talent_user_id(t.id) = auth.uid())
-         -- 0091: membro da equipe do herói ligado (mesma regra de demo do titular)
+         -- 0091: membro da equipe do Hero ligado (mesma regra de demo do titular)
          or (c.id is not null and c.status <> 'suspended'
              and exists (select 1 from public.creator_team_members m where m.creator_profile_id = c.id
                          and m.user_id = auth.uid() and m.status = 'active')
@@ -235,7 +235,7 @@ begin
     'consent_at', t.consent_at, 'consent_version', t.consent_version, 'consent_revoked_at', t.consent_revoked_at,
     'catalog_visible', t.catalog_visible, 'has_public_page', t.creator_id is not null,
     'agency', a.name, 'agency_is_demo', a.is_demo,
-    -- 0091: membro da equipe do herói (não é a pessoa titular: não dá o consentimento)
+    -- 0091: membro da equipe do Hero (não é a pessoa titular: não dá o consentimento)
     'is_team_member', public.talent_user_id(t.id) is distinct from auth.uid(),
     'manager', (select m.display_name from public.agency_members m
                 where m.agency_id = t.agency_id and m.user_id = t.manager_id and m.revoked_at is null))
@@ -253,7 +253,7 @@ returns void language plpgsql security definer set search_path = '' as $$
 declare v_talent uuid := public.my_talent_id(); v_t record; v_version text := btrim(coalesce(p_version, ''));
 begin
   if auth.uid() is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
-  -- dono de herói fora do ar (sem escritório) ainda pode REVOGAR; conta demo nunca mexe em agência real
+  -- dono de Hero fora do ar (sem escritório) ainda pode REVOGAR; conta demo nunca mexe em agência real
   if v_talent is null and p_on is false then
     select t.id into v_talent from public.talent_profiles t
     join public.creator_profiles c on c.id = t.creator_id
@@ -262,7 +262,7 @@ begin
       and (a.is_demo or not public.is_demo_account())
     limit 1;
   elsif v_talent is not null and public.talent_user_id(v_talent) is distinct from auth.uid() then
-    -- 0091: membro da equipe do herói não fala pela imagem do titular
+    -- 0091: membro da equipe do Hero não fala pela imagem do titular
     raise exception 'forbidden' using errcode = '42501';
   end if;
   if v_talent is null then raise exception 'forbidden' using errcode = '42501'; end if;
@@ -292,7 +292,7 @@ end $$;
 revoke execute on function public.talent_set_consent(boolean, text) from public, anon;
 grant execute on function public.talent_set_consent(boolean, text) to authenticated, service_role;
 
--- fotos dos posts: o membro da equipe também publica pelo herói
+-- fotos dos posts: o membro da equipe também publica pelo Hero
 create or replace function public.content_bodies_post_photo_guard()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare v_uid uuid := auth.uid();
@@ -348,7 +348,7 @@ $$;
 drop policy if exists invitations_select_brand_owner_self on public.invitations;
 create policy invitations_select_brand_owner_self on public.invitations for select to authenticated
   using (agency_id is null and brand_id = any ((select public.my_brand_ids(true))::uuid[]));
--- convites da equipe do herói: o titular lê
+-- convites da equipe do Hero: o titular lê
 drop policy if exists invitations_select_hero_owner on public.invitations;
 create policy invitations_select_hero_owner on public.invitations for select to authenticated
   using (kind = 'hero_team' and creator_profile_id = any ((select public.my_owned_creator_ids())::uuid[]));
@@ -479,7 +479,7 @@ end $$;
 revoke execute on function public.free_slug(text, text) from public, anon, authenticated;
 grant execute on function public.free_slug(text, text) to service_role;
 
--- herói pendente (criado por convite ou pelo próprio creator): aguarda a aprovação do admin. Interna.
+-- Hero pendente (criado por convite ou pelo próprio creator): aguarda a aprovação do admin. Interna.
 create or replace function public.create_pending_hero(p_name text, p_rights_holder text)
 returns uuid language plpgsql security definer set search_path = '' as $$
 declare v_id uuid; v_name text := regexp_replace(btrim(coalesce(p_name, '')), '\s+', ' ', 'g');
@@ -553,7 +553,7 @@ begin
       begin v_hero := (v_opt ->> 'hero_id')::uuid; exception when others then raise exception 'invalid_input' using errcode = '22023'; end;
       select c.user_id into v_owner from public.creator_profiles c where c.id = v_hero and c.status <> 'suspended';
       if not found then raise exception 'not_found' using errcode = 'P0002'; end if;
-      -- herói sem titular (e sem convite de titular pendente): a pessoa vira titular; senão, membro
+      -- Hero sem titular (e sem convite de titular pendente): a pessoa vira titular; senão, membro
       v_out := jsonb_build_array(public.invitation_issue(v_email, 'creator', 'creator', p_days, jsonb_build_object(
         'creator_profile_id', v_hero,
         'team_role', case when v_owner is null and not exists (select 1 from public.invitations i where i.creator_profile_id = v_hero
@@ -600,7 +600,7 @@ end $$;
 revoke execute on function public.admin_invite(text, text, int, jsonb) from public, anon;
 grant execute on function public.admin_invite(text, text, int, jsonb) to authenticated, service_role;
 
--- 7) equipe do herói: titular (ou admin) convida, remove e transfere -------------------------------------------------
+-- 7) equipe do Hero: titular (ou admin) convida, remove e transfere -------------------------------------------------
 create or replace function public.hero_team_guard(p_creator uuid)
 returns void language plpgsql security definer set search_path = '' as $$
 begin
@@ -683,7 +683,7 @@ end $$;
 revoke execute on function public.hero_team_transfer(uuid, uuid) from public, anon;
 grant execute on function public.hero_team_transfer(uuid, uuid) to authenticated, service_role;
 
--- equipe do herói: nome, papel, desde e e-mail mascarado; convites pendentes só para o titular/admin
+-- equipe do Hero: nome, papel, desde e e-mail mascarado; convites pendentes só para o titular/admin
 create or replace function public.hero_team_list(p_creator uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare v_role text := public.creator_team_role(p_creator, auth.uid()); v_admin boolean := public.is_platform_admin();
@@ -708,7 +708,7 @@ end $$;
 revoke execute on function public.hero_team_list(uuid) from public, anon;
 grant execute on function public.hero_team_list(uuid) to authenticated, service_role;
 
--- herói da pessoa logada (titular primeiro), com o papel e a situação — também o pendente
+-- Hero da pessoa logada (titular primeiro), com o papel e a situação — também o pendente
 create or replace function public.my_hero_team()
 returns jsonb language sql stable security definer set search_path = '' as $$
   select jsonb_build_object('creator_id', c.id, 'role', m.role, 'status', c.status, 'name', c.name, 'slug', c.slug)
@@ -719,7 +719,7 @@ $$;
 revoke execute on function public.my_hero_team() from public, anon;
 grant execute on function public.my_hero_team() to authenticated, service_role;
 
--- creator sem herói cria o dele (pendente de aprovação do admin) e vira titular
+-- creator sem Hero cria o dele (pendente de aprovação do admin) e vira titular
 create or replace function public.creator_create_my_hero(p_name text)
 returns uuid language plpgsql security definer set search_path = '' as $$
 declare v_id uuid;
@@ -747,7 +747,7 @@ end $$;
 revoke execute on function public.creator_create_my_hero(text) from public, anon;
 grant execute on function public.creator_create_my_hero(text) to authenticated, service_role;
 
--- 8) agência: convida marca (nova ou existente) e herói -------------------------------------------------------------
+-- 8) agência: convida marca (nova ou existente) e Hero -------------------------------------------------------------
 create or replace function public.agency_invite_brand(p_agency uuid, p_email text, p_days int default 7)
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare v_email text := lower(btrim(coalesce(p_email, ''))); v_brand uuid; v_other uuid; v_inv jsonb;
@@ -797,7 +797,7 @@ begin
   if public.agency_is_demo(v_agency) then raise exception 'demo_locked' using errcode = 'P0001'; end if;
   select t.user_id, t.creator_id into v_t from public.talent_profiles t where t.id = p_talent;
   if v_t.creator_id is null then
-    -- creator do casting sem herói: o herói nasce pendente, ligado ao talento, e o convidado vira titular
+    -- creator do casting sem Hero: o Hero nasce pendente, ligado ao talento, e o convidado vira titular
     if v_t.user_id is not null then raise exception 'talent_has_login' using errcode = 'P0001'; end if;
     if not public.agency_email_ok(lower(btrim(coalesce(p_email, '')))) then raise exception 'invalid_email' using errcode = '22023'; end if;
     v_hero := public.create_pending_hero(p_name, (select a.name from public.agencies a where a.id = v_agency));
@@ -807,13 +807,13 @@ begin
     perform public.audit_log('agency.hero.create', 'creator_profile', v_hero::text, null,
       jsonb_build_object('agency', v_agency, 'talent_id', p_talent, 'status', 'pending'), null, 'agency');
   end if;
-  -- herói sem titular: mesma regra e mesma forma do convite do escritório (0087)
+  -- Hero sem titular: mesma regra e mesma forma do convite do escritório (0087)
   return query select * from public.agency_invite_talent(p_talent, p_email, p_days);
 end $$;
 revoke execute on function public.agency_invite_hero(uuid, text, text, int) from public, anon;
 grant execute on function public.agency_invite_hero(uuid, text, text, int) to authenticated, service_role;
 
--- 9) revogar convite (0065 + marca sem agência, vínculo/marca nova e equipe do herói) — mesma assinatura -------------
+-- 9) revogar convite (0065 + marca sem agência, vínculo/marca nova e equipe do Hero) — mesma assinatura -------------
 create or replace function public.agency_invitation_revoke(p_id uuid, p_justification text default null)
 returns void language plpgsql security definer set search_path = '' as $$
 declare v_inv record; v_allowed boolean := false; v_actor public.actor_type;
@@ -1016,7 +1016,7 @@ end $$;
 revoke execute on function public.onboarding_create_professional(text, text, text, text) from public, anon;
 grant execute on function public.onboarding_create_professional(text, text, text, text) to authenticated, service_role;
 
--- 11) aceite: 0087 + admin, consumidor, onboarding, creator sem herói, equipe do herói, marca sem agência e vínculo ---
+-- 11) aceite: 0087 + admin, consumidor, onboarding, creator sem Hero, equipe do Hero, marca sem agência e vínculo ---
 create or replace function public.accept_invitation_core(p_invitation uuid)
 returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare v_inv public.invitations%rowtype; v_email text; v_uid uuid; v_name text; v_scope_type text; v_scope_id uuid;
@@ -1071,7 +1071,7 @@ begin
     returning id into v_onb;
     v_scope_type := 'onboarding'; v_scope_id := v_onb;
   elsif v_inv.kind = 'creator' and v_inv.creator_profile_id is null then
-    -- creator sem herói: o papel global; o herói ele cria depois (creator_create_my_hero)
+    -- creator sem Hero: o papel global; o Hero ele cria depois (creator_create_my_hero)
     insert into public.role_assignments (user_id, role, scope_type, scope_id, granted_by)
     values (v_uid, 'creator', 'global', null, v_inv.created_by)
     on conflict (user_id, role, scope_id) do update set revoked_at = null;
@@ -1163,7 +1163,7 @@ begin
     v_scope_type := 'brand'; v_scope_id := v_inv.brand_id;
   elsif v_inv.role::text = 'creator' and v_inv.talent_id is not null then
     perform pg_advisory_xact_lock(hashtext('talent_person:' || v_uid::text));
-    -- D10: no máximo um talento por pessoa (próprio ou pelo herói)
+    -- D10: no máximo um talento por pessoa (próprio ou pelo Hero)
     if exists (select 1 from public.talent_profiles t left join public.creator_profiles c on c.id = t.creator_id
                where t.id <> v_inv.talent_id and (t.user_id = v_uid or c.user_id = v_uid)) then
       perform set_config('app.trusted', 'off', true);
@@ -1203,7 +1203,7 @@ begin
       v_scope_type := 'creator'; v_scope_id := v_creator;
     end if;
   elsif v_inv.team_role = 'member' then
-    -- 0091: entra na equipe do herói como membro (não mexe no titular)
+    -- 0091: entra na equipe do Hero como membro (não mexe no titular)
     insert into public.creator_team_members (creator_profile_id, user_id, role, status, created_by)
     values (v_inv.creator_profile_id, v_uid, 'member', 'active', v_inv.created_by)
     on conflict (creator_profile_id, user_id) do update
@@ -1214,7 +1214,7 @@ begin
     v_scope_type := 'creator'; v_scope_id := v_inv.creator_profile_id;
   else
     perform pg_advisory_xact_lock(hashtext('talent_person:' || v_uid::text));
-    -- D10: herói que já está num casting não vira o segundo talento de quem já tem um
+    -- D10: Hero que já está num casting não vira o segundo talento de quem já tem um
     if exists (select 1 from public.talent_profiles t where t.creator_id = v_inv.creator_profile_id)
        and exists (select 1 from public.talent_profiles t2 left join public.creator_profiles c2 on c2.id = t2.creator_id
                    where t2.creator_id is distinct from v_inv.creator_profile_id and (t2.user_id = v_uid or c2.user_id = v_uid)) then

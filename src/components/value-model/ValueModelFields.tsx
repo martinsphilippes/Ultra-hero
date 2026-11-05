@@ -30,8 +30,8 @@ type Props = {
 };
 
 /**
- * Seletor "Valor fixo do evento | Valor por herói" acima do campo de valor (0096). Rótulos dinâmicos ("Valor total" /
- * "Valor por herói"), "Máximo de heróis" quando é por herói e uma linha de resumo com o teto de investimento
+ * Seletor "Valor fixo do evento | Valor por Hero" acima do campo de valor (0096). Rótulos dinâmicos ("Valor total" /
+ * "Valor por Hero"), "Máximo de Heros" quando é por Hero e uma linha de resumo com o teto de investimento
  * ("Até R$ X"). Usado na campanha da marca, na chamada, na proposta da agência e nas contrapropostas.
  */
 export function ValueModelFields({ idPrefix, model, onModelChange, amountText, onAmountChange, maxHeroes, onMaxHeroesChange, disabled, frozen, amountHint, amountPlaceholder, amountTestId, required, className }: Props) {

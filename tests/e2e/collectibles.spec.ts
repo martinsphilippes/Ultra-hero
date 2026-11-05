@@ -118,7 +118,7 @@ test.describe("Colecionáveis e Minhas compras", () => {
     if ((await rows.count()) > 0) await expect(page.getByRole("link", { name: "Novo colecionável" })).toBeVisible();
   });
 
-  test("Social e página do herói continuam abrindo (destaque e banner só com item ao vivo)", async ({ page }) => {
+  test("Social e página do Hero continuam abrindo (destaque e banner só com item ao vivo)", async ({ page }) => {
     await page.goto("/inicio");
     await expect(page.getByRole("heading", { level: 1 })).toBeAttached();
     const highlight = page.getByTestId("live-collectible-highlight");

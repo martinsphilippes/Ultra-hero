@@ -20,9 +20,9 @@ export type TalentListItem = {
   consent: "active" | "revoked" | "none";
   catalogVisible: boolean;
   hero: { name: string; slug: string; avatarUrl: string | null } | null;
-  /** Foto do casting (0122): a da página do herói tem prioridade na tela. */
+  /** Foto do casting (0122): a da página do Hero tem prioridade na tela. */
   photoUrl: string | null;
-  /** Texto do selo (ex.: "Musical artist") e temas do herói (0122). */
+  /** Texto do selo (ex.: "Musical artist") e temas do Hero (0122). */
   category: string | null;
   topics: string[];
   /** Instagram declarado (o de mais seguidores, ou o primeiro). */
@@ -220,7 +220,7 @@ export async function talentSegmentNames(talentId: string): Promise<string[]> {
     .map((s) => s.name);
 }
 
-/** Foto e marcas públicas do herói ligado (o que já é público na página dele). */
+/** Foto e marcas públicas do Hero ligado (o que já é público na página dele). */
 export async function heroPublicExtras(creator: { id?: string | null; userId?: string | null }): Promise<{ photoUrl: string | null; brands: { name: string; logo_url: string | null }[] }> {
   if (!creator.id && !creator.userId) return { photoUrl: null, brands: [] };
   const supabase = await createClient();
@@ -293,7 +293,7 @@ export async function listManagers(agencyId: string): Promise<ManagerOption[]> {
   return (data ?? []).map((m) => ({ userId: m.user_id, name: m.display_name, role: m.role, jobTitle: m.job_title }));
 }
 
-/** Heróis ativos para ligar a um talento (o banco recusa quem já está em outro casting). */
+/** Heros ativos para ligar a um talento (o banco recusa quem já está em outro casting). */
 export async function listHeroOptions(): Promise<{ id: string; name: string; slug: string; avatarUrl: string | null }[]> {
   const supabase = await createClient();
   const { data } = await supabase.from("creator_profiles").select("id, name, slug, avatar_url").eq("status", "active").order("name").limit(500);
@@ -335,7 +335,7 @@ export async function listTalentInvites(talentId: string): Promise<TalentInvite[
 }
 
 /**
- * Selo do acesso do creator (0087): login (próprio ou do herói, e-mail mascarado), convite pendente ou sem
+ * Selo do acesso do creator (0087): login (próprio ou do Hero, e-mail mascarado), convite pendente ou sem
  * login. Sem a migração no remoto: mapa vazio (a tela cai no que a linha do talento diz).
  */
 export async function listTalentAccess(agencyId: string): Promise<Map<string, TalentAccessInfo>> {

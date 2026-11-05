@@ -18,7 +18,7 @@ type Props = {
   disabled?: boolean;
 };
 
-// Programa do herói dentro do conteúdo (0076): um programa publicado e uma chamada curta. Sem
+// Programa do Hero dentro do conteúdo (0076): um programa publicado e uma chamada curta. Sem
 // programa escolhido, o conteúdo sai sem este bloco. Sem programa publicado, o atalho leva ao cadastro.
 export function ProgramBlockEditor({ drafts, onChange, programs, newProgramHref, error, disabled = false }: Props) {
   const t = useTranslations("creator.post.blocks.program");

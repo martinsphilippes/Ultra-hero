@@ -45,7 +45,7 @@ export function sponsorshipWhen(o: Pick<SponsorshipCore, "startsAt" | "endsAt" |
   return `${formatDateTime(start, locale, timeZone)} – ${formatDateTime(end, locale, timeZone)}`;
 }
 
-type FactsProps = { o: SponsorshipCore; timeZone: string; /** nome do herói */ talentName?: string | null; showDeadline?: boolean; hidePerks?: boolean };
+type FactsProps = { o: SponsorshipCore; timeZone: string; /** nome do Hero */ talentName?: string | null; showDeadline?: boolean; hidePerks?: boolean };
 
 export function SponsorshipFacts({ o, timeZone, talentName = null, showDeadline = true, hidePerks = false }: FactsProps) {
   const t = useTranslations("sponsorship.facts");

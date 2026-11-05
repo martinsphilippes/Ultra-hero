@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 
-// Limpeza das receitas de teste da conta demo do herói (Minhas Receitas), pela própria tela: rascunho é
+// Limpeza das receitas de teste da conta demo do Hero (Minhas Receitas), pela própria tela: rascunho é
 // excluído; publicada é arquivada e depois excluída (0036). A conta demo é compartilhada com outras
 // execuções simultâneas (outro projeto do Playwright, outras máquinas): por isso a limpeza só leva o que
 // é desta execução (título exato) ou sobras antigas (título "<prefixo> <Date.now()>" com mais de 15 min),
@@ -20,7 +20,7 @@ type Options = {
 };
 
 /**
- * Tira do remoto as receitas de teste do herói com o prefixo: as desta execução (`title`) ou, sem
+ * Tira do remoto as receitas de teste do Hero com o prefixo: as desta execução (`title`) ou, sem
  * `title`, as sobras com mais de 15 minutos. Devolve quantas saíram.
  */
 export async function purgeTestRecipes(page: Page, prefix: string, { title }: Options = {}): Promise<number> {

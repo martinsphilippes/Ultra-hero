@@ -4,8 +4,8 @@
     "explore": "Explorar",
     "lists": "Minhas listas",
     "list": "{name} · Lista",
-    "personalities": "Heróis",
-    "personality": "{name} · Herói",
+    "personalities": "Heros",
+    "personality": "{name} · Hero",
     "library": "{library} · {name}",
     "recipes": "Receitas"
   },
@@ -23,13 +23,13 @@
       "loadedMore": "{count, plural, =1 {1 post a mais carregado} other {# posts a mais carregados}}",
       "end": "Você viu todos os posts",
       "emptyTitle": "Nenhum post por aqui ainda",
-      "emptyDescription": "Os heróis ainda não publicaram nada.",
+      "emptyDescription": "Os Heros ainda não publicaram nada.",
       "emptyCta": "Ir para o Explorar"
     }
   },
   "explore": {
     "title": "Explorar",
-    "description": "Busque por título, tema, herói ou programa.",
+    "description": "Busque por título, tema, Hero ou programa.",
     "recipesDescription": "Receitas dos chefs com busca por nome, chef ou ingrediente e filtros.",
     "search": {
       "label": "Buscar conteúdos",
@@ -128,17 +128,17 @@
     "eyebrow": "Descobrir"
   },
   "personalities": {
-    "title": "Heróis",
+    "title": "Heros",
     "description": "Atletas, artistas e chefs que você acompanha.",
     "filterLabel": "Filtrar por categoria",
     "all": "Todos",
-    "count": "{count, plural, =1 {1 herói} other {# heróis}}",
+    "count": "{count, plural, =1 {1 Hero} other {# Heros}}",
     "showing": "Mostrando {shown} de {total}",
-    "loadMore": "Ver mais heróis",
-    "emptyTitle": "Nenhum herói nesta categoria",
+    "loadMore": "Ver mais Heros",
+    "emptyTitle": "Nenhum Hero nesta categoria",
     "emptyDescription": "Experimente outra categoria ou veja todos.",
     "profile": {
-      "back": "Heróis",
+      "back": "Heros",
       "fictional": "Perfil ilustrativo",
       "rightsTitle": "Sobre este perfil",
       "rightsDefault": "Perfil ilustrativo criado pela plataforma. Fotos ilustrativas; sem contrato ou endosso.",
@@ -150,10 +150,10 @@
         "products": "{count, plural, =1 {1 produto} other {# produtos}}"
       },
       "programsEmptyTitle": "Nenhum programa publicado",
-      "programsEmptyDescription": "Este herói ainda não tem programas.",
-      "productsNote": "Produtos deste herói e produtos ligados aos seus conteúdos. As compras aqui são simuladas: nenhuma compra, cobrança ou entrega real.",
+      "programsEmptyDescription": "Este Hero ainda não tem programas.",
+      "productsNote": "Produtos deste Hero e produtos ligados aos seus conteúdos. As compras aqui são simuladas: nenhuma compra, cobrança ou entrega real.",
       "productsEmptyTitle": "Nenhum produto disponível",
-      "productsEmptyDescription": "Os produtos deste herói não estão disponíveis no momento.",
+      "productsEmptyDescription": "Os produtos deste Hero não estão disponíveis no momento.",
       "productsGoToShop": "Ver a loja",
       "rightsPendingBadge": "Direitos em validação",
       "rightsPending": "Autorização de uso de nome e imagem em validação; até lá, o perfil é tratado como fictício.",
@@ -202,7 +202,7 @@
       }
     },
     "eyebrow": "Quem guia os conteúdos",
-    "notFoundTitle": "Herói não encontrado",
+    "notFoundTitle": "Hero não encontrado",
     "notFoundDescription": "O endereço pode ter mudado ou o perfil não está mais ativo."
   }
 }

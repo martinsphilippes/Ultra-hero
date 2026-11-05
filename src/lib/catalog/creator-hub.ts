@@ -14,7 +14,7 @@ import { labelForLocale, primaryCategoryId, resolveLibraryConfig, resolveLibrary
 import type { Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
-// Dados do hub do herói (RF-004), compartilhados entre /personalities/[slug] e as páginas de
+// Dados do hub do Hero (RF-004), compartilhados entre /personalities/[slug] e as páginas de
 // biblioteca: as mesmas queries, regras de direitos e de compra em um só lugar.
 
 export type Creator = {
@@ -46,7 +46,7 @@ export type CreatorHub = {
   products: CreatorProduct<HubProduct>[];
   /** As 7 bibliotecas, mesmo vazias (a página de cada uma acha a sua pela chave). */
   libraries: HubLibrary[];
-  /** Atalhos da página do herói: configuração do admin (0050), só visíveis e com itens (ou Alimentação). */
+  /** Atalhos da página do Hero: configuração do admin (0050), só visíveis e com itens (ou Alimentação). */
   tiles: LibraryTile[];
   /** Apresentação efetiva de cada fonte (inclusive as ocultas): título e ícone da página da biblioteca. */
   tabs: Record<LibraryKey, ResolvedTab & { text: string | null }>;
@@ -62,9 +62,9 @@ export type CreatorHub = {
 const CREATOR_SELECT = "id, slug, name, headline, bio, pillars, avatar_url, cover_url, is_fictional, rights_note, rights_status, rights_holder, rights_valid_until";
 // Vínculos validados cujo conteúdo (publicado) é desta personalidade; o !inner aplica o filtro do embed à linha.
 const LINK_SELECT = `id, content:content!inner(id, slug, title, creator_id, status), product:products(${PRODUCT_CARD_SELECT}, demo_stock)`;
-// Receitas que o herói indica (creator_recipe_links): assinadas pelo chef (content.creator).
+// Receitas que o Hero indica (creator_recipe_links): assinadas pelo chef (content.creator).
 const RECIPE_LINK_SELECT = `sort_order, content:content!inner(${CONTENT_TILE_SELECT}, status, publish_at)`;
-// Alocação direta produto↔herói (creator_products): o embed vem nulo quando a RLS esconde o produto.
+// Alocação direta produto↔Hero (creator_products): o embed vem nulo quando a RLS esconde o produto.
 const DIRECT_SELECT = `id, status, sort_order, product:products(${PRODUCT_CARD_SELECT}, demo_stock)`;
 
 export function hubHref(slug: string, library?: string): string {
@@ -109,7 +109,7 @@ export const loadCreatorHub = cache(async (creator: Creator): Promise<CreatorHub
     // atalhos configurados pelo admin (0050); sem a 0050: padrões do código
     fetchCreatorLibraryConfig(supabase, creator.id),
   ]);
-  // Conteúdos do herói + receitas que ele indica (sem repetir): as indicadas entram em Alimentação
+  // Conteúdos do Hero + receitas que ele indica (sem repetir): as indicadas entram em Alimentação
   // com a assinatura do chef que as fez.
   const own = (contentRes.data ?? []) as unknown as ContentTileData[];
   const ownIds = new Set(own.map((c) => c.id));
@@ -120,13 +120,13 @@ export const loadCreatorHub = cache(async (creator: Creator): Promise<CreatorHub
   const programs = ((programRes.data ?? []) as unknown as ProgramShelfSource[]).filter((p) => p.version);
   const commerceEnabled = !settingsRes.error && isCommerceEnabled(settingsRes.data);
 
-  // Produtos do herói: alocação direta validada primeiro, depois os ligados por conteúdo (sem repetir).
+  // Produtos do Hero: alocação direta validada primeiro, depois os ligados por conteúdo (sem repetir).
   // Mesma regra de compra do RelatedProducts: vínculo validado + product_is_purchasable.
   const productsError = Boolean(linksRes.error || directRes.error);
   let products: CreatorProduct<HubProduct>[] = [];
   let inCartByProduct = new Map<string, number>();
   if (commerceEnabled && !productsError) {
-    // só vínculos de conteúdo do próprio herói (o !inner já filtra; isto garante se o embed vier sem filtro)
+    // só vínculos de conteúdo do próprio Hero (o !inner já filtra; isto garante se o embed vier sem filtro)
     const ownLinks = ((linksRes.data ?? []) as unknown as LinkRow[]).filter((row) => {
       const content = (Array.isArray(row.content) ? row.content[0] : row.content) as { creator_id?: string | null } | null | undefined;
       return content?.creator_id === creator.id;

@@ -4,12 +4,12 @@ import { expect, test, type Page } from "@playwright/test";
 import { loginAs } from "./helpers/login";
 import { readOwnCover, restoreOwnCover, type OwnCover } from "./helpers/supabase";
 
-// Capa do herói só com foto real (0042), com a conta de demonstração "Herói / Chef".
+// Capa do Hero só com foto real (0042), com a conta de demonstração "Hero / Chef".
 // Sem flag: SÓ LEITURA (o banco dos E2E é o remoto): a grade de capas desenhadas sumiu, o envio de
 // foto (câmera traseira e galeria) aparece com alvos grandes, a prévia 16:9 é gerada no aparelho e,
 // sem a 0042 no banco ou sem service role, o envio aparece "indisponível neste ambiente" sem erro.
 // Com E2E_COVER_REAL=1 (ambiente com a 0042 e o service role): envia a capa de verdade, confere o
-// card na lista de heróis e remove; o fim do teste devolve a capa que a conta tinha.
+// card na lista de Heros e remove; o fim do teste devolve a capa que a conta tinha.
 
 const FIXTURE = path.join(__dirname, "..", "fixtures", "avatar-640x480.jpg");
 const BUCKET = "/storage/v1/object/public/hero-covers/";
@@ -28,12 +28,12 @@ async function openCover(page: Page) {
 const imageSources = (page: Page, selector: string) =>
   page.locator(selector).evaluateAll((imgs) => imgs.map((i) => decodeURIComponent((i as HTMLImageElement).getAttribute("src") ?? "")));
 
-test.describe("capa do herói: telas", () => {
+test.describe("capa do Hero: telas", () => {
   test("Editar perfil: capa com foto real (câmera traseira e galeria), sem grade de capas desenhadas, alvos grandes e axe sem violações sérias", async ({ page }) => {
     await loginAs(page, "creator");
     const cover = await openCover(page);
     await expect(cover.getByRole("heading", { level: 3, name: "Capa" })).toBeVisible();
-    await expect(cover).toContainText("lista de heróis");
+    await expect(cover).toContainText("lista de Heros");
 
     // nada das capas desenhadas nem da escolha por opções
     const editor = page.locator("#editar-perfil");
@@ -95,7 +95,7 @@ test.describe("capa do herói: telas", () => {
     await expect(page.getByTestId("hero-cover").getByRole("alert")).toHaveText("Esse arquivo não é uma imagem. Escolha uma foto JPG, PNG ou WebP.");
   });
 
-  test("lista de heróis: capa só com foto real ou superfície lisa; avatar com foto real ou iniciais; nada desenhado", async ({ page }) => {
+  test("lista de Heros: capa só com foto real ou superfície lisa; avatar com foto real ou iniciais; nada desenhado", async ({ page }) => {
     await page.goto("/personalities");
     const cards = page.locator('main a[href^="/personalities/"]').filter({ has: page.locator('[data-testid="hero-cover-image"], [data-testid="hero-cover-empty"]') });
     await expect(cards.first()).toBeVisible();
@@ -112,7 +112,7 @@ test.describe("capa do herói: telas", () => {
   });
 });
 
-test.describe("capa do herói: envio real (E2E_COVER_REAL=1)", () => {
+test.describe("capa do Hero: envio real (E2E_COVER_REAL=1)", () => {
   test.skip(process.env.E2E_COVER_REAL !== "1", "envio real desligado: defina E2E_COVER_REAL=1 num ambiente com a 0042 e o service role");
 
   let original: OwnCover | null = null;
@@ -132,7 +132,7 @@ test.describe("capa do herói: envio real (E2E_COVER_REAL=1)", () => {
     original = null;
   });
 
-  test("herói: envia a capa pela galeria, ela aparece no card da lista e remove (card com superfície lisa)", async ({ page }, testInfo) => {
+  test("Hero: envia a capa pela galeria, ela aparece no card da lista e remove (card com superfície lisa)", async ({ page }, testInfo) => {
     // um projeto basta: cada execução consome envios da cota diária da conta demo
     test.skip(testInfo.project.name !== "mobile", "envio real roda só no projeto mobile");
     test.setTimeout(180_000);

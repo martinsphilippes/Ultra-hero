@@ -93,7 +93,7 @@ describe("effectiveRightsStatus (o que a página pública pode afirmar)", () => 
     expect(effectiveRightsStatus("authorized", "20/10/2027", TODAY)).toBe("pending");
   });
 
-  it("o selo 'Perfil ilustrativo' é só do herói fictício (is_fictional), qualquer que seja a situação dos direitos", () => {
+  it("o selo 'Perfil ilustrativo' é só do Hero fictício (is_fictional), qualquer que seja a situação dos direitos", () => {
     expect(showsFictionalBadge(true)).toBe(true);
     expect(showsFictionalBadge(false)).toBe(false);
     expect(showsFictionalBadge(null)).toBe(false);
@@ -116,7 +116,7 @@ describe("needsImageAuthorization (aviso interno da agência e do admin)", () =>
     expect(needsImageAuthorization(real("authorized", "2026-10-20"), TODAY)).toBe(false);
   });
 
-  it("herói fictício nunca tem aviso", () => {
+  it("Hero fictício nunca tem aviso", () => {
     expect(needsImageAuthorization({ is_fictional: true, rights_status: "pending", rights_valid_until: null }, TODAY)).toBe(false);
     expect(needsImageAuthorization({ is_fictional: true, rights_status: "fictional", rights_valid_until: null }, TODAY)).toBe(false);
   });

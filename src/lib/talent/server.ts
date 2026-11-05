@@ -19,12 +19,12 @@ export type TalentSelf = {
   consentRevokedAt: string | null;
   catalogVisible: boolean;
   hasPublicPage: boolean;
-  /** 0094: herói (página pública) ligado ao talento; a tela sabe se o herói em uso é o do casting. */
+  /** 0094: Hero (página pública) ligado ao talento; a tela sabe se o Hero em uso é o do casting. */
   creatorId: string | null;
   agency: string;
   agencyIsDemo: boolean;
   manager: string | null;
-  /** 0091: membro da equipe do herói (não é a pessoa titular; não dá o consentimento). */
+  /** 0091: membro da equipe do Hero (não é a pessoa titular; não dá o consentimento). */
   isTeamMember: boolean;
 };
 

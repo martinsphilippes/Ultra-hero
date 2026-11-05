@@ -41,7 +41,7 @@ export function CreatorStatusButton({ id, status }: { id: string; status: "pendi
   );
 }
 
-// Tira do ar a foto enviada pelo herói (0031); só aparece quando o avatar é uma foto do bucket.
+// Tira do ar a foto enviada pelo Hero (0031); só aparece quando o avatar é uma foto do bucket.
 export function CreatorPhotoRemoveButton({ id }: { id: string }) {
   const t = useTranslations("adminOps.creators.form");
   return (
@@ -58,7 +58,7 @@ export function CreatorPhotoRemoveButton({ id }: { id: string }) {
   );
 }
 
-// Tira do ar a capa enviada pelo herói (0042); só aparece quando a capa é uma foto do bucket.
+// Tira do ar a capa enviada pelo Hero (0042); só aparece quando a capa é uma foto do bucket.
 export function CreatorCoverRemoveButton({ id }: { id: string }) {
   const t = useTranslations("adminOps.creators.form");
   return (

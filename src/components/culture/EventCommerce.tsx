@@ -80,7 +80,7 @@ export async function BrandEventActions({ eventId, interested, canPropose, hasAg
   );
 }
 
-/** Agência no evento (0101): atalho para a oportunidade de patrocínio (o herói é escolhido no formulário). */
+/** Agência no evento (0101): atalho para a oportunidade de patrocínio (o Hero é escolhido no formulário). */
 export async function AgencyEventActions({ eventId, canCreate, closed }: { eventId: string; canCreate: boolean; closed: boolean }) {
   const t = await getTranslations("culture.agency");
   if (closed) return null;
@@ -106,9 +106,9 @@ export type CompatHero = { id: string; name: string; talentId: string | null };
 export type CompatBrand = { id: string; name: string };
 
 /**
- * Compatibilidade (0101), visão da agência e do admin: heróis × marcas interessados, lado a lado. A agência recebe da RLS
- * só os heróis do PRÓPRIO casting e as marcas que atende; o admin, todos. Atalhos (agência gestor+): abrir oportunidade
- * com o herói (ficha do casting) ou para a marca (público escolhido). A marca nunca chega aqui.
+ * Compatibilidade (0101), visão da agência e do admin: Heros × marcas interessados, lado a lado. A agência recebe da RLS
+ * só os Heros do PRÓPRIO casting e as marcas que atende; o admin, todos. Atalhos (agência gestor+): abrir oportunidade
+ * com o Hero (ficha do casting) ou para a marca (público escolhido). A marca nunca chega aqui.
  */
 export async function CompatibilityPanel({ eventId, heroes, brands, mode, canCreate }: { eventId: string; heroes: CompatHero[]; brands: CompatBrand[]; mode: "agency" | "admin"; canCreate: boolean }) {
   const t = await getTranslations("culture.compat");

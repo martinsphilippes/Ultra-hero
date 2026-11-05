@@ -26,8 +26,8 @@ const STATE_VARIANT: Record<ReturnType<typeof selfSignupState>, BadgeVariant> = 
   other: "neutral",
 };
 
-// /admin/cadastros (0103): agências, marcas e heróis criados por autosserviço nos últimos 14 dias. Cada linha abre a
-// tela que já existe para ver e suspender (agência: editar na lista; marca e herói: ficha; herói pendente: aprovar).
+// /admin/cadastros (0103): agências, marcas e Heros criados por autosserviço nos últimos 14 dias. Cada linha abre a
+// tela que já existe para ver e suspender (agência: editar na lista; marca e Hero: ficha; Hero pendente: aprovar).
 export default async function AdminSelfSignupsPage() {
   await requireRole("admin", "/admin/cadastros");
   const supabase = await createClient();

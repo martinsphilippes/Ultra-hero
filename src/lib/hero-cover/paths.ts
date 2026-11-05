@@ -22,9 +22,9 @@ export function isStoredCoverUrl(url: string | null | undefined, baseUrl: string
 }
 
 /**
- * O que o navegador pode carregar como capa do herói: foto real (caminho local do app, como as capas
- * oficiais dos heróis demo, ou foto do bucket deste projeto). Sem capa, capa desenhada antiga
- * (/placeholders/…) ou URL de outro host (cover_url é gravável pelo herói pela API): null, e a tela
+ * O que o navegador pode carregar como capa do Hero: foto real (caminho local do app, como as capas
+ * oficiais dos Heros demo, ou foto do bucket deste projeto). Sem capa, capa desenhada antiga
+ * (/placeholders/…) ou URL de outro host (cover_url é gravável pelo Hero pela API): null, e a tela
  * mostra uma superfície lisa do tema.
  */
 export function safeCoverSrc(src: string | null | undefined, baseUrl: string | null | undefined): string | null {

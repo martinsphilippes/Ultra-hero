@@ -5,15 +5,15 @@ import { hasRole } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { ACTING_HERO_COOKIE, isUuid } from "./constants";
 
-// Herói em nome de quem o admin (ou a agência, só pelos heróis dela: 0070) age. O cookie só lembra a
-// última escolha: a cada requisição o banco confere (acting_hero_id(): admin ou herói da agência, ativo)
+// Hero em nome de quem o admin (ou a agência, só pelos Heros dela: 0070) age. O cookie só lembra a
+// última escolha: a cada requisição o banco confere (acting_hero_id(): admin ou Hero da agência, ativo)
 // com o mesmo cabeçalho que as actions vão mandar.
 
 export type ActingHero = { id: string; slug: string; name: string; avatar_url: string | null };
 
 export type ActingHeroState =
   | { status: "ok"; hero: ActingHero }
-  /** Sem escolha válida (sem cookie, herói suspenso, conta não admin). */
+  /** Sem escolha válida (sem cookie, Hero suspenso, conta não admin). */
   | { status: "none" }
   /** Banco ainda sem a 0045. */
   | { status: "unavailable" };
@@ -44,7 +44,7 @@ export const actingAvailable = cache(async (): Promise<boolean> => {
   return !isMissingFunction(error);
 });
 
-/** Cliente com o cabeçalho do herói escolhido (só faz efeito para admin; o banco confere). */
+/** Cliente com o cabeçalho do Hero escolhido (só faz efeito para admin; o banco confere). */
 export function actingClient(heroId: string) {
   return createClient({ actingHeroId: heroId });
 }

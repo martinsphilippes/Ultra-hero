@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // Pré-visualização do chef: o mesmo RecipeView da página pública, lido com o acesso de dono
-// (a RLS libera rascunho, agendada e foto de etapa ao herói), com a faixa "Pré-visualização".
+// (a RLS libera rascunho, agendada e foto de etapa ao Hero), com a faixa "Pré-visualização".
 export default async function RecipePreviewPage({ params }: Params) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();

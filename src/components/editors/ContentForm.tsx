@@ -41,7 +41,7 @@ import type { ContentFormProps, ContentFormValues } from "./types";
 // Validação Zod no cliente (feedback imediato) e no servidor (fonte de verdade);
 // regras de acesso só aparecem para o admin; readOnly desabilita tudo.
 // Com a prop `blocks` (admin, 0075/0076) o conteúdo vira estruturado: o pilar abre o bloco dele (treino,
-// nutrição, cardápio), um programa do herói entra como bloco à parte e produtos ficam vinculados.
+// nutrição, cardápio), um programa do Hero entra como bloco à parte e produtos ficam vinculados.
 
 type FormState = Omit<ContentFormValues, "body"> & { body: ContentBody };
 

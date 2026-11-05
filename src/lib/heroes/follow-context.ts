@@ -10,7 +10,7 @@ export type FollowContext = {
   /** hero_favorites disponível no banco (sem a tabela, os botões somem). */
   available: boolean;
   following: ReadonlySet<string>;
-  /** No app das lojas: push de posts de heróis já ligado com aparelho registrado. */
+  /** No app das lojas: push de posts de Heros já ligado com aparelho registrado. */
   pushReady: boolean;
   nativeApp: boolean;
 };

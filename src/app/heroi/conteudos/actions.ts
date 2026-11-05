@@ -14,8 +14,8 @@ import { schedulePushDispatch } from "@/lib/push/schedule";
 import { creatorLicenseKind } from "@/lib/creator-content/rules";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 
-// Ações sobre conteúdo do herói (Novo conteúdo e Meus conteúdos). 0092: o creator (titular ou membro da equipe)
-// pelo herói dele, ou o admin pelo herói escolhido (creatorActionContext "content"). Rascunhos e publicar/despublicar
+// Ações sobre conteúdo do Hero (Novo conteúdo e Meus conteúdos). 0092: o creator (titular ou membro da equipe)
+// pelo Hero dele, ou o admin pelo Hero escolhido (creatorActionContext "content"). Rascunhos e publicar/despublicar
 // pelas RPCs da 0025; "Enviar para revisão" quando o admin exige revisão do tipo; tirar do ar e arquivar o que já
 // esteve no ar só o titular (o banco responde owner_only ao membro).
 
@@ -200,7 +200,7 @@ export async function updateContent(values: ContentFormValues): Promise<SaveResu
   return { ok: true, id };
 }
 
-// O herói publica direto (0025): o banco confere dono, título, corpo, mídia e licença.
+// O Hero publica direto (0025): o banco confere dono, título, corpo, mídia e licença.
 export async function publishContent(input: { id: string }): Promise<ActionResult & { slug?: string }> {
   const parsed = z.object({ id: z.uuid() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
@@ -230,7 +230,7 @@ export async function publishContent(input: { id: string }): Promise<ActionResul
   revalidateContent(id);
   revalidatePath("/inicio");
   revalidatePath("/explore");
-  // no ar: avisa quem favoritou o herói (fila enchida pelo banco, 0054)
+  // no ar: avisa quem favoritou o Hero (fila enchida pelo banco, 0054)
   schedulePushDispatch();
   return { ok: true, slug: (data as { slug?: string } | null)?.slug };
 }

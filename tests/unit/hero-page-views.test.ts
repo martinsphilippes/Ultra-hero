@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Visitas à página do herói (0061): validação da entrada da rota, rota (204 sempre, sem gravar do
+// Visitas à página do Hero (0061): validação da entrada da rota, rota (204 sempre, sem gravar do
 // navegador do E2E, só service role), leitura do admin e migração.
 
 const cookieJar = new Map<string, string>();
@@ -63,10 +63,10 @@ describe("POST /api/hero-page-views", () => {
   });
 });
 
-describe("indicadores: visitas à página do herói", () => {
+describe("indicadores: visitas à página do Hero", () => {
   const raw = (over: Record<string, unknown>) => ({ id: ID, slug: "anitta", name: "Anitta", status: "active", followers: 1, ...over });
 
-  it("lê visitas por herói, série diária e data de início (sem a 0061: zero, vazia e nula)", () => {
+  it("lê visitas por Hero, série diária e data de início (sem a 0061: zero, vazia e nula)", () => {
     const d = parseHeroes({ rows: [raw({ page_views: "4" })], daily_page_views: [{ day: "2026-10-30", value: 4 }], page_views_since: "2026-10-30" });
     expect(d.rows[0].pageViews).toBe(4);
     expect(d.dailyPageViews).toEqual([{ day: "2026-10-30", value: 4 }]);
@@ -91,7 +91,7 @@ describe("indicadores: visitas à página do herói", () => {
     expect(rankHeroesByPageViews(rows, 2)).toHaveLength(2);
   });
 
-  it("CSV do ranking inclui os heróis por visitas", () => {
+  it("CSV do ranking inclui os Heros por visitas", () => {
     const heroes = parseHeroes({ rows: [raw({ page_views: 5 })] });
     expect(sectionCsvRows("ranking", { ranking: { recipes: [], programs: [], products: [] }, heroes })).toContainEqual(["top_heroes_page_views", "1", "Anitta", "page_views", 5]);
   });
@@ -110,7 +110,7 @@ describe("migração 0061: contador", () => {
     expect(sql).toContain("grant execute on function public.hero_page_view_bump(uuid) to service_role;");
   });
 
-  it("leitura por herói continua só do admin", () => {
+  it("leitura por Hero continua só do admin", () => {
     const start = sql.indexOf("function public.admin_indicators_heroes(");
     expect(sql.slice(start, start + 400)).toContain("if not public.is_admin() then raise exception 'forbidden'");
     expect(sql).toContain("revoke execute on function public.admin_indicators_heroes(int) from public, anon;");

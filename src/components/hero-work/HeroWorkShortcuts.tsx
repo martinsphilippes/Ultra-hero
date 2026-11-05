@@ -13,12 +13,12 @@ const BUTTON =
 const TILE =
   "flex min-h-11 min-w-0 flex-col gap-0.5 rounded-xl border border-border bg-surface p-3 transition-colors hover:border-accent/40 hover:bg-surface-hover active:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
-// Atalhos do herói no Perfil (pedido do responsável): "Agenda" e "Financeiro" em botões grandes, com o próximo
-// compromisso e "A receber este mês". Levam ao Portal do Herói: com agência, a agenda e os
-// ganhos do casting (e os próprios, se houver); independente, as ferramentas do próprio herói. A equipe só tem a Agenda; o financeiro é do titular. Registro simulado.
+// Atalhos do Hero no Perfil (pedido do responsável): "Agenda" e "Financeiro" em botões grandes, com o próximo
+// compromisso e "A receber este mês". Levam ao Portal do Hero: com agência, a agenda e os
+// ganhos do casting (e os próprios, se houver); independente, as ferramentas do próprio Hero. A equipe só tem a Agenda; o financeiro é do titular. Registro simulado.
 export async function HeroWorkShortcuts({ data }: { data: HeroShortcutData }) {
   const [t, locale] = await Promise.all([getTranslations("heroWork.shortcuts"), getLocale() as Promise<Locale>]);
-  // Portal do Herói (0097): agenda e financeiro são uma tela só (com agência, os da agência + os próprios)
+  // Portal do Hero (0097): agenda e financeiro são uma tela só (com agência, os da agência + os próprios)
   const agendaHref = "/heroi/agenda";
   const financeHref = "/heroi/financeiro";
   const when = data.next

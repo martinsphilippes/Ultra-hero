@@ -7,7 +7,7 @@ import { addMonths, cycleAnchors, cycleAt, cycleStart, occurrenceDates, recurren
 import { monthKey, reportRange, sendHref, shiftMonth, strategyActions, strategyIdeaSchema } from "@/lib/strategy/vocab";
 
 // Roteiros de entrega — Fase 3 (0111): espelhos puros das regras do banco (recorrência, insights), estratégias,
-// herói-cliente que paga a agência e a entrada Estratégias no menu.
+// Hero-cliente que paga a agência e a entrada Estratégias no menu.
 
 describe("serviço recorrente (ciclos)", () => {
   it("unidades em semanas; diária não se multiplica", () => {
@@ -112,13 +112,13 @@ describe("estratégias para marcas", () => {
   });
 });
 
-describe("herói-cliente paga a agência", () => {
+describe("Hero-cliente paga a agência", () => {
   const raw = [
     {
       entry_id: "e1",
       deal_id: "d1",
       title: "Assessoria",
-      talent_name: "Herói",
+      talent_name: "Hero",
       agency_name: "Agência",
       total_cents: 300000,
       entry_status: "planned",

@@ -8,7 +8,7 @@ import { unblockHeroAction } from "@/lib/moderation/actions";
 
 type Hero = { id: string; name: string; avatar_url: string | null };
 
-// Heróis bloqueados (0071): só a própria conta vê; desbloquear devolve o herói ao app.
+// Heros bloqueados (0071): só a própria conta vê; desbloquear devolve o Hero ao app.
 export function BlockedHeroesList({ heroes }: { heroes: Hero[] }) {
   const t = useTranslations("moderation.blockedList");
   const router = useRouter();

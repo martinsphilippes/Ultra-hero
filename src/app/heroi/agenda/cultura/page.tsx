@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Props = { searchParams: Promise<{ territorio?: string }> };
 
-// Real-Time Culture no Portal do Herói (0101): aba "Cultura" da agenda. Só o titular de herói ativo manifesta interesse
+// Real-Time Culture no Portal do Hero (0101): aba "Cultura" da agenda. Só o titular de Hero ativo manifesta interesse
 // direto do cartão (a equipe lê); o resto abre o detalhe do evento na agenda.
 export default async function HeroCulturePage({ searchParams }: Props) {
   const sp = await searchParams;

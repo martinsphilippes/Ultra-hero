@@ -96,7 +96,7 @@
     "informedByChef": "Informado pelo chef",
     "allergensNotInformed": "Alérgenos não informados pelo chef",
     "nutritionInformed": "Informação nutricional informada pelo chef, ainda não validada",
-    "credentialsLabel": "Credenciais informadas pelo herói",
+    "credentialsLabel": "Credenciais informadas pelo Hero",
     "units": {
       "g": {
         "one": "g",
@@ -262,14 +262,14 @@
       "content_incomplete": "Falta o título.",
       "missing_title": "Falta o título.",
       "missing_body": "Salve o rascunho antes de publicar.",
-      "creator_unavailable": "Seu perfil de herói está inativo ou sem vínculo.",
+      "creator_unavailable": "Seu perfil de Hero está inativo ou sem vínculo.",
       "acting_hero_required": "Escolha o hero em \"Publicar como hero\", no início do admin, e tente de novo.",
       "acting_unavailable": "Publicar como hero ainda não está disponível neste ambiente.",
       "duplicate": "Já existe um registro igual.",
       "network": "Sem conexão. Tente de novo.",
       "generic": "Algo deu errado. Tente de novo.",
-      "owner_only": "Só o titular do herói (ou a administração) arquiva ou exclui receita que já esteve no ar.",
-      "hero_not_active": "Seu herói ainda não foi aprovado. A receita ficou guardada; publique depois da aprovação."
+      "owner_only": "Só o titular do Hero (ou a administração) arquiva ou exclui receita que já esteve no ar.",
+      "hero_not_active": "Seu Hero ainda não foi aprovado. A receita ficou guardada; publique depois da aprovação."
     }
   },
   "portal": {
@@ -842,7 +842,7 @@
   },
   "admin": {
     "reviewTitle": "Revisão antes de publicar",
-    "reviewDescription": "Com a revisão ligada, o herói envia para revisão em vez de publicar direto. A mudança vale na hora e fica na auditoria.",
+    "reviewDescription": "Com a revisão ligada, o Hero envia para revisão em vez de publicar direto. A mudança vale na hora e fica na auditoria.",
     "reviewCaption": "Regra de revisão por tipo de conteúdo",
     "reviewColumn": "Revisão",
     "reviewOn": "Ligada",
@@ -855,11 +855,11 @@
     "changed": "Regra de revisão atualizada.",
     "unavailable": "A regra de revisão por tipo chega com a migração 0027.",
     "credentials": {
-      "title": "Credenciais dos heróis",
-      "description": "Pedidos enviados pelos heróis. O texto só aparece no perfil público depois de aprovado, com o rótulo “Credenciais informadas pelo herói”.",
+      "title": "Credenciais dos Heros",
+      "description": "Pedidos enviados pelos Heros. O texto só aparece no perfil público depois de aprovado, com o rótulo “Credenciais informadas pelo Hero”.",
       "empty": "Nenhum pedido aguardando aprovação.",
       "caption": "Pedidos de credenciais",
-      "hero": "Herói",
+      "hero": "Hero",
       "requested": "Texto pedido",
       "status": "Situação",
       "updated": "Pedido em",
@@ -870,12 +870,12 @@
       "reject": "Reprovar",
       "approveTitle": "Aprovar as credenciais de {name}?",
       "rejectTitle": "Reprovar as credenciais de {name}?",
-      "approveDescription": "O texto passa a aparecer no perfil público com o rótulo “Credenciais informadas pelo herói”.",
-      "rejectDescription": "O texto sai do perfil público. O herói pode editar o pedido e enviar de novo.",
+      "approveDescription": "O texto passa a aparecer no perfil público com o rótulo “Credenciais informadas pelo Hero”.",
+      "rejectDescription": "O texto sai do perfil público. O Hero pode editar o pedido e enviar de novo.",
       "approvedDone": "Credenciais aprovadas.",
       "rejectedDone": "Credenciais reprovadas."
     },
-    "reviewNoFlow": "Sem “Enviar para revisão” no portal do herói para este tipo: só dá para desligar."
+    "reviewNoFlow": "Sem “Enviar para revisão” no portal do Hero para este tipo: só dá para desligar."
   },
   "chef": {
     "title": "Especialidades e credenciais",
@@ -886,7 +886,7 @@
     "specialtiesSaved": "Especialidades salvas.",
     "credentials": "Credenciais",
     "credentialsHint": "Formação, cursos, prêmios. Até 300 caracteres.",
-    "credentialsNotice": "As credenciais aparecem no perfil público só depois da aprovação da administração, com o rótulo “Credenciais informadas pelo herói”. Editar ou retirar o pedido tira o texto aprovado do perfil até nova aprovação.",
+    "credentialsNotice": "As credenciais aparecem no perfil público só depois da aprovação da administração, com o rótulo “Credenciais informadas pelo Hero”. Editar ou retirar o pedido tira o texto aprovado do perfil até nova aprovação.",
     "send": "Enviar para aprovação",
     "withdraw": "Retirar pedido",
     "statusApproved": "Aprovadas e visíveis no perfil.",

@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title") };
 }
 
-// Gestão de um herói pela agência (0070): só o herói escolhido (o banco confere o vínculo a cada chamada).
+// Gestão de um Hero pela agência (0070): só o Hero escolhido (o banco confere o vínculo a cada chamada).
 // Perfil, foto, capa e o Novo post em nome dele.
 export default async function AgencyHeroPage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await requireAgency("manager");
@@ -33,7 +33,7 @@ export default async function AgencyHeroPage({ params }: { params: Promise<{ id:
   const [t, supabase, avatarState, coverState] = await Promise.all([getTranslations("agency.heroes"), actingClient(id), getAvatarPhotoState(), getHeroCoverState()]);
   const { data: hero } = await supabase.from("creator_profiles").select("id, slug, name, headline, bio, pillars, avatar_url, cover_url, is_fictional, rights_status, rights_valid_until").eq("id", id).maybeSingle();
   if (!hero) redirect("/agencia/herois");
-  // 0112: acesso do herói (pela ficha do casting ligada; só gestor+ e admin geral)
+  // 0112: acesso do Hero (pela ficha do casting ligada; só gestor+ e admin geral)
   const own = await createClient();
   const { data: talentRow } = await own.from("talent_profiles").select("id, consent_at, consent_revoked_at").eq("creator_id", id).eq("agency_id", ctx.agency.id).is("archived_at", null).maybeSingle();
   const account = talentRow ? ((await loadAccessStatus(own, ctx.agency.id, "talent")).get(talentRow.id) ?? null) : null;

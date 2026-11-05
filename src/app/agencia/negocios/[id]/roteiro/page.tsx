@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
 type Props = { params: Promise<{ id: string }> };
 
 // Roteiro do negócio (0107): serviço do catálogo → etapas por setor com prazo em dias úteis (cadeia), "Dia X de N úteis
-// · No prazo/Atrasado", previsão de entrega, marcar feita e reatribuir. Também o herói-cliente (vê o projeto no Portal).
+// · No prazo/Atrasado", previsão de entrega, marcar feita e reatribuir. Também o Hero-cliente (vê o projeto no Portal).
 export default async function DealRoadmapPage({ params }: Props) {
   const { id } = await params;
   const { ctx, deal, canEdit, isManager } = await loadDeal(id);

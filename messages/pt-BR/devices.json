@@ -55,7 +55,7 @@
     "categoriesHint": "Marque pelo menos uma. Só o que o aparelho mede sozinho; nada digitado.",
     "textTitle": "Texto do consentimento",
     "textVersion": "Versão {version} · guardamos esta versão e a sua escolha como prova do consentimento.",
-    "notDo": "Não usamos estes dados para anúncios, venda ou recomendação de produtos, estatísticas, IA externa, heróis ou fornecedores.",
+    "notDo": "Não usamos estes dados para anúncios, venda ou recomendação de produtos, estatísticas, IA externa, Heros ou fornecedores.",
     "age": "Declaro ter {age} anos ou mais.",
     "agePending": "A regra de idade está em definição pelo jurídico.",
     "submit": "Concordo e quero conectar",

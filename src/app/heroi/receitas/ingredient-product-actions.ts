@@ -10,7 +10,7 @@ import type { IngredientLink } from "@/lib/recipes/ingredient-products";
 import { rpcErrorCode } from "@/lib/supabase/helpers";
 import { creatorActionContext } from "../_lib/creator-action";
 
-// "Produto correspondente" na etapa 2 do editor (fase 5). O herói só sugere: as RPCs da 0027
+// "Produto correspondente" na etapa 2 do editor (fase 5). O Hero só sugere: as RPCs da 0027
 // conferem o dono do ingrediente (creator_suggest_ingredient_product) e só deixam retirar a própria
 // sugestão pendente; o vínculo só vale na lista de compras depois de validado pelo admin.
 
@@ -53,7 +53,7 @@ const suggestSchema = z.object({ ingredientId: z.uuid(), productId: z.uuid(), re
 
 /**
  * Sugere o produto do ingrediente. Uma sugestão pendente por ingrediente: a anterior (do mesmo
- * herói, ainda pendente) só é retirada depois que a nova existe. O validado continua valendo até o
+ * Hero, ainda pendente) só é retirada depois que a nova existe. O validado continua valendo até o
  * admin decidir a nova.
  */
 export async function suggestIngredientProduct(input: { ingredientId: string; productId: string; replaceLinkId?: string | null }): Promise<IngredientProductResult<{ link: IngredientLink }>> {
@@ -81,7 +81,7 @@ export async function suggestIngredientProduct(input: { ingredientId: string; pr
   return { ok: true, link };
 }
 
-/** Retira a própria sugestão pendente (a RPC recusa validada, recusada ou de outro herói). */
+/** Retira a própria sugestão pendente (a RPC recusa validada, recusada ou de outro Hero). */
 export async function withdrawIngredientProduct(input: { linkId: string }): Promise<IngredientProductResult> {
   const parsed = z.object({ linkId: z.uuid() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };

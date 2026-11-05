@@ -215,9 +215,9 @@ describe("leitura das RPCs", () => {
   });
 });
 
-// 0096: modelo de valor (fixo x por herói) na chamada, na proposta e nas rodadas
+// 0096: modelo de valor (fixo x por Hero) na chamada, na proposta e nas rodadas
 describe("modelo de valor da chamada", () => {
-  it("por herói exige valor por herói (nunca 'a combinar') e o máximo de heróis", () => {
+  it("por Hero exige valor por Hero (nunca 'a combinar') e o máximo de Heros", () => {
     const perHero: CallFormInput = { ...base, valueModel: "por_heroi", maxHeroes: 3, budgetDisplay: "exact", budgetCents: 200_000 };
     expect(validateCall(perHero, false, now)).toBeNull();
     expect(validateCall({ ...perHero, maxHeroes: null }, false, now)).toBe("maxHeroes");
@@ -250,7 +250,7 @@ describe("modelo de valor da chamada", () => {
     // sem as chaves (banco antigo), tudo é fixo e sem máximo
     expect(d?.proposals[1]).toMatchObject({ valueModel: "fixo", maxHeroes: null, agreedValueModel: null });
   });
-  it("o herói não recebe modelo nem máximo", () => {
+  it("o Hero não recebe modelo nem máximo", () => {
     const [c] = toTalentBrandCalls([{ id: "c", status: "open", respond_by: "2026-11-10T00:00:00Z" }]);
     expect(c.valueModel).toBe("fixo");
     expect(c.maxHeroes).toBeNull();

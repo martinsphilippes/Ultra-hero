@@ -12,16 +12,16 @@ import { toHeroEvent, type HeroEvent, type ServiceDate } from "./agenda";
 import { toHeroService, type HeroService } from "./finance";
 import { heroRights, type HeroRights } from "./rules";
 
-// Leituras e contexto da agenda/financeiro do herói independente (0094). Quem pode o quê vem do banco (RLS);
+// Leituras e contexto da agenda/financeiro do Hero independente (0094). Quem pode o quê vem do banco (RLS);
 // as regras daqui (rules.ts) só escolhem o que mostrar.
 
 export type HeroWorkspace = HeroRights & {
   hero: MyHero;
-  /** O herói em uso é o ligado ao casting da agência: a agenda e os ganhos da agência aparecem junto (0097). */
+  /** O Hero em uso é o ligado ao casting da agência: a agenda e os ganhos da agência aparecem junto (0097). */
   hasAgency: boolean;
 };
 
-/** Herói em uso pela pessoa (titular ou membro), sem redirecionar: null sem papel de herói ou sem herói. */
+/** Hero em uso pela pessoa (titular ou membro), sem redirecionar: null sem papel de Hero ou sem Hero. */
 export const findHeroWorkspace = cache(async (): Promise<HeroWorkspace | null> => {
   const user = await getUser();
   if (!user || !hasHeroRole(await getRoles())) return null;
@@ -35,8 +35,8 @@ export const findHeroWorkspace = cache(async (): Promise<HeroWorkspace | null> =
 });
 
 /**
- * Herói em uso pela pessoa (titular ou membro): o escolhido no cartão "Você trabalha para" (cookie, revalidado) ou o
- * padrão. Sem papel de herói ou sem herói: volta ao Perfil. O admin só consulta pela RLS (sem tela própria aqui).
+ * Hero em uso pela pessoa (titular ou membro): o escolhido no cartão "Você trabalha para" (cookie, revalidado) ou o
+ * padrão. Sem papel de Hero ou sem Hero: volta ao Perfil. O admin só consulta pela RLS (sem tela própria aqui).
  */
 export const getHeroWorkspace = cache(async (): Promise<HeroWorkspace> => {
   const user = await getUser();
@@ -65,7 +65,7 @@ export async function listServiceDates(creatorId: string, from: string, to: stri
   return (data as { id: string; title: string; client: string; service_on: string }[]).map((r) => ({ id: r.id, title: r.title, client: r.client, serviceOn: r.service_on }));
 }
 
-/** Todos os serviços do herói (só o titular lê; para a equipe a RLS devolve vazio). */
+/** Todos os serviços do Hero (só o titular lê; para a equipe a RLS devolve vazio). */
 export async function listHeroServices(creatorId: string): Promise<{ available: boolean; items: HeroService[] }> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("hero_services").select(SERVICE_SELECT).eq("creator_profile_id", creatorId).order("service_on", { ascending: false }).limit(500);

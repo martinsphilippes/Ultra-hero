@@ -39,9 +39,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Perfil: no alto, "Seus portais" (agência, marca, admin, profissional e o Escritório do casting; pedido
 // do responsável: a entrada no painel fica bem em cima). Depois, o topo segue o Instagram para todas as
-// contas. Cabeçalho (foto e nome; o herói mostra o
+// contas. Cabeçalho (foto e nome; o Hero mostra o
 // perfil público com selo e bio recolhida e o Novo post; as outras contas, e-mail e papéis) e um
-// só "Editar perfil", com o editor recolhido na mesma tela: perfil público do herói (antes em
+// só "Editar perfil", com o editor recolhido na mesma tela: perfil público do Hero (antes em
 // /heroi/pagina) e "Sua conta" (nome exibido, foto, idioma e tema). Depois, "Hoje" em 3 cards (Seu
 // dia, Sua noite e Evolução) e, no fim, uma linha "Configurações". Lembretes, coleções, compras, conta,
 // os mesmos portais e Sair moram em /configuracoes, que também abre pelo avatar do topo.
@@ -65,9 +65,9 @@ export default async function ProfilePage() {
     createClient().then((c) => c.rpc("onboarding_pending")),
   ]);
   const onboardingOpen = Array.isArray(onboarding.data) && onboarding.data.length > 0;
-  // só com o papel de herói (ou admin), como no portal: a linha em creator_profiles sozinha não basta
+  // só com o papel de Hero (ou admin), como no portal: a linha em creator_profiles sozinha não basta
   const heroProfile = heroProfileFor(heroRoleNames(roles), creator.profile);
-  // envio de capa (0042): só o herói vê; sem a 0042 ou sem service role fica "indisponível"
+  // envio de capa (0042): só o Hero vê; sem a 0042 ou sem service role fica "indisponível"
   const coverState = heroProfile ? await getHeroCoverState() : null;
   const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
   const today = localDateIn(tz);
@@ -77,25 +77,25 @@ export default async function ProfilePage() {
   const meta = user.user_metadata as Record<string, unknown> | undefined;
   const displayName = profile?.display_name || (typeof meta?.full_name === "string" ? meta.full_name : null) || user.email?.split("@")[0] || "";
   const roleSet = Array.from(new Set(roles.map((r) => r.role)));
-  // talento sem página (só escopo talent, D2): o selo diz "Creator" (nomenclatura única da gestão; "herói" só para a página pública); quem está num casting tem o Escritório
+  // talento sem página (só escopo talent, D2): o selo diz "Creator" (nomenclatura única da gestão; "Hero" só para a página pública); quem está num casting tem o Escritório
   // (nos portais do topo)
   const roleBadges = isTalentOnly(roles) ? roleSet.map((r) => (r === "creator" ? "talent" : r)) : roleSet;
   const talentCtx = roleSet.includes("creator") ? await getTalentContext() : null;
-  // "Você trabalha para" (0092): heróis da pessoa (titular/equipe) e o em uso para postar e criar conteúdo
+  // "Você trabalha para" (0092): Heros da pessoa (titular/equipe) e o em uso para postar e criar conteúdo
   const myHeroes = heroProfile ? await listMyHeroesAll() : [];
   const heroInUse = myHeroes.length > 1 ? await chosenHeroId(myHeroes.filter((h) => heroSelectable(h.status)), creator.creatorId) : (creator.creatorId ?? myHeroes[0]?.id ?? null);
-  // Atalhos Agenda e Financeiro do herói em uso (0094) e o mini-resumo: próximo compromisso e "a receber este mês"
+  // Atalhos Agenda e Financeiro do Hero em uso (0094) e o mini-resumo: próximo compromisso e "a receber este mês"
   const heroForWork = heroProfile && creator.creatorId ? (myHeroes.find((h) => h.id === heroInUse && heroSelectable(h.status)) ?? null) : null;
   const heroWork = heroForWork ? await loadHeroShortcutData(heroForWork, talentCtx?.state === "ok" ? { talentId: talentCtx.talent.id, creatorId: talentCtx.talent.creatorId } : null) : null;
   // "Conectar relógio" ou, com WEARABLES_REAL_ENABLED=1, o relógio que a pessoa conectou.
   const watchView = await resolveTodayView({ user, roles: roleSet, timeZone: tz, example: false });
   const uiLocale: Locale = isLocale(profile?.locale) ? profile.locale : (locale as Locale);
   const theme = resolveTheme(profile?.theme);
-  // perfil ativo e vinculado (my_creator_id): só aí o editor do herói grava, e o avatar é um só
+  // perfil ativo e vinculado (my_creator_id): só aí o editor do Hero grava, e o avatar é um só
   const heroActive = heroProfile !== null && creator.creatorId !== null;
-  // 0091: membro da equipe do herói posta, mas perfil, foto e capa ficam com o titular
+  // 0091: membro da equipe do Hero posta, mas perfil, foto e capa ficam com o titular
   const heroOwner = heroActive && creator.teamRole !== "member";
-  // admin com perfil de herói posta pelo seletor de "Publicar como hero" (o mesmo fluxo dos outros heróis)
+  // admin com perfil de Hero posta pelo seletor de "Publicar como hero" (o mesmo fluxo dos outros Heros)
   const newPostHref = roleSet.includes("admin") ? heroPickerHref("post") : "/heroi/post/novo";
   // 0092: Novo conteúdo (estruturado) ao lado do Novo post; o admin segue pelo seletor de "Publicar como hero"
   const newContentHref = roleSet.includes("admin") ? heroPickerHref("newContent") : "/heroi/conteudos/novo";
@@ -109,11 +109,11 @@ export default async function ProfilePage() {
       theme={theme}
       photoState={photoState}
       photoHint={heroProfile ? tcp("photoHint") : undefined}
-      // herói ativo: um avatar só, no perfil público do mesmo editor; inativo ou não herói: o avatar fica aqui
+      // Hero ativo: um avatar só, no perfil público do mesmo editor; inativo ou não Hero: o avatar fica aqui
       avatarInHeroEditor={heroOwner}
     />
   );
-  // e-mail e papéis: no cabeçalho de quem não é herói; dentro de "Sua conta" para o herói
+  // e-mail e papéis: no cabeçalho de quem não é Hero; dentro de "Sua conta" para o Hero
   const accountSummary = (
     <div className="flex min-w-0 flex-col gap-2" data-testid="profile-account-summary">
       <p className="type-body-sm truncate text-fg-muted">
@@ -130,7 +130,7 @@ export default async function ProfilePage() {
     </div>
   );
 
-  // portais no topo (pedido do responsável): agência, marca, admin, profissional e o Portal do Herói (0097)
+  // portais no topo (pedido do responsável): agência, marca, admin, profissional e o Portal do Hero (0097)
   const native = parseNativeApp((await headers()).get("user-agent")) !== null;
   const portalItems = forSurface(buildPortalItems(roleSet, undefined, { hasTalent: talentCtx?.state === "ok", platformAdmin: true }), native);
 
@@ -147,7 +147,7 @@ export default async function ProfilePage() {
       <PortalShortcuts items={portalItems} />
 
       {heroProfile ? (
-        // topo do herói: cabeçalho público → Novo post e Novo conteúdo → Editar perfil
+        // topo do Hero: cabeçalho público → Novo post e Novo conteúdo → Editar perfil
         <div className="flex flex-col gap-4">
           <HeroProfileHeader profile={heroProfile} />
           {heroActive && heroProfile.status === "pending" ? <HeroPendingNotice /> : null}
@@ -156,9 +156,9 @@ export default async function ProfilePage() {
             currentId={heroInUse}
             agency={talentCtx?.state === "ok" && creator.creatorId ? { heroId: creator.creatorId, name: talentCtx.talent.agency } : null}
           />
-          {/* Novo post (rápido) e Novo conteúdo (estruturado, 0092) para o titular e a equipe do herói */}
+          {/* Novo post (rápido) e Novo conteúdo (estruturado, 0092) para o titular e a equipe do Hero */}
           {heroActive ? <HeroNewPost href={newPostHref} contentHref={newContentHref} listHref={myContentHref} /> : null}
-          {/* 0094: Agenda e Financeiro do herói em uso, com o próximo compromisso e "a receber este mês" */}
+          {/* 0094: Agenda e Financeiro do Hero em uso, com o próximo compromisso e "a receber este mês" */}
           {heroActive && heroWork ? <HeroWorkShortcuts data={heroWork} /> : null}
           <HeroProfileEditor
             profile={heroProfile}

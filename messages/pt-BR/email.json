@@ -6,12 +6,12 @@
     "cta": "Aceitar o convite",
     "expires": "O link vale por {days} dias e só funciona com este e-mail.",
     "ignore": "Se não esperava este convite, ignore esta mensagem.",
-    "signature": "Groscove Ultra · a ponte entre marcas e heróis"
+    "signature": "Groscove Ultra · a ponte entre marcas e Heros"
   },
   "work": {
     "greeting": "Olá!",
     "prefs": "Você recebe este e-mail porque tem os avisos por e-mail ligados no Groscove Ultra. Para desligar, vá em Perfil → Notificações.",
-    "signature": "Groscove Ultra · a ponte entre marcas e heróis",
+    "signature": "Groscove Ultra · a ponte entre marcas e Heros",
     "kinds": {
       "opportunity_received": {
         "subject": "Nova oportunidade: {brand}",
@@ -45,7 +45,7 @@
       },
       "sponsorship_published": {
         "subject": "Oportunidade de patrocínio: {title}",
-        "body": "A agência oferece um evento do herói {talent} para a sua marca patrocinar: {title}. Responda até {date}.",
+        "body": "A agência oferece um evento do Hero {talent} para a sua marca patrocinar: {title}. Responda até {date}.",
         "cta": "Ver oportunidade"
       },
       "sponsorship_interest": {
@@ -69,7 +69,7 @@
         "cta": "Ver pedido"
       },
       "brand_call_interest": {
-        "subject": "Herói com interesse: {title}",
+        "subject": "Hero com interesse: {title}",
         "body": "{talent} demonstrou interesse no pedido {title}. Veja ao montar a proposta.",
         "cta": "Ver pedido"
       },
@@ -113,20 +113,20 @@
   "access": {
     "greeting": "Olá!",
     "ignore": "Se não esperava esta mensagem, ignore.",
-    "signature": "Groscove Ultra · a ponte entre marcas e heróis",
+    "signature": "Groscove Ultra · a ponte entre marcas e Heros",
     "expires": "O link vale por {days} dias e só funciona com este e-mail.",
     "hero": {
       "invited": {
-        "subject": "{agency} criou seu acesso de herói no Groscove Ultra",
-        "body": "{agency} cadastrou você como herói, {name}, no Groscove Ultra.",
+        "subject": "{agency} criou seu acesso de Hero no Groscove Ultra",
+        "body": "{agency} cadastrou você como Hero, {name}, no Groscove Ultra.",
         "how": "Para acessar a sua conta, abra o link, entre com este e-mail e crie a sua senha.",
         "cta": "Criar minha senha"
       },
       "linked": {
         "subject": "{agency} ligou {name} à sua conta",
-        "body": "{agency} cadastrou o herói {name} no Groscove Ultra e ligou à sua conta.",
-        "how": "Entre com o seu e-mail e senha de sempre para abrir o Portal do Herói.",
-        "cta": "Abrir o Portal do Herói"
+        "body": "{agency} cadastrou o Hero {name} no Groscove Ultra e ligou à sua conta.",
+        "how": "Entre com o seu e-mail e senha de sempre para abrir o Portal do Hero.",
+        "cta": "Abrir o Portal do Hero"
       }
     },
     "brand": {

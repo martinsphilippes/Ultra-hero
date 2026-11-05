@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { normalizeBrMobile } from "@/lib/auth/phone";
 
-// Contato e acesso de quem a agência cadastra (0112): o herói (talento do Casting) e o contato da marca. Lógica pura
+// Contato e acesso de quem a agência cadastra (0112): o Hero (talento do Casting) e o contato da marca. Lógica pura
 // (testável): o servidor valida de novo com o schema e o banco confere outra vez (access_contact_check).
 
 export const ACCESS_KINDS = ["talent", "brand"] as const;

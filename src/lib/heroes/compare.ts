@@ -1,5 +1,5 @@
 // "Você vs Hero" (0056): indicadores que a pessoa realmente tem, comparados com a REFERÊNCIA que a
-// equipe definiu para o herói (nunca dado medido do herói). Puro: usado no servidor e nos testes.
+// equipe definiu para o Hero (nunca dado medido do Hero). Puro: usado no servidor e nos testes.
 // As chaves, unidades e faixas espelham o check de public.creator_reference_metrics.
 
 import type { HistoryDay, WatchSnapshot } from "@/lib/wearables/demo";
@@ -130,7 +130,7 @@ export type CompareRow = {
 };
 
 /**
- * Linhas a mostrar: só indicadores com referência do herói. Sem valor da pessoa (sem relógio, por
+ * Linhas a mostrar: só indicadores com referência do Hero. Sem valor da pessoa (sem relógio, por
  * exemplo) a linha vem com user null e a tela explica o que falta, em vez de mostrar zero.
  */
 export function compareRows(references: Partial<Record<CompareMetricKey, number>>, user: UserMetricValues, only?: readonly CompareMetricKey[]): CompareRow[] {

@@ -142,7 +142,7 @@ const termsSchema = z.object({
   deliverables: requestDeliverablesSchema,
   deliverBy: isoDate,
   note: z.string().trim().max(500),
-  /** 0096: a contraproposta pode mudar o modelo de valor e o máximo de heróis (sem informar, ficam como estão). */
+  /** 0096: a contraproposta pode mudar o modelo de valor e o máximo de Heros (sem informar, ficam como estão). */
   valueModel: z.enum(VALUE_MODELS).nullable().optional(),
   maxHeroes: z.number().int().min(1).max(50).nullable().optional(),
 });
@@ -213,7 +213,7 @@ const proposalSchema = z.object({
     .min(1)
     .max(MAX_PROPOSAL_TALENTS),
   amountCents: z.number().int().min(1).max(10_000_000_000).nullable(),
-  /** 0096: modelo do valor da proposta (só o Adm muda): fixo = total; por herói = valor por herói + máximo de heróis. */
+  /** 0096: modelo do valor da proposta (só o Adm muda): fixo = total; por Hero = valor por Hero + máximo de Heros. */
   valueModel: z.enum(VALUE_MODELS).default("fixo"),
   maxHeroes: z.number().int().min(1).max(50).nullable().default(null),
   deliverBy: isoDate,

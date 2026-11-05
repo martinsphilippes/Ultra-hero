@@ -6,7 +6,7 @@ import { getUser } from "@/lib/auth/session";
 import { isMissingFollowSchema } from "@/lib/heroes/follows";
 import { createClient } from "@/lib/supabase/server";
 
-// Hero de comparação (0056): profiles.compare_creator_id. O banco só aceita herói que a pessoa segue
+// Hero de comparação (0056): profiles.compare_creator_id. O banco só aceita Hero que a pessoa segue
 // (gatilho 'compare_requires_follow') e limpa a escolha quando ela deixa de seguir. Seguir em si é
 // toggleHeroFavorite (push-actions.ts, hero_favorites da 0054).
 

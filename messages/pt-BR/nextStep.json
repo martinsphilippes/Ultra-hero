@@ -32,14 +32,14 @@
       "cta": "Ver contraproposta"
     },
     "buildCast": {
-      "title": "Escolher e consultar os heróis",
-      "hint": "Monte o elenco e envie o convite para os heróis responderem.",
-      "cta": "Abrir heróis"
+      "title": "Escolher e consultar os Heros",
+      "hint": "Monte o elenco e envie o convite para os Heros responderem.",
+      "cta": "Abrir Heros"
     },
     "talkToHero": {
       "title": "Conversar com {hero}",
       "hint": "{hero} pediu para conversar antes de responder ao convite.",
-      "cta": "Abrir heróis"
+      "cta": "Abrir Heros"
     },
     "setFees": {
       "title": "Definir o cachê de {names}",
@@ -48,7 +48,7 @@
     },
     "confirmDeal": {
       "title": "Confirmar a campanha",
-      "hint": "{count, plural, one {# herói topou} other {# heróis toparam}}. Confirme para seguir para os termos.",
+      "hint": "{count, plural, one {# Hero topou} other {# Heros toparam}}. Confirme para seguir para os termos.",
       "cta": "Confirmar campanha"
     },
     "setPlan": {
@@ -58,7 +58,7 @@
     },
     "sendTerms": {
       "title": "Enviar os termos",
-      "hint": "Escreva ou revise os termos e envie para a marca e os heróis aceitarem.",
+      "hint": "Escreva ou revise os termos e envie para a marca e os Heros aceitarem.",
       "cta": "Abrir termos"
     },
     "confirmContract": {
@@ -68,7 +68,7 @@
     },
     "planDeliverables": {
       "title": "Cadastrar as entregas",
-      "hint": "Sem entregas cadastradas, os heróis não sabem o que produzir.",
+      "hint": "Sem entregas cadastradas, os Heros não sabem o que produzir.",
       "cta": "Abrir entregas"
     },
     "closeDeliverable": {
@@ -131,10 +131,10 @@
       "title": "Aguardando o dono da marca responder à contraproposta"
     },
     "waitAgencyProposal": {
-      "title": "A agência está montando a proposta com os heróis"
+      "title": "A agência está montando a proposta com os Heros"
     },
     "waitHeroesAnswer": {
-      "title": "Aguardando {count, plural, one {# herói} other {# heróis}} responder ao convite",
+      "title": "Aguardando {count, plural, one {# Hero} other {# Heros}} responder ao convite",
       "hint": "Quem ainda não respondeu: {names}."
     },
     "waitTeamCast": {
@@ -228,7 +228,7 @@
     "confirm": {
       "confirmContract": {
         "title": "Confirmar a contratação de “{deal}”?",
-        "hint": "Todos aceitaram os termos. A produção das entregas é liberada para os heróis."
+        "hint": "Todos aceitaram os termos. A produção das entregas é liberada para os Heros."
       },
       "finishDeal": {
         "title": "Encerrar “{deal}” como ganha?",

@@ -7,8 +7,8 @@ import { PageHeader } from "@/components/ui";
 import { getPostPhotoState } from "@/lib/post-photo/availability";
 import { createClient } from "@/lib/supabase/server";
 
-// Criação de conteúdo pelo admin escolhendo o herói responsável.
-// Vindo do atalho "Novo conteúdo" de Publicar como hero (?creator=<id>), o herói já vem selecionado.
+// Criação de conteúdo pelo admin escolhendo o Hero responsável.
+// Vindo do atalho "Novo conteúdo" de Publicar como hero (?creator=<id>), o Hero já vem selecionado.
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("adminContent.content.form");

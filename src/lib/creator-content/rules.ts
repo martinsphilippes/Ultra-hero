@@ -1,14 +1,14 @@
 // Novo conteúdo do creator (0092): regras puras (cliente e servidor), testadas em tests/unit/creator-content.test.ts.
 //
-// Decisões (pedido do responsável, 03/11): o creator — titular e membros da equipe do herói ativo — cria conteúdo
+// Decisões (pedido do responsável, 03/11): o creator — titular e membros da equipe do Hero ativo — cria conteúdo
 // estruturado pelo próprio portal (/heroi/conteudos/novo) com o MESMO editor por blocos do admin. Ficam só com o admin:
-//   • escolher outro herói como autor (o creator escreve pelo herói dele; com vários heróis, um seletor simples);
+//   • escolher outro Hero como autor (o creator escreve pelo Hero dele; com vários Heros, um seletor simples);
 //   • direitos/licença editorial (tipo de licença, referência do contrato e crédito): o creator publica conteúdo
 //     próprio — a licença é calculada (own; vídeo por link do YouTube/Vimeo = third_party_embed);
 //   • modo de conclusão (campo de acesso), destaque, agendamento administrativo e status forçado (o editor não os
 //     tem para ninguém; destaque/agendamento/revisão seguem nas telas do admin);
 //   • criar programa (o cadastro de programas é do admin; o creator só aponta um programa publicado no bloco).
-// Publicação: segue a regra que já existe para o herói (0025/0043): publica direto; quando o admin liga "Exigir
+// Publicação: segue a regra que já existe para o Hero (0025/0043): publica direto; quando o admin liga "Exigir
 // revisão" para o tipo (content_review_required), o creator salva o rascunho e "Envia para revisão".
 // Tirar do ar, arquivar e excluir o que já esteve no ar: só titular e admin (o banco responde owner_only ao membro).
 
@@ -39,7 +39,7 @@ export function creatorKindHref(kind: ContentKind): string | null {
 
 /** Campos do editor de conteúdo por público (true = aparece). */
 export type ContentEditorFields = {
-  /** Escolher o herói autor (admin escolhe qualquer um; creator só troca entre os heróis dele). */
+  /** Escolher o Hero autor (admin escolhe qualquer um; creator só troca entre os Heros dele). */
   authorPicker: boolean;
   /** Licença da mídia, referência do contrato e crédito. */
   license: boolean;
@@ -86,31 +86,31 @@ export function creatorContentHref(row: { id: string; type: string }): string {
   return row.type === "recipe" ? `/heroi/receitas/${row.id}/editar` : `/heroi/conteudos/${row.id}/editar`;
 }
 
-/** Cookie com o herói escolhido por quem está em mais de uma equipe (o servidor sempre revalida). */
+/** Cookie com o Hero escolhido por quem está em mais de uma equipe (o servidor sempre revalida). */
 export const MY_HERO_COOKIE = "uh_my_hero";
 /** Cabeçalho que o servidor manda ao PostgREST; o banco só honra para membro ativo da equipe (0092). */
 export const MY_HERO_HEADER = "x-my-hero";
 
-/** Herói em uso: o escolhido (se ainda é um dos heróis da pessoa) ou o padrão do banco (titular primeiro). */
+/** Hero em uso: o escolhido (se ainda é um dos Heros da pessoa) ou o padrão do banco (titular primeiro). */
 export function pickMyHero(heroes: readonly { id: string }[], chosen: string | null | undefined, fallback: string | null): string | null {
   if (chosen && heroes.some((h) => h.id === chosen)) return chosen;
   return fallback;
 }
 
-/** Situação do herói no cartão "Você trabalha para" (creator_profiles.status). */
+/** Situação do Hero no cartão "Você trabalha para" (creator_profiles.status). */
 export type HeroStatus = "active" | "pending" | "suspended";
 
-/** Dá para criar pelo herói? Ativo (publica) e pendente (só rascunho até aprovar); suspenso nunca. */
+/** Dá para criar pelo Hero? Ativo (publica) e pendente (só rascunho até aprovar); suspenso nunca. */
 export function heroSelectable(status: string): boolean {
   return status === "active" || status === "pending";
 }
 
-/** Cartão compacto: titular de um único herói (nada a escolher). Com mais de um, lista com "Trabalhar neste herói". */
+/** Cartão compacto: titular de um único Hero (nada a escolher). Com mais de um, lista com "Trabalhar neste Hero". */
 export function heroCardCompact(heroes: readonly { id: string }[]): boolean {
   return heroes.length <= 1;
 }
 
-/** O botão "Trabalhar neste herói" aparece no herói selecionável que ainda não é o em uso, havendo mais de um. */
+/** O botão "Trabalhar neste Hero" aparece no Hero selecionável que ainda não é o em uso, havendo mais de um. */
 export function showWorkOnHero(heroes: readonly { id: string; status: string }[], hero: { id: string; status: string }, currentId: string | null): boolean {
   return heroes.length > 1 && heroSelectable(hero.status) && hero.id !== currentId;
 }

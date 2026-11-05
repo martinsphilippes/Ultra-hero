@@ -3,14 +3,14 @@ import { expect, test } from "@playwright/test";
 import { actAsHero, actingAvailable, CARD_URL, DEMO_HERO_ID, skipWithoutActing, type HeroCard } from "./helpers/acting";
 import { loginAs } from "./helpers/login";
 
-// "Publicar como hero" (0045): só o admin cria e gerencia conteúdo pelos heróis. Os 6 atalhos saíram do
-// Perfil do herói e foram para o topo do início do admin; ao tocar, o admin escolhe o herói. O herói fica
-// só com o "Novo post". Escolher um herói grava uma linha de auditoria (hero_act.select); nada mais é gravado.
+// "Publicar como hero" (0045): só o admin cria e gerencia conteúdo pelos Heros. Os 6 atalhos saíram do
+// Perfil do Hero e foram para o topo do início do admin; ao tocar, o admin escolhe o Hero. O Hero fica
+// só com o "Novo post". Escolher um Hero grava uma linha de auditoria (hero_act.select); nada mais é gravado.
 
 const CARDS: HeroCard[] = ["post", "newContent", "dashboard"];
 
 test.describe("admin: Publicar como hero", () => {
-  test("6 atalhos no topo do início do admin, alvos de 44 px; o seletor lista os heróis ativos e é acessível", async ({ page }) => {
+  test("6 atalhos no topo do início do admin, alvos de 44 px; o seletor lista os Heros ativos e é acessível", async ({ page }) => {
     await loginAs(page, "admin");
     const section = page.getByTestId("hero-publishing");
     await expect(section).toBeVisible();
@@ -47,7 +47,7 @@ test.describe("admin: Publicar como hero", () => {
     await expect(page).toHaveURL(/\/admin(\?.*)?$/);
   });
 
-  test("cada atalho leva ao fluxo do herói escolhido, com a faixa Publicando como", async ({ page }) => {
+  test("cada atalho leva ao fluxo do Hero escolhido, com a faixa Publicando como", async ({ page }) => {
     await skipWithoutActing();
     test.setTimeout(120_000);
     await loginAs(page, "admin");
@@ -56,7 +56,7 @@ test.describe("admin: Publicar como hero", () => {
       await expect(page).toHaveURL(CARD_URL[card]);
       await expect(page.getByTestId("acting-hero-name")).not.toBeEmpty();
     }
-    // Novo conteúdo: o herói já vem escolhido no editor do admin
+    // Novo conteúdo: o Hero já vem escolhido no editor do admin
     await actAsHero(page, "newContent");
     await expect(page.locator(`select option[value="${DEMO_HERO_ID}"]`)).toHaveJSProperty("selected", true);
   });
@@ -78,7 +78,7 @@ test.describe("admin: Publicar como hero", () => {
   });
 });
 
-test.describe("herói: só o Novo post", () => {
+test.describe("Hero: só o Novo post", () => {
   test("Perfil com um botão Novo post entre o cabeçalho e Editar perfil; nenhum dos outros atalhos", async ({ page }) => {
     await loginAs(page, "creator");
     const button = page.getByTestId("hero-new-post");

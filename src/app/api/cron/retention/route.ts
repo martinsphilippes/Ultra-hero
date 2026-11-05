@@ -9,7 +9,7 @@ import { cleanupStreamUploads } from "../_lib/stream-cleanup";
 
 // Retenção diária: analytics 90d, pedidos de teste 90d (anonimiza), auditoria 365d, runs/logs 30d;
 // limpeza dos envios de vídeo do composer (descartados e vencidos sem publicar), das fotos de
-// perfil, das capas de herói e das fotos de post sem uso ou de conta excluída (0031, 0042, 0043),
+// perfil, das capas de Hero e das fotos de post sem uso ou de conta excluída (0031, 0042, 0043),
 // das fotos de receita órfãs no bucket recipe-media e dos dados de relógio (health_run_retention, 0038).
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -36,7 +36,7 @@ async function handler(request: Request) {
     } catch (cleanupError) {
       avatars = { avatars_failed: cleanupError instanceof Error ? cleanupError.message : String(cleanupError) };
     }
-    // Capas de herói (0042): mesma regra; banco sem a 0042 lança e o relatório registra.
+    // Capas de Hero (0042): mesma regra; banco sem a 0042 lança e o relatório registra.
     let covers: Record<string, unknown>;
     try {
       covers = await cleanupHeroCoverUploads(admin, supabaseBaseUrl());

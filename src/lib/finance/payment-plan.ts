@@ -119,7 +119,7 @@ export function planParts(plan: PaymentPlan, totalCents: number, ev: PlanEvents)
   return [{ seq: 1, amountCents: total, dueOn: first }];
 }
 
-/** Vencimento do repasse ao herói (public.payment_plan_payout_due). */
+/** Vencimento do repasse ao Hero (public.payment_plan_payout_due). */
 export function payoutDue(plan: Pick<PaymentPlan, "payoutRule" | "payoutDays" | "payoutOn">, lastBrandDue: string | null, delivery: string | null): string | null {
   if (plan.payoutRule === "fixed_date") return plan.payoutOn;
   if (plan.payoutRule === "after_receipt") return lastBrandDue ? addDays(lastBrandDue, plan.payoutDays) : null;
@@ -309,7 +309,7 @@ const pickOrNull = <T extends string>(list: readonly T[], v: unknown): T | null 
 const intOrNull = (v: unknown): number | null => (v === null || v === undefined || v === "" || !Number.isFinite(Number(v)) ? null : Math.trunc(Number(v)));
 const dayOrNull = (v: unknown): string | null => (isIso(v) ? v : null);
 
-/** jsonb do banco → plano (parcial no caso da marca e do herói: o que faltar fica no padrão). */
+/** jsonb do banco → plano (parcial no caso da marca e do Hero: o que faltar fica no padrão). */
 export function toPaymentPlan(raw: unknown): PaymentPlan | null {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const k = raw as Row;
@@ -343,7 +343,7 @@ export type PlanPayout = { dealTalentId: string; name: string; status: string; f
 export type PlanViewPart = { seq: number; amountCents: number | null; dueOn: string | null; status: string | null; label: string };
 export type PaymentPlanView = {
   enabled: boolean;
-  /** 0111: negócio só do herói (o herói-cliente paga a agência) */
+  /** 0111: negócio só do Hero (o Hero-cliente paga a agência) */
   client: boolean;
   viewer: "agency" | "brand" | "talent" | "client";
   values: boolean;
@@ -351,7 +351,7 @@ export type PaymentPlanView = {
   hasPlan: boolean;
   locked: boolean;
   canEdit: boolean;
-  /** 0111: o Adm pode efetivar a cobrança do herói-cliente */
+  /** 0111: o Adm pode efetivar a cobrança do Hero-cliente */
   canConfirm: boolean;
   agreed: boolean;
   termsPending: boolean;

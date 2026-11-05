@@ -18,11 +18,11 @@ type Props = {
   signedIn: boolean;
   /** Página atual: volta para ela depois do login e é revalidada ao seguir. */
   path: string;
-  /** Contagem de seguidores ao lado do botão (página do herói); null/undefined = não mostra. */
+  /** Contagem de seguidores ao lado do botão (página do Hero); null/undefined = não mostra. */
   followers?: number | null;
-  /** No app das lojas, a pessoa já aceitou avisos de posts de heróis (não pergunta de novo). */
+  /** No app das lojas, a pessoa já aceitou avisos de posts de Heros (não pergunta de novo). */
   pushReady?: boolean;
-  /** compact: pílula de 28px (cards, feed, listas); md: 32px (cabeçalho da página do herói). Alvo de toque sempre 44px. */
+  /** compact: pílula de 28px (cards, feed, listas); md: 32px (cabeçalho da página do Hero). Alvo de toque sempre 44px. */
   size?: "compact" | "md";
   /** overlay: sobre a capa de um card (vidro escuro com desfoque, legível em qualquer foto). */
   tone?: "inline" | "overlay";
@@ -57,12 +57,12 @@ function pillClasses(size: "compact" | "md", tone: "inline" | "overlay", followi
 
 // Seguir / Seguindo (hero_favorites, 0054) com atualização otimista; reverte e avisa se falhar.
 // Visitante vai ao login e volta para a mesma página. No app das lojas, o primeiro "Seguir" é o
-// momento de pedir a permissão de notificação: com o "sim", liga o push de posts dos heróis seguidos.
+// momento de pedir a permissão de notificação: com o "sim", liga o push de posts dos Heros seguidos.
 export function FollowButton({ creatorId, heroName, initialFollowing, signedIn, path, followers, pushReady = false, size = "md", tone = "inline", className }: Props) {
   const t = useTranslations("follows.button");
   const { toast } = useToast();
   const [pending, startTransition] = useTransition();
-  // confirmado = o que a aba já gravou (vale para todos os botões do mesmo herói) ou o do servidor
+  // confirmado = o que a aba já gravou (vale para todos os botões do mesmo Hero) ou o do servidor
   const following = useConfirmedFollow(creatorId, initialFollowing);
   const base = followers === null || followers === undefined ? null : Math.max(0, followers + (following === initialFollowing ? 0 : following ? 1 : -1));
   const [state, apply] = useOptimistic({ following, followers: base }, followReducer);
@@ -137,7 +137,7 @@ export function FollowButton({ creatorId, heroName, initialFollowing, signedIn, 
         <span className={pillClasses(size, tone, state.following)}>
           {state.following ? <Check className={icon} aria-hidden="true" /> : <UserPlus className={icon} aria-hidden="true" />}
           {state.following ? t("following") : t("follow")}
-          {/* nome do herói só para leitor de tela: o rótulo visível continua dentro do nome acessível */}
+          {/* nome do Hero só para leitor de tela: o rótulo visível continua dentro do nome acessível */}
           <span className="sr-only"> {heroName}</span>
         </span>
       </button>

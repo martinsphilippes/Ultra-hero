@@ -24,10 +24,10 @@
 --     etapa do roteiro, posição, visível ao cliente, regra/prazo, recorrência, marco, disponível em, vence em).
 --     Elas aparecem também em /agencia/tarefas e na aba Tarefas do negócio. Os avisos antigos de prazo (24 h e
 --     atrasada, 0072/0084) passam a ignorar as tarefas do roteiro, que têm aviso próprio em dias úteis.
---   • D5 Cliente do negócio = marca e/ou herói: deals.brand_id deixa de ser obrigatório e ganha client_talent_id
---     (ficha do casting da mesma agência); um check exige pelo menos um dos dois. Negócio só do herói nasce SEM pedido
+--   • D5 Cliente do negócio = marca e/ou Hero: deals.brand_id deixa de ser obrigatório e ganha client_talent_id
+--     (ficha do casting da mesma agência); um check exige pelo menos um dos dois. Negócio só do Hero nasce SEM pedido
 --     de campanha (campaign_requests exige marca) e as telas escondem as abas que dependem da marca (termos, entregas,
---     conversa com a marca). O herói-cliente vê o projeto (só as etapas visíveis ao cliente) no Portal do Herói pela
+--     conversa com a marca). O Hero-cliente vê o projeto (só as etapas visíveis ao cliente) no Portal do Hero pela
 --     RPC client_projects — a RLS de deals não foi aberta para ele.
 --   • D6 Setores fixos (gestor, estratégia, operação, comunicação) em agency_members.sectors (0..4 por pessoa), só o Adm
 --     define. Quem é do setor lê (RLS nova tasks_select_sector) e conclui as tarefas do setor, mesmo fora da equipe do
@@ -39,7 +39,7 @@
 --   • D8 Avisos: roadmap_due_soon (1 dia útil antes: responsável, ou o setor, ou os gestores) e roadmap_overdue (atraso:
 --     quem é do setor Gestor, ou os gestores da agência) pelo cron diário existente (/api/cron/agency). Só no sino.
 --   • D9 Ganchos para as Fases 2 e 3: marco da etapa (abertura/fechamento da sala, diária, demo, guia de uso, feedback,
---     clipping, insights…), recorrência da etapa e do serviço, visível ao cliente e cliente herói já ficam no modelo.
+--     clipping, insights…), recorrência da etapa e do serviço, visível ao cliente e cliente Hero já ficam no modelo.
 -- =============================================================================
 
 -- 1) dias úteis BR ------------------------------------------------------------------------------------------------
@@ -230,7 +230,7 @@ begin
   end loop;
 end $$;
 
--- 4) negócio: serviço e cliente (marca e/ou herói) ------------------------------------------------------------------
+-- 4) negócio: serviço e cliente (marca e/ou Hero) ------------------------------------------------------------------
 alter table public.deals alter column brand_id drop not null;
 alter table public.deals add column if not exists client_talent_id uuid
   constraint deals_client_talent_fk references public.talent_profiles (id) on delete restrict;
@@ -241,7 +241,7 @@ alter table public.deals drop constraint if exists deals_client_check;
 alter table public.deals add constraint deals_client_check check (brand_id is not null or client_talent_id is not null);
 create index if not exists deals_client_talent_idx on public.deals (client_talent_id) where client_talent_id is not null;
 
--- herói-cliente e serviço sempre da mesma agência do negócio
+-- Hero-cliente e serviço sempre da mesma agência do negócio
 create or replace function public.deals_client_scope()
 returns trigger language plpgsql set search_path = '' as $$
 begin
@@ -740,7 +740,7 @@ end $$;
 revoke execute on function public.deal_roadmap_start(uuid, uuid, date, boolean) from public, anon;
 grant execute on function public.deal_roadmap_start(uuid, uuid, date, boolean) to authenticated, service_role;
 
--- herói-cliente do negócio (gestor+ ou responsável/equipe); nulo só se houver marca
+-- Hero-cliente do negócio (gestor+ ou responsável/equipe); nulo só se houver marca
 create or replace function public.deal_client_set(p_deal uuid, p_talent uuid)
 returns void language plpgsql security definer set search_path = '' as $$
 declare v_agency uuid; v_brand uuid; v_before uuid;
@@ -758,7 +758,7 @@ end $$;
 revoke execute on function public.deal_client_set(uuid, uuid) from public, anon;
 grant execute on function public.deal_client_set(uuid, uuid) to authenticated, service_role;
 
--- abrir negócio com cliente (marca e/ou herói) e, opcionalmente, o serviço (gera o roteiro na hora)
+-- abrir negócio com cliente (marca e/ou Hero) e, opcionalmente, o serviço (gera o roteiro na hora)
 create or replace function public.agency_deal_open(p_agency uuid, p_data jsonb)
 returns uuid language plpgsql security definer set search_path = '' as $$
 declare v_brand uuid; v_talent uuid; v_service uuid; v_start date; v_deal uuid; v_title text; v_from date; v_to date; v_owner uuid;
@@ -787,11 +787,11 @@ begin
   end if;
   v_start := public.roadmap_start_date(p_agency, v_start);
   if v_brand is not null then
-    -- mesmo caminho de sempre (pedido de origem "agência" + negócio); depois o herói-cliente
+    -- mesmo caminho de sempre (pedido de origem "agência" + negócio); depois o Hero-cliente
     v_deal := public.agency_deal_create(p_agency, v_brand, p_data);
     if v_talent is not null then update public.deals set client_talent_id = v_talent where id = v_deal; end if;
   else
-    -- só o herói: sem pedido de campanha (que exige marca)
+    -- só o Hero: sem pedido de campanha (que exige marca)
     v_title := btrim(coalesce(p_data ->> 'title', ''));
     if not public.agency_can(p_agency, 'manager') then v_owner := auth.uid(); end if;
     v_owner := coalesce(v_owner, auth.uid());
@@ -1045,7 +1045,7 @@ end $$;
 revoke execute on function public.roadmap_indicators(uuid, int) from public, anon;
 grant execute on function public.roadmap_indicators(uuid, int) to authenticated, service_role;
 
--- projetos em que o herói é cliente (Portal do Herói): só as etapas visíveis ao cliente, sem responsáveis nem valores
+-- projetos em que o Hero é cliente (Portal do Hero): só as etapas visíveis ao cliente, sem responsáveis nem valores
 create or replace function public.client_projects()
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare v_talent uuid := public.my_talent_id(); v_out jsonb;

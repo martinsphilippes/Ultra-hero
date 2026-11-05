@@ -13,7 +13,7 @@
 --   • Quem publica: o admin geral (is_platform_admin). Agências podem ser co-editoras por uma flag em agencies
 --     (platform_calendar_editor, DESLIGADA em todas; só o admin liga, pela RPC admin_set_platform_calendar_editor).
 --   • Quem lê: qualquer pessoa autenticada com portal — admin, membro de agência ativa, membro de marca ativa (com ou sem
---     agência), herói titular/membro (herói ativo ou pendente, inclusive sem agência) e ficha de casting com login.
+--     agência), Hero titular/membro (Hero ativo ou pendente, inclusive sem agência) e ficha de casting com login.
 --     Visitante (anon) nada. Leitura direta pela RLS (sem RPC), como as outras agendas.
 --   • Estados: draft (só editores) | scheduled (publish_at no futuro: ninguém de fora vê; quando a data chega, vira
 --     publicado SEM cron — a regra é "published_at <= now()") | published | cancelled (continua visível, riscado; não
@@ -33,11 +33,11 @@
 --     que o criou/atualizou (import_id). Idempotência por source_key ÚNICO no escopo da plataforma: reimportar o mesmo
 --     arquivo nunca duplica (linha existente → ignorar ou atualizar, decisão do admin na pré-visualização). Tudo numa
 --     RPC transacional (platform_events_import): ou entra o lote inteiro, ou nada.
---   • Interesse (calendar_event_interests, tabela única): herói (por creator_profile_id; só o TITULAR de herói ATIVO
+--   • Interesse (calendar_event_interests, tabela única): Hero (por creator_profile_id; só o TITULAR de Hero ATIVO
 --     manifesta/retira; a equipe vê) e marca (dono ou equipe). Estados interested | withdrawn; "não manifestou" = sem
 --     linha; histórico em calendar_event_interest_log (estado, quem, quando). Interesse NUNCA cria negócio/contrato.
---     Quem vê a lista: admin tudo; agência (gestor+) os heróis do PRÓPRIO casting e as marcas que atende; herói só o
---     dele; marca só o dela (M4: a marca NUNCA vê heróis interessados). Contagens totais (heróis/marcas) para todos
+--     Quem vê a lista: admin tudo; agência (gestor+) os Heros do PRÓPRIO casting e as marcas que atende; Hero só o
+--     dele; marca só o dela (M4: a marca NUNCA vê Heros interessados). Contagens totais (Heros/marcas) para todos
 --     os leitores por platform_event_interest_summary (só números).
 --   • Avisos no sino: ficaram de fora nesta etapa (opcional no pedido; o check de kinds do sino não muda aqui).
 --   • Feed .ics: calendar_feed_resolve (MESMA assinatura) inclui os eventos da plataforma que a pessoa vê, com
@@ -501,15 +501,15 @@ end $$;
 drop policy if exists calendar_event_interests_select_admin on public.calendar_event_interests;
 create policy calendar_event_interests_select_admin on public.calendar_event_interests for select to authenticated
   using ((select public.is_platform_admin()));
--- herói: o titular e a equipe veem o do herói (só o titular escreve, pela RPC)
+-- Hero: o titular e a equipe veem o do Hero (só o titular escreve, pela RPC)
 drop policy if exists calendar_event_interests_select_hero on public.calendar_event_interests;
 create policy calendar_event_interests_select_hero on public.calendar_event_interests for select to authenticated
   using (creator_profile_id = any ((select public.my_team_creator_ids())::uuid[]));
--- marca: só o dela (nunca heróis)
+-- marca: só o dela (nunca Heros)
 drop policy if exists calendar_event_interests_select_brand on public.calendar_event_interests;
 create policy calendar_event_interests_select_brand on public.calendar_event_interests for select to authenticated
   using (brand_id = any ((select public.my_member_brand_ids())::uuid[]));
--- agência (gestor+): heróis do próprio casting; marcas que ela atende
+-- agência (gestor+): Heros do próprio casting; marcas que ela atende
 drop policy if exists calendar_event_interests_select_agency on public.calendar_event_interests;
 create policy calendar_event_interests_select_agency on public.calendar_event_interests for select to authenticated
   using (creator_profile_id = any ((select public.agency_hero_ids())::uuid[])
@@ -519,7 +519,7 @@ drop policy if exists calendar_event_interest_log_select on public.calendar_even
 create policy calendar_event_interest_log_select on public.calendar_event_interest_log for select to authenticated
   using (exists (select 1 from public.calendar_event_interests i where i.id = interest_id));
 
--- manifestar / retirar. p_party 'hero' (p_owner = herói, só o titular de herói ativo) | 'brand' (p_owner = marca, dono ou
+-- manifestar / retirar. p_party 'hero' (p_owner = Hero, só o titular de Hero ativo) | 'brand' (p_owner = marca, dono ou
 -- equipe). Evento precisa estar visível; manifestar exige evento não cancelado e não encerrado. Devolve o estado.
 create or replace function public.platform_event_set_interest(p_event uuid, p_party text, p_owner uuid, p_interested boolean)
 returns text language plpgsql security definer set search_path = '' as $$
@@ -559,7 +559,7 @@ end $$;
 revoke execute on function public.platform_event_set_interest(uuid, text, uuid, boolean) from public, anon;
 grant execute on function public.platform_event_set_interest(uuid, text, uuid, boolean) to authenticated, service_role;
 
--- contagens (só números) de interessados de um evento visível: para todos os leitores (a marca não vê a lista de heróis)
+-- contagens (só números) de interessados de um evento visível: para todos os leitores (a marca não vê a lista de Heros)
 create or replace function public.platform_event_interest_summary(p_event uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare e public.calendar_events%rowtype;
@@ -627,7 +627,7 @@ begin
     from public.calendar_events_for_user(f.user_id) e
     where e.starts_at >= now() - interval '90 days' and e.starts_at <= now() + interval '366 days'
     union all
-    -- 0094: compromissos do herói (titular e equipe); o contratante vai no lugar da marca e o checklist na descrição
+    -- 0094: compromissos do Hero (titular e equipe); o contratante vai no lugar da marca e o checklist na descrição
     select jsonb_build_object('id', h.id, 'kind', 'hero_' || h.kind, 'title', h.title, 'subtitle', null,
              'description', nullif(btrim(h.notes || case when jsonb_array_length(h.checklist) > 0 then E'\n' || (
                  select string_agg((case when (i ->> 'done')::boolean then '[x] ' else '[ ] ' end) || (i ->> 'text'), E'\n')

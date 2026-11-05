@@ -1,4 +1,4 @@
-// Capa do herói com foto real (0042): constantes compartilhadas por cliente, servidor e testes.
+// Capa do Hero com foto real (0042): constantes compartilhadas por cliente, servidor e testes.
 
 export const COVER_BUCKET = "hero-covers";
 /** Tamanho gerado no aparelho: 16:9, a proporção das capas oficiais (1600x900). */

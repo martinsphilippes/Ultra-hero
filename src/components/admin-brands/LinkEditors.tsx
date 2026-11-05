@@ -11,7 +11,7 @@ import { MAX_CONTENT_LINKS, MAX_CREATOR_BRANDS, MAX_PROGRAM_PRODUCTS, PROGRAM_NO
 import type { BrandOption, ProductOption } from "@/lib/brands/admin-queries";
 import { useRun } from "./use-run";
 
-// Ligações de marcas/produtos (0062): herói ↔ marca (com a relação), programa ↔ produto e
+// Ligações de marcas/produtos (0062): Hero ↔ marca (com a relação), programa ↔ produto e
 // conteúdo ↔ marcas citadas + produtos recomendados. A lista é editada aqui e salva de uma vez
 // (RPC auditada troca a lista inteira, na ordem).
 
@@ -210,7 +210,7 @@ function ErrorLine({ error }: { error: string | null }) {
   ) : null;
 }
 
-/** Marcas do herói (/admin/herois/[id]). */
+/** Marcas do Hero (/admin/herois/[id]). */
 export function CreatorBrandsEditor({ creatorId, items, options }: { creatorId: string; items: BrandLinkItem[]; options: BrandOption[] }) {
   const t = useTranslations("adminOps.brands");
   const { pending, error, run } = useRun();

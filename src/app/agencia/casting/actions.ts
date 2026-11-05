@@ -163,7 +163,7 @@ export async function recordConsentAction(input: { talentId: string; documentId:
   }
 }
 
-// ---------------------------------------------------------------- 0112: um só "Novo herói"
+// ---------------------------------------------------------------- 0112: um só "Novo Hero"
 // Talento + e-mail e celular obrigatórios (acesso: conta existente ligada na hora ou convite de 14 dias) + gestor e
 // segmentos + página pública opcional já ligada ao talento. Tudo numa transação no banco (agency_hero_create).
 const pageSchema = z.object({
@@ -217,7 +217,7 @@ export async function createHeroAction(input: z.input<typeof newHeroSchema>): Pr
   }
 }
 
-/** Página pública depois, pela ficha: já nasce ligada ao talento (sem passar pelo "Ligar herói"). */
+/** Página pública depois, pela ficha: já nasce ligada ao talento (sem passar pelo "Ligar Hero"). */
 export async function createTalentPageAction(input: { talentId: string } & z.input<typeof pageSchema>): Promise<CastingResult> {
   await requireAgency("manager");
   const parsed = pageSchema.extend({ talentId: uuid }).safeParse(input);

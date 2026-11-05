@@ -29,7 +29,7 @@ type Props = {
 };
 
 // Cartão de evento da Real-Time Culture (0101): selos, título (abre o detalhe do evento na agenda), quando, oportunidades
-// abertas (só números) e as ações do perfil: herói/marca "Tenho interesse", marca "Criar campanha", agência "Criar
+// abertas (só números) e as ações do perfil: Hero/marca "Tenho interesse", marca "Criar campanha", agência "Criar
 // oportunidade", admin "Editar".
 export async function CultureEventCard({ event: e, actions, interest = null, opportunities = null, season = false }: Props) {
   const [t, locale] = await Promise.all([getTranslations("culture"), getLocale() as Promise<Locale>]);

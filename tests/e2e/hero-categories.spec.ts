@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { loginAs } from "./helpers/login";
 
-// Aba Hero (/personalities): chips de categoria do herói ("Todos" + as do admin, 0049) e selos de
+// Aba Hero (/personalities): chips de categoria do Hero ("Todos" + as do admin, 0049) e selos de
 // categoria nos cards; telas do admin. Só leitura: nada é gravado. Sem a 0049 no banco a aba mostra
 // só "Todos" e os testes que dependem das categorias se pulam.
 
@@ -17,7 +17,7 @@ const heroCards = (page: Page) => page.locator('main li a[href^="/personalities/
 test.describe("aba Hero: categorias", () => {
   test("'Todos' vem primeiro e marcado; a contagem bate com os cards; sem chips de pilar", async ({ page }) => {
     await page.goto("/personalities");
-    await expect(page.getByRole("heading", { level: 1, name: "Heróis" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Heros" })).toBeVisible();
     await expect(page.getByText("Atletas, artistas e chefs que você acompanha.")).toBeVisible();
     const { chips } = await chipsInfo(page);
     await expect(chips.first()).toHaveText("Todos");
@@ -27,7 +27,7 @@ test.describe("aba Hero: categorias", () => {
     for (const pillar of ["Rotina", "Treino", "Nutrição"]) await expect(chips.filter({ hasText: pillar })).toHaveCount(0);
     const total = await heroCards(page).count();
     expect(total).toBeGreaterThan(0);
-    await expect(page.getByText(total === 1 ? "1 herói" : `${total} heróis`, { exact: true })).toBeVisible();
+    await expect(page.getByText(total === 1 ? "1 Hero" : `${total} Heros`, { exact: true })).toBeVisible();
   });
 
   test("categoria desconhecida na URL cai em 'Todos'; o chip navega e o voltar restaura", async ({ page }) => {
@@ -64,7 +64,7 @@ test.describe("aba Hero: categorias", () => {
     await group.getByRole("link", { name: "Esporte", exact: true }).click();
     await expect(page).toHaveURL(/\/personalities\?categoria=esporte$/);
     await expect(group.getByRole("link", { name: "Esporte", exact: true })).toHaveAttribute("aria-current", "true");
-    await expect(page.getByText("4 heróis", { exact: true })).toBeVisible();
+    await expect(page.getByText("4 Heros", { exact: true })).toBeVisible();
     const cards = heroCards(page);
     await expect(cards).toHaveCount(4);
     for (let i = 0; i < 4; i++) await expect(cards.nth(i).getByTestId("hero-category-badge").first()).toHaveText("Esporte");
@@ -84,7 +84,7 @@ test.describe("aba Hero: categorias", () => {
     for (const slug of ["musica", "arte-e-entretenimento"]) {
       await page.goto(`/personalities?categoria=${slug}`);
       await expect(page.locator('main a[href="/personalities/anitta"]')).toBeVisible();
-      await expect(page.getByText("1 herói", { exact: true })).toBeVisible();
+      await expect(page.getByText("1 Hero", { exact: true })).toBeVisible();
     }
     await page.goto("/personalities?categoria=gastronomia");
     await expect(heroCards(page)).toHaveCount(1);
@@ -101,23 +101,23 @@ test.describe("aba Hero: categorias", () => {
   });
 });
 
-test.describe("admin: categorias dos heróis (só leitura)", () => {
+test.describe("admin: categorias dos Heros (só leitura)", () => {
   test("a tela abre pelo menu do portal; com a 0049 lista as 4 do seed com a contagem", async ({ page }, testInfo) => {
     await loginAs(page, "admin");
     if (testInfo.project.name === "desktop") {
-      await page.getByRole("link", { name: "Categorias dos heróis" }).first().click();
+      await page.getByRole("link", { name: "Categorias dos Heros" }).first().click();
       await expect(page).toHaveURL(/\/admin\/hero-categories$/);
     } else {
       await page.goto("/admin/hero-categories");
     }
-    await expect(page.getByRole("heading", { level: 1, name: "Categorias dos heróis" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Categorias dos Heros" })).toBeVisible();
     const rows = page.getByTestId("hero-category-row");
     const notice = page.getByTestId("hero-categories-unavailable");
     await expect(rows.first().or(notice)).toBeVisible();
     test.skip((await rows.count()) === 0, "banco sem a 0049: a tela mostra o aviso");
     await expect(page.getByRole("button", { name: "Nova categoria" })).toBeVisible();
-    await expect(rows.filter({ hasText: "esporte" }).first().getByTestId("hero-category-count")).toHaveText("Heróis: 4");
-    await expect(rows.filter({ hasText: "gastronomia" }).first().getByTestId("hero-category-count")).toHaveText("Heróis: 1");
+    await expect(rows.filter({ hasText: "esporte" }).first().getByTestId("hero-category-count")).toHaveText("Heros: 4");
+    await expect(rows.filter({ hasText: "gastronomia" }).first().getByTestId("hero-category-count")).toHaveText("Heros: 1");
     // o diálogo de edição abre com o rótulo e o slug (sem salvar)
     await page.getByRole("button", { name: "Editar · Esporte" }).click();
     const dialog = page.getByRole("dialog");
@@ -127,7 +127,7 @@ test.describe("admin: categorias dos heróis (só leitura)", () => {
     await expect(dialog).toBeHidden();
   });
 
-  test("a tela do herói mostra o campo Categorias (até 2, em ordem)", async ({ page }) => {
+  test("a tela do Hero mostra o campo Categorias (até 2, em ordem)", async ({ page }) => {
     await loginAs(page, "admin");
     await page.goto("/admin/herois");
     await page.locator('main a[href^="/admin/herois/"]').filter({ hasText: "Anitta" }).first().click();

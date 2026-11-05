@@ -33,7 +33,7 @@ describe("talento sem página pública (D2)", () => {
     expect(isTalentOnly([{ role: "consumer", scope_type: "global" }])).toBe(false);
   });
 
-  it("Configurações mostram um só Portal do Herói para quem está num casting ou tem herói (web e app)", () => {
+  it("Configurações mostram um só Portal do Hero para quem está num casting ou tem Hero (web e app)", () => {
     const sections = buildSettingsSections(["consumer", "creator"], undefined, { hasTalent: true });
     const portals = sections.find((s) => s.key === "portals")?.items ?? [];
     expect(portals).toEqual([{ kind: "portal", key: "creator", href: HERO_PORTAL_PATH, nativeHidden: false }]);
@@ -42,7 +42,7 @@ describe("talento sem página pública (D2)", () => {
 });
 
 describe("portais no topo do Perfil", () => {
-  it("mesmos atalhos da seção Portais: Portal do Herói primeiro, gestão para o admin geral, nada para o consumidor", () => {
+  it("mesmos atalhos da seção Portais: Portal do Hero primeiro, gestão para o admin geral, nada para o consumidor", () => {
     expect(buildPortalItems(["consumer"])).toEqual([]);
     expect(buildPortalItems(["consumer", "creator"], undefined, { hasTalent: true }).map((p) => p.key)).toEqual(["creator"]);
     const admin = buildPortalItems(["consumer", "admin"], undefined, { platformAdmin: true });
@@ -57,7 +57,7 @@ describe("portais no topo do Perfil", () => {
     expect(buildPortalItems(["consumer", "admin"]).map((p) => p.key)).toEqual(["admin"]);
   });
 
-  it("app das lojas: as linhas só da web saem da lista no servidor; o Portal do Herói e a Administração ficam", () => {
+  it("app das lojas: as linhas só da web saem da lista no servidor; o Portal do Hero e a Administração ficam", () => {
     const items = buildPortalItems(["consumer", "admin", "agency"], undefined, { hasTalent: true, platformAdmin: true });
     expect(forSurface(items, true).map((p) => p.key)).toEqual(["creator", "admin"]);
     expect(forSurface(items, false).map((p) => p.key)).toEqual(["creator", "agency", "brand", "admin"]);
@@ -66,7 +66,7 @@ describe("portais no topo do Perfil", () => {
 });
 
 describe("revisão de segurança da etapa B", () => {
-  it("papel creator do escritório (escopo talent) não vale para as telas do herói", () => {
+  it("papel creator do escritório (escopo talent) não vale para as telas do Hero", () => {
     expect(hasHeroRole([{ role: "creator", scope_type: "talent" }])).toBe(false);
     expect(hasHeroRole([{ role: "creator", scope_type: "creator" }])).toBe(true);
     expect(hasHeroRole([{ role: "creator", scope_type: "talent" }, { role: "creator", scope_type: "creator" }])).toBe(true);

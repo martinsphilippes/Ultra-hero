@@ -16,8 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title") };
 }
 
-// /heroi/equipe (0091): a equipe do herói da pessoa (titular gere; membro consulta). Sem herói: "Criar meu
-// herói" (nasce pendente). O admin gere a equipe de qualquer herói pela ficha em /admin/herois.
+// /heroi/equipe (0091): a equipe do Hero da pessoa (titular gere; membro consulta). Sem Hero: "Criar meu
+// Hero" (nasce pendente). O admin gere a equipe de qualquer Hero pela ficha em /admin/herois.
 export default async function HeroTeamPage() {
   await requireRole("creator", "/heroi/equipe");
   const [t, supabase, admin] = await Promise.all([getTranslations("invites.team"), createClient(), hasRole("admin")]);

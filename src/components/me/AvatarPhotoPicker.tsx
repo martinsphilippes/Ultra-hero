@@ -22,9 +22,9 @@ type Props = {
   state: AvatarPhotoState;
   onChange: (next: string | null) => void;
   disabled?: boolean;
-  /** Texto de apoio próprio da tela (ex.: perfil de herói). */
+  /** Texto de apoio próprio da tela (ex.: perfil de Hero). */
   hint?: string;
-  /** Ações de envio e remoção (padrão: a foto da própria conta; a agência passa as do herói, 0070). */
+  /** Ações de envio e remoção (padrão: a foto da própria conta; a agência passa as do Hero, 0070). */
   uploadAction?: typeof uploadAvatar;
   removeAction?: typeof removeAvatar;
 };
@@ -33,8 +33,8 @@ type Preview = PreparedAvatar & { url: string };
 
 // Foto de perfil pelo celular: "Tirar foto" (câmera frontal) ou "Escolher da galeria", recorte e
 // redução no aparelho, prévia em círculo e confirmação. Uma foto só por pessoa: vale no avatar do
-// app e, se a pessoa é herói, no perfil público. Sem foto, as iniciais do nome. Um seletor de foto
-// por página: em "Editar perfil" do herói ativo ou em Dados das outras contas.
+// app e, se a pessoa é Hero, no perfil público. Sem foto, as iniciais do nome. Um seletor de foto
+// por página: em "Editar perfil" do Hero ativo ou em Dados das outras contas.
 export function AvatarPhotoPicker({ value, name, state, onChange, disabled = false, hint, uploadAction = uploadAvatar, removeAction = removeAvatar }: Props) {
   const t = useTranslations("me.profile.photo");
   const { toast } = useToast();
@@ -117,7 +117,7 @@ export function AvatarPhotoPicker({ value, name, state, onChange, disabled = fal
     setError(null);
   }
 
-  // Termos do Parceiro (0068): a foto de um herói pede a declaração de direitos antes do primeiro envio
+  // Termos do Parceiro (0068): a foto de um Hero pede a declaração de direitos antes do primeiro envio
   const [rightsOpen, setRightsOpen] = useState(false);
 
   function confirmUpload() {

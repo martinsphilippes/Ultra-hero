@@ -13,7 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 
 // Foto de perfil (0031): envio e remoção. Os bytes passam pelo servidor, que confere o tipo pelos
 // magic bytes, reserva o envio no banco (cota e kill switch), grava no bucket público com o service
-// role e aplica a URL no perfil e, se a pessoa é herói, no perfil público. Uma foto só por pessoa.
+// role e aplica a URL no perfil e, se a pessoa é Hero, no perfil público. Uma foto só por pessoa.
 
 export type AvatarResult = { ok: true; avatarUrl: string | null } | { ok: false; error: AvatarError };
 
@@ -26,7 +26,7 @@ function rpcFailure(error: { code?: string; message?: string } | null): AvatarEr
   return toAvatarError(rpcErrorCode(error.message));
 }
 
-// Telas que mostram o avatar da pessoa (cabeçalho em todo o app) e, se herói, o perfil público.
+// Telas que mostram o avatar da pessoa (cabeçalho em todo o app) e, se Hero, o perfil público.
 async function revalidateAvatar(supabase: Supabase, userId: string) {
   revalidatePath("/", "layout");
   revalidatePath("/profile");
@@ -99,7 +99,7 @@ export async function uploadAvatar(formData: FormData): Promise<AvatarResult> {
   }
 }
 
-// Sem entrada: remove a foto própria de onde ela estiver (perfil e herói). Ilustração não é tocada.
+// Sem entrada: remove a foto própria de onde ela estiver (perfil e Hero). Ilustração não é tocada.
 export async function removeAvatar(): Promise<AvatarResult> {
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };

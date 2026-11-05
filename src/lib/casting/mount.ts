@@ -1,12 +1,12 @@
 import { splitProportional } from "@/lib/value-model/model";
 
-// Montador de elenco (0096): dado um orçamento FIXO e os heróis do casting, calcula por herói o alcance estimado, a
+// Montador de elenco (0096): dado um orçamento FIXO e os Heros do casting, calcula por Hero o alcance estimado, a
 // aderência de público e o custo, e sugere combinações que cabem no orçamento. Lógica pura (sem tela e sem banco).
 //
-// Honestidade dos números: tudo parte do que a agência/herói DECLAROU nas redes (seguidores, alcance médio, visualizações,
+// Honestidade dos números: tudo parte do que a agência/Hero DECLAROU nas redes (seguidores, alcance médio, visualizações,
 // engajamento) com a data do dado. Não há integração com as redes. Quando falta o alcance, usa as visualizações médias e,
 // só em último caso, uma fração fixa dos seguidores (FOLLOWER_REACH_RATE), sempre sinalizado. "Vendas" não é dado real: é
-// um indicador de potencial de resposta (alcance no público certo × engajamento). A soma de alcances não desconta herói
+// um indicador de potencial de resposta (alcance no público certo × engajamento). A soma de alcances não desconta Hero
 // que se repete entre as audiências.
 
 export type CastGoal = "reach" | "engagement" | "audience" | "sales" | "mix";
@@ -22,7 +22,7 @@ export const GOAL_WEIGHTS: Record<CastGoal, CastWeights> = {
   mix: { reach: 2, engagement: 2, fit: 2, response: 0 },
 };
 
-/** Fração dos seguidores usada como alcance quando o herói não declarou alcance nem visualizações. */
+/** Fração dos seguidores usada como alcance quando o Hero não declarou alcance nem visualizações. */
 export const FOLLOWER_REACH_RATE = 0.1;
 /** Dado declarado há mais dias que isso é marcado como antigo. */
 export const STALE_DAYS = 180;
@@ -107,7 +107,7 @@ export type HeroMetrics = {
   flags: HeroFlag[];
   /** Entra nas sugestões automáticas? (o ajuste manual pode incluir qualquer um.) */
   eligible: boolean;
-  /** Valor do herói para o objetivo (0 a ~1), já com a confiança. */
+  /** Valor do Hero para o objetivo (0 a ~1), já com a confiança. */
   value: number;
   /** Custo por mil alcançados na unidade do orçamento. */
   costPerThousand: number | null;
@@ -172,7 +172,7 @@ function reliabilityOf(r: CastHeroInput["rating"]): { value: number; known: bool
   return { value: 0.85 + 0.15 * score, known: true };
 }
 
-/** Métricas de UM herói (sem o valor para o objetivo, que depende do conjunto — ver scoreHeroes). */
+/** Métricas de UM Hero (sem o valor para o objetivo, que depende do conjunto — ver scoreHeroes). */
 export function heroMetrics(hero: CastHeroInput, ctx: CastContext, today: Date = new Date()): Omit<HeroMetrics, "value" | "costPerThousand"> {
   const flags: HeroFlag[] = [];
   const wanted = ctx.networks.length > 0 ? hero.accounts.filter((a) => ctx.networks.includes(a.network)) : hero.accounts;
@@ -223,7 +223,7 @@ export function heroMetrics(hero: CastHeroInput, ctx: CastContext, today: Date =
   return { id: hero.talent_id, name: hero.name, reach, engaged, fit, qualifiedReach, response, engagementRate, reliability: rel.value, cost, dataAsOf, dataAgeDays, flags, eligible };
 }
 
-/** Valor de cada herói para o objetivo: cada resultado normalizado pelo maior do conjunto, ponderado e com a confiança. */
+/** Valor de cada Hero para o objetivo: cada resultado normalizado pelo maior do conjunto, ponderado e com a confiança. */
 export function scoreHeroes(heroes: CastHeroInput[], ctx: CastContext, weights: CastWeights, today: Date = new Date()): HeroMetrics[] {
   const base = heroes.map((h) => heroMetrics(h, ctx, today));
   const pool = base.filter((b) => b.eligible);
@@ -262,7 +262,7 @@ export type CastTotals = {
   fit: number | null;
   costPerThousand: number | null;
   value: number;
-  /** Heróis do elenco sem custo, sem dados etc. — avisos do conjunto. */
+  /** Heros do elenco sem custo, sem dados etc. — avisos do conjunto. */
   missingFee: string[];
   missingData: string[];
   stale: string[];
@@ -297,7 +297,7 @@ export function evaluateCast(metrics: HeroMetrics[], ids: string[], budget: numb
 }
 
 /**
- * Melhor conjunto de exatamente k heróis (k = 1..maxK) com custo ≤ orçamento, maximizando a soma dos valores: mochila
+ * Melhor conjunto de exatamente k Heros (k = 1..maxK) com custo ≤ orçamento, maximizando a soma dos valores: mochila
  * com contagem. Os custos viram baldes (arredondados PARA CIMA, então o resultado cabe de verdade no orçamento).
  */
 export function bestByCount(items: Array<{ id: string; value: number; cost: number }>, budget: number, maxK: number, buckets = 1000): Map<number, string[]> {
@@ -350,7 +350,7 @@ export type CastSuggestion = { strategy: CastStrategy; totals: CastTotals; reaso
 const sameSet = (a: string[], b: string[]) => a.length === b.length && a.every((x) => b.includes(x));
 
 /**
- * Sugere até 3 combinações que cabem no orçamento: "um nome forte" (1 herói), "poucos médios" (3, senão 2) e "mix" (mais
+ * Sugere até 3 combinações que cabem no orçamento: "um nome forte" (1 Hero), "poucos médios" (3, senão 2) e "mix" (mais
  * nomes, 4 ou mais; senão a melhor de 2 ou mais que ainda não apareceu). Combinações repetidas são trocadas por outro
  * tamanho; se não houver, ficam menos de 3. `maxHeroes` limita o tamanho (por exemplo, o máximo da chamada).
  */
@@ -394,7 +394,7 @@ export function suggestCasts(metrics: HeroMetrics[], budget: number, opts: { max
   });
 }
 
-/** Aviso quando não há elenco possível: nenhum herói elegível cabe no orçamento. */
+/** Aviso quando não há elenco possível: nenhum Hero elegível cabe no orçamento. */
 export function whyNoSuggestion(metrics: HeroMetrics[], budget: number): "no_budget" | "no_eligible" | "none_fits" {
   if (!(budget > 0)) return "no_budget";
   const el = metrics.filter((m) => m.eligible);
@@ -403,8 +403,8 @@ export function whyNoSuggestion(metrics: HeroMetrics[], budget: number): "no_bud
 }
 
 /**
- * Repartição do valor entre o elenco (modelo fixo): proporcional ao cachê de referência de cada herói e somando
- * EXATAMENTE o total; herói sem referência recebe pela média dos outros; sem nenhuma referência, divide igual.
+ * Repartição do valor entre o elenco (modelo fixo): proporcional ao cachê de referência de cada Hero e somando
+ * EXATAMENTE o total; Hero sem referência recebe pela média dos outros; sem nenhuma referência, divide igual.
  */
 export function splitCastFees(total: number, refs: Array<number | null>): number[] {
   const known = refs.filter((r): r is number => r !== null && r > 0);

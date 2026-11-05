@@ -246,7 +246,7 @@
     },
     "actor": {
       "consumer": "Você",
-      "creator": "Herói",
+      "creator": "Hero",
       "seller": "Fornecedor",
       "admin": "Administração",
       "system": "Sistema (simulação)"
@@ -353,9 +353,9 @@
       "seconds": "Seg"
     },
     "srCountdown": "Faltam {days, plural, one {# dia} other {# dias}}, {hours, plural, one {# hora} other {# horas}} e {minutes, plural, one {# minuto} other {# minutos}} para a abertura, em {date}.",
-    "body": "A loja Ultra.e Life e os colecionáveis assinados pelos heróis chegam em 2027.",
-    "collectiblesTease": "Itens raros assinados pelos heróis — exclusivos, em quantidade mínima.",
-    "collectiblesDescription": "Itens raros assinados pelos heróis — exclusivos, em quantidade mínima.",
+    "body": "A loja Ultra.e Life e os colecionáveis assinados pelos Heros chegam em 2027.",
+    "collectiblesTease": "Itens raros assinados pelos Heros — exclusivos, em quantidade mínima.",
+    "collectiblesDescription": "Itens raros assinados pelos Heros — exclusivos, em quantidade mínima.",
     "notify": "Me avise quando abrir",
     "notified": "Pronto! Avisaremos você.",
     "notifyError": "Não foi possível salvar agora. Tente de novo.",

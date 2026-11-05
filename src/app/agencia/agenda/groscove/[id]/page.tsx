@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("badge") };
 }
 
-// Evento do Calendário Groscove na agência (0098): detalhe, contagens totais e — gestor+ — os heróis do PRÓPRIO
+// Evento do Calendário Groscove na agência (0098): detalhe, contagens totais e — gestor+ — os Heros do PRÓPRIO
 // casting e as marcas atendidas que manifestaram interesse (a RLS só devolve esses). O colaborador vê só o evento.
 export default async function AgencyGroscoveEventPage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await requireAgency("staff");
@@ -35,7 +35,7 @@ export default async function AgencyGroscoveEventPage({ params }: { params: Prom
     eventCommercial(id),
     listVisiblePosts({ eventId: id, limit: 10 }),
   ]);
-  // 0101: compatibilidade — heróis do casting × marcas atendidas com interesse (a RLS já filtrou); ficha do casting para o atalho
+  // 0101: compatibilidade — Heros do casting × marcas atendidas com interesse (a RLS já filtrou); ficha do casting para o atalho
   const compat = compatFromInterests(interests);
   const fichas = new Map<string, string>();
   if (isManager && compat.heroes.length > 0) {

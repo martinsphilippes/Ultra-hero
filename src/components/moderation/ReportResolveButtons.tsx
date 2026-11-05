@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 import { resolveReportAction } from "@/app/admin/denuncias/actions";
 import { Button } from "@/components/ui";
 
-// Ações da triagem (0071): dispensar, tirar o conteúdo do ar ou suspender o herói.
+// Ações da triagem (0071): dispensar, tirar o conteúdo do ar ou suspender o Hero.
 export function ReportResolveButtons({ id, hasContent, hasCreator }: { id: string; hasContent: boolean; hasCreator: boolean }) {
   const t = useTranslations("moderation.admin");
   const router = useRouter();

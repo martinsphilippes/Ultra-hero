@@ -70,7 +70,7 @@ export function isLegacyAvatarArt(src: string | null | undefined): boolean {
 
 /**
  * O que o navegador pode carregar como avatar: foto real (caminho local, como as fotos oficiais dos
- * heróis demo, ou foto do bucket deste projeto). Sem foto, ilustração antiga ou URL de outro host:
+ * Heros demo, ou foto do bucket deste projeto). Sem foto, ilustração antiga ou URL de outro host:
  * null, e a tela mostra as iniciais. avatar_url é gravável pela própria pessoa (API REST): URL de
  * outro host viraria um <img> de terceiro para todo visitante (rastreio, imagem sem checagem).
  */
@@ -83,7 +83,7 @@ export function safeAvatarSrc(src: string | null | undefined, baseUrl: string | 
 /**
  * Avatar que a própria pessoa pode gravar por um formulário de perfil: nenhum ou a foto atual dela
  * mesma (foto nova só entra pelo envio, avatar_set_photo; ilustração não é mais opção). A mesma regra
- * vale no app (profiles) e no perfil público do herói, que recebem o mesmo valor.
+ * vale no app (profiles) e no perfil público do Hero, que recebem o mesmo valor.
  */
 export function acceptsAvatarChoice(next: string | null, current: string | null | undefined, userId: string, baseUrl: string | null | undefined): boolean {
   if (next === null) return true;

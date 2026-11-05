@@ -18,7 +18,7 @@ import { EMPTY_BRIEF } from "@/lib/brief/brief";
 
 const ID = "6f1c2d3e-4b5a-4c6d-8e7f-901234567890";
 
-describe("campanha do herói: parâmetros", () => {
+describe("campanha do Hero: parâmetros", () => {
   it("aceita só uuid em ?campanha=", () => {
     expect(parseCampaignParam(ID)).toBe(ID);
     expect(parseCampaignParam(ID.toUpperCase())).toBe(ID);
@@ -44,7 +44,7 @@ describe("campanha do herói: parâmetros", () => {
   });
 });
 
-describe("campanha do herói: quem pode criar", () => {
+describe("campanha do Hero: quem pode criar", () => {
   it("só confirmado em negócio que não terminou", () => {
     expect(canCreateForCampaign({ status: "contracted", dealStatus: "running" })).toBe(true);
     expect(canCreateForCampaign({ status: "proposed", dealStatus: "confirmed" })).toBe(true);
@@ -55,7 +55,7 @@ describe("campanha do herói: quem pode criar", () => {
   });
 });
 
-describe("campanha do herói: texto com as marcas do briefing", () => {
+describe("campanha do Hero: texto com as marcas do briefing", () => {
   it("põe @menções, #publi e hashtags, sem repetir", () => {
     expect(campaignTags({ mentions: ["@marca"], hashtags: ["#verao", "#Marca"] })).toEqual(["@marca", "#publi", "#verao", "#Marca"]);
     expect(campaignTags({ mentions: [], hashtags: ["#Publi", "#verao"] })).toEqual(["#Publi", "#verao"]);
@@ -81,7 +81,7 @@ describe("campanha do herói: texto com as marcas do briefing", () => {
   });
 });
 
-describe("campanha do herói: links", () => {
+describe("campanha do Hero: links", () => {
   it("cada atalho abre o criador com o contexto", () => {
     expect(campaignCreateHref("quick", ID)).toBe(`/heroi/post/novo?campanha=${ID}`);
     expect(campaignCreateHref("video", ID)).toBe(`/heroi/post/novo?campanha=${ID}&tipo=video`);

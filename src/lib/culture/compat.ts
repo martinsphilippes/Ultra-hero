@@ -1,4 +1,4 @@
-// Compatibilidade no evento (0101): heróis × marcas com interesse ATIVO, a partir da lista que a RLS já filtrou (agência:
+// Compatibilidade no evento (0101): Heros × marcas com interesse ATIVO, a partir da lista que a RLS já filtrou (agência:
 // casting próprio e marcas atendidas; admin: todos). Módulo puro, testado em tests/unit/culture.test.ts.
 
 type InterestLike = { party: "hero" | "brand"; ownerId: string; name: string; state: "interested" | "withdrawn" };

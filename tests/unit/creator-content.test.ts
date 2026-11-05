@@ -65,7 +65,7 @@ describe("licença e publicação do creator", () => {
   });
 });
 
-describe("herói em uso de quem está em mais de uma equipe", () => {
+describe("Hero em uso de quem está em mais de uma equipe", () => {
   const heroes = [{ id: "a" }, { id: "b" }];
   it("usa o escolhido se ainda é da pessoa; senão o padrão", () => {
     expect(pickMyHero(heroes, "b", "a")).toBe("b");
@@ -76,23 +76,23 @@ describe("herói em uso de quem está em mais de uma equipe", () => {
 });
 
 describe("cartão Você trabalha para", () => {
-  it("só herói ativo ou pendente é selecionável; suspenso não", () => {
+  it("só Hero ativo ou pendente é selecionável; suspenso não", () => {
     expect(heroSelectable("active")).toBe(true);
     expect(heroSelectable("pending")).toBe(true);
     expect(heroSelectable("suspended")).toBe(false);
   });
-  it("compacto com um herói só; lista com mais de um", () => {
+  it("compacto com um Hero só; lista com mais de um", () => {
     expect(heroCardCompact([{ id: "a" }])).toBe(true);
     expect(heroCardCompact([{ id: "a" }, { id: "b" }])).toBe(false);
   });
-  it("Trabalhar neste herói: só havendo mais de um, no selecionável que não está em uso", () => {
+  it("Trabalhar neste Hero: só havendo mais de um, no selecionável que não está em uso", () => {
     const hs = [{ id: "a", status: "active" }, { id: "b", status: "pending" }, { id: "c", status: "suspended" }];
     expect(showWorkOnHero(hs, hs[0], "a")).toBe(false);
     expect(showWorkOnHero(hs, hs[1], "a")).toBe(true);
     expect(showWorkOnHero(hs, hs[2], "a")).toBe(false);
     expect(showWorkOnHero([hs[0]], hs[0], null)).toBe(false);
   });
-  it("escolha vale só enquanto o herói segue na lista de selecionáveis", () => {
+  it("escolha vale só enquanto o Hero segue na lista de selecionáveis", () => {
     const selectable = [{ id: "a" }, { id: "b" }];
     expect(pickMyHero(selectable, "b", "a")).toBe("b");
     expect(pickMyHero(selectable, "c", "a")).toBe("a");

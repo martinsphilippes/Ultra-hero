@@ -7,7 +7,7 @@ import { pickProgramSuggestions, type EnrollmentLike, type ProgramSuggestion } f
 
 export type EvolutionSummary = { currentStreak: number; completionsCount: number; suggestions: ProgramSuggestion[] };
 
-// Inscrição ativa com os itens do programa (program_items + conteúdo + herói) para as sugestões do dia.
+// Inscrição ativa com os itens do programa (program_items + conteúdo + Hero) para as sugestões do dia.
 type EnrollmentWithItems = {
   id: string;
   status: "active" | "completed" | "abandoned";

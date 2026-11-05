@@ -5,7 +5,7 @@ import type { ContentFormValues } from "@/components/editors/types";
 import { slugify, uniqueSlug } from "@/app/heroi/_lib/slug";
 import { MAX_POST_BYTES, durationMinutes, normalizeDuration, uploadPercent, validateDuration, validateVideoFile } from "@/components/creator/post/validation";
 
-// Composer de post em vídeo do herói: server actions sem Next, Supabase nem Cloudflare. Confere que
+// Composer de post em vídeo do Hero: server actions sem Next, Supabase nem Cloudflare. Confere que
 // dono e uid vêm da sessão/banco (nunca do cliente), o vínculo stream_uploads gravado pelo service
 // role, o mapeamento de erros para creator.post.errors e as regras puras de arquivo/duração.
 
@@ -53,7 +53,7 @@ const state = vi.hoisted(() => ({
 }));
 
 vi.mock("server-only", () => ({}));
-// 0092: o herói escolhido (cookie) vale no Novo post; aqui, sem escolha
+// 0092: o Hero escolhido (cookie) vale no Novo post; aqui, sem escolha
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));
 // Termos do Parceiro (0068): confirmação de direitos antes do envio; cada teste liga ou desliga
 vi.mock("@/lib/partner-terms/server", () => ({ hasUploadRights: async () => state.uploadRights }));
@@ -67,9 +67,9 @@ vi.mock("@/lib/auth/session", () => ({
   hasRole: async (role: string) => (role === "admin" ? state.isAdmin : role === "creator" && state.isCreator),
   getRoles: async () => (state.isCreator ? [{ role: "creator", scope_type: "creator" }] : []),
 }));
-// admin agindo pelo herói escolhido (0045): o herói vem do cookie revalidado no banco
+// admin agindo pelo Hero escolhido (0045): o Hero vem do cookie revalidado no banco
 vi.mock("@/lib/acting-hero/server", () => ({
-  getActingHero: async () => ((state.creatorId ? { status: "ok", hero: { id: state.creatorId, slug: "heroi", name: "Herói", avatar_url: null } } : { status: "none" })),
+  getActingHero: async () => ((state.creatorId ? { status: "ok", hero: { id: state.creatorId, slug: "heroi", name: "Hero", avatar_url: null } } : { status: "none" })),
   actingClient: async () => (await import("@/lib/supabase/server")).createClient(),
 }));
 vi.mock("@/lib/video", async (importOriginal) => {
@@ -260,7 +260,7 @@ describe("startVideoPost", () => {
     expect(state.rpcs.map((r) => r.fn)).toContain("public_settings");
   });
 
-  it("sem papel de herói devolve forbidden; sem sessão, unauthenticated; perfil inativo, creator_unavailable", async () => {
+  it("sem papel de Hero devolve forbidden; sem sessão, unauthenticated; perfil inativo, creator_unavailable", async () => {
     state.isCreator = false;
     expect(await startVideoPost(START)).toEqual({ ok: false, error: "forbidden" });
     state.isCreator = true;
@@ -278,7 +278,7 @@ describe("startVideoPost", () => {
     expect(result).toEqual({ ok: true, contentId: ids.CONTENT, uploadUrl: "https://upload.cloudflarestream.com/tus/abc" });
     expect(state.tickets[0]).toEqual({ creatorId: ids.CREATOR, maxDurationSec: 180, premium: false, fileSize: 48_000_000, fileName: "VID_20261021.mp4" });
 
-    // vínculo antes do rascunho (o gatilho do corpo exige), com o herói da sessão e a validade do ticket
+    // vínculo antes do rascunho (o gatilho do corpo exige), com o Hero da sessão e a validade do ticket
     expect(state.adminWrites[0]).toEqual({ table: "stream_uploads", op: "insert", payload: { uid: ids.UID, creator_id: ids.CREATOR, expires_at: "2026-10-21T12:30:00Z" }, filters: [] });
     expect(state.adminWrites[1]).toEqual({ table: "stream_uploads", op: "update", payload: { content_id: ids.CONTENT }, filters: [["uid", ids.UID]] });
     expect(state.adminWrites).toHaveLength(2);
@@ -288,7 +288,7 @@ describe("startVideoPost", () => {
       creator_id: ids.CREATOR,
       created_by: ids.USER,
       type: "video",
-      pillar: "nutrition", // primeiro pilar do herói
+      pillar: "nutrition", // primeiro pilar do Hero
       title: "creator.post.draftTitle",
       media_license_kind: "own",
       cover_url: `/media/stream/${ids.UID}/thumbnail`,
@@ -309,7 +309,7 @@ describe("startVideoPost", () => {
     expect(state.deleted).toHaveLength(0);
   });
 
-  it("conta os envios do próprio herói na última hora e recusa a partir de 10, sem pedir ticket", async () => {
+  it("conta os envios do próprio Hero na última hora e recusa a partir de 10, sem pedir ticket", async () => {
     state.uploadCount = 9;
     expect(await startVideoPost(START)).toMatchObject({ ok: true });
     state.uploadCount = 10;
@@ -329,7 +329,7 @@ describe("startVideoPost", () => {
     expect(state.deleted).toEqual([ids.UID]);
   });
 
-  it("herói sem pilares cai em rotina", async () => {
+  it("Hero sem pilares cai em rotina", async () => {
     state.profile = { pillars: [] };
     await startVideoPost(START);
     expect(state.writes[0].payload).toMatchObject({ pillar: "routine" });
@@ -403,7 +403,7 @@ describe("publishVideoPost", () => {
     expect(state.rpcs.map((r) => r.fn)).not.toContain("creator_publish_content");
   });
 
-  it("creator do vídeo tem de ser o herói: outro herói ou campo vazio → forbidden", async () => {
+  it("creator do vídeo tem de ser o Hero: outro Hero ou campo vazio → forbidden", async () => {
     state.status = { state: "ready", durationSec: 60, creatorId: ids.OTHER_CREATOR, reason: null };
     expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "forbidden" });
     state.status = { state: "ready", durationSec: 30, creatorId: null, reason: null };
@@ -448,7 +448,7 @@ describe("publishVideoPost", () => {
     expect(state.rpcs.map((r) => r.fn)).not.toContain("creator_set_draft_slug");
   });
 
-  it("rascunho de outro herói (ou invisível pela RLS) → forbidden, sem gravar nada", async () => {
+  it("rascunho de outro Hero (ou invisível pela RLS) → forbidden, sem gravar nada", async () => {
     state.content = { id: ids.CONTENT, slug: "x", status: "draft", creator_id: ids.OTHER_CREATOR, published_at: null };
     expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "forbidden" });
     state.content = null;
@@ -500,7 +500,7 @@ describe("discardVideoPost", () => {
     expect(state.adminWrites).toEqual([
       { table: "stream_uploads", op: "update", payload: { provider_deleted_at: expect.any(String) }, filters: [["uid", ids.UID]] },
     ]);
-    // o herói não apaga conteúdo direto pela API
+    // o Hero não apaga conteúdo direto pela API
     expect(state.writes.filter((w) => w.op === "delete")).toHaveLength(0);
   });
 
@@ -518,7 +518,7 @@ describe("discardVideoPost", () => {
     expect(state.adminWrites).toHaveLength(0);
   });
 
-  it("erros da RPC: publicado, já esteve no ar, de outro herói, sem vídeo do Stream; id inválido", async () => {
+  it("erros da RPC: publicado, já esteve no ar, de outro Hero, sem vídeo do Stream; id inválido", async () => {
     for (const code of ["not_draft", "already_published", "forbidden", "not_stream"]) {
       state.rpcError = code;
       expect(await discardVideoPost({ contentId: ids.CONTENT })).toEqual({ ok: false, error: code });
@@ -529,7 +529,7 @@ describe("discardVideoPost", () => {
 });
 
 describe("publicar/despublicar pelo editor", () => {
-  // editor de conteúdo: só o admin, pelo herói escolhido (0045)
+  // editor de conteúdo: só o admin, pelo Hero escolhido (0045)
   beforeEach(() => {
     state.isAdmin = true;
   });

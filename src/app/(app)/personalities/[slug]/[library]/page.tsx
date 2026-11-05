@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: t("meta.library", { library: label, name: creator.name }), description: t(`personalities.libraries.descriptions.${library}`, { name: creator.name }) };
 }
 
-// Uma biblioteca do herói (RF-004): grade de quadrados para conteúdos, catálogo para Alimentação,
+// Uma biblioteca do Hero (RF-004): grade de quadrados para conteúdos, catálogo para Alimentação,
 // prateleiras para programas (uma por programa, etapas com rolagem lateral) e cards com ação para
 // produtos. Segmento fora de LIBRARY_KEYS é 404 (os antigos rotina/receitas viram 308 no middleware).
 // Título e ícone seguem a configuração do admin (0050); atalho oculto continua acessível pela URL.
@@ -57,7 +57,7 @@ export default async function LibraryPage({ params, searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* indicador agregado de aberturas do atalho (0060): herói + fonte, nada da pessoa */}
+      {/* indicador agregado de aberturas do atalho (0060): Hero + fonte, nada da pessoa */}
       <ShortcutOpenTracker creatorId={creator.id} sourceKey={library} />
       <PageHeader
         backHref={hubPath}
@@ -106,7 +106,7 @@ async function LibraryBody({ library, slug, hub, hero, recipeParams }: BodyProps
   const tl = await getTranslations("discover.personalities.libraries");
   const key: LibraryKey = library.key;
 
-  // Alimentação: as receitas assinadas pelo herói (com busca e filtros) e depois as que ele indica.
+  // Alimentação: as receitas assinadas pelo Hero (com busca e filtros) e depois as que ele indica.
   if (library.kind === "content" && key === "alimentacao") {
     return <ChefRecipes recipes={library.items} hero={hero} params={recipeParams ?? parseRecipeCatalogParams({})} />;
   }

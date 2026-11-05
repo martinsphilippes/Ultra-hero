@@ -26,7 +26,7 @@ type Props = {
 
 type Preview = PreparedAvatar & { url: string };
 
-// Capa da página do herói (0042), no mesmo fluxo da foto de perfil: "Tirar foto" (câmera traseira)
+// Capa da página do Hero (0042), no mesmo fluxo da foto de perfil: "Tirar foto" (câmera traseira)
 // ou "Escolher da galeria", recorte central 16:9 e redução para 1600x900 no aparelho (sem EXIF),
 // prévia e confirmação. Só foto real; sem capa, uma superfície lisa do tema.
 export function HeroCoverPicker({ value, state, onChange, disabled = false }: Props) {

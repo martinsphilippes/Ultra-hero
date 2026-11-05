@@ -1,14 +1,14 @@
 -- =============================================================================
--- Groscove Ultra · 0116 · Um e-mail, um perfil de negócio (Herói OU Marca OU Agência)
--- Decisão do responsável (04/11): uma conta (um e-mail) só pode ter UM tipo de perfil de negócio — herói, marca ou
+-- Groscove Ultra · 0116 · Um e-mail, um perfil de negócio (Hero OU Marca OU Agência)
+-- Decisão do responsável (04/11): uma conta (um e-mail) só pode ter UM tipo de perfil de negócio — Hero, marca ou
 -- agência. Consumidor ("só o app") é a base de todos e não conta. O admin da plataforma fica fora da regra. A seção
 -- "Novo perfil" (Configurações › "Quero ser…") sai das telas; o cadastro com escolha de perfil continua para quem
 -- ainda não tem conta. Cenário S121. Idempotente; nada de drop de tabela/coluna; nenhuma função nova executável por
 -- anon (S14 segue 18).
 --
 -- O que conta como cada tipo (account_business_kinds):
---   • hero   — papel 'creator' ativo (titular, equipe do herói ou login do talento), creator_profiles.user_id,
---              talent_profiles.user_id ou creator_team_members ativo (equipe do herói = perfil de herói).
+--   • hero   — papel 'creator' ativo (titular, equipe do Hero ou login do talento), creator_profiles.user_id,
+--              talent_profiles.user_id ou creator_team_members ativo (equipe do Hero = perfil de Hero).
 --   • brand  — brand_members ativo ou papel 'brand' ativo (Dono ou Equipe; dono de 2 marcas é o mesmo tipo).
 --   • agency — agency_members ativo ou papel 'agency' ativo (admin/gestor/colaborador; uma agência por pessoa já era
 --              regra desde a 0064, D10).
@@ -17,21 +17,21 @@
 --   • Uma trava só, no banco, em vez de remendar cada RPC: triggers BEFORE INSERT/UPDATE nas tabelas que dão o
 --     vínculo (brand_members, agency_members, creator_profiles.user_id, talent_profiles.user_id,
 --     creator_team_members) e também em role_assignments (papéis creator/brand/agency), account_onboardings (passo a
---     passo em aberto de agência/marca/herói) e invitations (convite novo para um e-mail que já tem conta de outro
+--     passo em aberto de agência/marca/Hero) e invitations (convite novo para um e-mail que já tem conta de outro
 --     tipo). Todas as RPCs security definer que concedem vínculo passam por elas e recusam com
 --     'profile_conflict:<tipo que a conta já tem>' (hero|brand|agency), sem mexer no corpo de cada uma:
 --     self_onboarding_start (cadastro por perfil), onboarding_create_* e creator_create_my_hero (fim do passo a
 --     passo), accept_invitation_core / accept_invitation / accept_my_invitations (todos os kinds: agência, marca,
---     herói, equipe do herói, equipe da marca, agency_hero e agency_brand da 0112), access_provision /
---     agency_hero_create / agency_brand_create_with_access / access_contact_save (ligar herói ou Dono de marca a conta
+--     Hero, equipe do Hero, equipe da marca, agency_hero e agency_brand da 0112), access_provision /
+--     agency_hero_create / agency_brand_create_with_access / access_contact_save (ligar Hero ou Dono de marca a conta
 --     existente), talent_page_create (ligar página pública), agency_invite_member / brand_invite_member /
 --     hero_team_invite / admin_invite (convite novo já recusa no envio, antes de o convidado aceitar).
 --     A transação inteira volta (convite não é consumido, nada fica pela metade).
 --   • Staff externo do projeto (0110, project_room_members) NÃO é perfil de negócio: é um convidado de UM negócio,
---     sem papel e sem portal próprio (só a sala daquele projeto, depois do NDA). Fica fora da regra: um herói ou uma
+--     sem papel e sem portal próprio (só a sala daquele projeto, depois do NDA). Fica fora da regra: um Hero ou uma
 --     marca pode ser chamado como staff externo de uma sala sem perder o próprio perfil.
---   • Mesmo tipo pode repetir: Dono de 2 marcas, Equipe de outra marca, membro da equipe do herói que também é
---     titular (todos hero), etc. As regras antigas de cada tipo continuam (uma agência por pessoa, um herói por
+--   • Mesmo tipo pode repetir: Dono de 2 marcas, Equipe de outra marca, membro da equipe do Hero que também é
+--     titular (todos hero), etc. As regras antigas de cada tipo continuam (uma agência por pessoa, um Hero por
 --     pessoa, uma marca própria pelo cadastro).
 --   • Admin da plataforma (papel 'admin' ativo) fica fora da regra: supervisiona e pode ter vínculos de teste.
 --   • Trava por conta (advisory lock por usuário) contra dois vínculos de tipos diferentes ao mesmo tempo.

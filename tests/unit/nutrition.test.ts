@@ -35,9 +35,9 @@ vi.mock("next-intl/server", () => ({
   getTranslations: async (namespace: string) => Object.assign((key: string) => `${namespace}.${key}`, { has: () => true }),
 }));
 vi.mock("@/lib/auth/session", () => ({ getUser: async () => ({ id: ids.USER }), hasRole: async () => true }));
-// admin agindo pelo herói escolhido (0045): o herói vem do cookie revalidado no banco
+// admin agindo pelo Hero escolhido (0045): o Hero vem do cookie revalidado no banco
 vi.mock("@/lib/acting-hero/server", () => ({
-  getActingHero: async () => ({ status: "ok", hero: { id: ids.CREATOR, slug: "heroi", name: "Herói", avatar_url: null } }),
+  getActingHero: async () => ({ status: "ok", hero: { id: ids.CREATOR, slug: "heroi", name: "Hero", avatar_url: null } }),
   actingClient: async () => (await import("@/lib/supabase/server")).createClient(),
 }));
 vi.mock("@/lib/supabase/server", () => ({
@@ -180,7 +180,7 @@ describe("actions: personalidade nunca valida; admin só com responsável e data
   });
 
   // Desde a 0027 a receita (e a nutrição dela) é estruturada e só o editor novo grava; a regra
-  // "o herói nunca valida" passou para o banco (recipe_nutrition + recipe_save, cenário S26).
+  // "o Hero nunca valida" passou para o banco (recipe_nutrition + recipe_save, cenário S26).
   it("createContent (personalidade) não grava receita pelo formulário antigo: recipe_editor_pending, sem escrita", async () => {
     const result = await createContent(asValues(recipeForm(VALIDATED, { id: undefined })));
     expect(result).toEqual({ ok: false, error: "recipe_editor_pending" });

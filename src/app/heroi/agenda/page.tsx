@@ -29,8 +29,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Props = { searchParams: Promise<{ mes?: string; dia?: string; cal?: string; territorio?: string; colecao?: string }> };
 
-// Agenda do Portal do Herói (0094 + 0097), uma tela só. Com agência: a agenda da agência (campanhas, prazos, entregas,
-// gravações que ela marcou como visíveis e patrocínios) e, se houver, os compromissos próprios do herói. Sem agência:
+// Agenda do Portal do Hero (0094 + 0097), uma tela só. Com agência: a agenda da agência (campanhas, prazos, entregas,
+// gravações que ela marcou como visíveis e patrocínios) e, se houver, os compromissos próprios do Hero. Sem agência:
 // os compromissos que o titular cria (gravação, evento, reunião, entrega, outro) em grade mensal + lista do dia, mais as
 // datas dos serviços do financeiro, sem valores. Titular cria/edita/exclui; membros da equipe leem.
 export default async function HeroAgendaPage({ searchParams }: Props) {
@@ -41,7 +41,7 @@ export default async function HeroAgendaPage({ searchParams }: Props) {
   const { year, month } = parseMonth(sp.mes, tz);
   const { from, to } = queryRange(year, month);
   const range = gridRange(year, month);
-  // 0098: Calendário Groscove (agenda central da plataforma) junto com a agenda do herói, com filtros próprios
+  // 0098: Calendário Groscove (agenda central da plataforma) junto com a agenda do Hero, com filtros próprios
   const gFilters = parseAgendaFilters(sp);
   const groscove = await groscoveForAgenda({ from, to }, gFilters);
   const gParams = agendaFilterParams(gFilters);

@@ -223,7 +223,7 @@ async function rewritePositions(supabase: Awaited<ReturnType<typeof createClient
   }
 }
 
-// Etapa do programa do herói só com conteúdo do próprio herói (0052; o gatilho do banco também garante,
+// Etapa do programa do Hero só com conteúdo do próprio Hero (0052; o gatilho do banco também garante,
 // isto só dá a mensagem certa antes de tentar gravar).
 async function assertProgramOwnsContent(supabase: Awaited<ReturnType<typeof createClient>>, programId: string, versionId: string, contentId: string): Promise<void> {
   const [{ data: version }, { data: content }] = await Promise.all([

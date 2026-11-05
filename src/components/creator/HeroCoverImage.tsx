@@ -31,7 +31,7 @@ function optimizable(src: string): boolean {
   }
 }
 
-// Capa do herói: só foto real (oficial ou enviada). Sem capa, capa desenhada antiga, URL de outro
+// Capa do Hero: só foto real (oficial ou enviada). Sem capa, capa desenhada antiga, URL de outro
 // host ou foto que não carrega: uma superfície lisa do tema, no mesmo tamanho (o layout não muda).
 export function HeroCoverImage({ src, alt = "", ratio, priority, sizes, className, card = false }: Props) {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);

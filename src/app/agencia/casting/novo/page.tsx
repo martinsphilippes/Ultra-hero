@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("newTalent") };
 }
 
-// 0112: um só "Novo herói" — a pessoa (ficha do casting) com e-mail e celular obrigatórios (o acesso nasce junto),
+// 0112: um só "Novo Hero" — a pessoa (ficha do casting) com e-mail e celular obrigatórios (o acesso nasce junto),
 // gestor, segmentos e a página pública opcional já ligada. A agência de exemplo segue com a ficha simples (não convida).
 export default async function NewTalentPage() {
   const ctx = await requireAgency("manager");

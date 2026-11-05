@@ -7,7 +7,7 @@ import { publicSetting, rpcExists } from "./helpers/supabase";
 
 // Receitas fase 6 (seção 4.5 de docs/decisions/recipes-module.md): jornadas completas contra o banco
 // remoto, com as contas de demonstração. O cookie uh-e2e=1 desliga eventos e registro de interesse.
-//  - chef (o herói da conta demo; desde a 0045 quem cria é o admin pelo herói escolhido em "Publicar como
+//  - chef (o Hero da conta demo; desde a 0045 quem cria é o admin pelo Hero escolhido em "Publicar como
 //    hero"): cria a receita "[E2E] …" com ingredientes e etapas, salva, recarrega e confere;
 //  - publicação efêmera (P4, opção a): com a revisão desligada (estado atual) a receita vai ao ar, a conta
 //    free (que já fez a etapa) a encontra no catálogo, a assinatura leva ao perfil do chef e o Modo Cozinha
@@ -27,7 +27,7 @@ import { publicSetting, rpcExists } from "./helpers/supabase";
 
 const G1 = { slug: "bowl-de-frango-grelhado-com-legumes-assados-g1", title: "Bowl de frango grelhado com legumes assados" };
 const G3 = { slug: "molho-de-ervas-em-5-minutos-g3", title: "Molho de ervas em 5 minutos" };
-const G6_ID = seedUuid("content:g6"); // receita de outro chef (do herói removido na 0044, arquivada)
+const G6_ID = seedUuid("content:g6"); // receita de outro chef (do Hero removido na 0044, arquivada)
 const PREFIX = "[E2E] Jornada";
 const LIST_PATH = "/profile/lista-de-compras";
 const CHEF_SLUG = "erick-jacquin";
@@ -143,7 +143,7 @@ test.describe("jornada do chef e publicação efêmera (P4)", () => {
     }
   });
 
-  /** Entra como admin pelo herói da conta demo, leva sobras antigas e cria a receita desta execução. */
+  /** Entra como admin pelo Hero da conta demo, leva sobras antigas e cria a receita desta execução. */
   async function startRun(page: Page): Promise<{ id: string; title: string }> {
     await loginAsAdminActing(page, "recipes");
     await purgeTestRecipes(page, PREFIX); // sobras antigas de execuções interrompidas
@@ -295,7 +295,7 @@ test.describe("permissões", () => {
     await expect(page).toHaveURL(/\/login\?next=/);
   });
 
-  test("admin pelo herói: editar a receita de outro chef dá 404", async ({ page }) => {
+  test("admin pelo Hero: editar a receita de outro chef dá 404", async ({ page }) => {
     await loginAsAdminActing(page, "recipes");
     await page.goto(`/heroi/receitas/${G6_ID}/editar`);
     await expectNotFound(page);

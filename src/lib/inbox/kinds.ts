@@ -64,9 +64,9 @@ export const INBOX_KINDS = [
   // roteiros de entrega (0107): etapa vence no próximo dia útil (responsável/setor) e etapa atrasada (Gestor)
   "roadmap_due_soon",
   "roadmap_overdue",
-  // condições de pagamento (0108): repasse ao herói a vencer, no dia e vencido (herói e Adm; só no sino)
+  // condições de pagamento (0108): repasse ao Hero a vencer, no dia e vencido (Hero e Adm; só no sino)
   "payout_due",
-  // acesso criado pela agência (0112): conta existente ligada ao herói / virou Dono da marca (sino + e-mail do app)
+  // acesso criado pela agência (0112): conta existente ligada ao Hero / virou Dono da marca (sino + e-mail do app)
   "hero_account_linked",
   "brand_access_granted",
 ] as const;
@@ -89,7 +89,7 @@ export function isInboxKind(value: unknown): value is InboxKind {
   return typeof value === "string" && (INBOX_KINDS as readonly string[]).includes(value);
 }
 
-/** O aviso vira push? Só os tipos do Portal do Herói e só com link do portal (mesma regra do banco, que ainda grava
+/** O aviso vira push? Só os tipos do Portal do Hero e só com link do portal (mesma regra do banco, que ainda grava
  *  /creator/escritorio/...). */
 export function inboxKindPushes(kind: string, link: string): boolean {
   return (PUSH_KINDS as readonly string[]).includes(kind) && isHeroPortalLink(link);
@@ -157,7 +157,7 @@ export function inboxParams(raw: unknown): Record<string, string> {
 export function safeInboxLink(link: unknown): string {
   if (!(typeof link === "string" && /^\/[A-Za-z0-9/_?=&%#.-]*$/.test(link) && !link.startsWith("//"))) return "/";
   // 0097: o banco ainda grava os links do escritório antigo (/creator/escritorio/...); o sino e o e-mail já mostram o
-  // endereço do Portal do Herói (o middleware também redireciona, para links já enviados)
+  // endereço do Portal do Hero (o middleware também redireciona, para links já enviados)
   const cut = link.search(/[?#]/);
   const path = cut === -1 ? link : link.slice(0, cut);
   const target = legacyHeroPortalTarget(path);

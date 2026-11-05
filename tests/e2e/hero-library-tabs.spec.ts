@@ -2,9 +2,9 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { loginAs } from "./helpers/login";
 
-// Atalhos da página do herói (0050): "Rotina" virou Dia a dia e "Receitas" virou Alimentação (com
+// Atalhos da página do Hero (0050): "Rotina" virou Dia a dia e "Receitas" virou Alimentação (com
 // os endereços novos e 308 dos antigos); rótulo/ícone/ordem/visibilidade configurados pelo admin por
-// categoria e por herói. Só leitura: nada é gravado. Sem a 0050 no banco a página usa os padrões e
+// categoria e por Hero. Só leitura: nada é gravado. Sem a 0050 no banco a página usa os padrões e
 // os testes das telas do admin que dependem dela se pulam.
 
 const tiles = (page: Page) => page.getByTestId("hero-libraries").getByRole("link");
@@ -27,7 +27,7 @@ test.describe("atalhos renomeados", () => {
     await expect(page.getByTestId("library-grid").locator("> a").first()).toBeVisible();
   });
 
-  test("Alimentação continua em todo herói (sempre visível, como Receitas)", async ({ page }) => {
+  test("Alimentação continua em todo Hero (sempre visível, como Receitas)", async ({ page }) => {
     await page.goto("/personalities/neymar");
     await expect(tiles(page).filter({ hasText: "Alimentação" })).toBeVisible();
     await page.goto("/personalities/erick-jacquin/alimentacao");
@@ -61,7 +61,7 @@ test.describe("admin: atalhos (só leitura)", () => {
   test("/admin/hero-categories tem o editor de atalhos por categoria (com a 0050)", async ({ page }) => {
     await loginAs(page, "admin");
     await page.goto("/admin/hero-categories");
-    await expect(page.getByRole("heading", { level: 2, name: "Atalhos da página do herói" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Atalhos da página do Hero" })).toBeVisible();
     const editor = page.getByTestId("category-tabs-editor");
     const notice = page.getByTestId("category-tabs-unavailable");
     await expect(editor.or(notice)).toBeVisible();
@@ -88,12 +88,12 @@ test.describe("admin: atalhos (só leitura)", () => {
     expect(serious, JSON.stringify(serious.map((v) => v.id))).toEqual([]);
   });
 
-  test("a tela do herói mostra 'Atalhos deste herói' com a categoria de origem (com a 0050)", async ({ page }) => {
+  test("a tela do Hero mostra 'Atalhos deste Hero' com a categoria de origem (com a 0050)", async ({ page }) => {
     await loginAs(page, "admin");
     await page.goto("/admin/herois");
     await page.locator('main a[href^="/admin/herois/"]').filter({ hasText: "Anitta" }).first().click();
     await expect(page.getByRole("heading", { level: 1, name: "Anitta" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Atalhos deste herói" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Atalhos deste Hero" })).toBeVisible();
     const editor = page.getByTestId("hero-tabs-editor");
     const notice = page.getByTestId("hero-tabs-unavailable");
     await expect(editor.or(notice)).toBeVisible();

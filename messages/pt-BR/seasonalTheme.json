@@ -56,7 +56,7 @@
     "defaultIdentity": "Identidade padrão",
     "area": {
       "app": "App",
-      "portals": "Portais (herói, agência, marca)",
+      "portals": "Portais (Hero, agência, marca)",
       "institutional": "Entrada e página institucional"
     },
     "timeline": "Próximos {days} dias",
@@ -122,7 +122,7 @@
     "areas": "Onde aparece",
     "area": {
       "app": "App (Hero, Social, Explorar, Comprar, Perfil)",
-      "portals": "Portais do herói, da agência e da marca",
+      "portals": "Portais do Hero, da agência e da marca",
       "institutional": "Entrada (login, cadastro) e página institucional"
     },
     "areasNever": "Admin, carrinho, checkout, planos, pagamentos e assinaturas nunca recebem tema.",

@@ -7,7 +7,7 @@ import { useToast } from "@/components/ui";
 import { setClientInstallmentAction } from "@/lib/finance/plan-actions";
 import { cn } from "@/lib/utils";
 
-// Parcela do herói-cliente recebida / desfazer (Adm). O banco quita o lançamento quando todas estão recebidas.
+// Parcela do Hero-cliente recebida / desfazer (Adm). O banco quita o lançamento quando todas estão recebidas.
 export function ClientInstallmentButton({ installmentId, paid }: { installmentId: string; paid: boolean }) {
   const t = useTranslations("payments.client");
   const { toast } = useToast();

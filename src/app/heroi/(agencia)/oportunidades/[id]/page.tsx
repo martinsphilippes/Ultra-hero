@@ -115,7 +115,7 @@ export default async function OpportunityPage({ params, searchParams }: Props) {
   const inProduction = Boolean(execution && (execution.stage === "production" || execution.stage === "closed"));
   const prefillUrl = publishedSlug ? publishedContentUrl(origin, publishedSlug) : null;
   const canSendPublished = Boolean(prefillUrl) && inProduction && !closed && deliverablesAwaitingLink(myDeliverables).length > 0;
-  // "Próximo passo" (04/11): a mesma regra da agência e da marca, com o que o herói lê (o aceite dele e o da marca)
+  // "Próximo passo" (04/11): a mesma regra da agência e da marca, com o que o Hero lê (o aceite dele e o da marca)
   const myTerms = flowTerms(execution?.terms);
   const fallbackStage = stageFromOpportunity(o.deal.status);
   const flow: FlowInput = {

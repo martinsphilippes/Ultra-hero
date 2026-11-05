@@ -15,7 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 import { clippingHref, guessRoomMime, ROOM_MAX_BYTES, ROOM_PORTALS, roomHref, type RoomPortal } from "./vocab";
 
 // Sala do projeto (0110): o servidor só valida a forma e lê IP/navegador da requisição (NDA); as RPCs conferem o lado
-// (agência, staff externo, herói, marca), o NDA, a situação da sala e o papel. Erros pelo código, traduzidos em
+// (agência, staff externo, Hero, marca), o NDA, a situação da sala e o papel. Erros pelo código, traduzidos em
 // agency.errors.
 
 export type RoomResult = { ok: true; message: string; id?: string; path?: string; url?: string; link?: string; emailed?: boolean; dealId?: string } | { ok: false; error: string };

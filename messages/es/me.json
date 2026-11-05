@@ -92,18 +92,18 @@
     "roles": {
       "label": "Roles",
       "consumer": "Consumidor",
-      "creator": "Héroe",
+      "creator": "Hero",
       "seller": "Proveedor",
       "admin": "Admin",
       "professional": "Profesional",
       "agency": "Agencia",
       "brand": "Marca",
-      "talent": "Héroe"
+      "talent": "Hero"
     },
     "portals": {
       "title": "Tus portales",
       "admin": "Administración",
-      "creator": "Portal del Héroe",
+      "creator": "Portal del Hero",
       "seller": "Portal del proveedor",
       "hints": {
         "creator": "Posts, contenidos, agenda, finanzas y el casting de la agencia",
@@ -135,12 +135,12 @@
     },
     "photo": {
       "title": "Tu foto",
-      "hint": "Toma una foto con la cámara o elige una de la galería. Aparece en tu avatar y, si eres héroe, en tu página pública.",
+      "hint": "Toma una foto con la cámara o elige una de la galería. Aparece en tu avatar y, si eres Hero, en tu página pública.",
       "take": "Tomar foto",
       "gallery": "Elegir de la galería",
       "remove": "Quitar foto",
       "removeConfirmTitle": "¿Quitar tu foto?",
-      "removeConfirmBody": "La foto sale de tu avatar y, si eres héroe, de tu página pública. Puedes subir otra cuando quieras.",
+      "removeConfirmBody": "La foto sale de tu avatar y, si eres Hero, de tu página pública. Puedes subir otra cuando quieras.",
       "removeConfirm": "Quitar",
       "cancel": "Cancelar",
       "previewTitle": "Vista previa de la foto",
@@ -175,7 +175,7 @@
         "description": "Temas que guían las recomendaciones."
       },
       "heroes": {
-        "title": "Héroes que sigo",
+        "title": "Heros que sigo",
         "description": "A quién sigues y tu Hero de comparación."
       },
       "favorites": {
@@ -242,11 +242,11 @@
       "pending": "Pendiente de aprobación",
       "current": "En uso",
       "publicPage": "Ver página pública",
-      "workOn": "Trabajar en este héroe",
-      "workOnNamed": "Trabajar en el héroe {name}",
-      "error": "No se pudo cambiar de héroe. Inténtalo de nuevo.",
+      "workOn": "Trabajar en este Hero",
+      "workOnNamed": "Trabajar en el Hero {name}",
+      "error": "No se pudo cambiar de Hero. Inténtalo de nuevo.",
       "casting": "Casting de la agencia {agency}",
-      "hint": "Nuevo post, Nuevo contenido y Mis contenidos usan el héroe marcado como \"En uso\"."
+      "hint": "Nuevo post, Nuevo contenido y Mis contenidos usan el Hero marcado como \"En uso\"."
     }
   },
   "today": {
@@ -743,8 +743,8 @@
         "description": "Un aviso cuando tu racha de días esté a punto de reiniciarse."
       },
       "hero_posts": {
-        "label": "Publicaciones de héroes favoritos",
-        "description": "Un aviso cuando un héroe que marcaste como favorito publica (como máximo uno por héroe al día)."
+        "label": "Publicaciones de Heros favoritos",
+        "description": "Un aviso cuando un Hero que marcaste como favorito publica (como máximo uno por Hero al día)."
       },
       "achievements": {
         "label": "Logros y programas completados",
@@ -759,7 +759,7 @@
         "description": "Un aviso cuando alguien supera tu puja (como máximo uno por artículo cada 2 minutos)."
       },
       "office_updates": {
-        "label": "Avisos del Portal del Héroe",
+        "label": "Avisos del Portal del Hero",
         "description": "Oportunidades, tareas y entregas de la agencia que cuida tu carrera."
       }
     },

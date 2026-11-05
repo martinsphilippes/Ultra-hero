@@ -5,8 +5,8 @@ import { isRecipeDraft, sameDraft, type RecipeDraft } from "./draft";
 export const DRAFT_STORAGE_VERSION = 1;
 
 /**
- * Chave da cópia local, separada por herói: num aparelho compartilhado (ou na troca de conta demo)
- * a receita nova de um herói não aparece como "Recuperar" para outro.
+ * Chave da cópia local, separada por Hero: num aparelho compartilhado (ou na troca de conta demo)
+ * a receita nova de um Hero não aparece como "Recuperar" para outro.
  */
 export function draftStorageKey(creatorId: string, contentId: string): string {
   return `uh-recipe-draft:${creatorId}:${contentId}`;

@@ -15,7 +15,7 @@ import {
   type FlowViewer,
 } from "@/lib/deals/next-step";
 
-// "Próximo passo" (04/11): a mesma regra para agência, marca e herói, do pedido da marca até a campanha concluída.
+// "Próximo passo" (04/11): a mesma regra para agência, marca e Hero, do pedido da marca até a campanha concluída.
 const hero = (over: Partial<FlowHero> = {}): FlowHero => ({ dealTalentId: "dt1", name: "Ana", status: "proposed", respondBy: null, termsAccepted: null, feeReady: true, ...over });
 const deliv = (over: Partial<FlowDeliverable> = {}): FlowDeliverable => ({
   id: "d1", dealTalentId: "dt1", heroName: "Ana", title: "Post mm", kind: "post", status: "in_production", dueAt: "2026-11-04T15:00:00Z", publishAt: null, ...over,
@@ -44,7 +44,7 @@ describe("proposta (0106) e elenco", () => {
     expect(nextStep(x, brandStaff)).toMatchObject({ mode: "waiting", code: "waitOwnerCounter" });
     expect(nextStep(x, adm)).toMatchObject({ mode: "waiting", code: "waitBrandOffer" });
   });
-  it("acordo fechado: sem elenco → montar; consultado → aguardar heróis; interessado → confirmar (Adm)", () => {
+  it("acordo fechado: sem elenco → montar; consultado → aguardar Heros; interessado → confirmar (Adm)", () => {
     const agreed = { open: false, turn: null, agreed: true } as const;
     expect(nextStep(input({ offer: agreed }), adm)).toMatchObject({ code: "buildCast", target: "talents" });
     const consulted = input({ heroes: [hero({ status: "consulted", respondBy: "2026-11-06T12:00:00Z" }), hero({ dealTalentId: "dt2", name: "Bia", status: "consulted", respondBy: "2026-11-05T12:00:00Z" })] });
@@ -55,7 +55,7 @@ describe("proposta (0106) e elenco", () => {
     expect(nextStep(input({ heroes: [hero({ status: "interested", feeReady: false })] }), adm)).toMatchObject({ code: "setFees", params: { names: ["Ana"] } });
     expect(nextStep(input({ heroes: [hero({ status: "talk_requested" })] }), adm)).toMatchObject({ code: "talkToHero", params: { hero: "Ana" } });
   });
-  it("herói: convite → responder; interessado → aguarda a agência; recusou → fora", () => {
+  it("Hero: convite → responder; interessado → aguarda a agência; recusou → fora", () => {
     const x = input({ heroes: [hero({ status: "consulted", respondBy: "2026-11-06T12:00:00Z" })] });
     expect(nextStep(x, me("consulted"))).toMatchObject({ mode: "action", code: "respondInvite", target: "respond", deadline: "2026-11-06T12:00:00Z" });
     expect(nextStep(x, me("interested"))).toMatchObject({ mode: "waiting", code: "waitProposalHero" });
@@ -79,7 +79,7 @@ describe("termos e contratação", () => {
     expect(nextStep(x, adm)).toMatchObject({ code: "sendTerms", target: "terms" });
     expect(nextStep(x, staff)).toMatchObject({ code: "waitManagerTerms" });
   });
-  it("termos enviados: marca (dono) e herói aceitam em paralelo; a agência vê quem falta", () => {
+  it("termos enviados: marca (dono) e Hero aceitam em paralelo; a agência vê quem falta", () => {
     const x = input({ ...base, terms: { status: "sent", brandAccepted: false, validUntil: "2026-11-10" } });
     expect(nextStep(x, owner)).toMatchObject({ mode: "action", code: "acceptTerms", target: "terms", deadline: "2026-11-10" });
     expect(nextStep(x, brandStaff)).toMatchObject({ mode: "waiting", code: "waitOwnerTerms" });
@@ -90,7 +90,7 @@ describe("termos e contratação", () => {
     const heroDone = input({ ...base, heroes: [hero({ termsAccepted: true })], terms: { status: "sent", brandAccepted: false, validUntil: null } });
     expect(nextStep(heroDone, me())).toMatchObject({ code: "waitBrandTerms" });
   });
-  it("todos aceitaram: gestor confirma a contratação; marca e herói aguardam", () => {
+  it("todos aceitaram: gestor confirma a contratação; marca e Hero aguardam", () => {
     const x = input({ ...base, heroes: [hero({ termsAccepted: true })], terms: { status: "sent", brandAccepted: true, validUntil: null } });
     expect(nextStep(x, adm)).toMatchObject({ code: "confirmContract", target: "terms" });
     expect(nextStep(x, staff)).toMatchObject({ code: "waitManagerContract" });
@@ -104,7 +104,7 @@ describe("termos e contratação", () => {
 
 describe("produção, aprovação, publicação", () => {
   const prod = (deliverables: FlowDeliverable[]) => input({ stage: "production", contractConfirmed: true, heroes: [hero({ status: "contracted", termsAccepted: true })], terms: { status: "accepted", brandAccepted: true, validUntil: null }, deliverables });
-  it("em criação: herói cria (atalho 'Criar para esta campanha'); marca e agência aguardam o herói até o prazo", () => {
+  it("em criação: Hero cria (atalho 'Criar para esta campanha'); marca e agência aguardam o Hero até o prazo", () => {
     const x = prod([deliv()]);
     expect(nextStep(x, me())).toMatchObject({ mode: "action", code: "createDeliverable", target: "create", deadline: "2026-11-04T15:00:00Z", params: { item: "Post mm" } });
     expect(nextStep(x, me("contracted", false))).toMatchObject({ target: "deliverables" });
@@ -112,14 +112,14 @@ describe("produção, aprovação, publicação", () => {
     expect(nextStep(x, adm)).toMatchObject({ mode: "waiting", code: "waitHeroDeliverable" });
     expect(flowStep(x)).toBe("production");
   });
-  it("enviado: marca aprova; herói aguarda a marca", () => {
+  it("enviado: marca aprova; Hero aguarda a marca", () => {
     const x = prod([deliv({ status: "submitted", publishAt: "2026-11-08T12:00:00Z" })]);
     expect(nextStep(x, owner)).toMatchObject({ code: "approveDeliverable", target: "deliverables", deadline: "2026-11-08T12:00:00Z" });
     expect(nextStep(x, brandStaff)).toMatchObject({ code: "approveDeliverable" });
     expect(nextStep(x, me())).toMatchObject({ mode: "waiting", code: "waitBrandApproval" });
     expect(flowStep(x)).toBe("approval");
   });
-  it("ajuste, aprovado, publicado, comprovado: herói ajusta/publica/comprova; agência conclui", () => {
+  it("ajuste, aprovado, publicado, comprovado: Hero ajusta/publica/comprova; agência conclui", () => {
     expect(nextStep(prod([deliv({ status: "changes_requested" })]), me())).toMatchObject({ code: "fixDeliverable" });
     expect(nextStep(prod([deliv({ status: "approved", publishAt: "2026-11-08T12:00:00Z" })]), me())).toMatchObject({ code: "publishDeliverable", deadline: "2026-11-08T12:00:00Z" });
     expect(nextStep(prod([deliv({ status: "published" })]), me())).toMatchObject({ code: "proofDeliverable", deadline: null });
@@ -129,7 +129,7 @@ describe("produção, aprovação, publicação", () => {
     expect(nextStep(proof, me())).toMatchObject({ code: "waitAgencyClose" });
     expect(flowStep(proof)).toBe("publication");
   });
-  it("prazo mais próximo primeiro; herói vê só as dele", () => {
+  it("prazo mais próximo primeiro; Hero vê só as dele", () => {
     const x = prod([deliv({ id: "a", title: "Longe", dueAt: "2026-11-20T12:00:00Z" }), deliv({ id: "b", title: "Perto", dueAt: "2026-11-05T12:00:00Z" }), deliv({ id: "c", dealTalentId: "dt2", heroName: "Bia", title: "Outra", dueAt: "2026-11-01T12:00:00Z" })]);
     expect(nextStep(x, me())).toMatchObject({ params: { item: "Perto" } });
     expect(nextStep(x, owner)).toMatchObject({ params: { item: "Outra", hero: "Bia" } });

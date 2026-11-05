@@ -7,7 +7,7 @@ import { LIBRARY_ICONS } from "./library-icons";
 
 type Props = { slug: string; tiles: LibraryTile[] };
 
-// Atalhos do herói no formato dos destaques do Instagram: círculos com ícone e rótulo numa faixa
+// Atalhos do Hero no formato dos destaques do Instagram: círculos com ícone e rótulo numa faixa
 // que rola na horizontal. Rótulo, ícone e ordem vêm da configuração do admin (0050); a contagem
 // fica no nome acessível ("Alimentação, 8 itens"). A faixa é `relative` para que o sr-only (absolute) da
 // contagem fique preso a ela: sem isso o último atalho fora da tela fazia a página rolar na horizontal.

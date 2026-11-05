@@ -1,4 +1,4 @@
-// Foto no composer de post do herói (0043): constantes compartilhadas por cliente, servidor e testes.
+// Foto no composer de post do Hero (0043): constantes compartilhadas por cliente, servidor e testes.
 
 export const POST_PHOTO_BUCKET = "post-photos";
 /** Lado maior gerado no aparelho (a foto não é recortada). */
@@ -12,10 +12,10 @@ export const POST_PHOTO_MIN_EDGE = 64;
 export const POST_PHOTO_MAX_UPLOAD_BYTES = 3_670_016; // 3,5 MiB
 /** Arquivo escolhido na câmera/galeria, antes da redução (foto de celular costuma ter 3–12 MB). */
 export const POST_PHOTO_MAX_SOURCE_BYTES = 30 * 1024 * 1024;
-/** Cota por herói por hora (post_photo_upload_claim repete o número). */
+/** Cota por Hero por hora (post_photo_upload_claim repete o número). */
 export const POST_PHOTO_UPLOADS_PER_HOUR = 30;
 /** Kill switch em app_settings (exposto por public_settings). */
 export const POST_PHOTO_SETTING = "post_photos.uploads_enabled";
 
-/** Estado do envio de foto para a tela (como a capa do herói). */
+/** Estado do envio de foto para a tela (como a capa do Hero). */
 export type PostPhotoState = "ready" | "disabled" | "not_configured";

@@ -140,7 +140,7 @@ test.describe("lista de compras (só leitura)", () => {
   });
 });
 
-test.describe("produto correspondente no editor (admin pelo herói da conta demo, 0045)", () => {
+test.describe("produto correspondente no editor (admin pelo Hero da conta demo, 0045)", () => {
   test("ingrediente gravado recebe a sugestão de produto (pendente de validação), retirada em seguida; o rascunho é excluído", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "mobile", "grava um rascunho no remoto: roda só no mobile");
     test.setTimeout(180_000);

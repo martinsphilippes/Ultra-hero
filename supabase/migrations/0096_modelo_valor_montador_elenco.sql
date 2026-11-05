@@ -1,36 +1,36 @@
 -- =============================================================================
--- Groscove Ultra · 0096 · Modelo de valor (fixo x por herói) e montador de elenco
+-- Groscove Ultra · 0096 · Modelo de valor (fixo x por Hero) e montador de elenco
 -- Pedido do responsável (03/11). Cenário S103. Idempotente; nenhuma função nova para o visitante (S14 segue 18). As RPCs
 -- recriadas mantêm a MESMA assinatura, exceto brand_call_reply / agency_brand_call_reply (ganham 2 parâmetros opcionais
 -- no fim; a assinatura antiga é removida, sem sobrecarga). Tudo é registro SIMULADO: nada cobra nem move dinheiro.
 --
 -- A) Modelo de valor onde a marca ou a agência informa o valor oferecido
---   • value_model = 'fixo' (padrão): o valor é o TOTAL do evento/campanha e se divide entre os heróis indicados.
---     value_model = 'por_heroi': o valor é POR HERÓI e max_heroes (1 a 50) é obrigatório; o teto de investimento é
---     valor × máximo (value_ceiling_cents). Por herói exige valor > 0 (value_per_hero_required) e máximo
+--   • value_model = 'fixo' (padrão): o valor é o TOTAL do evento/campanha e se divide entre os Heros indicados.
+--     value_model = 'por_heroi': o valor é POR HERO e max_heroes (1 a 50) é obrigatório; o teto de investimento é
+--     valor × máximo (value_ceiling_cents). Por Hero exige valor > 0 (value_per_hero_required) e máximo
 --     (max_heroes_required); fixo nunca guarda máximo.
 --   • Onde: campaign_request_budgets (campanha da marca; "Valor oferecido" = budget_max_cents), brand_calls (chamada:
---     budget_cents + budget_display, que por herói nunca é 'open'), brand_call_proposals (valor da agência), rodadas
+--     budget_cents + budget_display, que por Hero nunca é 'open'), brand_call_proposals (valor da agência), rodadas
 --     (brand_call_rounds: contraproposta pode mudar modelo, valor e máximo) e o acordo (agreed_value_model/max: congela
 --     junto com agreed_cents). A campanha criada do acordo HERDA modelo/máximo (brand_call_agree).
 --     DECISÃO: as cotas de patrocínio (0088) ficam como estão (valor total por cota; o campo nasce 'fixo').
 --     DECISÃO: o pedido de alteração de verba (0090) continua mudando só o VALOR; modelo e máximo só se definem no
 --     rascunho (brand_request_save recusa depois de enviado, como o valor) ou na negociação da chamada.
---   • O banco recusa passar do máximo: gatilho adiado em deal_talents (conta heróis ativos = fora removed/declined; é
+--   • O banco recusa passar do máximo: gatilho adiado em deal_talents (conta Heros ativos = fora removed/declined; é
 --     adiado para a troca de elenco numa transação só, e agency_deal_suggest_heroes também confere ao fim) e gatilho
---     imediato nos heróis da proposta (brand_call_proposal_talents). Acordar com mais heróis que o máximo: max_heroes.
+--     imediato nos Heros da proposta (brand_call_proposal_talents). Acordar com mais Heros que o máximo: max_heroes.
 --   • Privacidade: a marca lê modelo/máximo/valor da própria campanha e das propostas (como já lia). A agência lê modelo
---     e máximo (gestor+), mas valores só o Adm. O herói nunca lê (talent_brand_calls remove value_model/max_heroes).
+--     e máximo (gestor+), mas valores só o Adm. O Hero nunca lê (talent_brand_calls remove value_model/max_heroes).
 --
 -- B) Montador de elenco (agência, gestor+): RPC de leitura agency_cast_inputs devolve só o necessário para calcular as
 --   combinações no app (lógica pura em src/lib/casting): números declarados das redes com a data, público, segmentos,
---   disponibilidade nas datas, notas, consentimento e o CACHÊ por herói (o do negócio, senão o último da agência —
+--   disponibilidade nas datas, notas, consentimento e o CACHÊ por Hero (o do negócio, senão o último da agência —
 --   fee_source). Cachês em R$ só para o Adm. DECISÃO: o gestor recebe cost_bp = cachê ÷ orçamento de cachês em pontos-base
 --   (sem moeda), suficiente para o cálculo e para mostrar "usa 82% do orçamento", sem revelar nenhum valor em reais.
 --   O orçamento de cachês é o valor total ÷ (1 + taxa da agência), porque V = F + C (0072): a comissão vai por cima.
---   agency_deal_cast_apply (gestor+) usa o elenco: sugere os heróis (agency_deal_suggest_heroes) e, só o Adm, grava a
+--   agency_deal_cast_apply (gestor+) usa o elenco: sugere os Heros (agency_deal_suggest_heroes) e, só o Adm, grava a
 --   repartição como cachês (agency_fee_set); a soma nunca passa do orçamento de cachês (fee_over_budget).
---   deal_value_terms: modelo/máximo/heróis ativos para a tela do negócio (valores só o Adm).
+--   deal_value_terms: modelo/máximo/Heros ativos para a tela do negócio (valores só o Adm).
 -- =============================================================================
 
 -- 1) colunas e regras ------------------------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ end $$;
 revoke execute on function public.value_terms_check(text, bigint, int) from public, anon, authenticated;
 grant execute on function public.value_terms_check(text, bigint, int) to service_role;
 
--- teto de investimento: por herói = valor × máximo; fixo = o próprio valor
+-- teto de investimento: por Hero = valor × máximo; fixo = o próprio valor
 create or replace function public.value_ceiling_cents(p_model text, p_amount bigint, p_max int)
 returns bigint language sql immutable set search_path = '' as $$
   select case when p_amount is null then null when p_model = 'por_heroi' and p_max is not null then p_amount * p_max else p_amount end
@@ -97,7 +97,7 @@ $$;
 revoke execute on function public.value_ceiling_cents(text, bigint, int) from public, anon, authenticated;
 grant execute on function public.value_ceiling_cents(text, bigint, int) to service_role;
 
--- 2) máximo de heróis no banco ---------------------------------------------------------------------------------------
+-- 2) máximo de Heros no banco ---------------------------------------------------------------------------------------
 create or replace function public.deal_max_heroes_check(p_deal uuid)
 returns void language plpgsql security definer set search_path = '' as $$
 declare v_max int;
@@ -182,7 +182,7 @@ begin
     select coalesce(array_agg(x), '{}'::text[]) into v_networks from jsonb_array_elements_text(coalesce(p_data -> 'networks', '[]'::jsonb)) x;
   exception when others then raise exception 'invalid_input' using errcode = '22023';
   end;
-  -- 0096: modelo de valor (fixo | por_heroi). Sem a chave, vale o já gravado. Por herói: valor > 0 e máximo de heróis (1 a 50).
+  -- 0096: modelo de valor (fixo | por_heroi). Sem a chave, vale o já gravado. Por Hero: valor > 0 e máximo de Heros (1 a 50).
   v_has_budget := p_data ? 'budget_min_cents' or p_data ? 'budget_max_cents' or p_data ? 'budget_note' or p_data ? 'value_model' or p_data ? 'max_heroes';
   v_model := coalesce(nullif(btrim(coalesce(p_data ->> 'value_model', '')), ''),
                       (select b.value_model from public.campaign_request_budgets b where b.request_id = p_id), 'fixo');
@@ -291,7 +291,7 @@ begin
   v_deliv := coalesce(p_data -> 'deliverables', '[]'::jsonb);
   v_audience := coalesce(nullif(p_data ->> 'audience', ''), 'my_agencies');
   v_display := coalesce(nullif(p_data ->> 'budget_display', ''), case when v_budget is null then 'open' else 'exact' end);
-  -- 0096: modelo de valor. Por herói: o valor é por herói (nunca 'aberto') e o máximo é obrigatório.
+  -- 0096: modelo de valor. Por Hero: o valor é por Hero (nunca 'aberto') e o máximo é obrigatório.
   v_model := coalesce(nullif(btrim(coalesce(p_data ->> 'value_model', '')), ''), 'fixo');
   if v_model = 'por_heroi' then
     perform public.value_terms_check(v_model, v_budget, v_maxh);
@@ -387,7 +387,7 @@ begin
     v_all := v_all || (e -> 'deliverables');
   end loop;
   select * into p from public.brand_call_proposals x where x.call_id = p_call and x.agency_id = p_agency and x.status = 'draft' for update;
-  -- 0096: modelo de valor da proposta (só o Adm muda; o gestor mantém o que já estava). Por herói precisa do máximo e cabe no máximo.
+  -- 0096: modelo de valor da proposta (só o Adm muda; o gestor mantém o que já estava). Por Hero precisa do máximo e cabe no máximo.
   if v_admin then
     v_model := coalesce(nullif(btrim(coalesce(p_data ->> 'value_model', '')), ''), 'fixo');
     if v_model not in ('fixo', 'por_heroi') then raise exception 'invalid_input' using errcode = '22023'; end if;
@@ -501,7 +501,7 @@ begin
   update public.brand_call_proposals set status = 'agreed', awaiting = null, agreed_cents = amount_cents, agreed_value_model = value_model, agreed_max_heroes = max_heroes, agreed_deliverables = deliverables,
     agreed_deliver_by = deliver_by, agreed_side = p_side, agreed_at = now(), sent_at = coalesce(sent_at, now())
   where id = p.id returning * into p;
-  -- 0096: não se acorda com mais heróis que o máximo da proposta
+  -- 0096: não se acorda com mais Heros que o máximo da proposta
   if p.value_model = 'por_heroi' and (select count(*) from public.brand_call_proposal_talents t where t.proposal_id = p.id) > p.max_heroes then
     raise exception 'max_heroes' using errcode = 'P0001';
   end if;
@@ -753,7 +753,7 @@ begin
   end loop;
 end $$;
 
--- 11) sugerir heróis (0093, MESMA assinatura): confere o máximo ao fim ------------------------------------------------------
+-- 11) sugerir Heros (0093, MESMA assinatura): confere o máximo ao fim ------------------------------------------------------
 create or replace function public.agency_deal_suggest_heroes(p_deal uuid, p_items jsonb)
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare
@@ -788,7 +788,7 @@ begin
 
     elsif v_kind = 'hero' then
       begin v_creator := (e ->> 'creator_id')::uuid; exception when others then raise exception 'invalid_input' using errcode = '22023'; end;
-      -- só herói ativo (suspenso e pendente não existem para a agência)
+      -- só Hero ativo (suspenso e pendente não existem para a agência)
       select c.id, c.name, c.user_id into v_hero from public.creator_profiles c where c.id = v_creator and c.status = 'active';
       if v_hero.id is null then raise exception 'not_found' using errcode = 'P0002'; end if;
       perform pg_advisory_xact_lock(hashtext('hero_casting:' || v_creator::text));
@@ -796,10 +796,10 @@ begin
       if v_owner is not null then perform pg_advisory_xact_lock(hashtext('talent_person:' || v_owner::text)); end if;
       select t.id into v_talent from public.talent_profiles t where t.creator_id = v_creator and t.agency_id = v_agency and t.archived_at is null;
       if v_talent is null then
-        -- D6: nenhum herói real em agência inventada
+        -- D6: nenhum Hero real em agência inventada
         if v_demo then raise exception 'demo_locked' using errcode = 'P0001'; end if;
         if exists (select 1 from public.talent_profiles t where t.creator_id = v_creator) then raise exception 'creator_already_in_casting' using errcode = 'P0001'; end if;
-        -- D10: a pessoa dona do herói já tem ficha (login próprio sem página ou outro herói dela num casting)
+        -- D10: a pessoa dona do Hero já tem ficha (login próprio sem página ou outro Hero dela num casting)
         if v_owner is not null and exists (
              select 1 from public.talent_profiles t left join public.creator_profiles c2 on c2.id = t.creator_id
              where t.user_id = v_owner or c2.user_id = v_owner) then
@@ -877,7 +877,7 @@ begin
   perform public.audit_log('deal.shortlist', 'deal', p_deal::text, null,
     jsonb_build_object('agency_id', v_agency, 'talents', to_jsonb(v_ids), 'created_talents', v_created), null,
     public.talent_audit_actor('agency', v_agency));
-  -- 0096: o máximo de heróis (modelo por herói) vale ao fim, depois que as sugestões velhas saíram
+  -- 0096: o máximo de Heros (modelo por Hero) vale ao fim, depois que as sugestões velhas saíram
   perform public.deal_max_heroes_check(p_deal);
   return jsonb_build_object('ids', to_jsonb(v_ids), 'created', v_created, 'revived', v_revived);
 end $$;
@@ -994,7 +994,7 @@ end $$;
 revoke execute on function public.agency_cast_inputs(uuid, uuid, uuid) from public, anon;
 grant execute on function public.agency_cast_inputs(uuid, uuid, uuid) to authenticated, service_role;
 
--- 14) usar o elenco montado: sugere os heróis e (só o Adm) grava a repartição como cachês ------------------------------------
+-- 14) usar o elenco montado: sugere os Heros e (só o Adm) grava a repartição como cachês ------------------------------------
 -- p_items: [{talent_id, fee_cents?}]. Gestor+ sugere; fee_cents só do Adm (forbidden). No modelo fixo a soma dos cachês não
 -- passa do orçamento de cachês (valor total ÷ (1 + taxa)): fee_over_budget. Tudo numa transação.
 create or replace function public.agency_deal_cast_apply(p_deal uuid, p_items jsonb)
@@ -1046,10 +1046,10 @@ end $$;
 revoke execute on function public.agency_deal_cast_apply(uuid, jsonb) from public, anon;
 grant execute on function public.agency_deal_cast_apply(uuid, jsonb) to authenticated, service_role;
 
--- 15) pedido de alteração de verba (0090) numa campanha por herói ------------------------------------------------------------
+-- 15) pedido de alteração de verba (0090) numa campanha por Hero ------------------------------------------------------------
 -- O pedido da 0090 informa o valor TOTAL da verba da campanha e a 0090 grava esse número em budget_max_cents. Na campanha por
--- herói esse campo é o valor POR HERÓI, então, depois que a campanha foi enviada (status <> 'draft'), a atualização que muda
--- budget_max_cents é lida como o novo total e vira total ÷ máximo de heróis (nunca menos de 1 centavo). Rascunho não passa por aqui.
+-- Hero esse campo é o valor POR HERO, então, depois que a campanha foi enviada (status <> 'draft'), a atualização que muda
+-- budget_max_cents é lida como o novo total e vira total ÷ máximo de Heros (nunca menos de 1 centavo). Rascunho não passa por aqui.
 create or replace function public.campaign_request_budgets_value_trg()
 returns trigger language plpgsql security definer set search_path = '' as $$
 begin

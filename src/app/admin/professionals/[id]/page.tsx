@@ -31,7 +31,7 @@ function one(v: string | string[] | undefined) {
 }
 
 // Profissional no admin (0058): abas Visão geral (aprovação, conta), Perfil, Serviços (preços,
-// desativar), Sugeridos (herói/receita/programa) e Pedidos (tempo de resposta, cancelar com recado).
+// desativar), Sugeridos (Hero/receita/programa) e Pedidos (tempo de resposta, cancelar com recado).
 export default async function AdminProfessionalPage({ params, searchParams }: Props) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
   if (!isUuid(id)) notFound();

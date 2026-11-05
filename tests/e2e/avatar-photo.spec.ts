@@ -4,12 +4,12 @@ import { expect, test, type Page } from "@playwright/test";
 import { loginAs } from "./helpers/login";
 import { readOwnAvatars, restoreOwnAvatars, type OwnAvatars } from "./helpers/supabase";
 
-// Foto de perfil pelo celular (0031) com a conta de demonstração "Herói / Chef".
-// Herói ativo: um avatar só, no editor "Editar perfil" do /profile (a foto vale no app e na página
+// Foto de perfil pelo celular (0031) com a conta de demonstração "Hero / Chef".
+// Hero ativo: um avatar só, no editor "Editar perfil" do /profile (a foto vale no app e na página
 // pública); conta comum: o avatar fica em Dados. Só foto real: nenhuma ilustração; sem foto, as iniciais.
 // Sem flag: só telas e estados (botões grandes, câmera frontal, aviso quando o envio não está
 // disponível, axe). Com E2E_AVATAR_REAL=1 (produção, com a 0031 e o service role): envia a foto de
-// verdade, confere o cabeçalho e o perfil público do herói e remove (os dois lados voltam às
+// verdade, confere o cabeçalho e o perfil público do Hero e remove (os dois lados voltam às
 // iniciais). O banco dos E2E é o remoto: o fim do teste devolve os DOIS avatares ao que eram, mesmo
 // quando o teste falha no meio.
 
@@ -37,7 +37,7 @@ async function avatarSrc(page: Page, scope: string): Promise<string> {
 }
 
 test.describe("foto de perfil: telas", () => {
-  test("/profile do herói → Editar perfil: Tirar foto (câmera frontal) e Escolher da galeria, alvos grandes e sem violações sérias", async ({ page }) => {
+  test("/profile do Hero → Editar perfil: Tirar foto (câmera frontal) e Escolher da galeria, alvos grandes e sem violações sérias", async ({ page }) => {
     await loginAsHero(page);
     const editor = await openHeroEditor(page);
     const picker = editor.getByTestId("avatar-photo");
@@ -118,7 +118,7 @@ test.describe("foto de perfil: telas", () => {
     expect(alertAfterClose).toBe("Esse arquivo não é uma imagem. Escolha uma foto JPG, PNG ou WebP.");
   });
 
-  test("/profile do herói: um avatar só na página (no editor), Dados sem avatar", async ({ page }) => {
+  test("/profile do Hero: um avatar só na página (no editor), Dados sem avatar", async ({ page }) => {
     await loginAsHero(page);
     const editor = await openHeroEditor(page);
     await expect(page.getByTestId("avatar-photo")).toHaveCount(1);
@@ -129,7 +129,7 @@ test.describe("foto de perfil: telas", () => {
     await expect(editor.getByTestId("hero-cover").getByRole("button", { name: "Escolher da galeria" })).toHaveCount(1);
     const picker = editor.getByTestId("avatar-photo");
     await expect(picker).toBeVisible();
-    await expect(picker.getByText(/aparece no seu avatar e na sua página pública de herói/)).toBeVisible();
+    await expect(picker.getByText(/aparece no seu avatar e na sua página pública de Hero/)).toBeVisible();
     await expect(page.locator("#dados").getByTestId("avatar-photo")).toHaveCount(0);
     await expect(page.getByRole("button", { name: /Editar perfil/ })).toHaveCount(1);
   });
@@ -157,7 +157,7 @@ test.describe("foto de perfil: envio real (E2E_AVATAR_REAL=1)", () => {
     original = null;
   });
 
-  test("herói: envia pela galeria (app e página pública) e remove (os dois lados voltam às iniciais)", async ({ page }, testInfo) => {
+  test("Hero: envia pela galeria (app e página pública) e remove (os dois lados voltam às iniciais)", async ({ page }, testInfo) => {
     // um projeto basta: cada execução consome envios da cota diária da conta demo
     test.skip(testInfo.project.name !== "mobile", "envio real roda só no projeto mobile");
     test.setTimeout(180_000);

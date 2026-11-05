@@ -1,4 +1,4 @@
-// Vínculo ingrediente ↔ produto (recipe_ingredient_products, 0027): o herói sugere no editor, o admin
+// Vínculo ingrediente ↔ produto (recipe_ingredient_products, 0027): o Hero sugere no editor, o admin
 // valida ou recusa (admin_set_ingredient_product, auditada) e só o validado chega à lista de compras.
 // Regras puras do que o editor mostra ao lado de cada ingrediente.
 
@@ -11,7 +11,7 @@ export type IngredientLink = {
   note: string | null;
   suspendedReason: string | null;
   updatedAt: string;
-  /** Produto como o herói o vê (a RLS esconde produto fora do ar: fica null). */
+  /** Produto como o Hero o vê (a RLS esconde produto fora do ar: fica null). */
   product: { id: string; title: string; purchasable: boolean } | null;
 };
 

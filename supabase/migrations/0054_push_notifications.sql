@@ -1,19 +1,19 @@
 -- =============================================================================
 -- Ultra Hero · 0054 · Push no app das lojas (docs/decisions/push-notifications.md)
---   1. hero_favorites: a pessoa favorita um herói (antes só conteúdos, produtos e programas).
+--   1. hero_favorites: a pessoa favorita um Hero (antes só conteúdos, produtos e programas).
 --   2. push_tokens: um token Expo por aparelho, gravado pela RPC register_push_token (a pessoa
 --      só lê e apaga os próprios; o mesmo aparelho trocando de conta passa o token adiante).
 --   3. notification_preferences ganha hero_posts e achievements (opt-in, como os outros tipos).
 --   4. push_outbox: fila de envio, só service_role. Cada linha tem dedupe_key única: o mesmo
 --      evento nunca gera dois avisos, e o envio pode reentrar (cron at-least-once).
---   5. Gatilhos que enfileiram: post novo de herói favorito (no máximo um aviso por herói, por
+--   5. Gatilhos que enfileiram: post novo de Hero favorito (no máximo um aviso por Hero, por
 --      pessoa, por dia), conquista nova, programa concluído. Lembrete de sequência: função chamada
 --      pelo cron diário. Tudo filtra pelo consentimento (channel_push + o tipo) já na fila; o envio
 --      confere de novo.
 -- Idempotente e sem remoções: pode ser reaplicada. As tabelas novas somem com a conta (cascade).
 -- =============================================================================
 
--- ---------------------------------------------------------------- 1) heróis favoritos
+-- ---------------------------------------------------------------- 1) Heros favoritos
 create table if not exists public.hero_favorites (
   user_id uuid not null references auth.users (id) on delete cascade,
   creator_id uuid not null references public.creator_profiles (id) on delete cascade,
@@ -29,7 +29,7 @@ begin
     create policy hero_favorites_select_own on public.hero_favorites
       for select to authenticated using (user_id = (select auth.uid()));
   end if;
-  -- só herói ativo (público) pode ser favoritado
+  -- só Hero ativo (público) pode ser favoritado
   if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'hero_favorites' and policyname = 'hero_favorites_insert_own') then
     create policy hero_favorites_insert_own on public.hero_favorites
       for insert to authenticated with check (
@@ -189,8 +189,8 @@ revoke execute on function public.push_claim(int) from public, anon, authenticat
 grant execute on function public.push_claim(int) to service_role;
 
 -- ---------------------------------------------------------------- 5) gatilhos
--- Post novo (ou agendado) de herói favoritado. Dispara na passagem para "published"; o agendado
--- entra com not_before = data de ir ao ar. Um aviso por herói, por pessoa, por dia (UTC).
+-- Post novo (ou agendado) de Hero favoritado. Dispara na passagem para "published"; o agendado
+-- entra com not_before = data de ir ao ar. Um aviso por Hero, por pessoa, por dia (UTC).
 create or replace function public.push_on_content_published()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare v_live timestamptz; v_owner uuid;

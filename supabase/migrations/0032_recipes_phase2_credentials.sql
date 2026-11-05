@@ -1,11 +1,11 @@
 -- =============================================================================
 -- Ultra Hero · 0032 · Receitas fase 2: decisão das credenciais do chef sobre o texto que o admin viu (P7)
 --   1) admin_set_creator_credentials ganha p_expected_text: aprovar ou reprovar só vale para o texto
---      que estava na fila do admin. O pedido é travado (for update) durante a decisão; se o herói
+--      que estava na fila do admin. O pedido é travado (for update) durante a decisão; se o Hero
 --      editou depois que a fila abriu, a RPC recusa com 'request_changed' e nada muda.
 --      O 4º parâmetro tem default nulo para o app já publicado (3 argumentos) seguir funcionando
 --      durante o deploy; o app novo sempre manda o texto.
---   2) A decisão fica no próprio pedido (decision, decided_at), que o herói lê pela RLS de dono:
+--   2) A decisão fica no próprio pedido (decision, decided_at), que o Hero lê pela RLS de dono:
 --      "Reprovadas" deixa de aparecer como "Aguardando". Editar o texto limpa a decisão.
 --   3) updated_at do pedido só muda quando o texto muda (a decisão do admin não é "pedido novo").
 -- Reaplicável. Sem dados para migrar: pedidos antigos ficam sem decisão (a fila do admin segue
@@ -21,7 +21,7 @@ do $$ begin
       add constraint creator_credentials_requests_decision_check check (decision is null or decision in ('approved', 'rejected'));
   end if;
 end $$;
--- os grants de insert/update do herói continuam só em (creator_id, text) e (text): a decisão é do admin
+-- os grants de insert/update do Hero continuam só em (creator_id, text) e (text): a decisão é do admin
 
 -- updated_at e a decisão acompanham só o texto (a RPC grava a decisão sem tocar no texto)
 create or replace trigger trg_creator_credentials_requests_updated before update of text on public.creator_credentials_requests
@@ -50,7 +50,7 @@ begin
   if not public.is_admin() then raise exception 'forbidden' using errcode = '42501'; end if;
   select * into cp from public.creator_profiles where id = p_creator for update;
   if not found then raise exception 'creator_not_found'; end if;
-  -- trava o pedido: uma edição do herói em paralelo espera esta decisão terminar
+  -- trava o pedido: uma edição do Hero em paralelo espera esta decisão terminar
   select r.text into v_raw from public.creator_credentials_requests r where r.creator_id = p_creator for update;
   v_has_request := found;
   if p_expected_text is not null and (v_raw is null or btrim(v_raw) is distinct from btrim(p_expected_text)) then

@@ -10,7 +10,7 @@ import { MAX_CHECKS } from "@/lib/brief/brief";
 type Props = { value: string; onChange: (next: string) => void; disabled?: boolean; id?: string; "aria-describedby"?: string };
 
 // Itens extras do checklist como lista de verdade (pedido do responsável, 04/11): uma linha por item com a caixinha
-// que o herói e a marca vão marcar depois, "x" para remover e "Adicionar item". Enter cria o próximo item; apagar
+// que o Hero e a marca vão marcar depois, "x" para remover e "Adicionar item". Enter cria o próximo item; apagar
 // um item vazio volta para o anterior. O valor continua sendo texto com um item por linha (BriefDraft.checks),
 // então salvar e validar seguem iguais (parseChecks no app, checks no banco).
 export function ChecklistEditor({ value, onChange, disabled, id, "aria-describedby": describedBy }: Props) {

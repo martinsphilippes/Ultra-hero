@@ -8,7 +8,7 @@ import { loginAs } from "./helpers/login";
 //  - visitante: aba Receitas no Explorar com cards e faixa da etapa, atalhos e painel de filtros,
 //    busca pelo nome da chef, página da receita com a parte pública e o bloqueio no corpo;
 //  - free: etapa (se faltar), receita aberta, porções 2 → 4, checklist, imprimir e compartilhar;
-//  - perfil do chef: busca dentro das receitas assinadas e herói sem receitas próprias sem filtros.
+//  - perfil do chef: busca dentro das receitas assinadas e Hero sem receitas próprias sem filtros.
 
 const G1 = { slug: "bowl-de-frango-grelhado-com-legumes-assados-g1", title: "Bowl de frango grelhado com legumes assados" };
 
@@ -264,7 +264,7 @@ test.describe("perfil público do chef", () => {
     await expect(page).toHaveURL(/cat=cafe-da-manha/);
   });
 
-  test("herói sem receitas próprias: só as indicadas, sem busca nem filtros", async ({ page }) => {
+  test("Hero sem receitas próprias: só as indicadas, sem busca nem filtros", async ({ page }) => {
     await page.goto("/personalities/anitta/alimentacao");
     await expect(page.getByTestId("recipe-card").first()).toBeVisible();
     await expect(page.getByTestId("recipe-search")).toHaveCount(0);
@@ -278,6 +278,6 @@ test.describe("perfil público do chef", () => {
     const highlights = page.getByTestId("chef-highlights");
     test.skip((await highlights.count()) === 0, "o Érick Jacquin ainda não tem especialidades nem credenciais aprovadas no remoto");
     const credentials = page.getByTestId("chef-credentials");
-    if ((await credentials.count()) > 0) await expect(credentials).toContainText("Credenciais informadas pelo herói");
+    if ((await credentials.count()) > 0) await expect(credentials).toContainText("Credenciais informadas pelo Hero");
   });
 });

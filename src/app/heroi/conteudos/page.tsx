@@ -42,9 +42,9 @@ type Row = {
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-// Meus conteúdos (0092): o creator (titular ou membro) vê os conteúdos do herói dele em todos os estados, com
+// Meus conteúdos (0092): o creator (titular ou membro) vê os conteúdos do Hero dele em todos os estados, com
 // "Novo post" (rápido) e "Novo conteúdo" (estruturado) no alto. O admin continua no módulo de conteúdo do admin,
-// já filtrado pelo herói escolhido em "Publicar como hero" (sem mudança).
+// já filtrado pelo Hero escolhido em "Publicar como hero" (sem mudança).
 export default async function CreatorContentPage({ searchParams }: Props) {
   const raw = await searchParams;
   const filters = filterSchema.parse({

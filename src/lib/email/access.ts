@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import type { AccessKind } from "@/lib/agency/access-contact";
 import { escapeHtml, isEmailConfigured, sendEmail } from "./server";
 
-// E-mail do acesso criado pela agência (0112). Herói: "a agência criou sua página/ficha de herói; crie sua senha pelo
+// E-mail do acesso criado pela agência (0112). Hero: "a agência criou sua página/ficha de Hero; crie sua senha pelo
 // link com este e-mail" (invited) ou "foi ligada à sua conta" (linked). Marca: o mesmo para o acesso de Dono da marca.
 // Sem provedor configurado nada sai e a tela mostra o link para copiar (como os outros convites).
 
@@ -11,7 +11,7 @@ export type AccessEmailInput = {
   to: string;
   kind: AccessKind;
   outcome: "invited" | "linked";
-  /** Nome do herói ou da marca. */
+  /** Nome do Hero ou da marca. */
   name: string;
   agencyName: string;
   link: string;

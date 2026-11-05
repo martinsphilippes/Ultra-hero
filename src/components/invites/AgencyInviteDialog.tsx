@@ -7,12 +7,12 @@ import { inviteBrandByEmailAction, inviteHeroAction, type AgencyInviteResult } f
 import { CopyButton } from "@/components/admin-ops/CopyButton";
 import { Button, Dialog, EntitySelect, FormField, Input, Select } from "@/components/ui";
 
-/** Creator do casting que pode receber o convite de herói (sem login; com ou sem herói). */
+/** Creator do casting que pode receber o convite de Hero (sem login; com ou sem Hero). */
 export type HeroInviteTalent = { id: string; name: string; hasHero: boolean; heroName?: string | null };
 
 type Props = { mode: "brand" } | { mode: "hero"; talents: HeroInviteTalent[] };
 
-// Convites da agência (0091): marca por e-mail (nova ou pedido de vínculo) e herói do casting. O link aparece
+// Convites da agência (0091): marca por e-mail (nova ou pedido de vínculo) e Hero do casting. O link aparece
 // UMA vez (o banco guarda o hash); com e-mail configurado ele também vai por e-mail.
 export function AgencyInviteDialog(props: Props) {
   const t = useTranslations("invites.agency");

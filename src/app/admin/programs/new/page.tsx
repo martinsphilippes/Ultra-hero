@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title") };
 }
 
-// Novo programa (rascunho) + primeira versão. Vindo do Novo conteúdo (?creator=<id>), o herói já vem
+// Novo programa (rascunho) + primeira versão. Vindo do Novo conteúdo (?creator=<id>), o Hero já vem
 // selecionado.
 export default async function AdminProgramNewPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const preselected = pickUuid(await searchParams, "creator");

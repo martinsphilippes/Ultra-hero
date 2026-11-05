@@ -1,22 +1,22 @@
 -- =============================================================================
--- Groscove Ultra · 0087 · Login do creator com herói ligado (portal do creator)
---   Situação em produção: talentos com herói ligado (0065/0070) cujo herói não tem conta
---   (creator_profiles.user_id nulo). A ficha só mostrava o herói e o convite do escritório só existia
---   para talento SEM herói: o creator com herói nunca recebia login.
+-- Groscove Ultra · 0087 · Login do creator com Hero ligado (portal do creator)
+--   Situação em produção: talentos com Hero ligado (0065/0070) cujo Hero não tem conta
+--   (creator_profiles.user_id nulo). A ficha só mostrava o Hero e o convite do escritório só existia
+--   para talento SEM Hero: o creator com Hero nunca recebia login.
 --
 --   Decisões (bloco 10, sem perguntar ao responsável):
 --   * agency_invite_talent: MESMA assinatura (create or replace, sem sobrecarga). Passa a aceitar o
---     talento com herói ligado quando o herói não tem conta. O convite tem a mesma forma de antes
+--     talento com Hero ligado quando o Hero não tem conta. O convite tem a mesma forma de antes
 --     (papel creator + talent_id + agency_id, sem creator_profile_id): o check invitations_scope, a
 --     leitura do gestor (invitations_select_agency_manager), a revogação (agency_invitation_revoke) e a
---     queda automática ao trocar/desligar o herói ou arquivar o talento continuam valendo sem mudança.
---     Recusas novas: creator_has_login (o herói já tem conta: ela já vê o escritório), partner_suspended
---     (herói suspenso) e hero_invite_pending (o admin geral já convidou alguém para aquele herói: a
+--     queda automática ao trocar/desligar o Hero ou arquivar o talento continuam valendo sem mudança.
+--     Recusas novas: creator_has_login (o Hero já tem conta: ela já vê o escritório), partner_suspended
+--     (Hero suspenso) e hero_invite_pending (o admin geral já convidou alguém para aquele Hero: a
 --     agência não manda convite concorrente que ela nem enxerga). Só a agência que gere o talento convida
 --     (talent_write_scope: de fora → not_found; colaborador → forbidden).
---   * accept_invitation_core: no ramo do convite de talento, se o talento tem herói ligado, a conta é
---     ligada ao HERÓI (creator_profiles.user_id + papel creator escopo creator), como o convite de herói
---     do admin já faz; o escritório abre por consequência (my_talent_id lê o dono do herói). Sem herói,
+--   * accept_invitation_core: no ramo do convite de talento, se o talento tem Hero ligado, a conta é
+--     ligada ao HERO (creator_profiles.user_id + papel creator escopo creator), como o convite de Hero
+--     do admin já faz; o escritório abre por consequência (my_talent_id lê o dono do Hero). Sem Hero,
 --     tudo como antes (talent_profiles.user_id + escopo talent). O retorno ganha talent_id nos dois casos
 --     para o app mandar a pessoa ao escritório (portalHomeForAccepted).
 --   * agency_talent_access(p_agency): selo do acesso de cada talento do casting ("login" | "pending" |
@@ -25,7 +25,7 @@
 -- Regras: nada de drop; search_path fixo; nenhuma função nova com execute para anon (S14 segue 18).
 -- =============================================================================
 
--- 1) convite do escritório (talento sem herói OU herói sem conta) -----------------------------------------
+-- 1) convite do escritório (talento sem Hero OU Hero sem conta) -----------------------------------------
 create or replace function public.agency_invite_talent(p_talent uuid, p_email text, p_days int default 7)
 returns table (invitation_id uuid, token text)
 language plpgsql security definer set search_path = '' as $$
@@ -39,10 +39,10 @@ begin
   where t.id = p_talent;
   if v_t.user_id is not null then raise exception 'talent_has_login' using errcode = 'P0001'; end if;
   if v_t.creator_id is not null then
-    -- herói com conta: a pessoa já entra no escritório pela conta dela
+    -- Hero com conta: a pessoa já entra no escritório pela conta dela
     if v_t.creator_user is not null then raise exception 'creator_has_login' using errcode = 'P0001'; end if;
     if v_t.creator_status = 'suspended' then raise exception 'partner_suspended' using errcode = 'P0001'; end if;
-    -- o admin geral já convidou alguém para este herói (convite de herói pendente e válido)
+    -- o admin geral já convidou alguém para este Hero (convite de Hero pendente e válido)
     if exists (select 1 from public.invitations i where i.creator_profile_id = v_t.creator_id and i.status = 'pending' and i.expires_at >= now()) then
       raise exception 'hero_invite_pending' using errcode = 'P0001';
     end if;
@@ -63,7 +63,7 @@ end $$;
 revoke execute on function public.agency_invite_talent(uuid, text, int) from public, anon;
 grant execute on function public.agency_invite_talent(uuid, text, int) to authenticated, service_role;
 
--- 2) aceite (0077 + ramo do talento com herói) --------------------------------------------------------------
+-- 2) aceite (0077 + ramo do talento com Hero) --------------------------------------------------------------
 create or replace function public.accept_invitation_core(p_invitation uuid)
 returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare v_inv public.invitations%rowtype; v_email text; v_uid uuid; v_name text; v_scope_type text; v_scope_id uuid;
@@ -159,7 +159,7 @@ begin
     v_scope_type := 'brand'; v_scope_id := v_inv.brand_id;
   elsif v_inv.role::text = 'creator' and v_inv.talent_id is not null then
     perform pg_advisory_xact_lock(hashtext('talent_person:' || v_uid::text));
-    -- D10: no máximo um talento por pessoa (próprio ou pelo herói)
+    -- D10: no máximo um talento por pessoa (próprio ou pelo Hero)
     if exists (select 1 from public.talent_profiles t left join public.creator_profiles c on c.id = t.creator_id
                where t.id <> v_inv.talent_id and (t.user_id = v_uid or c.user_id = v_uid)) then
       perform set_config('app.trusted', 'off', true);
@@ -184,7 +184,7 @@ begin
       on conflict (user_id, role, scope_id) do update set revoked_at = null;
       v_scope_type := 'talent'; v_scope_id := v_inv.talent_id;
     else
-      -- talento com herói ligado (0087): a conta vira a dona do herói, como o convite de herói do admin
+      -- talento com Hero ligado (0087): a conta vira a dona do Hero, como o convite de Hero do admin
       if exists (select 1 from public.creator_profiles c where c.id = v_creator and c.status = 'suspended') then
         perform set_config('app.trusted', 'off', true);
         raise exception 'partner_suspended';
@@ -202,7 +202,7 @@ begin
     end if;
   else
     perform pg_advisory_xact_lock(hashtext('talent_person:' || v_uid::text));
-    -- D10: herói que já está num casting não vira o segundo talento de quem já tem um
+    -- D10: Hero que já está num casting não vira o segundo talento de quem já tem um
     if exists (select 1 from public.talent_profiles t where t.creator_id = v_inv.creator_profile_id)
        and exists (select 1 from public.talent_profiles t2 left join public.creator_profiles c2 on c2.id = t2.creator_id
                    where t2.creator_id is distinct from v_inv.creator_profile_id and (t2.user_id = v_uid or c2.user_id = v_uid)) then

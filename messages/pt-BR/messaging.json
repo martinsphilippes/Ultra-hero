@@ -12,13 +12,13 @@
   "kindAll": "Todos os tipos",
   "kinds": {
     "campaign": "Campanha",
-    "hero": "Herói",
+    "hero": "Hero",
     "opportunity": "Oportunidade",
     "room": "Sala do projeto"
   },
   "kindsPlural": {
     "campaign": "Campanhas",
-    "hero": "Heróis",
+    "hero": "Heros",
     "opportunity": "Oportunidades",
     "room": "Salas do projeto"
   },
@@ -43,7 +43,7 @@
   "emptyTitle": "Nenhuma conversa por enquanto",
   "emptyFiltered": "Nenhuma conversa com esses filtros.",
   "emptyHint": {
-    "agency": "As conversas nascem nos negócios: o canal com a marca, o canal com cada herói consultado (aba Conversa do negócio) e a sala do projeto. Quando alguém escrever, aparece aqui, com a campanha e a etapa.",
+    "agency": "As conversas nascem nos negócios: o canal com a marca, o canal com cada Hero consultado (aba Conversa do negócio) e a sala do projeto. Quando alguém escrever, aparece aqui, com a campanha e a etapa.",
     "brand": "Cada campanha tem uma conversa com a agência (na página da campanha) e, quando a produção começa, a sala do projeto. Assim que a agência receber sua campanha, a conversa aparece aqui.",
     "hero": "Cada oportunidade em que a agência consultar você tem uma conversa com a agência; nos projetos confirmados, também a sala do projeto. Elas aparecem aqui.",
     "staff": "Quando a agência chamar você para um projeto, a sala dele aparece aqui. Depois de assinar o NDA, você conversa com a equipe por ela."

@@ -3,8 +3,8 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Button } from "@/components/ui";
 
-// Aviso do editor antigo (herói e admin): desde a 0027 a receita tem modelo estruturado e só o editor
-// de receitas grava; aqui ela aparece só para leitura, sem Publicar nem Despublicar. Para o herói,
+// Aviso do editor antigo (Hero e admin): desde a 0027 a receita tem modelo estruturado e só o editor
+// de receitas grava; aqui ela aparece só para leitura, sem Publicar nem Despublicar. Para o Hero,
 // "Editar" leva ao editor novo (Portal do Chef); o admin segue só com a leitura nesta fase.
 export async function RecipeLegacyNotice({ editHref }: { editHref?: string }) {
   const t = await getTranslations("recipes.structured.legacyEditor");

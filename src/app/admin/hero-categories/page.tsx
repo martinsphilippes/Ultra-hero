@@ -9,7 +9,7 @@ import { resolveLibraryConfig, toEditorRows } from "@/lib/heroes/library-tabs";
 import { createClient } from "@/lib/supabase/server";
 
 // Categorias da aba Hero (0049): o admin cria, renomeia (pt-BR/en/es), ordena, ativa/desativa e
-// exclui. As categorias de cada herói são escolhidas na tela do herói (/admin/herois/[id]).
+// exclui. As categorias de cada Hero são escolhidas na tela do Hero (/admin/herois/[id]).
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("adminContent.heroCategories");

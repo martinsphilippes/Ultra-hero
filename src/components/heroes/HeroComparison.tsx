@@ -23,7 +23,7 @@ type Props = {
 };
 
 // "Você vs Hero" (0056): cada indicador que a pessoa tem, com barras e a frase "Seu sono está em 85%
-// da referência de Neymar". O lado do herói é a REFERÊNCIA da equipe, sempre rotulada assim.
+// da referência de Neymar". O lado do Hero é a REFERÊNCIA da equipe, sempre rotulada assim.
 // Sem a 0056 no banco (ou sem nada para comparar), não renderiza nada.
 type Resolved =
   | { kind: "invite" }

@@ -2,7 +2,7 @@ import { useTranslations } from "next-intl";
 import { Skeleton, VisuallyHidden } from "@/components/ui";
 import { TilesSkeleton } from "@/components/discover/SectionSkeleton";
 
-// Esqueleto de uma biblioteca do herói (cabeçalho com volta e grade de quadrados).
+// Esqueleto de uma biblioteca do Hero (cabeçalho com volta e grade de quadrados).
 export default function Loading() {
   const t = useTranslations("common.states");
   return (

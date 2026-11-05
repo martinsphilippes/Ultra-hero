@@ -18,7 +18,7 @@ export function photoUnoptimized(src: string) {
   return !src.startsWith("/") || src.endsWith(".svg");
 }
 
-// Cartão da vitrine: foto, herói, preço atual, contagem e número de lances.
+// Cartão da vitrine: foto, Hero, preço atual, contagem e número de lances.
 export async function CollectibleCard({ item, serverNow, priority }: Props) {
   const [t, locale] = await Promise.all([getTranslations("collectibles"), getLocale()]);
   const phase = phaseOf(item, serverNow);

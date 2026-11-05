@@ -1,5 +1,5 @@
 -- =============================================================================
--- Groscove Ultra · 0103 · Cadastro por perfil (Herói, Marca, Agência) sem convite e convites pausados
+-- Groscove Ultra · 0103 · Cadastro por perfil (Hero, Marca, Agência) sem convite e convites pausados
 -- Pedido do responsável (04/11): "a questão de convite fica inativa por enquanto, e a pessoa, ao acessar a primeira
 -- página do login, escolhe por conta própria se é Hero, Marca ou Agência". Cenário S109. Idempotente; nada de drop de
 -- tabela/coluna; nenhuma função nova executável por anon (S14 segue 18). Funções recriadas mantêm a assinatura.
@@ -11,26 +11,26 @@
 --   • Validação no banco, não só na tela: um gatilho BEFORE INSERT em invitations recusa com 'invites_disabled'. Assim
 --     TODAS as RPCs que criam convite (admin_invite, admin_create_invitation, admin_invite_professional,
 --     agency_invite_member/_brand/_brand_member/_hero/_talent, brand_invite_member, hero_team_invite) recusam sem
---     mudar cada uma; o que elas fizeram antes (ex.: herói pendente criado junto) volta atrás com a transação.
+--     mudar cada uma; o que elas fizeram antes (ex.: Hero pendente criado junto) volta atrás com a transação.
 --   • Convites JÁ emitidos e pendentes continuam valendo: o aceite (accept_invitation*, primeiro acesso 0077) não insere
 --     convite, então segue igual. Revogar também segue. Motivo: não quebrar quem está no meio do processo.
 --   • Cadastro self-service: a escolha fica guardada em account_onboardings (source 'self'), a mesma tabela do passo a
 --     passo da 0091 — retomar é só voltar a /primeiro-acesso. Tipos novos: 'hero' (além de agency/brand). A empresa/o
---     herói nasce pelas MESMAS RPCs da 0091 (onboarding_create_agency/_brand; creator_create_my_hero passa a aceitar o
---     passo 'hero' em aberto no lugar do papel creator). Herói nasce pendente (o admin aprova); marca nasce 'inactive'
+--     Hero nasce pelas MESMAS RPCs da 0091 (onboarding_create_agency/_brand; creator_create_my_hero passa a aceitar o
+--     passo 'hero' em aberto no lugar do papel creator). Hero nasce pendente (o admin aprova); marca nasce 'inactive'
 --     e self_managed (sem agência); agência nasce ativa com a pessoa como Adm.
 --   • Anti-abuso: self_onboarding_start só authenticated; recusa com o cadastro fechado (experiment.open=false, salvo
 --     admin) e conta demo; uma agência por conta (agency_member_elsewhere), uma marca como Dono por conta
---     (brand_already_owned, conferido de novo em onboarding_take na hora de criar), um herói (has_hero); no máximo 5
+--     (brand_already_owned, conferido de novo em onboarding_take na hora de criar), um Hero (has_hero); no máximo 5
 --     inícios por conta em 24h (rate_limited). O admin da plataforma não tem o limite de 1 agência/1 marca.
 --   • "Agora não": self_onboarding_cancel encerra o passo em aberto (marca cancelled_at; a linha fica para o limite).
---   • Admin: admin_self_signups(p_days) lista os cadastros self-service recentes (com o estado da agência/marca/herói)
+--   • Admin: admin_self_signups(p_days) lista os cadastros self-service recentes (com o estado da agência/marca/Hero)
 --     para ver e suspender pelas telas que já existem.
 -- =============================================================================
 
 -- 1) interruptor --------------------------------------------------------------------------------------------------
 insert into public.app_settings (key, value, description)
-values ('invites.enabled', 'false'::jsonb, 'Convites ativos: criar convites (admin, agência, marca, equipe do herói). Desligado = pausa; convites já emitidos seguem valendo.')
+values ('invites.enabled', 'false'::jsonb, 'Convites ativos: criar convites (admin, agência, marca, equipe do Hero). Desligado = pausa; convites já emitidos seguem valendo.')
 on conflict (key) do nothing;
 
 -- ligado? (ausente = ligado; 'false' em texto também desliga, como experiment.open)
@@ -84,7 +84,7 @@ begin
     return jsonb_build_object('id', v_open.id, 'kind', p_kind, 'resumed', true);
   end if;
 
-  -- cadastro fechado (kill switch da 0015): nada de empresa/herói novo por autosserviço
+  -- cadastro fechado (kill switch da 0015): nada de empresa/Hero novo por autosserviço
   select s.value into v_open_setting from public.app_settings s where s.key = 'experiment.open';
   if not v_admin and (v_open_setting = 'false'::jsonb or lower(btrim(coalesce(v_open_setting #>> '{}', ''))) = 'false') then
     raise exception 'experiment_closed' using errcode = 'P0001';
@@ -155,8 +155,8 @@ end $$;
 revoke execute on function public.onboarding_take(text) from public, anon, authenticated;
 grant execute on function public.onboarding_take(text) to service_role;
 
--- 0091: creator sem herói cria o dele. Agora também quem escolheu "Herói" no cadastro (passo 'hero' em aberto) sem
--- ainda ter o papel; o papel nasce aqui (titular do herói pendente) e o passo fecha.
+-- 0091: creator sem Hero cria o dele. Agora também quem escolheu "Hero" no cadastro (passo 'hero' em aberto) sem
+-- ainda ter o papel; o papel nasce aqui (titular do Hero pendente) e o passo fecha.
 create or replace function public.creator_create_my_hero(p_name text)
 returns uuid language plpgsql security definer set search_path = '' as $$
 declare v_id uuid; v_onb uuid;

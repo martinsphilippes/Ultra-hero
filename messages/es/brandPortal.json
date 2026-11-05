@@ -3,8 +3,8 @@
   "meta": {
     "dashboard": "Marca",
     "team": "Equipo de la marca",
-    "creators": "Héroes",
-    "creator": "Héroe",
+    "creators": "Heros",
+    "creator": "Hero",
     "campaigns": "Campañas",
     "newCampaign": "Nueva propuesta",
     "campaign": "Campaña",
@@ -34,7 +34,7 @@
         "body": "Brief en 5 pasos y el avance de cada campaña."
       },
       "creators": {
-        "title": "Búsqueda de héroes",
+        "title": "Búsqueda de Heros",
         "body": "Catálogo autorizado, con los criterios de cada sugerencia."
       },
       "approvals": {
@@ -47,19 +47,19 @@
       }
     },
     "newCampaign": "Nueva propuesta",
-    "seeCreators": "Buscar héroes",
+    "seeCreators": "Buscar Heros",
     "seeCampaigns": "Ver campañas",
     "approvalsNote": "Términos, guiones y entregas por aprobar están dentro de cada campaña.",
-    "suggestedTitle": "Héroes sugeridos por la agencia",
+    "suggestedTitle": "Heros sugeridos por la agencia",
     "suggestedHint": "Confirmados o contratados en tus campañas abiertas, con los datos que autorizaron mostrar.",
-    "suggestedNone": "Todavía ningún héroe confirmado en las campañas abiertas.",
+    "suggestedNone": "Todavía ningún Hero confirmado en las campañas abiertas.",
     "nextEventsTitle": "Próximas fechas",
     "nextEventsNone": "Ninguna fecha publicada en los próximos días.",
     "seeAgenda": "Ver agenda",
     "proposeOnDay": "Propuesta en este día",
     "proposeOnDayLabel": "Nueva propuesta para {date}",
     "shortcuts": {
-      "heroes": "Héroes",
+      "heroes": "Heros",
       "campaigns": "Campañas",
       "team": "Equipo",
       "label": "Atajos de la marca"
@@ -79,12 +79,12 @@
     "inviteRevoked": "Invitación revocada."
   },
   "creators": {
-    "title": "Héroes",
-    "description": "Héroes de la agencia {agency} disponibles para tu marca.",
+    "title": "Heros",
+    "description": "Heros de la agencia {agency} disponibles para tu marca.",
     "descriptionNoAgency": "Tu marca todavía no está vinculada a una agencia.",
     "filters": {
       "search": "Buscar",
-      "searchPlaceholder": "Nombre del héroe",
+      "searchPlaceholder": "Nombre del Hero",
       "segment": "Segmento",
       "all": "Todos",
       "state": "Estado",
@@ -98,10 +98,10 @@
       "available": "Disponible",
       "limited": "Agenda limitada"
     },
-    "sourceNote": "Métricas declaradas por el héroe o por la agencia, siempre con la fecha del dato. Sin valores: la propuesta comercial se hace con la agencia.",
-    "emptyFiltered": "Ningún héroe con estos filtros.",
-    "empty": "Todavía no hay héroes liberados en el catálogo.",
-    "emptyHint": "La agencia libera a los héroes según el consentimiento de cada uno.",
+    "sourceNote": "Métricas declaradas por el Hero o por la agencia, siempre con la fecha del dato. Sin valores: la propuesta comercial se hace con la agencia.",
+    "emptyFiltered": "Ningún Hero con estos filtros.",
+    "empty": "Todavía no hay Heros liberados en el catálogo.",
+    "emptyHint": "La agencia libera a los Heros según el consentimiento de cada uno.",
     "unavailable": "Catálogo en actualización",
     "unavailableHint": "El catálogo aparece en cuanto se actualice la base de datos.",
     "noHeadline": "Sin titular",
@@ -120,13 +120,13 @@
     "networksTitle": "Redes y métricas declaradas",
     "brandsTitle": "Marcas que ya acompañan",
     "availabilityTitle": "Disponibilidad comercial",
-    "availabilityHint": "Períodos declarados por el héroe o la agencia. La agenda privada nunca aparece.",
+    "availabilityHint": "Períodos declarados por el Hero o la agencia. La agenda privada nunca aparece.",
     "noPeriods": "Ningún período declarado. Pregunta a la agencia en la propuesta.",
     "blocked": "no disponible",
     "representedBy": "Representado por {agency}.",
     "consentMissing": "sin consentimiento (kit no disponible)",
     "shortlistsLink": "Preselección",
-    "compareHint": "Marca de 2 a 4 héroes para comparar lado a lado.",
+    "compareHint": "Marca de 2 a 4 Heros para comparar lado a lado.",
     "consentNote": "Solo aparece quien autorizó estar en el catálogo, con los datos que libera el media kit."
   },
   "campaigns": {
@@ -145,29 +145,29 @@
     "startsOn": "inicio {date}",
     "updatedAt": "actualizada el {date}",
     "newTitle": "Nueva propuesta de campaña",
-    "newDescription": "Va a {agency}, que la analiza, consulta a los héroes y confirma contigo. Guarda como borrador cuando quieras.",
+    "newDescription": "Va a {agency}, que la analiza, consulta a los Heros y confirma contigo. Guarda como borrador cuando quieras.",
     "untitled": "Propuesta sin título",
     "submittedAt": "Enviada el {date}",
     "stepsLabel": "Avance",
     "sections": {
       "summary": "Resumen de la propuesta",
       "messages": "Conversación con la agencia",
-      "talents": "Héroes",
+      "talents": "Heros",
       "deliverables": "Entregas",
       "attachments": "Adjuntos del briefing",
       "terms": "Términos de la campaña",
       "approvals": "Guiones por aprobar"
     },
-    "requestedTalent": "Héroe elegido por ti",
+    "requestedTalent": "Hero elegido por ti",
     "talentStatus": {
       "proposed": "Confirmado por la agencia",
       "contracted": "Contratado"
     },
-    "talentsPending": "La agencia está consultando a los héroes. Verás el elenco confirmado en cuanto la campaña sea aprobada.",
-    "talentsNone": "Ningún héroe en esta campaña.",
+    "talentsPending": "La agencia está consultando a los Heros. Verás el elenco confirmado en cuanto la campaña sea aprobada.",
+    "talentsNone": "Ningún Hero en esta campaña.",
     "deliverablesNone": "Las entregas aparecen después de la confirmación.",
     "dueAt": "plazo {date}",
-    "agencyNote": "Valores, contratos y la negociación con los héroes quedan con la agencia.",
+    "agencyNote": "Valores, contratos y la negociación con los Heros quedan con la agencia.",
     "seeCatalog": "Ver catálogo",
     "form": {
       "blocks": {
@@ -177,7 +177,7 @@
         "deliverables": "4. Redes y entregables",
         "budget": "5. Valor y observaciones"
       },
-      "forCreator": "Propuesta dirigida a {name}. La agencia puede sugerir otros héroes.",
+      "forCreator": "Propuesta dirigida a {name}. La agencia puede sugerir otros Heros.",
       "title": "Nombre de la campaña",
       "objective": "Objetivo",
       "product": "Producto o servicio",
@@ -214,7 +214,7 @@
       "submit": "Enviar a la agencia",
       "incompleteHint": "Para enviar: título, objetivo, fecha de inicio, una red y un entregable.",
       "confirmTitle": "¿Enviar la propuesta?",
-      "confirmHint": "La agencia recibe el briefing y empieza a consultar a los héroes. Sigues el avance aquí y puedes cancelar mientras no haya confirmación.",
+      "confirmHint": "La agencia recibe el briefing y empieza a consultar a los Heros. Sigues el avance aquí y puedes cancelar mientras no haya confirmación.",
       "back": "Volver",
       "budgetInvalid": "Indica el valor como 15.000,00.",
       "incomplete": "Falta algo: título, objetivo, fecha de inicio, una red y un entregable.",
@@ -223,8 +223,8 @@
       "budgetNegotiatingHint": "Patrocinio: el valor sale de la negociación en la oportunidad.",
       "budgetNegotiatingPlaceholder": "A convenir",
       "valueErrors": {
-        "value_per_hero_required": "En el valor por héroe, indica cuánto recibe cada héroe.",
-        "max_heroes_required": "En el valor por héroe, indica el máximo de héroes (de 1 a 50)."
+        "value_per_hero_required": "En el valor por Hero, indica cuánto recibe cada Hero.",
+        "max_heroes_required": "En el valor por Hero, indica el máximo de Heros (de 1 a 50)."
       },
       "groups": {
         "item": "Entregable {n}",
@@ -237,7 +237,7 @@
         "networkRequired": "Elige al menos una red.",
         "rowProblem": "Entregable {n}: {problem}",
         "tooMany": "Son {count} combinaciones de tipo y red; el máximo es {max}. Quita algunos tipos o redes.",
-        "tooManyTotal": "Sumando todos los héroes, la propuesta tiene {count} combinaciones distintas de tipo y red; el máximo es {max}."
+        "tooManyTotal": "Sumando todos los Heros, la propuesta tiene {count} combinaciones distintas de tipo y red; el máximo es {max}."
       }
     },
     "cancel": {
@@ -260,7 +260,7 @@
     "unavailableHint": "La agenda aparece en cuanto se actualice la base de datos.",
     "empty": "Nada este mes.",
     "emptyHint": "Cuando una campaña se confirme, aparece aquí con sus fechas de publicación.",
-    "note": "Plazos internos de producción y la agenda de los héroes no aparecen: solo lo que vale para la marca."
+    "note": "Plazos internos de producción y la agenda de los Heros no aparecen: solo lo que vale para la marca."
   },
   "budget": {
     "title": "Presupuesto",
@@ -281,17 +281,17 @@
     },
     "committedHint": "Lo que la marca paga por los contratados (sin separar cachet y tasa).",
     "paymentDue": "Pago a la agencia previsto para {date}",
-    "byTalent": "Por héroe",
+    "byTalent": "Por Hero",
     "talentProposed": "En propuesta",
     "talentContracted": "Contratado",
-    "noTalents": "Ningún héroe propuesto aún.",
+    "noTalents": "Ningún Hero propuesto aún.",
     "edit": "Definir presupuesto",
     "editTalent": "Definir presupuesto de {name}",
     "editTitle": "Presupuesto de la campaña",
     "editTalentTitle": "Presupuesto · {name}",
     "amount": "Valor (R$)",
     "amountHint": "En blanco vuelve a lo informado a la agencia.",
-    "amountTalentHint": "En blanco quita el presupuesto de este héroe.",
+    "amountTalentHint": "En blanco quita el presupuesto de este Hero.",
     "amountInvalid": "Valor inválido. Usa el formato 15.000,00.",
     "save": "Guardar",
     "cancel": "Cancelar",
@@ -302,7 +302,7 @@
     "overviewHint": "Reservado, comprometido y pagado en todas las campañas enviadas.",
     "overviewEmpty": "Ninguna campaña con presupuesto o contratación aún.",
     "overCount": "{count, plural, one {# campaña superó el presupuesto} other {# campañas superaron el presupuesto}}",
-    "talentsOver": "{count, plural, one {# héroe sobre el presupuesto} other {# héroes sobre el presupuesto}}",
+    "talentsOver": "{count, plural, one {# Hero sobre el presupuesto} other {# Heros sobre el presupuesto}}",
     "seeCampaign": "Ver campaña",
     "lockedHint": "El presupuesto definido queda bloqueado. Para cambiarlo, usa “Pedir cambio de presupuesto”: la agencia lo evalúa y el dueño confirma."
   }

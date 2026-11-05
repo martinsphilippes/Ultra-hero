@@ -10,7 +10,7 @@ import { MAX_IMPORT_ROWS } from "./import";
 import { TERRITORIES } from "./vocab";
 
 // Calendário Groscove (0098): escrita pelo admin (o banco confere platform_calendar_can_write em cada RPC) e interesse
-// de herói/marca. Erros por código, traduzidos em groscoveCalendar.errors.
+// de Hero/marca. Erros por código, traduzidos em groscoveCalendar.errors.
 
 export type PlatformResult = { ok: true; message: string; id?: string; state?: string; counts?: Record<string, number> } | { ok: false; error: string };
 
@@ -202,7 +202,7 @@ export async function importPlatformEventsAction(input: ImportInput): Promise<Pl
   }
 }
 
-/** "Tenho interesse" / "Retirar interesse": herói (titular) ou marca (dono/equipe). Nunca cria negócio. */
+/** "Tenho interesse" / "Retirar interesse": Hero (titular) ou marca (dono/equipe). Nunca cria negócio. */
 export async function setInterestAction(input: { eventId: string; party: "hero" | "brand"; ownerId: string; interested: boolean }): Promise<PlatformResult> {
   await requireUser();
   const parsed = z.object({ eventId: z.uuid(), party: z.enum(["hero", "brand"]), ownerId: z.uuid(), interested: z.boolean() }).safeParse(input);

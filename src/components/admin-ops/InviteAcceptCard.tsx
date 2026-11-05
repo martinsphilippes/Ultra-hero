@@ -42,7 +42,7 @@ export function InviteAcceptCard({ token, email }: Props) {
   }
 
   if (role) {
-    // 0091: passo a passo da empresa, painel do admin, Equipe (creator sem herói) e início (consumidor)
+    // 0091: passo a passo da empresa, painel do admin, Equipe (creator sem Hero) e início (consumidor)
     const onboarding = scopeType === "onboarding";
     const message = onboarding
       ? ti("accept.successOnboarding")

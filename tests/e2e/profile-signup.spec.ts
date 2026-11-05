@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-// 0103: a primeira página pergunta "Como você vai usar o Ultra?" (Herói, Marca, Agência ou só o app). Os testes
+// 0103: a primeira página pergunta "Como você vai usar o Ultra?" (Hero, Marca, Agência ou só o app). Os testes
 // comuns não criam conta (passam em qualquer ambiente); o cadastro de verdade fica nos cenários de RLS (S109).
 
 test.describe("entrada por perfil", () => {
@@ -10,7 +10,7 @@ test.describe("entrada por perfil", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Como você vai usar o Ultra?" })).toBeVisible();
     const chooser = page.getByTestId("profile-chooser");
     for (const [kind, title] of [
-      ["hero", "Herói"],
+      ["hero", "Hero"],
       ["brand", "Marca"],
       ["agency", "Agência"],
       ["consumer", "Só quero usar o app"],

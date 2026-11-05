@@ -75,7 +75,7 @@ describe("parcelas da marca", () => {
   });
 });
 
-describe("repasse ao herói", () => {
+describe("repasse ao Hero", () => {
   it("depois de receber (última parcela), em data fixa ou depois da entrega", () => {
     expect(payoutDue({ payoutRule: "after_receipt", payoutDays: 10, payoutOn: null }, "2026-12-20", EV.delivery)).toBe("2026-12-30");
     expect(payoutDue({ payoutRule: "fixed_date", payoutDays: 0, payoutOn: "2027-01-05" }, "2026-12-20", EV.delivery)).toBe("2027-01-05");

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Menu do app (UserMenu): só foto real. Herói ou não, sem foto o avatar vem vazio e o menu mostra as
-// iniciais (nada de ilustração de reserva); o resumo nem consulta mais o perfil de herói.
+// Menu do app (UserMenu): só foto real. Hero ou não, sem foto o avatar vem vazio e o menu mostra as
+// iniciais (nada de ilustração de reserva); o resumo nem consulta mais o perfil de Hero.
 
 const state = vi.hoisted(() => ({
   roles: ["consumer"] as string[],
@@ -25,7 +25,7 @@ vi.mock("@/lib/supabase/server", () => ({
         limit: () => chain,
         maybeSingle: async () => {
           state.queries.push(`${table}?${filters.join("&")}`);
-          if (table === "profiles") return { data: { id: "u1", display_name: "Herói Demo (Érick Jacquin)", avatar_url: state.avatar }, error: null };
+          if (table === "profiles") return { data: { id: "u1", display_name: "Hero Demo (Érick Jacquin)", avatar_url: state.avatar }, error: null };
           if (table === "creator_profiles") return { data: state.heroError ? null : state.hero, error: state.heroError };
           return { data: null, error: null };
         },
@@ -47,7 +47,7 @@ beforeEach(() => {
 });
 
 describe("getSessionSummary: avatar só com foto real", () => {
-  it("herói ativo sem foto: sem avatar (o menu mostra as iniciais), sem consultar o perfil de herói", async () => {
+  it("Hero ativo sem foto: sem avatar (o menu mostra as iniciais), sem consultar o perfil de Hero", async () => {
     state.roles = ["consumer", "creator"];
     state.hero = { id: "c1" };
     expect((await getSessionSummary())?.avatarUrl).toBeNull();
@@ -62,7 +62,7 @@ describe("getSessionSummary: avatar só com foto real", () => {
     expect((await getSessionSummary())?.avatarUrl).toBe("/placeholders/avatar-6.svg");
   });
 
-  it("sem o papel ou perfil inativo: sem avatar, como o herói", async () => {
+  it("sem o papel ou perfil inativo: sem avatar, como o Hero", async () => {
     state.hero = { id: "c1" };
     expect((await getSessionSummary())?.avatarUrl).toBeNull();
     state.roles = ["creator"];

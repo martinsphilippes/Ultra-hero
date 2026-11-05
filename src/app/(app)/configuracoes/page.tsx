@@ -83,7 +83,7 @@ export default async function SettingsPage() {
   const sections = buildSettingsSections(Array.from(new Set(roles.map((r) => r.role))), undefined, { hasTalent: talent?.state === "ok", platformAdmin: true })
     .map((section) => ({ ...section, items: forSurface(section.items, native) }))
     .filter((section) => section.items.length > 0);
-  // Sem "Novo perfil" (decisão do dono, 0116): uma conta tem um só perfil de negócio (Herói, Marca OU Agência); o perfil
+  // Sem "Novo perfil" (decisão do dono, 0116): uma conta tem um só perfil de negócio (Hero, Marca OU Agência); o perfil
   // se escolhe no cadastro. Portais vêm no topo (buildSettingsSections os põe primeiro).
 
   // resumo da linha de Lembretes (como era no Perfil); se a leitura falhar, a linha fica sem contagem

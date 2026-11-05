@@ -4,9 +4,9 @@ import { createBumpLimiter, parseRecipeActionEvent } from "@/lib/recipes/showcas
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 
 // Contador de toques da Alimentação (0051): fazer / comprar pronto / lista de compras, somados por
-// dia, herói da vitrine, origem e receita. Nada da pessoa (sem id, sem IP). O navegador manda por
+// dia, Hero da vitrine, origem e receita. Nada da pessoa (sem id, sem IP). O navegador manda por
 // sendBeacon e não espera: a resposta é sempre 204 e nenhuma falha chega à tela. Só o service role
-// soma (recipe_action_bump confere se a receita está mesmo na vitrine do herói).
+// soma (recipe_action_bump confere se a receita está mesmo na vitrine do Hero).
 
 // limite ingênuo por instância: um laço de chamadas não enche o banco
 const allow = createBumpLimiter(600, 60_000);

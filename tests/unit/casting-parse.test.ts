@@ -13,7 +13,7 @@ describe("parseCastInputs", () => {
       "lixo",
     ],
   };
-  it("lê contexto e heróis, ignora linha ruim e número ruim", () => {
+  it("lê contexto e Heros, ignora linha ruim e número ruim", () => {
     const d = parseCastInputs(raw);
     expect(d?.canValues).toBe(false);
     expect(d?.context).toMatchObject({ kind: "deal", valueModel: "fixo", hasBudget: true, budgetCents: null, feeBudgetCents: null, current: ["t1"], segment_ids: ["s1"] });
@@ -24,12 +24,12 @@ describe("parseCastInputs", () => {
     expect(h.accounts[0]).toMatchObject({ followers: 1000, avg_reach: 300, age: { "18-24": 4000 }, top_states: ["RJ"] });
     expect(h.rating).toEqual({ count: 2, quality_avg: 4.5, on_time_pct: 100 });
   });
-  it("json sem contexto ou sem lista de heróis não vale", () => {
+  it("json sem contexto ou sem lista de Heros não vale", () => {
     expect(parseCastInputs(null)).toBeNull();
     expect(parseCastInputs({ heroes: [] })).toBeNull();
     expect(parseCastInputs({ context: {} })).toBeNull();
   });
-  it("por herói e máximo", () => {
+  it("por Hero e máximo", () => {
     const d = parseCastInputs({ can_values: true, context: { kind: "call", value_model: "por_heroi", max_heroes: "3", budget_cents: 5, rate_bp: 2000, fee_budget_cents: 4 }, heroes: [] });
     expect(d?.context).toMatchObject({ kind: "call", valueModel: "por_heroi", maxHeroes: 3, rateBp: 2000, feeBudgetCents: 4 });
   });

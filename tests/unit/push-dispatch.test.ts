@@ -63,7 +63,7 @@ afterEach(() => {
 const expoReply = (tickets: unknown[]) => ({ ok: true, status: 200, json: async () => ({ data: tickets }) });
 
 describe("dispatchPushOutbox", () => {
-  it("envia o post do herói favorito no idioma da pessoa e marca como enviado", async () => {
+  it("envia o post do Hero favorito no idioma da pessoa e marca como enviado", async () => {
     fetchMock.mockResolvedValue(expoReply([{ status: "ok", id: "t1" }]));
     const { admin, updates } = fakeAdmin(baseTables({}), [postRow]);
     const result = await dispatchPushOutbox(admin);

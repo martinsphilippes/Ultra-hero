@@ -9,9 +9,9 @@
 //   • Ação de um clique na tela inicial só onde o NextStepCard/termos já executam sem formulário: "Confirmar a
 //     contratação" (agency_contract_confirm) e "Encerrar como ganha" (mover para fechado/ganho, sem forçar). As duas
 //     pedem confirmação curta. O resto leva direto à aba/âncora certa (nextStepHref).
-//   • Os adaptadores abaixo espelham o que cada tela monta (ficha do negócio, campanha da marca, oportunidade do herói),
+//   • Os adaptadores abaixo espelham o que cada tela monta (ficha do negócio, campanha da marca, oportunidade do Hero),
 //     mas com o que a RLS deixa ler direto em lote. O que fica de fora vira null e a regra cai na forma conservadora
-//     (ex.: o herói não lê o aceite da marca → só espera; a marca não lê o elenco → só as esperas mudam de texto).
+//     (ex.: o Hero não lê o aceite da marca → só espera; a marca não lê o elenco → só as esperas mudam de texto).
 import { localDay } from "@/lib/today/logic";
 import { flowStep, flowTerms, isActiveHero, nextStep, nextStepHref, stageFromBrandStatus, stageFromOpportunity, type FlowDeliverable, type FlowInput, type FlowParty, type FlowStep, type FlowViewer, type NextAction, type NextStep } from "./next-step";
 import { isDealStage, stageIndex, type DealOutcome, type DealStage } from "./stages";
@@ -26,14 +26,14 @@ export type TurnQuick = "confirmContract" | "finishDeal";
 const QUICK: Partial<Record<NextAction, TurnQuick>> = { confirmContract: "confirmContract", finishDeal: "finishDeal" };
 
 export type TurnSource = {
-  /** chave estável (negócio na agência/marca; oportunidade no herói) */
+  /** chave estável (negócio na agência/marca; oportunidade no Hero) */
   key: string;
   dealId: string;
   requestId?: string | null;
   dealTalentId?: string | null;
   /** nome do negócio/campanha */
   title: string;
-  /** a outra ponta: marca (agência e herói) ou herói(s) (marca) */
+  /** a outra ponta: marca (agência e Hero) ou Hero(s) (marca) */
   counterpart: string;
   /** última mudança (etapa/consulta): desempate de quem não tem prazo */
   updatedAt: string | null;
@@ -269,7 +269,7 @@ export function brandSource(c: BrandCampaignRow, rows: { terms: TermsRow[]; acce
   };
 }
 
-// ---- herói
+// ---- Hero
 export type HeroOpportunityRow = {
   id: string;
   status: string;
@@ -283,7 +283,7 @@ const DELIVERABLE_STATUSES = new Set<string>(["planned", "in_production", "submi
 
 export function heroSource(o: HeroOpportunityRow, rows: { terms: TermsRow[]; acceptances: AcceptanceRow[] }, canCreate: boolean): TurnSource {
   const fallback = stageFromOpportunity(o.deal.status);
-  // o herói não lê o aceite da marca (RLS): só o dele conta
+  // o Hero não lê o aceite da marca (RLS): só o dele conta
   const terms = flowTerms(termsFor(o.deal.id, rows.terms, rows.acceptances), false);
   const flow: FlowInput = {
     stage: fallback.stage,

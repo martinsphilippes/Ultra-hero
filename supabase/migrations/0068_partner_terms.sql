@@ -2,7 +2,7 @@
 -- Idempotente (create if not exists / or replace / drop if exists).
 --
 -- Decisões (31/10/2026, lançamento público):
---   • heróis e agências entram por convite e, no aceite, aceitam os Termos do Parceiro (/legal/partner-terms).
+--   • Heros e agências entram por convite e, no aceite, aceitam os Termos do Parceiro (/legal/partner-terms).
 --     Guardamos a versão aceita e a data: é a prova do aceite (clickwrap), como num cadastro de rede social;
 --   • antes do primeiro envio de foto ou vídeo, a pessoa confirma a declaração de direitos (imagem, voz, autoria).
 --     A data também fica guardada. Nova versão dos Termos zera a confirmação: o próximo envio pede de novo;

@@ -48,7 +48,7 @@
     "sides": {
       "agency": "Agência",
       "brand": "Marca",
-      "talent": "Herói",
+      "talent": "Hero",
       "staff": "Staff externo",
       "system": "Sistema"
     }
@@ -83,7 +83,7 @@
     "arrived": "{n} de {total} chegaram",
     "sides": {
       "agency": "Agência",
-      "talent": "Herói",
+      "talent": "Hero",
       "staff": "Staff externo"
     },
     "notYet": "A caminho",
@@ -161,7 +161,7 @@
     "copyFailed": "Não foi possível copiar. Selecione o link.",
     "sides": {
       "agency": "Agência",
-      "talent": "Herói",
+      "talent": "Hero",
       "staff": "Staff externo",
       "brand": "Marca"
     },
@@ -198,10 +198,10 @@
     "askFeedback": "Pedir feedback do dia ao cliente",
     "briefing": "Briefing fixado",
     "briefingHint": "Aparece no topo da sala para todos.",
-    "ndaHeroes": "Heróis também assinam o NDA",
+    "ndaHeroes": "Heros também assinam o NDA",
     "ndaHeroesHint": "O staff externo sempre assina.",
     "save": "Salvar",
-    "confirmArchive": "Arquivar a sala? Staff, heróis e marca perdem o acesso; a agência continua lendo.",
+    "confirmArchive": "Arquivar a sala? Staff, Heros e marca perdem o acesso; a agência continua lendo.",
     "archive": "Arquivar sala"
   },
   "room": {
@@ -211,7 +211,7 @@
     "people": "{n} pessoas",
     "count": {
       "agency": "Agência {n}",
-      "talent": "Herói {n}",
+      "talent": "Hero {n}",
       "staff": "Staff externo {n}",
       "brand": "Marca {n}"
     },
@@ -271,13 +271,13 @@
     "team": "Equipe",
     "roles": {
       "agency": "Agência",
-      "talent": "Herói"
+      "talent": "Hero"
     },
     "shootDays": "Diárias",
     "feedback": "Avaliações do cliente",
     "parties": {
       "brand": "Marca",
-      "talent": "Herói-cliente"
+      "talent": "Hero-cliente"
     },
     "moments": {
       "production_day": "Dia da produção",
@@ -321,7 +321,7 @@
     "split": "{promoters} promotores · {passives} neutros · {detractors} detratores · {pending} aguardando",
     "parties": {
       "brand": "Marca",
-      "talent": "Herói-cliente"
+      "talent": "Hero-cliente"
     },
     "moments": {
       "production_day": "Dia da produção",

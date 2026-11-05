@@ -5,7 +5,7 @@ export const AGENCY_ERROR_CODES = [
   "already_confirmed",
   // um e-mail, um perfil de negócio (0116): a mensagem leva o tipo que a conta já tem ({kind})
   "profile_conflict",
-  // acesso do herói e da marca criados pela agência (0112)
+  // acesso do Hero e da marca criados pela agência (0112)
   "hero_email_mismatch",
   "hero_email_taken",
   "invalid_phone",
@@ -29,9 +29,9 @@ export const AGENCY_ERROR_CODES = [
   "value_per_hero_required",
   "fee_over_budget",
   "max_heroes",
-  // oportunidade de patrocínio por herói (0095)
+  // oportunidade de patrocínio por Hero (0095)
   "hero_inactive",
-  // sugerir heróis no negócio (0093)
+  // sugerir Heros no negócio (0093)
   "invalid_hero_name",
   "invalid_profile_ref",
   "too_many_new_talents",
@@ -40,7 +40,7 @@ export const AGENCY_ERROR_CODES = [
   "brand_already_owned",
   "rate_limited",
   "experiment_closed",
-  // convites por papel, equipe do herói e primeiro acesso (0091)
+  // convites por papel, equipe do Hero e primeiro acesso (0091)
   "admin_invite_max_48h",
   "admin_confirm_required",
   "invalid_role",
@@ -57,7 +57,7 @@ export const AGENCY_ERROR_CODES = [
   "user_has_talent",
   "talent_has_login",
   "talent_has_creator",
-  // login do creator com herói ligado (0087)
+  // login do creator com Hero ligado (0087)
   "creator_has_login",
   "hero_invite_pending",
   "partner_suspended",

@@ -62,7 +62,7 @@ export function getStreamProvider(): CloudflareStreamProvider {
 }
 
 /**
- * true quando o herói pode enviar vídeo: provedor da plataforma é cloudflare-stream (env
+ * true quando o Hero pode enviar vídeo: provedor da plataforma é cloudflare-stream (env
  * VIDEO_PROVIDER > setting "video.provider") e as três variáveis do Stream estão definidas.
  */
 export function isVideoUploadConfigured(settingValue?: unknown): boolean {

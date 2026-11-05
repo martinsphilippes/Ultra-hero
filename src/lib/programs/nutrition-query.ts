@@ -7,11 +7,11 @@ import { isNutritionProduct, mergeLinkedProducts, nutritionProductsAllowed, prog
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
-// Material do card Nutricional: conteúdos de nutrição/receitas do programa e os PRÓPRIOS do herói
+// Material do card Nutricional: conteúdos de nutrição/receitas do programa e os PRÓPRIOS do Hero
 // (autor), e produtos de comida (categoria is_food) ligados ao programa (0059), aos conteúdos do
-// programa, aos do herói ou direto ao herói (creator_products). Receitas só indicadas pelo herói
+// programa, aos do Hero ou direto ao Hero (creator_products). Receitas só indicadas pelo Hero
 // (creator_recipe_links de outro autor) não contam mais (decisão do responsável, Etapa 4). Mesmas
-// regras de compra do hub do herói: vínculo validado + product_is_purchasable, kill switch do
+// regras de compra do hub do Hero: vínculo validado + product_is_purchasable, kill switch do
 // comércio e nada de produto no app das lojas.
 
 const CONTENT_LIMIT = 8;
@@ -60,7 +60,7 @@ export async function loadProgramNutrition(supabase: Client, { creatorId, progra
             .limit(CONTENT_LIMIT)
         : null,
     ]);
-    // só os do herói como autor (a consulta já filtra creator_id); indicadas não entram
+    // só os do Hero como autor (a consulta já filtra creator_id); indicadas não entram
     const contents = programNutritionContents({ programContents, heroOwnContents: (heroContentRes?.data ?? []) as unknown as ContentCardData[] }, CONTENT_LIMIT);
 
     const productsAllowed = nutritionProductsAllowed({ commerceEnabled: Boolean(settingsRes && !settingsRes.error && isCommerceEnabled(settingsRes.data)), nativeApp });
@@ -97,7 +97,7 @@ async function loadProducts(supabase: Client, { creatorId, programIds, userId }:
   ]);
   if (programLinksRes?.error || heroLinksRes?.error || directRes?.error) return [];
 
-  // ordem: ligados aos conteúdos do programa → alocação direta do herói → ligados aos conteúdos do herói
+  // ordem: ligados aos conteúdos do programa → alocação direta do Hero → ligados aos conteúdos do Hero
   const fromProgram = groupCreatorProducts((programLinksRes?.data ?? []) as unknown as LinkRow[]);
   const fromHero = mergeCreatorProducts((directRes?.data ?? []) as unknown as DirectRow[], groupCreatorProducts((heroLinksRes?.data ?? []) as unknown as LinkRow[]));
   const seen = new Set<string>();

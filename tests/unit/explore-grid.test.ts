@@ -69,7 +69,7 @@ describe("tileCover", () => {
 });
 
 describe("tileLabel", () => {
-  it("monta 'título · herói · tipo' quando o conteúdo é livre", () => {
+  it("monta 'título · Hero · tipo' quando o conteúdo é livre", () => {
     expect(tileLabel({ title: "Sono profundo em 7 dias", creator: "Érick Jacquin", type: "Vídeo" })).toBe("Sono profundo em 7 dias · Érick Jacquin · Vídeo");
     expect(tileLabel({ title: "Sono", creator: "Érick", type: "Vídeo", restriction: null })).toBe("Sono · Érick · Vídeo");
   });
@@ -81,18 +81,18 @@ describe("tileLabel", () => {
     expect(tileLabel({ title: "Marmita", creator: "Anitta", type: "Receita", restriction: "Indisponível" })).toBe("Marmita · Anitta · Receita · Indisponível");
   });
 
-  it("sem herói, pula o trecho (não deixa separador duplo)", () => {
+  it("sem Hero, pula o trecho (não deixa separador duplo)", () => {
     expect(tileLabel({ title: "Guia de hábitos", type: "Guia" })).toBe("Guia de hábitos · Guia");
     expect(tileLabel({ title: "Guia de hábitos", creator: null, type: "Guia", restriction: "Indisponível" })).toBe("Guia de hábitos · Guia · Indisponível");
     expect(tileLabel({ title: "Guia", creator: "   ", type: "Guia" })).toBe("Guia · Guia");
   });
 
-  it("o herói é sempre o segundo trecho quando presente (contrato lido pelos E2E)", () => {
-    const label = tileLabel({ title: "Título com · ponto no meio", creator: "Herói", type: "Artigo", restriction: "Requer plano X" });
+  it("o Hero é sempre o segundo trecho quando presente (contrato lido pelos E2E)", () => {
+    const label = tileLabel({ title: "Título com · ponto no meio", creator: "Hero", type: "Artigo", restriction: "Requer plano X" });
     expect(label.split(" · ")[1]).toBe("ponto no meio");
     // Títulos com o separador quebram o contrato; o catálogo não usa " · " em títulos.
-    const safe = tileLabel({ title: "Título simples", creator: "Herói", type: "Artigo" });
-    expect(safe.split(" · ")[1]).toBe("Herói");
+    const safe = tileLabel({ title: "Título simples", creator: "Hero", type: "Artigo" });
+    expect(safe.split(" · ")[1]).toBe("Hero");
   });
 });
 
@@ -100,12 +100,12 @@ describe("spreadCreators", () => {
   const tile = (id: string, creator: string | null) => ({ id, creator: creator ? { slug: creator } : null });
   const slugs = (items: { creator: { slug: string } | null }[]) => items.map((item) => item.creator?.slug ?? "-");
 
-  it("não mexe numa página que já alterna heróis", () => {
+  it("não mexe numa página que já alterna Heros", () => {
     const page = [tile("1", "a"), tile("2", "b"), tile("3", "c"), tile("4", "a")];
     expect(spreadCreators(page)).toEqual(page);
   });
 
-  it("afasta dois vizinhos do mesmo herói trazendo o próximo diferente", () => {
+  it("afasta dois vizinhos do mesmo Hero trazendo o próximo diferente", () => {
     // Fronteira de rodada: ...c, a | a, b...
     const page = [tile("1", "c"), tile("2", "a"), tile("3", "a"), tile("4", "b"), tile("5", "c")];
     expect(slugs(spreadCreators(page))).toEqual(["c", "a", "b", "a", "c"]);
@@ -120,21 +120,21 @@ describe("spreadCreators", () => {
     for (let i = 1; i < out.length; i++) expect(out[i].creator?.slug).not.toBe(out[i - 1].creator?.slug);
   });
 
-  it("quando não há alternativa, deixa como está (um herói só)", () => {
+  it("quando não há alternativa, deixa como está (um Hero só)", () => {
     const page = [tile("1", "a"), tile("2", "a"), tile("3", "a")];
     expect(spreadCreators(page)).toEqual(page);
     expect(spreadCreators([])).toEqual([]);
     expect(spreadCreators([tile("1", "a")])).toEqual([tile("1", "a")]);
   });
 
-  it("posts sem herói contam como heróis distintos (nunca são 'vizinhos iguais')", () => {
+  it("posts sem Hero contam como Heros distintos (nunca são 'vizinhos iguais')", () => {
     const page = [tile("1", null), tile("2", null), tile("3", "a")];
     expect(spreadCreators(page)).toEqual(page);
   });
 });
 
 describe("CONTENT_TILE_SELECT", () => {
-  it("seleciona só as colunas do quadro, com o herói embutido e sem plano/módulo (app gratuito, 0069)", () => {
+  it("seleciona só as colunas do quadro, com o Hero embutido e sem plano/módulo (app gratuito, 0069)", () => {
     const columns = CONTENT_TILE_SELECT.split(",").map((part) => part.trim());
     for (const column of ["id", "slug", "title", "cover_url", "pillar", "type", "access_level", "source_locale"]) {
       expect(columns).toContain(column);

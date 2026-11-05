@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ editar?: string }> };
 
-// Estratégia (página e PDF pelo "Salvar como PDF" do navegador): marca, herói, data do Calendário Groscove e o texto;
+// Estratégia (página e PDF pelo "Salvar como PDF" do navegador): marca, Hero, data do Calendário Groscove e o texto;
 // situação, quem aprovou e a oportunidade enviada. Ações conforme o papel (o banco confere).
 export default async function StrategyPage({ params, searchParams }: Props) {
   const [ctx, { id }, sp] = await Promise.all([requireAgency(), params, searchParams]);

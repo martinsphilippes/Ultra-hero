@@ -5,7 +5,7 @@ import Link from "next/link";
 const BUTTON =
   "flex min-h-14 items-center justify-center gap-2 rounded-xl px-4 py-3 text-base font-semibold shadow-sm transition-[background-color,box-shadow] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
-// Topo do herói no Perfil (0092): dois caminhos claros, lado a lado — "Novo post" (rápido: foto ou vídeo do
+// Topo do Hero no Perfil (0092): dois caminhos claros, lado a lado — "Novo post" (rápido: foto ou vídeo do
 // celular) e "Novo conteúdo" (estruturado: blocos de treino, nutrição, cardápio, programa e produtos) — cada um
 // com uma linha curta explicando a diferença, e o atalho para "Meus conteúdos". Sem contentHref (talento sem
 // página), só o Novo post.

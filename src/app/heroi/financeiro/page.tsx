@@ -17,8 +17,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("finance") };
 }
 
-// Financeiro do Portal do Herói (0094 + 0097), uma tela só. Com agência: os ganhos com a agência (só o cachê do herói,
-// nunca o valor da marca nem a comissão) e, se houver, os serviços próprios. Sem agência: "Serviços e ganhos" do herói
+// Financeiro do Portal do Hero (0094 + 0097), uma tela só. Com agência: os ganhos com a agência (só o cachê do Hero,
+// nunca o valor da marca nem a comissão) e, se houver, os serviços próprios. Sem agência: "Serviços e ganhos" do Hero
 // independente. Os serviços próprios só o titular vê (e escreve); a equipe não vê o que o titular recebe (nem os ganhos
 // da agência: o casting é do titular). Registro e controle simulados: nada aqui movimenta dinheiro.
 export default async function HeroFinancePage() {

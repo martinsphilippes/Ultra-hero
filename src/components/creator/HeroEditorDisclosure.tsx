@@ -7,7 +7,7 @@ import Link from "next/link";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui";
 
-// "Editar perfil" no topo do /profile, como no Instagram (todas as contas; o herói tem também o perfil
+// "Editar perfil" no topo do /profile, como no Instagram (todas as contas; o Hero tem também o perfil
 // público): o editor completo fica recolhido logo abaixo do botão, na mesma tela. Abre pelo botão, pelo endereço /profile#perfil-publico (o
 // antigo /heroi/pagina redireciona para lá), pelo atalho em Dados e sozinho quando um formulário
 // de dentro mostra erro (erro escondido ninguém corrige).
@@ -32,7 +32,7 @@ export function openHeroEditor() {
 type Props = {
   /** Página pública: só com o perfil ativo. */
   publicHref: string | null;
-  /** Texto abaixo do título do editor (o padrão fala da página pública do herói). */
+  /** Texto abaixo do título do editor (o padrão fala da página pública do Hero). */
   description?: string;
   children: ReactNode;
 };
@@ -63,7 +63,7 @@ export function HeroEditorDisclosure({ publicHref, description, children }: Prop
     if (focusTo === "title-far") regionRef.current?.scrollIntoView({ block: "start" });
   }, [focusTo, open]);
 
-  // endereço com a âncora do herói (ou do editor): abre sozinho; atalho de Dados: evento na janela
+  // endereço com a âncora do Hero (ou do editor): abre sozinho; atalho de Dados: evento na janela
   useEffect(() => {
     const fromHash = () => {
       const hash = window.location.hash.slice(1);

@@ -110,7 +110,7 @@ describe("formas dos formulários", () => {
     expect(brandRequestSchema.safeParse({ ...base, budgetMaxCents: -1 }).success).toBe(false);
     expect(brandRequestSchema.safeParse({ ...base, targetStates: ["XX"] }).success).toBe(false);
     expect(brandRequestSchema.safeParse({ ...base, desiredTime: "9h" }).success).toBe(false);
-    // 0096: modelo de valor e máximo de heróis
+    // 0096: modelo de valor e máximo de Heros
     expect(brandRequestSchema.safeParse({ ...base, valueModel: "por_heroi", budgetMaxCents: 200_000, maxHeroes: 3 }).success).toBe(true);
     expect(brandRequestSchema.safeParse({ ...base, valueModel: "gratis" }).success).toBe(false);
     expect(brandRequestSchema.safeParse({ ...base, maxHeroes: 0 }).success).toBe(false);

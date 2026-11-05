@@ -54,7 +54,7 @@ export type ContentBlocksProps = {
   drafts: BlockDrafts;
   products: string[];
   options: ComposerOptions;
-  /** Carregamento das opções em andamento (troca de herói). */
+  /** Carregamento das opções em andamento (troca de Hero). */
   loading?: boolean;
   /** Atalhos: cadastro de receita, vínculos e novo programa (null: sem atalho de programa). */
   hrefs: { newRecipe: string; links: string; newProgram: string | null };
@@ -67,7 +67,7 @@ export type ContentFormProps = {
   canEditAccess: boolean;
   /** Só leitura (conteúdo em revisão ou publicado para a personalidade). */
   readOnly?: boolean;
-  /** Capa enviada do celular: estado do envio (servidor) e herói em nome de quem a foto é reservada. */
+  /** Capa enviada do celular: estado do envio (servidor) e Hero em nome de quem a foto é reservada. */
   cover: { state: "ready" | "disabled" | "not_configured"; creatorId: string | null };
   /** Blocos (pilar, programa) e produtos vinculados; sem a prop, o formulário fica como antes. */
   blocks?: ContentBlocksProps;

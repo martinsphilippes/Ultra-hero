@@ -32,10 +32,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("meta.personalities"), description: t("personalities.description") };
 }
 
-// Heróis ativos (ordem editorial sort_order), com filtro por categoria do herói na URL
+// Heros ativos (ordem editorial sort_order), com filtro por categoria do Hero na URL
 // (?categoria=slug, 0049). Sem a 0049 no banco: só "Todos" e cards sem selo. Chips com navegação de
 // documento: no roteador do Next, trocar só a query na mesma rota abortava o payload (tela parada).
-// Com o Casting Groscove (0123, ~260 heróis) a grade mostra blocos de 48 e um "Ver mais heróis" (?pagina=N, também
+// Com o Casting Groscove (0123, ~260 Heros) a grade mostra blocos de 48 e um "Ver mais Heros" (?pagina=N, também
 // navegação de documento), que leva direto ao primeiro card novo (âncora #heroi-N).
 export default async function PersonalitiesPage({ searchParams }: Props) {
   const supabase = await createClient();

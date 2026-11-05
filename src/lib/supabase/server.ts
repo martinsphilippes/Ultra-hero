@@ -7,7 +7,7 @@ import type { Database } from "./database.types";
 type ClientOptions = {
   /** Fluxo "Publicar como hero" do admin: o banco só honra o cabeçalho para admin (0045). */
   actingHeroId?: string | null;
-  /** Creator em mais de uma equipe de herói: o herói escolhido (o banco só honra para membro ativo, 0092). */
+  /** Creator em mais de uma equipe de Hero: o Hero escolhido (o banco só honra para membro ativo, 0092). */
   myHeroId?: string | null;
 };
 

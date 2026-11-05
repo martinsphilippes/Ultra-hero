@@ -41,7 +41,7 @@ async function tools() {
   return { t, locale, n, money, day, ofPrevious, dayBar, duration, empty: t("noData") };
 }
 
-// ---------------------------------------------------------------- por herói
+// ---------------------------------------------------------------- por Hero
 export async function HeroesSection({ data }: { data: HeroesData }) {
   const { t, n, day, dayBar, empty } = await tools();
   const totals = heroTotals(data.rows);
@@ -65,7 +65,7 @@ export async function HeroesSection({ data }: { data: HeroesData }) {
         <Block id="ind-follows" title={t("heroes.dailyTitle")} description={t("heroes.dailyDescription")} empty={sumDaily(data.dailyFollows) === 0} emptyLabel={empty}>
           <DailyBars points={data.dailyFollows} label={t("heroes.dailyTitle")} barLabel={dayBar} formatDay={day} />
         </Block>
-        {/* visitas à página do herói (0061): contador por dia, sem pessoa */}
+        {/* visitas à página do Hero (0061): contador por dia, sem pessoa */}
         <Block
           id="ind-page-views"
           title={t("heroes.pageViewsTitle")}

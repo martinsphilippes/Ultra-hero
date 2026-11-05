@@ -28,17 +28,17 @@ import { brlToCents, centsToBrl } from "@/lib/money/brl-input";
 import { feeBudgetCents } from "@/lib/value-model/model";
 
 type Props = {
-  /** Negócio: "Usar este elenco" sugere os heróis no negócio (e o Adm grava a repartição). */
+  /** Negócio: "Usar este elenco" sugere os Heros no negócio (e o Adm grava a repartição). */
   dealId?: string;
-  /** Proposta à chamada: "Usar este elenco" devolve os heróis ao formulário da proposta. */
+  /** Proposta à chamada: "Usar este elenco" devolve os Heros ao formulário da proposta. */
   callId?: string;
-  /** Heróis que já estão no negócio/proposta (marcados ao abrir). */
+  /** Heros que já estão no negócio/proposta (marcados ao abrir). */
   currentIds: string[];
-  /** Na proposta: só podem entrar heróis liberados para marcas (consentimento + catálogo). */
+  /** Na proposta: só podem entrar Heros liberados para marcas (consentimento + catálogo). */
   allowedIds?: string[];
   /** Valor total digitado na proposta (Adm), para simular sem sair da tela. */
   budgetCents?: number | null;
-  /** Máximo de heróis do modelo (por herói); o fixo não limita. */
+  /** Máximo de Heros do modelo (por Hero); o fixo não limita. */
   maxHeroes: number | null;
   onUse?: (ids: string[]) => void;
   /** Leitura dos dados (padrão: a ação do servidor); os testes de tela trocam por dados de exemplo. */

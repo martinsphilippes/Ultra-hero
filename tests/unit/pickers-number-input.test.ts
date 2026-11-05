@@ -68,7 +68,7 @@ describe("entity (cartão abaixo das caixas de seleção)", () => {
     expect(entityOptionLabel(" Ana ", null)).toBe("Ana");
     expect(entityDetails(["Gestor", null, "", "Gestor", "ana@x.com"])).toBe("Gestor · ana@x.com");
   });
-  it("membro, creator e herói", () => {
+  it("membro, creator e Hero", () => {
     expect(memberOption(tp, { userId: "u1", name: "grupoquantso", role: "admin", jobTitle: "Sócio" })).toMatchObject({ value: "u1", name: "grupoquantso", role: "roles.agencyAdmin", detail: "Sócio" });
     expect(memberOption(tp, { userId: "u2", name: "Bia", role: "outro" }).role).toBeNull();
     const c = talentOption(tp, { id: "t1", name: "Lia", city: "Recife", state: "PE", hasLogin: false });

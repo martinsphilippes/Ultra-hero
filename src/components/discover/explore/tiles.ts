@@ -34,7 +34,7 @@ export function tileCover(coverUrl: string | null | undefined, pillar: Pillar): 
 
 type TileLabelParts = {
   title: string;
-  /** Nome do herói (texto já traduzido / vindo do banco). */
+  /** Nome do Hero (texto já traduzido / vindo do banco). */
   creator?: string | null;
   /** Tipo já traduzido (catalog.types.*). */
   type: string;
@@ -43,13 +43,13 @@ type TileLabelParts = {
 };
 
 // Nome acessível do quadro: o título visível fica só na página do conteúdo, então o link precisa
-// descrever tudo em texto. O separador " · " é lido pelos E2E para extrair o herói (2º trecho).
+// descrever tudo em texto. O separador " · " é lido pelos E2E para extrair o Hero (2º trecho).
 export function tileLabel({ title, creator, type, restriction }: TileLabelParts): string {
   return [title, creator, type, restriction].filter((part): part is string => Boolean(part && part.trim())).join(" · ");
 }
 
-// A RPC garante no máximo um post por herói em cada rodada, mas na fronteira entre rodadas o último
-// de uma e o primeiro da outra podem ser do mesmo herói. Este passe, só dentro da página (não muda
+// A RPC garante no máximo um post por Hero em cada rodada, mas na fronteira entre rodadas o último
+// de uma e o primeiro da outra podem ser do mesmo Hero. Este passe, só dentro da página (não muda
 // quais itens vêm em cada offset, só a ordem local), afasta vizinhos repetidos quando há alternativa.
 export function spreadCreators<T extends { id: string; creator: { slug: string } | null }>(items: T[]): T[] {
   const out = [...items];

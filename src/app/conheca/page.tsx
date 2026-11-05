@@ -6,7 +6,7 @@ import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
 import { INSTITUTIONAL_PATH, TEASER_ENABLED } from "@/lib/institutional/root";
 import { launchTagsFrom } from "@/lib/launch-leads";
 
-// /conheca: teaser oficial de lançamento (pedido do dono, 04/11; substitui a apresentação que explicava Herói, Marca e
+// /conheca: teaser oficial de lançamento (pedido do dono, 04/11; substitui a apresentação que explicava Hero, Marca e
 // Agência). Visitante sem sessão chega aqui pelo "/" (middleware); num domínio próprio de marketing (MARKETING_HOSTS)
 // o "/" mostra esta página direto. O teaser em si mora em src/components/launch/LaunchTeaser.tsx (a porta do
 // influenciador, /conheca/influenciador, usa o mesmo). Sem spoiler do produto nos metadados.

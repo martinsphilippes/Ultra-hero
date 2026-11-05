@@ -11,8 +11,8 @@ import { getManagedCreator } from "../_lib/creator";
 
 type StatusRow = { status: "draft" | "published" | "archived"; review_status: "none" | "in_review" | "returned" | "approved" | "rejected" };
 
-// Painel do herói escolhido pelo admin (Publicar como hero): contagens por status/revisão, devolvidos
-// com feedback e últimas revisões. O início do herói é o do Portal do Herói (heroi/page.tsx).
+// Painel do Hero escolhido pelo admin (Publicar como hero): contagens por status/revisão, devolvidos
+// com feedback e últimas revisões. O início do Hero é o do Portal do Hero (heroi/page.tsx).
 export async function AdminHeroDashboard() {
   const [t, tn, tcat, locale, ctx] = await Promise.all([getTranslations("creator"), getTranslations("nav"), getTranslations("catalog"), getLocale(), getManagedCreator("dashboard")]);
   if (!ctx.creatorId || !ctx.profile) return <CreatorUnavailable reason={ctx.reason === "ok" ? "unlinked" : ctx.reason} name={ctx.profile?.name} />;
@@ -20,7 +20,7 @@ export async function AdminHeroDashboard() {
   const supabase = ctx.supabase;
   const [{ data: rows }, { data: reviews }, { data: returned }] = await Promise.all([
     supabase.from("content").select("status, review_status").eq("creator_id", ctx.creatorId),
-    // o admin lê todas as revisões: o filtro pelo herói escolhido fica explícito
+    // o admin lê todas as revisões: o filtro pelo Hero escolhido fica explícito
     supabase.from("content_reviews").select("id, round, decision, feedback, submitted_at, decided_at, content:content!inner(id, title)").eq("content.creator_id", ctx.creatorId).order("submitted_at", { ascending: false }).limit(6),
     supabase.from("content").select("id, title, updated_at").eq("creator_id", ctx.creatorId).eq("review_status", "returned").order("updated_at", { ascending: false }).limit(5),
   ]);
@@ -107,7 +107,7 @@ export async function AdminHeroDashboard() {
         <ReviewTimeline reviews={(reviews ?? []) as unknown as ReviewRow[]} showContent compact />
       </Section>
 
-      {/* O perfil do herói mora na tela Perfil (/profile): aqui fica só o atalho dos vínculos. */}
+      {/* O perfil do Hero mora na tela Perfil (/profile): aqui fica só o atalho dos vínculos. */}
       <div className="grid gap-3">
         <Card interactive asChild>
           <Link href="/heroi/vinculos" className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">

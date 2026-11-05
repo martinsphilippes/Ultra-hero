@@ -8,7 +8,7 @@ import { recoverFromStaleBuild } from "@/lib/stale-build";
 
 type Props = { error: Error & { digest?: string }; reset: () => void };
 
-// Erro das páginas do Portal do Herói (dentro da casca do portal).
+// Erro das páginas do Portal do Hero (dentro da casca do portal).
 export default function HeroPortalError({ error, reset }: Props) {
   const t = useTranslations("nav");
   useEffect(() => {

@@ -3,7 +3,7 @@
     "label": "datos del {date} · declarado por {by} el {declaredAt}",
     "labelShort": "datos del {date} · declarado por {by}",
     "side": {
-      "talent": "héroe",
+      "talent": "Hero",
       "agency": "agencia",
       "integration": "integración"
     },
@@ -115,7 +115,7 @@
     "views": "{count, plural, =0 {ninguna visita} one {# visita} other {# visitas}}",
     "lastView": "última visita el {date}",
     "inactive": "Ningún enlace activo. Genera uno para enviar a las marcas.",
-    "needsConsent": "Para generar el link, el héroe debe autorizar el uso comercial de su imagen (es lo que permite mostrar el media kit a las marcas).",
+    "needsConsent": "Para generar el link, el Hero debe autorizar el uso comercial de su imagen (es lo que permite mostrar el media kit a las marcas).",
     "goConsent": "Abrir Consentimiento",
     "linkOnce": "Este enlace aparece solo ahora. Cópialo y guárdalo: después solo se puede generar otro.",
     "link": "Enlace del media kit",
@@ -125,14 +125,14 @@
     "regenerate": "Generar nuevo enlace",
     "revoke": "Desactivar enlace",
     "confirmRevoke": "¿Desactivar el enlace? Quien tenga la dirección deja de ver el kit.",
-    "consentStepsAgency": "Cómo resolverlo: sube la autorización firmada en Documentos y toca \"Registrar consentimiento\" en la ficha del héroe.",
-    "consentStepsAgencyLogin": "Cómo resolverlo: este héroe tiene login, así que solo él puede autorizar. Pídele que abra el Portal del Héroe → Consentimiento y acepte.",
+    "consentStepsAgency": "Cómo resolverlo: sube la autorización firmada en Documentos y toca \"Registrar consentimiento\" en la ficha del Hero.",
+    "consentStepsAgencyLogin": "Cómo resolverlo: este Hero tiene login, así que solo él puede autorizar. Pídele que abra el Portal del Hero → Consentimiento y acepte.",
     "consentStepsOffice": "Cómo resolverlo: abre Consentimiento y acepta los términos. Luego vuelve aquí y genera el link.",
     "goConsentAgency": "Ir al consentimiento"
   },
   "public": {
     "eyebrow": "Media kit",
-    "declaredNote": "Métricas declaradas por el héroe o por la agencia, con la fecha de cada dato.",
+    "declaredNote": "Métricas declaradas por el Hero o por la agencia, con la fecha de cada dato.",
     "poweredBy": "Groscove Ultra",
     "unavailableTitle": "Este enlace no está disponible",
     "unavailableBody": "El enlace puede haber vencido o haberse desactivado. Pide uno nuevo a quien lo envió."

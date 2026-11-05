@@ -19,10 +19,10 @@ type Props = {
   locale: Locale;
   theme: ResolvedTheme;
   photoState: AvatarPhotoState;
-  /** Texto de apoio da foto (heróis: a mesma foto vale na página pública). */
+  /** Texto de apoio da foto (Heros: a mesma foto vale na página pública). */
   photoHint?: string;
   /**
-   * Herói com o perfil ativo: um avatar só, editado em "Editar perfil" (topo da página). Aqui fica só
+   * Hero com o perfil ativo: um avatar só, editado em "Editar perfil" (topo da página). Aqui fica só
    * um aviso com o atalho para lá, e salvar nunca envia o avatar.
    */
   avatarInHeroEditor?: boolean;
@@ -30,7 +30,7 @@ type Props = {
 
 // Formulário de dados do perfil: nome, foto (só foto real, enviada pelo celular), idioma e tema. A
 // foto é gravada pelas actions próprias (envio/remoção) e nunca vai no "Salvar". Sem foto, as
-// iniciais do nome. Herói ativo: a foto fica em "Editar perfil".
+// iniciais do nome. Hero ativo: a foto fica em "Editar perfil".
 export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoState, photoHint, avatarInHeroEditor = false }: Props) {
   const t = useTranslations("me.profile.data");
   const tl = useTranslations("common.languages");
@@ -92,7 +92,7 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoSt
         <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} autoComplete="nickname" disabled={pending} />
       </FormField>
 
-      {/* herói ativo: a foto fica só em "Editar perfil", no topo da página */}
+      {/* Hero ativo: a foto fica só em "Editar perfil", no topo da página */}
       {avatarInHeroEditor ? null : (
         <fieldset className="flex flex-col gap-2">
           <legend className="text-sm font-semibold text-fg">{t("avatar")}</legend>

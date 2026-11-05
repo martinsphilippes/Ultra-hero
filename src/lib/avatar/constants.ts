@@ -1,7 +1,7 @@
 // Foto de perfil (0031): constantes compartilhadas por cliente, servidor e testes.
 
 export const AVATAR_BUCKET = "avatars";
-/** Lado do quadrado gerado no aparelho: cobre o maior uso (128 px no card do herói, em tela 3x). */
+/** Lado do quadrado gerado no aparelho: cobre o maior uso (128 px no card do Hero, em tela 3x). */
 export const AVATAR_SIZE = 512;
 /** Arquivo escolhido na câmera/galeria, antes do redimensionamento. */
 export const MAX_SOURCE_BYTES = 15 * 1024 * 1024;

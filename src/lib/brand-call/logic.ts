@@ -140,7 +140,7 @@ export const callFormSchema = z.object({
   networks: z.array(z.enum(NETWORKS)).max(NETWORKS.length),
   budgetCents: z.number().int().min(1).max(10_000_000_000).nullable(),
   budgetDisplay: z.enum(BUDGET_DISPLAYS),
-  /** 0096: fixo = verba total; por_heroi = verba por herói + máximo de heróis (limita o investimento). */
+  /** 0096: fixo = verba total; por_heroi = verba por Hero + máximo de Heros (limita o investimento). */
   valueModel: z.enum(VALUE_MODELS),
   maxHeroes: z.number().int().min(1).max(50).nullable(),
   respondDate: z.union([z.literal(""), isoDate]),
@@ -325,7 +325,7 @@ export type BrandCall = {
   niches: string[];
   networks: Network[];
   budgetDisplay: BudgetDisplay;
-  /** 0096: modelo do valor e máximo de heróis (a agência gestora lê; o herói não) */
+  /** 0096: modelo do valor e máximo de Heros (a agência gestora lê; o Hero não) */
   valueModel: ValueModel;
   maxHeroes: number | null;
   /** só para a marca e o Adm da agência (na forma escolhida); null para os outros */

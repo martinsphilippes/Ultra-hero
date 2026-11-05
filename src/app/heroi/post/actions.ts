@@ -19,7 +19,7 @@ import { schedulePushDispatch } from "@/lib/push/schedule";
 import { hasUploadRights } from "@/lib/partner-terms/server";
 import { UPLOAD_RIGHTS_REQUIRED } from "@/lib/partner-terms/version";
 
-// Composer de post em vídeo do herói. O ticket de upload, o vínculo uid → herói (stream_uploads,
+// Composer de post em vídeo do Hero. O ticket de upload, o vínculo uid → Hero (stream_uploads,
 // gravado só pelo service role) e o rascunho nascem juntos no servidor; o banco recusa corpo e
 // publicação com uid sem esse vínculo (0026). O cliente só conhece o contentId.
 
@@ -27,7 +27,7 @@ type StartResult = { ok: true; contentId: string; uploadUrl: string } | ActionFa
 type PublishResult = { ok: true; slug: string } | ActionFailure;
 type DiscardResult = { ok: true; deleted: boolean } | ActionFailure;
 
-/** Tickets por herói por hora; o gatilho de stream_uploads aplica o mesmo teto. */
+/** Tickets por Hero por hora; o gatilho de stream_uploads aplica o mesmo teto. */
 const UPLOADS_PER_HOUR = 10;
 
 const startSchema = z.object({
@@ -90,11 +90,11 @@ export async function startVideoPost(input: { fileSize: number; fileName?: strin
   const ctx = await creatorActionContext("post");
   if (!ctx.ok) return ctx;
   const { supabase, creatorId, userId } = ctx;
-  // Termos do Parceiro (0068): quem envia (herói, ou a agência no admin pelo herói) confirma os direitos antes
+  // Termos do Parceiro (0068): quem envia (Hero, ou a agência no admin pelo Hero) confirma os direitos antes
   if (!(await hasUploadRights(supabase, userId))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
   if (!(await readVideoUploadConfigured(supabase))) return { ok: false, error: "video_not_configured" };
 
-  // Limite antes de pedir o ticket (a RLS deixa o herói contar os próprios envios); o gatilho do
+  // Limite antes de pedir o ticket (a RLS deixa o Hero contar os próprios envios); o gatilho do
   // banco segura corrida entre duas abas.
   const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
   const { count, error: countError } = await supabase
@@ -113,7 +113,7 @@ export async function startVideoPost(input: { fileSize: number; fileName?: strin
   }
   const uid = ticket.mediaRef.id;
 
-  // Vínculo uid → herói da sessão, só pelo service role. Sem ele o vídeo não serve para nada:
+  // Vínculo uid → Hero da sessão, só pelo service role. Sem ele o vídeo não serve para nada:
   // apaga no Cloudflare e devolve o erro.
   const admin = createAdminClient();
   const { error: linkError } = await admin.from("stream_uploads").insert({ uid, creator_id: creatorId, expires_at: ticket.expiresAt });
@@ -173,7 +173,7 @@ type OwnDraft = { id: string; slug: string; status: string; creator_id: string |
 
 async function loadOwnContent(ctx: CreatorActionContext, contentId: string): Promise<OwnDraft | ActionFailure> {
   const { data } = await ctx.supabase.from("content").select("id, slug, status, creator_id, published_at").eq("id", contentId).maybeSingle();
-  // A RLS já esconde conteúdo de outros heróis; a comparação é a defesa extra (e não revela ids).
+  // A RLS já esconde conteúdo de outros Heros; a comparação é a defesa extra (e não revela ids).
   if (!data || data.creator_id !== ctx.creatorId) return { ok: false, error: "forbidden" };
   return data as OwnDraft;
 }
@@ -200,7 +200,7 @@ export async function publishVideoPost(input: { contentId: string; title: string
   const { error: updateError } = await supabase.from("content").update({ title, summary: caption || null, pillar }).eq("id", contentId);
   if (updateError) return failFrom(updateError);
 
-  // bloco do pilar (0075): o banco confere dono, forma e referências (receita do herói, produto no ar).
+  // bloco do pilar (0075): o banco confere dono, forma e referências (receita do Hero, produto no ar).
   // Sem bloco, apaga o que uma tentativa anterior de publicar (com outro pilar) possa ter deixado.
   const { error: blockError } = block
     ? await supabase.rpc("post_block_set", { p_content: contentId, p_kind: block.kind, p_data: block.data })
@@ -229,7 +229,7 @@ export async function publishVideoPost(input: { contentId: string; title: string
   revalidatePost();
   revalidatePath("/inicio");
   revalidatePath("/explore");
-  // post no ar: avisa quem favoritou o herói (fila enchida pelo banco, 0054)
+  // post no ar: avisa quem favoritou o Hero (fila enchida pelo banco, 0054)
   schedulePushDispatch();
   return { ok: true, slug };
 }

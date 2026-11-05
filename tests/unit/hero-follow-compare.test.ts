@@ -16,7 +16,7 @@ import { feedHref, followReducer, isMissingFollowSchema, parseFeedParam, resolve
 import type { HistoryDay } from "@/lib/wearables/demo";
 import { generateWatchDay } from "@/lib/wearables/demo";
 
-// Seguir heróis e "Você vs Hero" (0056): matemática da comparação, frases, feed e botão.
+// Seguir Heros e "Você vs Hero" (0056): matemática da comparação, frases, feed e botão.
 
 describe("compareValues", () => {
   it("percentual inteiro da referência e barras relativas ao maior", () => {

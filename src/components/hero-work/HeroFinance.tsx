@@ -26,7 +26,7 @@ const VIEW_VARIANT: Record<HeroServiceView, BadgeVariant> = { overdue: "danger",
 
 const centsToText = (cents: number) => (cents === 0 ? "" : (cents / 100).toFixed(2).replace(".", ","));
 
-// "Serviços e ganhos" do herói independente: painel (a receber, vencidos, recebido no mês, previsão 30/60/90 dias) e a
+// "Serviços e ganhos" do Hero independente: painel (a receber, vencidos, recebido no mês, previsão 30/60/90 dias) e a
 // lista por serviço com a situação, "marcar como recebido" (com a data) e o comprovante opcional (bucket privado
 // hero-proofs, só o titular). Registro simulado: nada é cobrado nem pago por aqui. O app das lojas esconde os valores.
 export function HeroFinance({ creatorId, services, today, canWrite }: Props) {
@@ -229,7 +229,7 @@ function blank(creatorId: string, today: string): HeroServiceInput & { amountTex
   return { id: null, creatorId, title: "", client: "", serviceOn: today, amountCents: 0, amountText: "", dueOn: "", status: "receivable", receivedOn: "", paymentNote: "" };
 }
 
-// Comprovante opcional: anexar (envio direto ao bucket privado hero-proofs, caminho <herói>/<serviço>/<arquivo>), abrir
+// Comprovante opcional: anexar (envio direto ao bucket privado hero-proofs, caminho <Hero>/<serviço>/<arquivo>), abrir
 // por endereço assinado de 60 s e remover. Só o titular.
 function ProofControls({ service, canWrite }: { service: HeroService; canWrite: boolean }) {
   const t = useTranslations("heroWork.finance.proof");

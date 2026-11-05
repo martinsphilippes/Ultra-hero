@@ -138,7 +138,7 @@ describe("relação e faixa de marcas", () => {
     expect(relationshipStyle("identified")).toEqual({ labelKey: "relationship.identified", tone: "dashed" });
   });
 
-  it("junta conteúdo + herói sem repetir marca, patrocinador primeiro, e descarta marca fora do ar ou relação estranha", () => {
+  it("junta conteúdo + Hero sem repetir marca, patrocinador primeiro, e descarta marca fora do ar ou relação estranha", () => {
     const b = (id: string, extra: Record<string, unknown> = {}) => ({ ...BRAND, id, name: id, ...extra });
     const chips = mergeBrandChips(
       [

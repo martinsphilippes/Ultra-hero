@@ -16,7 +16,7 @@ import { normalizeBrMobile } from "@/lib/auth/phone";
 import { INBOX_KINDS, inboxKindEmails, inboxKindPushes } from "@/lib/inbox/kinds";
 import { z } from "zod";
 
-// Acesso do herói (Casting) e da marca criados pela agência (0112): e-mail e celular obrigatórios e normalizados.
+// Acesso do Hero (Casting) e da marca criados pela agência (0112): e-mail e celular obrigatórios e normalizados.
 
 describe("e-mail de acesso", () => {
   it("normaliza: sem espaços nas pontas e minúsculo", () => {

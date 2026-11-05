@@ -2,7 +2,7 @@
   "bell": "Avisos",
   "bellUnread": "Avisos sin leer: {count}",
   "title": "Avisos",
-  "sheetDescription": "Los avisos de tu agencia, de tu marca o del Portal del Héroe llegan aquí.",
+  "sheetDescription": "Los avisos de tu agencia, de tu marca o del Portal del Hero llegan aquí.",
   "pageDescription": "Todo lo que te pasó en los portales de gestión.",
   "seeAll": "Ver todos",
   "markAll": "Marcar todas como leídas",
@@ -64,7 +64,7 @@
       "body": "Hay una actualización en {deal}."
     },
     "opportunity_answered": {
-      "title": "Respuesta del héroe",
+      "title": "Respuesta del Hero",
       "body": "{talent} respondió a la oportunidad de {deal}."
     },
     "contract_acceptance_requested": {
@@ -161,7 +161,7 @@
     },
     "sponsorship_published": {
       "title": "Oportunidad de patrocinio",
-      "body": "Héroe {talent}: {title}. Responde hasta {date}."
+      "body": "Hero {talent}: {title}. Responde hasta {date}."
     },
     "sponsorship_interest": {
       "title": "Una marca quiere patrocinar",
@@ -180,7 +180,7 @@
       "body": "{brand} publicó {title}. Propuestas hasta {date}."
     },
     "brand_call_interest": {
-      "title": "Héroe interesado",
+      "title": "Hero interesado",
       "body": "{talent} tiene interés en el pedido {title}."
     },
     "brand_call_negotiation": {
@@ -224,12 +224,12 @@
       "body": "{title} · {deal} venció el {date}."
     },
     "payout_due": {
-      "title": "{status, select, late {Pago al héroe vencido} today {Pago al héroe vence hoy} other {Pago al héroe por vencer}}",
+      "title": "{status, select, late {Pago al Hero vencido} today {Pago al Hero vence hoy} other {Pago al Hero por vencer}}",
       "body": "{status, select, late {El pago de {deal} ({talent}) está vencido.} today {El pago de {deal} ({talent}) vence hoy.} other {El pago de {deal} ({talent}) vence en hasta 3 días.}}"
     },
     "hero_account_linked": {
-      "title": "Tu cuenta de héroe está lista",
-      "body": "{name} registró a {talent} y lo vinculó a tu cuenta. Abre el Portal del Héroe."
+      "title": "Tu cuenta de Hero está lista",
+      "body": "{name} registró a {talent} y lo vinculó a tu cuenta. Abre el Portal del Hero."
     },
     "brand_access_granted": {
       "title": "Eres Dueño de {brand}",

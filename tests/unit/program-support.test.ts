@@ -93,14 +93,14 @@ describe("Nutricional: nova regra (Etapa 4)", () => {
   const recipe = (id: string) => ({ id, type: "recipe" as const, pillar: "gastronomy" as const });
   const video = (id: string, pillar: "nutrition" | "training") => ({ id, type: "video" as const, pillar });
 
-  it("só conteúdos do programa e os PRÓPRIOS do herói; indicadas pelo herói não entram", () => {
-    // a consulta do herói traz só creator_id = herói; as indicadas (creator_recipe_links) não são passadas
+  it("só conteúdos do programa e os PRÓPRIOS do Hero; indicadas pelo Hero não entram", () => {
+    // a consulta do Hero traz só creator_id = Hero; as indicadas (creator_recipe_links) não são passadas
     const contents = programNutritionContents({ programContents: [video("t", "training"), recipe("p1")], heroOwnContents: [recipe("h1"), recipe("p1"), video("h2", "nutrition")] }, 8);
     expect(contents.map((c) => c.id)).toEqual(["p1", "h1", "h2"]);
     expect(programNutritionContents({ programContents: [video("t", "training")], heroOwnContents: [] }, 8)).toEqual([]);
   });
 
-  it("programa sem nutrição e herói sem receita própria: some, mesmo que o herói indique receitas", () => {
+  it("programa sem nutrição e Hero sem receita própria: some, mesmo que o Hero indique receitas", () => {
     const contents = programNutritionContents({ programContents: [video("t", "training")], heroOwnContents: [] }, 8);
     expect(nutritionVisible({ contents: contents.length, products: 0, productsAllowed: true })).toBe(false);
   });

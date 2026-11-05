@@ -21,7 +21,7 @@ export type VersionItem = {
   content: { id: string; title: string; type: string; status: string; creator_id: string | null } | null;
 };
 
-/** Herói dono do programa: a busca só traz conteúdos dele (0052). Nulo = programa editorial, sem herói. */
+/** Hero dono do programa: a busca só traz conteúdos dele (0052). Nulo = programa editorial, sem Hero. */
 export type ProgramHero = { id: string; name: string } | null;
 
 type EditorProps = { programId: string; versionId: string; items: VersionItem[]; readOnly: boolean; hero: ProgramHero };
@@ -143,7 +143,7 @@ function ItemRow({ item, index, total, programId, versionId, readOnly, foreign, 
                 {t("contentArchived")}
               </Badge>
             )}
-            {/* etapa de outro herói (legado da troca de heróis da 0044): a 0052 remove */}
+            {/* etapa de outro Hero (legado da troca de Heros da 0044): a 0052 remove */}
             {foreign && (
               <Badge variant="warning" size="sm">
                 {t("foreignContent")}

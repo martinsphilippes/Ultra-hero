@@ -3,7 +3,7 @@
     "briefing_received": "Briefing recibido",
     "qualification": "Calificación",
     "shortlist": "Elenco sugerido",
-    "consultation": "Consulta a héroes",
+    "consultation": "Consulta a Heros",
     "proposal_prep": "Preparando propuesta",
     "proposal_sent": "Propuesta enviada",
     "negotiation": "Negociación",
@@ -142,7 +142,7 @@
     "system": "automático",
     "manual": "manual",
     "visibleBrand": "la marca ve",
-    "visibleTalent": "el héroe ve",
+    "visibleTalent": "el Hero ve",
     "until": "hasta {date}",
     "monthNav": "Mes",
     "prevMonth": "Mes anterior",
@@ -173,7 +173,7 @@
   },
   "taskSteps": {
     "1": "Briefing recibido",
-    "2": "Alineación con el héroe",
+    "2": "Alineación con el Hero",
     "3": "Reunión de alineación",
     "4": "Guion enviado",
     "5": "Guion aprobado por la marca",
@@ -198,7 +198,7 @@
       "recorded_by_agency": "registrado por la agencia",
       "e_signature": "firma electrónica"
     },
-    "disclaimer": "La marca y el héroe aceptan estos términos con firma electrónica simple (nombre completo y CPF/CNPJ), con comprobante. Cada versión nueva necesita una nueva firma.",
+    "disclaimer": "La marca y el Hero aceptan estos términos con firma electrónica simple (nombre completo y CPF/CNPJ), con comprobante. Cada versión nueva necesita una nueva firma.",
     "version": "Términos v{n}",
     "draftLabel": "Borrador v{n}",
     "history": "{count, plural, one {# versión anterior} other {# versiones anteriores}}",
@@ -236,7 +236,7 @@
     },
     "side": {
       "agency": "Agencia",
-      "talent": "Héroe",
+      "talent": "Hero",
       "brand": "Marca"
     },
     "dueAt": "hasta {date}",
@@ -273,7 +273,7 @@
     },
     "decided": {
       "approve": "Guion aprobado.",
-      "changes": "Ajustes pedidos al héroe."
+      "changes": "Ajustes pedidos al Hero."
     }
   },
   "deliverables": {
@@ -287,7 +287,7 @@
     "submissionVersion": "Envío v{n}",
     "proofVersion": "Comprobante v{n}",
     "submittedBy": {
-      "talent": "por el héroe",
+      "talent": "por el Hero",
       "agency": "por la agencia"
     },
     "openLink": "abrir",
@@ -369,8 +369,8 @@
     "kinds": {
       "brand_receivable": "Por cobrar a la marca",
       "commission": "Comisión de la agencia",
-      "talent_payout": "Pago al héroe",
-      "client_receivable": "A cobrar del héroe-cliente"
+      "talent_payout": "Pago al Hero",
+      "client_receivable": "A cobrar del Hero-cliente"
     },
     "status": {
       "planned": "Planificado",
@@ -424,7 +424,7 @@
     "dataTitle": "Datos de la firma",
     "party": "Parte",
     "partyBrand": "Marca {brand}",
-    "partyTalent": "Héroe {name}",
+    "partyTalent": "Hero {name}",
     "signerName": "Nombre",
     "cpf": "CPF",
     "cnpj": "CNPJ",

@@ -35,7 +35,7 @@ test.describe("indicadores (admin)", () => {
     await expect(page.getByTestId("indicators-page")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: "Indicadores" })).toBeVisible();
     await expect(page.getByText("nenhuma pessoa aparece aqui")).toBeVisible();
-    // padrão: Por herói, 30 dias
+    // padrão: Por Hero, 30 dias
     await expect(page.getByTestId("indicator-tab-herois")).toHaveAttribute("aria-current", "page");
     await expect(page.getByRole("radio", { name: "30 dias" })).toHaveAttribute("aria-checked", "true");
 
@@ -81,7 +81,7 @@ test.describe("indicadores (admin)", () => {
 });
 
 test.describe("contador de atalhos", () => {
-  test("abrir um atalho do herói avisa o contador (204), sem esperar; corpo inválido também 204", async ({ page }) => {
+  test("abrir um atalho do Hero avisa o contador (204), sem esperar; corpo inválido também 204", async ({ page }) => {
     const beacon = page.waitForResponse((r) => r.url().endsWith("/api/shortcut-opens") && r.request().method() === "POST", { timeout: 15_000 });
     await page.goto("/personalities/erick-jacquin/alimentacao");
     expect((await beacon).status()).toBe(204);

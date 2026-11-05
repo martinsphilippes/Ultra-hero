@@ -20,7 +20,7 @@ export async function loadChefExtras(creatorId: string): Promise<ChefExtras> {
 }
 
 // Bloco do perfil público do chef: especialidades (etiquetas) e credenciais com o rótulo
-// "Credenciais informadas pelo herói" (moderação do admin, não verificação).
+// "Credenciais informadas pelo Hero" (moderação do admin, não verificação).
 export async function ChefHighlights({ creatorId }: { creatorId: string }) {
   const [{ specialties, credentials }, t, ts] = await Promise.all([loadChefExtras(creatorId), getTranslations("recipes.chefProfile"), getTranslations("recipes.structured")]);
   if (specialties.length === 0 && !credentials) return null;

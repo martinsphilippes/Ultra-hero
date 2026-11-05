@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
-// Hub do herói (RF-004): cabeçalho + bibliotecas por tipo e pilar como botões em largura total,
+// Hub do Hero (RF-004): cabeçalho + bibliotecas por tipo e pilar como botões em largura total,
 // cada biblioteca com a sua página. Roda contra o banco remoto (erick-jacquin e ronaldinho-gaucho do seed).
 
 const libraries = (page: Page) => page.getByTestId("hero-libraries").getByRole("link");
@@ -13,7 +13,7 @@ async function expectNoSeriousAxe(page: Page) {
   expect(serious, JSON.stringify(serious.map((v) => ({ id: v.id, nodes: v.nodes.length, help: v.help })), null, 2)).toEqual([]);
 }
 
-test.describe("hub do herói", () => {
+test.describe("hub do Hero", () => {
   test("mostra as bibliotecas com contagem, sem abas, e cada botão tem alvo de toque de 44px", async ({ page }) => {
     await page.goto("/personalities/erick-jacquin");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Érick Jacquin");
@@ -55,7 +55,7 @@ test.describe("hub do herói", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Alimentação");
     // os cards também levam o nome da chef: o primeiro é o sobretítulo do cabeçalho
     await expect(page.getByText("Érick Jacquin", { exact: true }).first()).toBeVisible();
-    // veio da página do herói: o voltar volta para ela (rótulo "Voltar"); o link de reserva continua o do herói
+    // veio da página do Hero: o voltar volta para ela (rótulo "Voltar"); o link de reserva continua o do Hero
     const back = page.getByTestId("back-link");
     await expect(back).toHaveText("Voltar");
     await expect(back).toHaveAttribute("href", "/personalities/erick-jacquin");
@@ -110,12 +110,12 @@ test.describe("hub do herói", () => {
     await expect(page.getByText(/não encontrad/i).first()).toBeVisible();
   });
 
-  // 0044: link antigo do personagem leva à pessoa real; os dois heróis removidos não existem mais
-  test("slug antigo redireciona para o herói real e herói removido dá 404", async ({ page }) => {
+  // 0044: link antigo do personagem leva à pessoa real; os dois Heros removidos não existem mais
+  test("slug antigo redireciona para o Hero real e Hero removido dá 404", async ({ page }) => {
     await page.goto("/personalities/helena-vilar/receitas");
     // dois saltos: slug antigo (0044) e segmento antigo (0050)
     await expect(page).toHaveURL(/\/personalities\/erick-jacquin\/alimentacao$/);
-    // a página do herói carrega em streaming: o "não encontrado" chega com status 200 (limite do Next)
+    // a página do Hero carrega em streaming: o "não encontrado" chega com status 200 (limite do Next)
     for (const removed of ["bruna-castellano", "marcos-ferraz"]) {
       await page.goto(`/personalities/${removed}`);
       await expect(page.getByText(/não encontrad/i).first()).toBeVisible();

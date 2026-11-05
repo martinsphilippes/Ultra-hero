@@ -1,14 +1,14 @@
 -- =============================================================================
--- 0060 · Indicadores (Etapa 5 da vitrine dos heróis): painel /admin/indicadores
+-- 0060 · Indicadores (Etapa 5 da vitrine dos Heros): painel /admin/indicadores
 -- -----------------------------------------------------------------------------
---   1) shortcut_open_counters: aberturas de atalho da página do herói (dia-a-dia, alimentacao,
---      treinos, …) somadas por dia (Brasília), herói e fonte. Sem pessoa, sem IP, sem FK (lição da
+--   1) shortcut_open_counters: aberturas de atalho da página do Hero (dia-a-dia, alimentacao,
+--      treinos, …) somadas por dia (Brasília), Hero e fonte. Sem pessoa, sem IP, sem FK (lição da
 --      0055: nada de chave com FK para duas tabelas embutidas; aqui a chave é própria e não há FK).
 --      Só o service role soma (POST /api/shortcut-opens → shortcut_open_bump); anon/authenticated
 --      não leem nem escrevem.
 --   2) admin_indicators_*: leituras agregadas só do admin (security definer, is_admin() no início,
 --      sem execute para anon). Nenhuma devolve id de pessoa, e-mail ou nome de cliente: só contagens
---      por herói, atalho, receita, programa, produto, profissional e item colecionável.
+--      por Hero, atalho, receita, programa, produto, profissional e item colecionável.
 -- Regras gerais: idempotente; search_path fixo; grants explícitos; RLS ligada; nada de drop de tabela.
 -- =============================================================================
 
@@ -31,7 +31,7 @@ grant all on table public.shortcut_open_counters to service_role;
 alter table public.shortcut_open_counters enable row level security;
 -- nenhuma política: só o service role (que ignora a RLS) lê e soma
 
--- Soma 1 abertura no dia (Brasília). Só herói ativo e fonte conhecida; fora disso não faz nada.
+-- Soma 1 abertura no dia (Brasília). Só Hero ativo e fonte conhecida; fora disso não faz nada.
 -- Security invoker: quem executa é o service role; anon e authenticated não executam.
 create or replace function public.shortcut_open_bump(p_creator uuid, p_source text)
 returns boolean language plpgsql security invoker set search_path = public as $$
@@ -63,7 +63,7 @@ $$;
 revoke execute on function public.indicators_window(int) from public, anon;
 grant execute on function public.indicators_window(int) to authenticated, service_role;
 
--- ---------------------------------------------------------------- 3) por herói
+-- ---------------------------------------------------------------- 3) por Hero
 create or replace function public.admin_indicators_heroes(p_days int default 30)
 returns jsonb language plpgsql stable security definer set search_path = public as $$
 declare w record; v jsonb;
@@ -114,7 +114,7 @@ begin
                       where r.status = 'active' or r.followers + r.new_followers + r.content_views + r.program_views
                         + r.recipe_fazer + r.recipe_comprar_pronto + r.recipe_lista_compras + r.pro_ver_perfil
                         + r.pro_contratar + r.shortcut_opens + r.collectible_bids + r.collectible_views > 0), '[]'::jsonb),
-    -- novos seguidores por dia (Brasília), somados entre heróis; quem deixou de seguir não aparece
+    -- novos seguidores por dia (Brasília), somados entre Heros; quem deixou de seguir não aparece
     'daily_follows', (select coalesce(jsonb_agg(jsonb_build_object('day', d.day, 'value', coalesce(f.n, 0)) order by d.day), '[]'::jsonb)
                       from (select g::date as day from generate_series(w.since_day, (now() at time zone 'America/Sao_Paulo')::date, interval '1 day') g) d
                       left join (select (created_at at time zone 'America/Sao_Paulo')::date as day, count(*) n
@@ -323,7 +323,7 @@ end $$;
 
 -- ---------------------------------------------------------------- 8) ranking
 -- Receitas por toques, programas por inscrições, produtos por adições ao carrinho (top 10 cada).
--- O ranking dos heróis sai de admin_indicators_heroes (o app soma as ações de cada herói).
+-- O ranking dos Heros sai de admin_indicators_heroes (o app soma as ações de cada Hero).
 create or replace function public.admin_indicators_ranking(p_days int default 30)
 returns jsonb language plpgsql stable security definer set search_path = public as $$
 declare w record; v jsonb;

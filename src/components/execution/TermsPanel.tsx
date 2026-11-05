@@ -256,7 +256,7 @@ function TermsForm({ dealId, initial, draftId, segments, storeAgencyId }: { deal
     setImported(file);
     setKeepFile(true);
   }
-  /** Guarda o PDF importado nos documentos do negócio (só agência vê: sem compartilhar com marca/herói). */
+  /** Guarda o PDF importado nos documentos do negócio (só agência vê: sem compartilhar com marca/Hero). */
   async function storeImported(file: File): Promise<boolean> {
     if (!storeAgencyId || file.type !== "application/pdf") return false;
     const revalidate = `/agencia/negocios/${dealId}/documentos`;

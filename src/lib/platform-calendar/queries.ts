@@ -233,7 +233,7 @@ export async function listImports(limit = 10): Promise<ImportRecord[]> {
 
 export type InterestItem = { id: string; party: "hero" | "brand"; ownerId: string; name: string; state: InterestState; updatedAt: string };
 
-/** Interessados que a pessoa pode ver (RLS: admin tudo; agência o próprio casting e as marcas dela; marca/herói o seu). */
+/** Interessados que a pessoa pode ver (RLS: admin tudo; agência o próprio casting e as marcas dela; marca/Hero o seu). */
 export async function listEventInterests(eventId: string): Promise<InterestItem[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("calendar_event_interests").select("id, party, creator_profile_id, brand_id, state, updated_at").eq("event_id", eventId).order("updated_at", { ascending: false }).limit(500);

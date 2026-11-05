@@ -37,7 +37,7 @@ const allocationKey = (status: string | null): AllocationStatus | "none" => (ALL
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
-// Atalhos do herói (0050): configuração herdada da categoria principal ativa + exceção do herói.
+// Atalhos do Hero (0050): configuração herdada da categoria principal ativa + exceção do Hero.
 // null = 0050 ausente no banco (a seção avisa).
 async function loadHeroTabs(
   supabase: Client,
@@ -87,10 +87,10 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
     supabase.from("creator_profiles").select("*").eq("id", id).maybeSingle(),
     // Documentação privada: RLS só devolve para admin; nunca vai à página pública.
     supabase.from("creator_rights_private").select("document_ref, notes, reviewed_at").eq("creator_id", id).maybeSingle(),
-    // Todos os produtos publicados (admin vê tudo) + a alocação deste herói (admin vê todos os status).
+    // Todos os produtos publicados (admin vê tudo) + a alocação deste Hero (admin vê todos os status).
     supabase.from("products").select("id, title, slug, seller:seller_organizations(name)").eq("status", "published").order("title").limit(200),
     supabase.from("creator_products").select("product_id, status, sort_order").eq("creator_id", id),
-    // Categorias do herói (0049; admin vê também as inativas). Sem a 0049: aviso na seção.
+    // Categorias do Hero (0049; admin vê também as inativas). Sem a 0049: aviso na seção.
     supabase.from("hero_categories").select("id, name, is_active").order("sort_order").order("slug"),
     supabase.from("creator_category_links").select("category_id, position").eq("creator_id", id).order("position"),
   ]);
@@ -101,7 +101,7 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
     loadFollowerCount(supabase, id),
     getTranslations("follows.admin"),
     getTranslations("invites.team"),
-    // equipe do herói (0091); sem a migração, a seção avisa
+    // equipe do Hero (0091); sem a migração, a seção avisa
     supabase.rpc("hero_team_list", { p_creator: id }),
   ]);
   if (error) throw new Error(error.message);
@@ -170,7 +170,7 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
         ) : (
           <span className="text-fg-muted">{tc("noUser")}</span>
         )}
-        {/* atalho para a seção de produtos que o herói indica (fica no fim da página) */}
+        {/* atalho para a seção de produtos que o Hero indica (fica no fim da página) */}
         <Button asChild variant="secondary" size="sm" className="ml-auto">
           <a href="#hero-products" data-testid="hero-products-jump">
             <Package className="size-4" aria-hidden="true" />
@@ -208,7 +208,7 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
         />
       </div>
 
-      {/* Equipe do herói (0091): o admin convida, remove e transfere a titularidade como o titular */}
+      {/* Equipe do Hero (0091): o admin convida, remove e transfere a titularidade como o titular */}
       <section aria-labelledby="hero-team-title" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:p-6" data-testid="admin-hero-team">
         <h2 id="hero-team-title" className="type-h2 text-fg">
           {tteam("title")}
@@ -216,7 +216,7 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
         {teamRes.error ? <p className="type-body-sm text-fg-muted">{tteam("unavailable")}</p> : <HeroTeamPanel creatorId={creator.id} heroName={creator.name} team={parseHeroTeam(teamRes.data)} invitesEnabled={await getInvitesEnabled()} />}
       </section>
 
-      {/* Categorias do herói (até 2): definem os chips da aba Hero e, depois, os atalhos da página. */}
+      {/* Categorias do Hero (até 2): definem os chips da aba Hero e, depois, os atalhos da página. */}
       <section aria-labelledby="hero-categories-title" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:p-6">
         <div className="flex flex-col gap-1">
           <h2 id="hero-categories-title" className="type-h2 text-fg">
@@ -238,7 +238,7 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
         )}
       </section>
 
-      {/* Atalhos da página do herói (0050): herdados da categoria principal, com exceção por herói. */}
+      {/* Atalhos da página do Hero (0050): herdados da categoria principal, com exceção por Hero. */}
       <section aria-labelledby="hero-tabs-title" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:p-6">
         <div className="flex flex-col gap-1">
           <h2 id="hero-tabs-title" className="type-h2 text-fg">
@@ -283,10 +283,10 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
         )}
       </section>
 
-      {/* Marcas do herói (0062): aparecem ao lado do nome com o tipo de relação (RPC auditada). */}
+      {/* Marcas do Hero (0062): aparecem ao lado do nome com o tipo de relação (RPC auditada). */}
       <CreatorBrandsSection creatorId={creator.id} />
 
-      {/* Produtos do herói: alocação direta, validada pelo admin (RPC auditada). */}
+      {/* Produtos do Hero: alocação direta, validada pelo admin (RPC auditada). */}
       <section id="hero-products" aria-labelledby="hero-products-title" className="scroll-mt-20 flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:p-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="flex flex-col gap-1">

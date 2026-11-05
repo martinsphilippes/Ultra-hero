@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-// Indicadores (Etapa 5, 0060): por herói, atalho, conversão, profissionais, colecionáveis e ranking.
+// Indicadores (Etapa 5, 0060): por Hero, atalho, conversão, profissionais, colecionáveis e ranking.
 // Só agregados (nenhuma pessoa). Seção e período ficam na URL (?secao=&days=); CSV por seção.
 export default async function AdminIndicatorsPage({ searchParams }: { searchParams: SearchParams }) {
   const raw = await searchParams;

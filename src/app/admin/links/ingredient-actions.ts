@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 
 // Fila de vínculos ingrediente ↔ produto (fase 5): só o admin valida, suspende ou recusa, pela RPC
 // admin_set_ingredient_product da 0027 (auditada em admin_audit; validar suspende o validado anterior
-// do mesmo ingrediente). Recusar e suspender exigem motivo, que vai para a auditoria e para o herói.
+// do mesmo ingrediente). Recusar e suspender exigem motivo, que vai para a auditoria e para o Hero.
 
 const schema = z
   .object({ linkId: z.uuid(), status: z.enum(["validated", "suspended", "rejected"]), note: z.string().trim().max(200) })

@@ -6,7 +6,7 @@ import { CONTENT_TILE_SELECT, MAX_OFFSET, pageCursor, spreadCreators, TILE_PAGE_
 export type SearchQuery = Omit<ExploreParams, "tab">;
 export type FeedPage = { items: ContentTileData[]; hasMore: boolean; nextOffset: number };
 
-// Uma página da grade. Sem texto: explore_feed (variedade de heróis, ordem rotacionada pela semente).
+// Uma página da grade. Sem texto: explore_feed (variedade de Heros, ordem rotacionada pela semente).
 // Com texto: search_content (relevância). Nas duas, pedimos um a mais para saber se há próxima página
 // e depois buscamos os dados dos quadros numa única query, preservando a ordem da RPC.
 export async function exploreFeedPage(query: SearchQuery, seed: number, offset: number): Promise<FeedPage> {
@@ -32,6 +32,6 @@ export async function exploreFeedPage(query: SearchQuery, seed: number, offset: 
 
   const byId = new Map((tiles as unknown as ContentTileData[]).map((tile) => [tile.id, tile]));
   const items = ids.map((id) => byId.get(id)).filter((tile): tile is ContentTileData => Boolean(tile));
-  // Com texto a ordem é por relevância; só o feed ganha o afastamento de vizinhos do mesmo herói.
+  // Com texto a ordem é por relevância; só o feed ganha o afastamento de vizinhos do mesmo Hero.
   return { items: q ? items : spreadCreators(items), hasMore, nextOffset };
 }

@@ -216,7 +216,7 @@ describe("Conteúdos editoriais", () => {
 });
 
 describe("Compatibilidade e rotas", () => {
-  it("só interesse ativo, heróis e marcas separados e em ordem", () => {
+  it("só interesse ativo, Heros e marcas separados e em ordem", () => {
     const c = compatFromInterests([
       { party: "hero", ownerId: "h2", name: "Zeca", state: "interested" },
       { party: "hero", ownerId: "h1", name: "Ana", state: "interested" },
@@ -227,7 +227,7 @@ describe("Compatibilidade e rotas", () => {
     expect(c.brands.map((b) => b.id)).toEqual(["b1"]);
   });
 
-  it("links por lado: marca abre os dela; agência o negócio; herói só o negócio dele; admin só lê", () => {
+  it("links por lado: marca abre os dela; agência o negócio; Hero só o negócio dele; admin só lê", () => {
     expect(commercialHref({ kind: "campaign", id: "r", side: "brand", dealId: null })).toBe("/marca/campanhas/r");
     expect(commercialHref({ kind: "campaign", id: "r", side: "agency", dealId: "d" })).toBe("/agencia/negocios/d");
     expect(commercialHref({ kind: "campaign", id: "r", side: "agency", dealId: null })).toBeNull();

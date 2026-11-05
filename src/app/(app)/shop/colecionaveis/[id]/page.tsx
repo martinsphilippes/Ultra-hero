@@ -14,7 +14,7 @@ import { getUser, hasRole } from "@/lib/auth/session";
 import { EMPTY_MINE, fetchCollectible, fetchMyCollectibleState, finalizeIfDue } from "@/lib/collectibles/queries";
 import { createClient } from "@/lib/supabase/server";
 
-// Página do colecionável: galeria grande, herói, autenticidade e a sala do lance ao vivo.
+// Página do colecionável: galeria grande, Hero, autenticidade e a sala do lance ao vivo.
 // Quem não entrou assiste e recebe o convite para entrar e dar lance.
 export const dynamic = "force-dynamic";
 

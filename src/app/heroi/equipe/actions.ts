@@ -9,7 +9,7 @@ import { requireUser } from "@/lib/auth/session";
 import { sendInviteEmail } from "@/lib/email/invite";
 import { createClient } from "@/lib/supabase/server";
 
-// Equipe do herói (0091): o titular (ou o admin) convida, remove e transfere; o creator sem herói cria o dele
+// Equipe do Hero (0091): o titular (ou o admin) convida, remove e transfere; o creator sem Hero cria o dele
 // (pendente de aprovação). As RPCs conferem quem pode e auditam.
 
 export type HeroTeamResult = { ok: true; message: string; link?: string; emailed?: boolean } | { ok: false; error: string };

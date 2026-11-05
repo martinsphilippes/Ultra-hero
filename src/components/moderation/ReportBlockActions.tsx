@@ -12,15 +12,15 @@ import { REPORT_DETAILS_MAX, REPORT_REASONS, type ReportReason } from "@/lib/mod
 type Props = {
   creatorId: string;
   heroName: string;
-  /** Denúncia de um conteúdo; sem ele, a denúncia é do herói. */
+  /** Denúncia de um conteúdo; sem ele, a denúncia é do Hero. */
   contentId?: string | null;
   signedIn: boolean;
   /** Caminho atual, para voltar depois do login. */
   path: string;
 };
 
-// Denunciar o conteúdo (ou o herói) e bloquear o herói (0071, diretriz 1.2 da App Store). Bloquear some com o
-// herói e com o que ele publica para esta conta, em todo o app; desbloquear fica em Perfil › Heróis.
+// Denunciar o conteúdo (ou o Hero) e bloquear o Hero (0071, diretriz 1.2 da App Store). Bloquear some com o
+// Hero e com o que ele publica para esta conta, em todo o app; desbloquear fica em Perfil › Heros.
 export function ReportBlockActions({ creatorId, heroName, contentId = null, signedIn, path }: Props) {
   const t = useTranslations("moderation");
   const router = useRouter();

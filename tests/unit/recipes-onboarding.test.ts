@@ -30,7 +30,7 @@ describe("etapa demonstrativa de receitas", () => {
   });
 });
 
-describe("Alimentação sempre presente no hub do herói", () => {
+describe("Alimentação sempre presente no hub do Hero", () => {
   it("aparece mesmo sem receitas quando está em always; as outras vazias continuam ocultas", () => {
     const libs = buildCreatorLibraries({ contents: [{ type: "video", pillar: "routine" }], programs: [], products: [], always: ["alimentacao"] });
     expect(libs.map((l) => l.key)).toEqual(["dia-a-dia", "alimentacao"]);

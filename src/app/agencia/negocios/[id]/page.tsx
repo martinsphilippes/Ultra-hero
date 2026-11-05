@@ -63,7 +63,7 @@ export default async function DealOverviewPage({ params }: Props) {
   // 0108: condições de pagamento (Adm edita antes da contratação; os demais veem o resumo sem valores)
   const hasBrand = deal.brand.id !== "";
   const [plan, execRes] = await Promise.all([deal.brand ? dealPaymentPlan(deal.id) : Promise.resolve(null), hasBrand ? getDealExecution(deal.id) : Promise.resolve(null)]);
-  // "Próximo passo" (04/11): a mesma regra das telas da marca e do herói, com o que só a agência lê (aceites, cachês)
+  // "Próximo passo" (04/11): a mesma regra das telas da marca e do Hero, com o que só a agência lê (aceites, cachês)
   const execution = execRes?.available ? execRes.data : null;
   const terms = flowTerms(execution?.terms);
   const flow: FlowInput = {
@@ -79,7 +79,7 @@ export default async function DealOverviewPage({ params }: Props) {
     deliverables: flowDeliverables(execution?.deliverables),
   };
   const step = nextStep(flow, { party: "agency", canEdit, isManager, isAdmin, canReplyOffer: offer?.canReply ?? false, canEditPlan: plan?.canEdit ?? false });
-  // guarda do "encerrar como ganho": negócio só do herói não tem termos nem entregas; só a etapa conta
+  // guarda do "encerrar como ganho": negócio só do Hero não tem termos nem entregas; só a etapa conta
   const closePending: CloseWonPending | null =
     deal.stage === "closed" ? null : hasBrand ? closeWonPending(flow) : { termsPending: false, contractPending: stageIndex(deal.stage) < 10, deliverables: [] };
   // financeiro simulado (0069), só para o Adm: taxa, prévia e lançamentos; sem a migração, a seção some

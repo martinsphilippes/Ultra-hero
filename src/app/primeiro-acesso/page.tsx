@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
 type Pending = { id: string; kind: WizardKind; agency: string | null; source?: string };
 
 // /primeiro-acesso (0091): o convidado de agência, marca, fornecedor ou profissional cria a empresa/perfil.
-// 0103: também quem escolheu Herói, Marca ou Agência no cadastro (a escolha fica no banco; voltar aqui retoma).
+// 0103: também quem escolheu Hero, Marca ou Agência no cadastro (a escolha fica no banco; voltar aqui retoma).
 // Um passo em aberto por vez (o mais antigo); sem nenhum, explica e volta ao app.
 export default async function FirstAccessPage() {
   await requireUser("/primeiro-acesso");

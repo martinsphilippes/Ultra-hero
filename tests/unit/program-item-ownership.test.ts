@@ -5,24 +5,24 @@ const NEYMAR = "11111111-1111-4111-8111-111111111111";
 const JOAO = "22222222-2222-4222-8222-222222222222";
 
 describe("canUseInProgram", () => {
-  it("programa do herói aceita só conteúdo do próprio herói", () => {
+  it("programa do Hero aceita só conteúdo do próprio Hero", () => {
     expect(canUseInProgram(NEYMAR, NEYMAR)).toBe(true);
     expect(canUseInProgram(NEYMAR, JOAO)).toBe(false);
   });
 
-  it("conteúdo sem autor não entra em programa de herói", () => {
+  it("conteúdo sem autor não entra em programa de Hero", () => {
     expect(canUseInProgram(NEYMAR, null)).toBe(false);
     expect(canUseInProgram(NEYMAR, undefined)).toBe(false);
   });
 
-  it("programa editorial (sem herói) aceita qualquer conteúdo", () => {
+  it("programa editorial (sem Hero) aceita qualquer conteúdo", () => {
     expect(canUseInProgram(null, JOAO)).toBe(true);
     expect(canUseInProgram(undefined, null)).toBe(true);
   });
 });
 
 describe("foreignProgramItems", () => {
-  it("devolve, na ordem, só as etapas de outro herói", () => {
+  it("devolve, na ordem, só as etapas de outro Hero", () => {
     const items = [
       { id: "a", creatorId: NEYMAR },
       { id: "b", creatorId: JOAO },

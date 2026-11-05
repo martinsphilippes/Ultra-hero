@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Conoce Groscove Ultra",
-    "description": "La plataforma donde marca, héroe y agencia cierran negocios rápido: oportunidades, agenda, términos y entregas en un solo lugar, y la app donde el público sigue a los héroes."
+    "description": "La plataforma donde marca, Hero y agencia cierran negocios rápido: oportunidades, agenda, términos y entregas en un solo lugar, y la app donde el público sigue a los Heros."
   },
   "nav": {
     "signup": "Crear cuenta",
@@ -13,8 +13,8 @@
   },
   "hero": {
     "eyebrow": "Groscove Ultra",
-    "title": "La plataforma donde marca, héroe y agencia cierran negocios rápido.",
-    "lead": "Oportunidades, agenda, términos y entregas en un solo lugar. Y la app donde el público sigue a los héroes con contenidos, programas y recetas.",
+    "title": "La plataforma donde marca, Hero y agencia cierran negocios rápido.",
+    "lead": "Oportunidades, agenda, términos y entregas en un solo lugar. Y la app donde el público sigue a los Heros con contenidos, programas y recetas.",
     "signedIn": "Ya iniciaste sesión."
   },
   "what": {
@@ -23,10 +23,10 @@
     "items": {
       "brand": {
         "title": "Marca",
-        "body": "Encuentra héroes, envía campañas y sigue cada entrega hasta el informe."
+        "body": "Encuentra Heros, envía campañas y sigue cada entrega hasta el informe."
       },
       "hero": {
-        "title": "Héroe",
+        "title": "Hero",
         "body": "Recibe oportunidades claras, organiza la agenda y publica para su público."
       },
       "agency": {
@@ -35,25 +35,25 @@
       },
       "app": {
         "title": "App",
-        "body": "Donde el público sigue a los héroes: contenidos, programas, recetas y Hoy."
+        "body": "Donde el público sigue a los Heros: contenidos, programas, recetas y Hoy."
       }
     }
   },
   "how": {
     "title": "Cómo funciona",
-    "lead": "De la elección del héroe al contenido aprobado, con la agencia en medio de cada conversación.",
+    "lead": "De la elección del Hero al contenido aprobado, con la agencia en medio de cada conversación.",
     "steps": {
       "choose": {
         "title": "La marca elige",
-        "body": "Recorre el catálogo de héroes, compara lado a lado y arma una preselección."
+        "body": "Recorre el catálogo de Heros, compara lado a lado y arma una preselección."
       },
       "request": {
         "title": "Envía la campaña",
         "body": "Describe la acción, el período y el presupuesto. La agencia recibe el pedido."
       },
       "consult": {
-        "title": "El héroe responde",
-        "body": "La agencia lleva la oportunidad al héroe, que acepta o rechaza."
+        "title": "El Hero responde",
+        "body": "La agencia lleva la oportunidad al Hero, que acepta o rechaza."
       },
       "terms": {
         "title": "Términos aceptados",
@@ -61,18 +61,18 @@
       },
       "deliver": {
         "title": "Creación y aprobación",
-        "body": "El héroe envía las entregas. Ajustes y aprobaciones quedan guardados por versión."
+        "body": "El Hero envía las entregas. Ajustes y aprobaciones quedan guardados por versión."
       },
       "report": {
         "title": "Resultado",
         "body": "La marca sigue cada entrega por etapa y abre el informe de la campaña."
       }
     },
-    "note": "La marca no habla directo con el héroe: la agencia está en el medio y responde por ambos lados."
+    "note": "La marca no habla directo con el Hero: la agencia está en el medio y responde por ambos lados."
   },
   "heroes": {
-    "title": "Para héroes",
-    "lead": "El trabajo con marcas y tu público en un solo portal: el Portal del Héroe.",
+    "title": "Para Heros",
+    "lead": "El trabajo con marcas y tu público en un solo portal: el Portal del Hero.",
     "items": {
       "page": {
         "title": "Página pública",
@@ -83,7 +83,7 @@
         "body": "Publica posts, contenidos y recetas para quienes te siguen."
       },
       "portal": {
-        "title": "Portal del Héroe",
+        "title": "Portal del Hero",
         "body": "Un inicio con lo que te necesita hoy, tareas y avisos."
       },
       "opportunities": {
@@ -102,10 +102,10 @@
   },
   "brands": {
     "title": "Para marcas",
-    "lead": "Elige héroes, envía campañas y sigue el resultado sin planilla paralela.",
+    "lead": "Elige Heros, envía campañas y sigue el resultado sin planilla paralela.",
     "items": {
       "catalog": {
-        "title": "Catálogo de héroes",
+        "title": "Catálogo de Heros",
         "body": "Busca por segmento, compara lado a lado y guarda tu preselección."
       },
       "campaigns": {
@@ -118,7 +118,7 @@
       },
       "sponsorship": {
         "title": "Patrocinio",
-        "body": "Ve eventos de los héroes abiertos a patrocinio y di si te interesa."
+        "body": "Ve eventos de los Heros abiertos a patrocinio y di si te interesa."
       },
       "budget": {
         "title": "Presupuesto y pagos",
@@ -136,7 +136,7 @@
     "items": {
       "casting": {
         "title": "Casting",
-        "body": "Perfiles de los héroes con media kit, redes, documentos, disponibilidad e historial."
+        "body": "Perfiles de los Heros con media kit, redes, documentos, disponibilidad e historial."
       },
       "deals": {
         "title": "Negocios",
@@ -144,21 +144,21 @@
       },
       "castBuilder": {
         "title": "Armador de elenco",
-        "body": "Arma el elenco de una propuesta a partir del casting, héroe por héroe."
+        "body": "Arma el elenco de una propuesta a partir del casting, Hero por Hero."
       },
       "agenda": {
         "title": "Agenda central y Real-Time Culture",
-        "body": "Las acciones de todos los héroes en un calendario y lo que está pasando ahora."
+        "body": "Las acciones de todos los Heros en un calendario y lo que está pasando ahora."
       }
     }
   },
   "app": {
     "title": "Para quien usa la app",
-    "lead": "El lado del público: seguir a los héroes y llevar lo que hacen a la propia rutina.",
+    "lead": "El lado del público: seguir a los Heros y llevar lo que hacen a la propia rutina.",
     "items": {
       "content": {
         "title": "Contenidos",
-        "body": "Videos, posts y artículos de los héroes, organizados por tema."
+        "body": "Videos, posts y artículos de los Heros, organizados por tema."
       },
       "programs": {
         "title": "Programas",
@@ -166,7 +166,7 @@
       },
       "recipes": {
         "title": "Recetas",
-        "body": "Recetas de los héroes, con lista de compras y Modo cocina."
+        "body": "Recetas de los Heros, con lista de compras y Modo cocina."
       },
       "today": {
         "title": "Hoy",
@@ -180,8 +180,8 @@
     "lead": "La agenda cultural del año para planear acciones en el momento justo.",
     "points": {
       "territories": "Fechas por territorio: fútbol, deporte, música, entretenimiento, moda, comercio, feriados y más.",
-      "interest": "Marcas, agencias y héroes marcan interés y vinculan propuestas a los eventos.",
-      "where": "Disponible en los portales de marca, agencia y héroe."
+      "interest": "Marcas, agencias y Heros marcan interés y vinculan propuestas a los eventos.",
+      "where": "Disponible en los portales de marca, agencia y Hero."
     }
   },
   "faq": {
@@ -196,8 +196,8 @@
         "a": "Todavía no. Pagos y compras no están activados: los valores de negocios y pedidos se registran para control, sin cobro."
       },
       "access": {
-        "q": "¿Cómo entran marcas, agencias y héroes?",
-        "a": "Crea tu cuenta eligiendo tu perfil: Héroe, Marca, Agencia o solo usar la app. ¿Recibiste una invitación? Entra con el correo invitado."
+        "q": "¿Cómo entran marcas, agencias y Heros?",
+        "a": "Crea tu cuenta eligiendo tu perfil: Hero, Marca, Agencia o solo usar la app. ¿Recibiste una invitación? Entra con el correo invitado."
       },
       "devices": {
         "q": "¿Funciona en el celular?",
@@ -222,7 +222,7 @@
     "seeAll": "Ver todo para {name}"
   },
   "interlude": {
-    "heroes": "Héroes",
+    "heroes": "Heros",
     "brands": "Marcas",
     "agency": "Agencias",
     "app": "Público"

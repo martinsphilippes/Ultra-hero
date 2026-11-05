@@ -12,7 +12,7 @@ type Props = {
   seed: number;
   nextOffset: number;
   hasMore: boolean;
-  /** Aba do feed ("Seguindo" pagina só os heróis seguidos). */
+  /** Aba do feed ("Seguindo" pagina só os Heros seguidos). */
   feed?: "seguindo" | "todos";
   /** Primeira página, já renderizada no servidor. */
   children: ReactNode;

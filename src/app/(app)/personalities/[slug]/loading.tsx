@@ -1,7 +1,7 @@
 import { useTranslations } from "next-intl";
 import { Skeleton, VisuallyHidden } from "@/components/ui";
 
-// Esqueleto do hub do herói (capa, avatar, identidade e a lista de bibliotecas).
+// Esqueleto do hub do Hero (capa, avatar, identidade e a lista de bibliotecas).
 export default function Loading() {
   const t = useTranslations("common.states");
   return (

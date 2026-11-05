@@ -8,7 +8,7 @@ import { getRoom, getRoomAccess } from "@/lib/project-room/queries";
 import { clippingHref, isUuid, type RoomPortal } from "@/lib/project-room/vocab";
 import { ProjectRoom } from "./ProjectRoom";
 
-// Página da sala para marca, herói e staff externo (0110): sem acesso → 404; sala arquivada → clipping (marca e herói).
+// Página da sala para marca, Hero e staff externo (0110): sem acesso → 404; sala arquivada → clipping (marca e Hero).
 export async function RoomPage({ portal, dealId, backHref }: { portal: Exclude<RoomPortal, "agency">; dealId: string; backHref: string }) {
   if (!isUuid(dealId)) notFound();
   // 0115: abrir a sala marca a conversa como lida (lista "Avisos e mensagens" e o aviso "Nova mensagem")

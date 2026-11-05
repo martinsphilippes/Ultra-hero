@@ -27,18 +27,18 @@
     "backToList": "Voltar à lista"
   },
   "errors": {
-    "profile_conflict": "Este e-mail já é usado por {kind, select, hero {uma conta de Herói} brand {uma conta de Marca} agency {uma conta de Agência} other {uma conta de outro perfil}}. Use outro e-mail.",
+    "profile_conflict": "Este e-mail já é usado por {kind, select, hero {uma conta de Hero} brand {uma conta de Marca} agency {uma conta de Agência} other {uma conta de outro perfil}}. Use outro e-mail.",
     "forbidden": "Você não tem permissão para esta ação.",
     "unauthenticated": "Sessão expirada. Entre novamente.",
     "invalid_input": "Dados inválidos. Revise o formulário.",
     "invalid_role": "Papel inválido para esta operação.",
     "seller_invitation_requires_org": "Convite de fornecedor exige uma organização.",
-    "creator_invitation_requires_profile": "Convite de herói exige um perfil.",
+    "creator_invitation_requires_profile": "Convite de Hero exige um perfil.",
     "invitation_not_pending": "Este convite não está mais pendente.",
     "invitation_invalid": "Convite inválido ou já utilizado.",
     "invitation_expired": "Este convite expirou. Peça um novo convite à administração.",
     "invitation_email_mismatch": "Este convite foi emitido para outro e-mail. Entre com a conta correta.",
-    "creator_profile_already_linked": "Este herói já está vinculado a outra conta.",
+    "creator_profile_already_linked": "Este Hero já está vinculado a outra conta.",
     "cannot_remove_own_admin": "Você não pode remover o seu próprio papel de admin.",
     "slug_taken": "Já existe um registro com este identificador (slug).",
     "not_found": "Registro não encontrado.",
@@ -48,8 +48,8 @@
     "assignee_not_admin": "O responsável precisa ter papel de admin ativo.",
     "note_too_long": "A nota interna passa de 1000 caracteres.",
     "no_service_role": "Chave de serviço não configurada no servidor.",
-    "no_photo": "Este herói não tem foto enviada.",
-    "no_cover": "Este herói não tem capa enviada.",
+    "no_photo": "Este Hero não tem foto enviada.",
+    "no_cover": "Este Hero não tem capa enviada.",
     "user_exists": "Já existe uma conta com este e-mail.",
     "retention_exception_active": "Há uma exceção de retenção ativa para este escopo.",
     "justification_required": "Informe uma justificativa.",
@@ -62,7 +62,7 @@
     "experiment_closed": "O banco recusou a criação desta conta com o cadastro fechado. Contas de teste criadas aqui deveriam passar; confira se a migração 0015 está aplicada no banco.",
     "generic": "Não foi possível concluir a ação. Tente novamente.",
     "rights_holder_required": "Informe o titular da autorização para marcar como autorizado.",
-    "creator_not_found": "Herói não encontrado.",
+    "creator_not_found": "Hero não encontrado.",
     "product_not_found": "Produto não encontrado.",
     "professional_profile_already_linked": "Esta conta já está ligada a outro perfil profissional.",
     "demo_account_forbidden": "Contas de exemplo não entram em agências reais.",
@@ -73,8 +73,8 @@
     "talent_already_linked": "Este convite já foi usado por outra conta.",
     "admin_invite_max_48h": "Convite de Admin vale no máximo 48 horas.",
     "admin_confirm_required": "Confirme que a pessoa terá controle total do Ultra.",
-    "creator_role_required": "A pessoa precisa ter o papel de herói.",
-    "has_hero": "Você já tem um herói.",
+    "creator_role_required": "A pessoa precisa ter o papel de Hero.",
+    "has_hero": "Você já tem um Hero.",
     "owner_must_transfer": "O titular não sai da equipe sem antes transferir a titularidade.",
     "onboarding_not_found": "Não há primeiro acesso em aberto para isso.",
     "invalid_cnpj": "CNPJ inválido."
@@ -131,13 +131,13 @@
       "awaitingFulfillments": "Remessas aguardando",
       "open": "Abrir",
       "preparingFulfillments": "Remessas em preparação",
-      "pendingHeroes": "Heróis aguardando aprovação",
+      "pendingHeroes": "Heros aguardando aprovação",
       "selfSignups": "Novos cadastros (7 dias)"
     }
   },
   "heroPublishing": {
     "title": "Publicar como hero",
-    "description": "Só a administração cria e gerencia conteúdo pelos heróis. Toque num atalho e escolha o hero.",
+    "description": "Só a administração cria e gerencia conteúdo pelos Heros. Toque num atalho e escolha o hero.",
     "cardsLabel": "Atalhos de publicação",
     "cards": {
       "post": "Novo post",
@@ -148,11 +148,11 @@
       "dashboard": "Painel"
     },
     "current": "Último hero escolhido: {name}",
-    "unavailable": "Indisponível neste ambiente: o banco ainda não tem a atualização que permite publicar pelos heróis (0045).",
+    "unavailable": "Indisponível neste ambiente: o banco ainda não tem a atualização que permite publicar pelos Heros (0045).",
     "picker": {
       "title": "Escolha o hero",
       "description": "Atalho: {card}. Você vai agir em nome do hero escolhido.",
-      "listLabel": "Heróis ativos",
+      "listLabel": "Heros ativos",
       "empty": "Nenhum hero ativo no momento.",
       "current": "Atual",
       "choosing": "Abrindo…"
@@ -161,7 +161,7 @@
       "generic": "Não foi possível escolher este hero. Tente de novo.",
       "hero_unavailable": "Este hero não está mais ativo. Escolha outro.",
       "acting_unavailable": "Indisponível neste ambiente: o banco ainda não tem a atualização 0045.",
-      "forbidden": "Só a administração publica pelos heróis.",
+      "forbidden": "Só a administração publica pelos Heros.",
       "unauthenticated": "Sua sessão expirou. Entre de novo para continuar.",
       "invalid_input": "Escolha um hero da lista."
     },
@@ -190,7 +190,7 @@
     "emptyDescription": "Ajuste a busca ou aguarde novos cadastros.",
     "roles": {
       "consumer": "Consumidor",
-      "creator": "Herói",
+      "creator": "Hero",
       "seller": "Fornecedor",
       "admin": "Admin",
       "professional": "Profissional",
@@ -211,7 +211,7 @@
       "createdAt": "Criado em",
       "lastSignIn": "Último acesso",
       "roles": "Papéis globais",
-      "rolesDescription": "Admin, herói e fornecedor como papéis globais. Acesso com escopo (perfil ou organização) vem dos convites.",
+      "rolesDescription": "Admin, Hero e fornecedor como papéis globais. Acesso com escopo (perfil ou organização) vem dos convites.",
       "scopedRoles": "Papéis com escopo",
       "scope": "Escopo: {scope}",
       "grant": "Conceder",
@@ -255,9 +255,9 @@
     "form": {
       "email": "E-mail do convidado",
       "role": "Papel",
-      "roleCreator": "Herói",
+      "roleCreator": "Hero",
       "roleSeller": "Fornecedor",
-      "creatorProfile": "Perfil de herói",
+      "creatorProfile": "Perfil de Hero",
       "creatorProfileHint": "Perfis sem usuário vinculado aparecem primeiro.",
       "unlinkedGroup": "Sem vínculo",
       "linkedGroup": "Já vinculados",
@@ -302,15 +302,15 @@
     "missingToken": "Link de convite incompleto",
     "missingTokenDescription": "Abra o link exatamente como foi enviado pela administração.",
     "signedInAs": "Conectado como {email}",
-    "grantCreator": "Você receberá acesso ao portal do herói.",
+    "grantCreator": "Você receberá acesso ao portal do Hero.",
     "grantSeller": "Você receberá acesso ao portal do fornecedor.",
     "grantNote": "Convites são de uso único, expiram e só valem para o e-mail da conta conectada.",
     "accept": "Aceitar convite",
     "accepting": "Aceitando…",
     "successTitle": "Convite aceito",
-    "successCreator": "Seu acesso de herói foi liberado.",
+    "successCreator": "Seu acesso de Hero foi liberado.",
     "successSeller": "Seu acesso ao portal do fornecedor foi liberado.",
-    "goCreator": "Abrir o Portal do Herói",
+    "goCreator": "Abrir o Portal do Hero",
     "goSeller": "Ir para o portal do fornecedor",
     "goHome": "Voltar ao app",
     "errorTitle": "Não foi possível aceitar",
@@ -325,19 +325,19 @@
     "goAgency": "Abrir portal da agência",
     "goBrand": "Abrir portal da marca",
     "inboxOnlyNote": "Os avisos ficam no sino do portal.",
-    "successTalent": "Pronto! Você agora tem o Portal do Herói.",
-    "goOffice": "Abrir o Portal do Herói",
+    "successTalent": "Pronto! Você agora tem o Portal do Hero.",
+    "goOffice": "Abrir o Portal do Hero",
     "alreadyHint": "Já entrou pela tela de login com este e-mail? Então o convite já foi aceito e seu acesso está liberado.",
     "openPortals": "Abrir meus portais",
-    "grantGeneric": "O acesso deste convite (agência, marca, herói, fornecedor ou profissional) aparece logo depois de aceitar."
+    "grantGeneric": "O acesso deste convite (agência, marca, Hero, fornecedor ou profissional) aparece logo depois de aceitar."
   },
   "creators": {
-    "title": "Heróis",
-    "description": "Perfis dos heróis do catálogo. Perfis fictícios aparecem identificados como fictícios para o público.",
-    "create": "Novo herói",
-    "createTitle": "Criar herói",
-    "editTitle": "Editar herói",
-    "tableCaption": "Lista de heróis",
+    "title": "Heros",
+    "description": "Perfis dos Heros do catálogo. Perfis fictícios aparecem identificados como fictícios para o público.",
+    "create": "Novo Hero",
+    "createTitle": "Criar Hero",
+    "editTitle": "Editar Hero",
+    "tableCaption": "Lista de Heros",
     "columns": {
       "name": "Nome",
       "pillars": "Pilares",
@@ -346,9 +346,9 @@
       "fictional": "Fictício",
       "rights": "Direitos"
     },
-    "empty": "Nenhum herói",
-    "emptyDescription": "Crie o primeiro herói.",
-    "notFound": "Herói não encontrado",
+    "empty": "Nenhum Hero",
+    "emptyDescription": "Crie o primeiro Hero.",
+    "notFound": "Hero não encontrado",
     "form": {
       "name": "Nome",
       "slug": "Slug",
@@ -356,15 +356,15 @@
       "headline": "Chamada",
       "bio": "Biografia",
       "pillars": "Pilares",
-      "isFictional": "Herói fictício",
+      "isFictional": "Hero fictício",
       "isFictionalHint": "Ligue só para personagem criado pela plataforma (perfil ilustrativo). Pessoa real: desligue e registre os direitos como autorizados.",
       "rightsNote": "Nota de direitos",
       "rightsNoteHint": "Ex.: uso de nome e imagem autorizado em contrato.",
       "sortOrder": "Ordem",
-      "mediaNote": "Foto e capa são fotos reais enviadas pelo próprio herói. Aqui só dá para remover as enviadas (moderação).",
+      "mediaNote": "Foto e capa são fotos reais enviadas pelo próprio Hero. Aqui só dá para remover as enviadas (moderação).",
       "save": "Salvar",
-      "created": "Herói criado",
-      "updated": "Herói atualizado",
+      "created": "Hero criado",
+      "updated": "Hero atualizado",
       "rightsSection": "Direitos de nome e imagem (público)",
       "rightsStatus": "Situação dos direitos",
       "rightsStatusHint": "\"Em validação\" nunca é exibido como autorizado; \"autorizado\" mostra titular e validade na página pública.",
@@ -384,25 +384,25 @@
       "privateNotesHint": "Observações da revisão. Só a administração vê.",
       "reviewedAt": "Documentação revisada em {date}",
       "photoRemove": "Remover foto enviada",
-      "photoRemoveTitle": "Remover a foto enviada pelo herói?",
+      "photoRemoveTitle": "Remover a foto enviada pelo Hero?",
       "photoRemoveDescription": "A foto sai da página pública e do perfil do usuário ligado e é apagada do Storage. A ação fica na auditoria.",
       "photoRemoved": "Foto removida",
       "coverRemove": "Remover capa enviada",
-      "coverRemoveTitle": "Remover a capa enviada pelo herói?",
-      "coverRemoveDescription": "A capa sai do card do herói e é apagada do Storage. O card fica com o fundo liso. A ação fica na auditoria.",
+      "coverRemoveTitle": "Remover a capa enviada pelo Hero?",
+      "coverRemoveDescription": "A capa sai do card do Hero e é apagada do Storage. O card fica com o fundo liso. A ação fica na auditoria.",
       "coverRemoved": "Capa removida"
     },
     "status": {
       "activate": "Reativar",
       "suspend": "Suspender",
-      "activateTitle": "Reativar herói",
-      "suspendTitle": "Suspender herói",
-      "suspendDescription": "O herói some do catálogo público e o usuário vinculado perde a operação no portal. O histórico é mantido.",
+      "activateTitle": "Reativar Hero",
+      "suspendTitle": "Suspender Hero",
+      "suspendDescription": "O Hero some do catálogo público e o usuário vinculado perde a operação no portal. O histórico é mantido.",
       "updated": "Status atualizado",
       "approve": "Aprovar",
-      "approveTitle": "Aprovar herói",
-      "approveDescription": "O herói passa a aparecer no catálogo público e o que a equipe já preparou pode ser publicado.",
-      "pendingBanner": "{count, plural, =1 {1 herói aguardando aprovação} other {# heróis aguardando aprovação}}"
+      "approveTitle": "Aprovar Hero",
+      "approveDescription": "O Hero passa a aparecer no catálogo público e o que a equipe já preparou pode ser publicado.",
+      "pendingBanner": "{count, plural, =1 {1 Hero aguardando aprovação} other {# Heros aguardando aprovação}}"
     },
     "invite": "Convidar usuário",
     "linkedTo": "Vinculado a {email}",
@@ -412,9 +412,9 @@
       "authorized": "Autorizado"
     },
     "products": {
-      "title": "Produtos do herói",
-      "description": "Produtos que este herói indica. A aba Produtos da página pública mostra só os validados aqui e os vinculados aos conteúdos do próprio herói; sem nenhum, o atalho Produtos não aparece. Suspenso e rejeitado somem.",
-      "tableCaption": "Produtos publicados e situação da alocação para este herói",
+      "title": "Produtos do Hero",
+      "description": "Produtos que este Hero indica. A aba Produtos da página pública mostra só os validados aqui e os vinculados aos conteúdos do próprio Hero; sem nenhum, o atalho Produtos não aparece. Suspenso e rejeitado somem.",
+      "tableCaption": "Produtos publicados e situação da alocação para este Hero",
       "columns": {
         "product": "Produto",
         "seller": "Fornecedor",
@@ -425,12 +425,12 @@
         "validate": "Validar",
         "suspend": "Suspender",
         "reject": "Rejeitar",
-        "validateTitle": "Validar produto para este herói?",
-        "validateDescription": "O produto passa a aparecer na aba Produtos da página pública do herói.",
+        "validateTitle": "Validar produto para este Hero?",
+        "validateDescription": "O produto passa a aparecer na aba Produtos da página pública do Hero.",
         "suspendTitle": "Suspender a alocação?",
-        "suspendDescription": "O produto some da página pública do herói. Pode ser validado de novo depois.",
+        "suspendDescription": "O produto some da página pública do Hero. Pode ser validado de novo depois.",
         "rejectTitle": "Rejeitar a alocação?",
-        "rejectDescription": "O produto some da página pública do herói e fica marcado como rejeitado."
+        "rejectDescription": "O produto some da página pública do Hero e fica marcado como rejeitado."
       },
       "statuses": {
         "validated": "Validado",
@@ -440,17 +440,17 @@
         "none": "Sem alocação"
       },
       "toasts": {
-        "validated": "Produto validado para o herói",
+        "validated": "Produto validado para o Hero",
         "suspended": "Alocação suspensa",
         "rejected": "Alocação rejeitada"
       },
       "errors": {
         "product_not_found": "Produto não encontrado.",
-        "creator_not_found": "Herói não encontrado.",
+        "creator_not_found": "Hero não encontrado.",
         "invalid_status": "Status de alocação inválido."
       },
       "empty": "Nenhum produto publicado",
-      "emptyDescription": "Publique um produto na loja para alocá-lo a este herói.",
+      "emptyDescription": "Publique um produto na loja para alocá-lo a este Hero.",
       "count": "{n, plural, =1 {# produto validado} other {# produtos validados}}",
       "jump": "Produtos vinculados ({n})"
     }
@@ -674,7 +674,7 @@
       "admin": "Admin",
       "system": "Sistema",
       "consumer": "Consumidor",
-      "creator": "Herói",
+      "creator": "Hero",
       "seller": "Fornecedor"
     }
   },
@@ -705,7 +705,7 @@
       "experiment_open": "Cadastro aberto",
       "experiment_open_desc": "Desligar fecha o cadastro público direto no banco. Continuam podendo entrar: e-mails com convite pendente, e-mails da lista de bootstrap e contas de teste criadas por esta página.",
       "avatars_uploads_enabled": "Envio de foto de perfil",
-      "avatars_uploads_enabled_desc": "Desligar pausa o envio de novas fotos de perfil por usuários e heróis. Fotos já enviadas continuam no ar e podem ser removidas.",
+      "avatars_uploads_enabled_desc": "Desligar pausa o envio de novas fotos de perfil por usuários e Heros. Fotos já enviadas continuam no ar e podem ser removidas.",
       "transport_minutes_per_step": "Minutos por etapa do transporte",
       "transport_minutes_per_step_desc": "Intervalo entre etapas do transporte simulado.",
       "video_provider": "Provedor de vídeo",
@@ -720,7 +720,7 @@
       "removeEmail": "Remover {email}",
       "missing": "Chave ausente no banco (será criada ao salvar).",
       "invites_enabled": "Convites ativos",
-      "invites_enabled_desc": "Desligado: ninguém cria convite (admin, agência, marca, equipe do herói), direto no banco. Os convites já enviados continuam valendo. As pessoas se cadastram sozinhas como Herói, Marca ou Agência."
+      "invites_enabled_desc": "Desligado: ninguém cria convite (admin, agência, marca, equipe do Hero), direto no banco. Os convites já enviados continuam valendo. As pessoas se cadastram sozinhas como Hero, Marca ou Agência."
     },
     "ops": {
       "title": "Operações",
@@ -775,7 +775,7 @@
   },
   "indicators": {
     "title": "Indicadores",
-    "description": "Por herói, atalho, conversão, profissionais, colecionáveis e ranking. Só números agregados.",
+    "description": "Por Hero, atalho, conversão, profissionais, colecionáveis e ranking. Só números agregados.",
     "privacy": "Só totais agregados: nenhuma pessoa aparece aqui (LGPD).",
     "simulatedNote": "Pedidos, contratações e lances são de teste: valores simulados.",
     "export": "Exportar CSV",
@@ -783,7 +783,7 @@
     "sectionsLabel": "Seções dos indicadores",
     "currentView": "{section}, últimos {days} dias",
     "sections": {
-      "herois": "Por herói",
+      "herois": "Por Hero",
       "atalhos": "Por atalho",
       "conversao": "Conversão",
       "profissionais": "Profissionais",
@@ -806,11 +806,11 @@
         "recipeTaps": "Toques em receitas",
         "proTaps": "Toques em profissionais",
         "shortcutOpens": "Atalhos abertos",
-        "pageViews": "Visitas à página do herói"
+        "pageViews": "Visitas à página do Hero"
       },
       "dailyTitle": "Novos seguidores por dia",
-      "dailyDescription": "Todos os heróis somados, horário de Brasília. Quem deixou de seguir não conta.",
-      "listTitle": "Heróis",
+      "dailyDescription": "Todos os Heros somados, horário de Brasília. Quem deixou de seguir não conta.",
+      "listTitle": "Heros",
       "listDescription": "Seguidores = total de hoje; o resto é do período.",
       "inactive": "Fora do ar",
       "stats": {
@@ -828,20 +828,20 @@
         "collectibleViews": "Views colecionável",
         "pageViews": "Visitas à página"
       },
-      "pageViewsTitle": "Visitas à página do herói por dia",
-      "pageViewsDescription": "Todos os heróis somados, horário de Brasília. Total no período: {count}",
-      "pageViewsSince": "Visitas à página do herói contadas desde {date}.",
-      "pageViewsNotTracked": "Nenhuma visita à página do herói registrada ainda: a contagem começa com a migração 0061."
+      "pageViewsTitle": "Visitas à página do Hero por dia",
+      "pageViewsDescription": "Todos os Heros somados, horário de Brasília. Total no período: {count}",
+      "pageViewsSince": "Visitas à página do Hero contadas desde {date}.",
+      "pageViewsNotTracked": "Nenhuma visita à página do Hero registrada ainda: a contagem começa com a migração 0061."
     },
     "shortcuts": {
       "trackingSince": "Aberturas de atalho contadas desde {date}.",
       "notTracked": "Nenhuma abertura de atalho registrada ainda: a contagem começa com a migração 0060.",
       "bySourceTitle": "Aberturas por atalho",
-      "bySourceDescription": "Quantas vezes cada atalho da página do herói foi aberto.",
-      "heroesCount": "Heróis: {count}",
+      "bySourceDescription": "Quantas vezes cada atalho da página do Hero foi aberto.",
+      "heroesCount": "Heros: {count}",
       "dailyTitle": "Aberturas por dia",
       "dailyDescription": "Total no período: {count}",
-      "byHeroTitle": "Herói e atalho",
+      "byHeroTitle": "Hero e atalho",
       "byHeroDescription": "Os pares mais abertos no período.",
       "pair": "{hero} · {shortcut}"
     },
@@ -946,7 +946,7 @@
       }
     },
     "ranking": {
-      "heroesTitle": "Top heróis",
+      "heroesTitle": "Top Heros",
       "heroesDescription": "Por ações: seguir, ver, tocar, abrir atalho e dar lance.",
       "heroHint": "Views {views} · Toques {taps} · Atalhos {opens}",
       "recipesTitle": "Top receitas",
@@ -957,8 +957,8 @@
       "productsTitle": "Top produtos",
       "productsDescription": "Por adições ao carrinho no período.",
       "viewsHint": "Views {views}",
-      "pageViewsTitle": "Heróis por visitas à página",
-      "pageViewsDescription": "Visitas à página do herói no período (uma por herói a cada abertura do site ou do app)."
+      "pageViewsTitle": "Heros por visitas à página",
+      "pageViewsDescription": "Visitas à página do Hero no período (uma por Hero a cada abertura do site ou do app)."
     }
   },
   "brands": {
@@ -1040,8 +1040,8 @@
       "failed": "Não deu para ler esta imagem."
     },
     "links": {
-      "creatorTitle": "Marcas do herói",
-      "creatorDescription": "Aparecem ao lado do nome do herói (perfil, programas e conteúdos). Use Patrocinador só com contrato assinado.",
+      "creatorTitle": "Marcas do Hero",
+      "creatorDescription": "Aparecem ao lado do nome do Hero (perfil, programas e conteúdos). Use Patrocinador só com contrato assinado.",
       "programTitle": "Equipamentos e produtos recomendados",
       "programDescription": "Produtos de marca no card Apoio do programa; a compra é feita no site da marca.",
       "contentTitle": "Marcas e produtos da publicação",

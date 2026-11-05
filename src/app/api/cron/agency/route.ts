@@ -14,7 +14,7 @@ import { cleanupAgencyDocOrphans, cleanupRoomOrphans } from "../_lib/agency-docs
 // 0085: oportunidade de patrocínio com o prazo de resposta vencido passa a "encerrada" (a agência ainda escolhe).
 // 0090: aviso de vencimento das parcelas que a marca deve à agência (registro simulado, nada é cobrado).
 // 0108: condições de pagamento — refaz o previsto, acompanha as datas relativas (entrega/publicação) e avisa o repasse
-// ao herói (3 dias antes, no dia e vencido) para o herói e para o Adm.
+// ao Hero (3 dias antes, no dia e vencido) para o Hero e para o Adm.
 // 0111: ciclos dos serviços recorrentes (recurrence_scan) e lembrete de insights do publipost (insights_reminder_scan).
 // Cada passo que depende da 0069 pula com "not_migrated" enquanto a migração não chega ao banco.
 export const dynamic = "force-dynamic";
@@ -76,7 +76,7 @@ async function handler(request: Request) {
     } else {
       out.payments_notified = Number(payments.data ?? 0);
     }
-    // 0108: previsto, datas relativas e aviso do repasse ao herói
+    // 0108: previsto, datas relativas e aviso do repasse ao Hero
     const plans = await admin.rpc("deal_payment_scan");
     if (plans.error) {
       if (!NOT_MIGRATED.has(plans.error.code ?? "")) throw new Error(plans.error.message);
@@ -100,7 +100,7 @@ async function handler(request: Request) {
     } else {
       out.roadmap = roadmap.data;
     }
-    // 0111: insights do publipost — lembrete ao herói 24 h e 7 dias depois da publicação; atraso ao responsável
+    // 0111: insights do publipost — lembrete ao Hero 24 h e 7 dias depois da publicação; atraso ao responsável
     const insights = await admin.rpc("insights_reminder_scan");
     if (insights.error) {
       if (!NOT_MIGRATED.has(insights.error.code ?? "")) throw new Error(insights.error.message);

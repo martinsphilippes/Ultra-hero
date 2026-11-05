@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-// Receitas por herói: o atalho Alimentação (antes "Receitas") existe em todo herói; os cards ficam abertos e abrir a receita pede a
-// etapa demonstrativa (P2). Roda contra o banco remoto (0044: 6 heróis reais; Érick Jacquin é o chef das receitas no ar).
+// Receitas por Hero: o atalho Alimentação (antes "Receitas") existe em todo Hero; os cards ficam abertos e abrir a receita pede a
+// etapa demonstrativa (P2). Roda contra o banco remoto (0044: 6 Heros reais; Érick Jacquin é o chef das receitas no ar).
 
 const HEROES = ["anitta", "ronaldinho-gaucho", "joao-fonseca", "erick-jacquin", "neymar", "gabriel-medina"];
 
-test.describe("receitas do herói", () => {
+test.describe("receitas do Hero", () => {
   for (const slug of HEROES) {
     test(`${slug} tem o atalho Alimentação`, async ({ page }) => {
       await page.goto(`/personalities/${slug}`);

@@ -19,7 +19,7 @@ type Props = {
 };
 
 // "Tenho interesse" / "Retirar interesse" (0098). Interesse é só um sinal para a agência e a Groscove: não vira
-// proposta, negócio nem contrato. O banco confere quem pode (titular do herói ativo; dono/equipe da marca).
+// proposta, negócio nem contrato. O banco confere quem pode (titular do Hero ativo; dono/equipe da marca).
 export function InterestButton({ eventId, party, ownerId, state: initial, closed, compact = false }: Props) {
   const t = useTranslations("groscoveCalendar.interest");
   const { toast } = useToast();

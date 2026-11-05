@@ -8,7 +8,7 @@ import { agencyFail } from "@/lib/agency/errors";
 import { requireAgency } from "@/lib/agency/server";
 import { createClient } from "@/lib/supabase/server";
 
-// Acesso de quem a agência cadastra (0112): herói (talento do Casting) e contato da marca. Gestor+; as RPCs conferem
+// Acesso de quem a agência cadastra (0112): Hero (talento do Casting) e contato da marca. Gestor+; as RPCs conferem
 // de novo (agência do alvo, demo, e-mail/celular). O link aparece na tela quando o e-mail não sai.
 
 export type { AccessOutcome };

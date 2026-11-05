@@ -3,7 +3,7 @@ import { RECIPE_CATEGORY_CODES } from "@/lib/recipes/codes";
 import { RECIPE_CONTENT_SELECT, type RecipeContentRow } from "@/lib/recipes/rows";
 import type { CreatorSupabase } from "../../_lib/content-insert";
 
-// Leituras do Portal do Chef com o cliente do herói (a RLS só devolve o que é dele).
+// Leituras do Portal do Chef com o cliente do Hero (a RLS só devolve o que é dele).
 
 export type CategoryOption = { code: string; label: string };
 

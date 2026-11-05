@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 type Props = { party: FlowParty; items: TurnItem[] };
 
-// "Sua vez" no topo da tela inicial (agência, marca e herói; pedido do responsável 05/11): o mesmo próximo passo do
+// "Sua vez" no topo da tela inicial (agência, marca e Hero; pedido do responsável 05/11): o mesmo próximo passo do
 // NextStepCard de cada negócio, juntado numa lista do mais urgente para o menos. Até 3 à vista e "Ver todos (N)" abre o
 // resto aqui mesmo. "Confirmar a contratação" e "Encerrar como ganha" (agência, gestor+) rodam aqui, com confirmação
 // curta; as demais levam direto à aba/âncora da ação. Sem nada esperando: uma linha discreta.

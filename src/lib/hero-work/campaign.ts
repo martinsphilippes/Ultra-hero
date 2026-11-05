@@ -1,15 +1,15 @@
-// Criar para a campanha (pedido do responsável, 04/11): da agenda o herói abre a campanha e, de lá, cria o post rápido,
+// Criar para a campanha (pedido do responsável, 04/11): da agenda o Hero abre a campanha e, de lá, cria o post rápido,
 // o post estruturado, o vídeo, as fotos, o programa ou a receita já com o contexto da campanha. Lógica pura (vitest).
 //
 // Decisões:
 //   • O contexto viaja na URL como ?campanha=<id da oportunidade> (deal_talents.id): é o mesmo id da tela
 //     /heroi/oportunidades/[id] e a RPC talent_opportunities(p_deal_talent) já confere no servidor que a oportunidade é
-//     do herói logado (devolve vazio para qualquer outro id). Nada de id de negócio na URL.
-//   • Só oferece criar quando o herói está confirmado (proposed/contracted) e o negócio não terminou.
+//     do Hero logado (devolve vazio para qualquer outro id). Nada de id de negócio na URL.
+//   • Só oferece criar quando o Hero está confirmado (proposed/contracted) e o negócio não terminou.
 //   • A legenda/descrição já vem com as @menções e #hashtags obrigatórias do briefing. "#publi" entra sempre que o
-//     briefing não trouxer uma identificação de publicidade: é o primeiro item do checklist do herói (ad_label) e a
+//     briefing não trouxer uma identificação de publicidade: é o primeiro item do checklist do Hero (ad_label) e a
 //     regra do CONAR para conteúdo pago. Nada repetido (sem diferenciar maiúsculas) e nada além do limite do campo.
-//   • Depois de publicar, o herói volta à campanha com ?publicado=<slug>: a tela monta o link público
+//   • Depois de publicar, o Hero volta à campanha com ?publicado=<slug>: a tela monta o link público
 //     (<origem>/content/<slug>) e oferece "Enviar como entrega" com o link já preenchido (fluxo de entrega existente,
 //     deliverable_submit_checked / publicar), sem migração nova.
 
@@ -17,7 +17,7 @@ import type { Brief } from "@/lib/brief/brief";
 import { deliverableNextAction } from "@/lib/execution/vocab";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 
-/** O que o herói pode criar a partir da campanha (cada um abre o criador que já existe). */
+/** O que o Hero pode criar a partir da campanha (cada um abre o criador que já existe). */
 export const CAMPAIGN_CREATE_KINDS = ["quick", "video", "photo", "structured", "workout", "program", "recipe"] as const;
 export type CampaignCreateKind = (typeof CAMPAIGN_CREATE_KINDS)[number];
 
@@ -58,12 +58,12 @@ export function parsePublishedSlug(raw: string | string[] | undefined | null): s
   return SLUG_RE.test(s) ? s : null;
 }
 
-/** O herói confirmado (proposta enviada ou contratado) num negócio que não terminou pode criar para a campanha. */
+/** O Hero confirmado (proposta enviada ou contratado) num negócio que não terminou pode criar para a campanha. */
 export function canCreateForCampaign(o: { status: string; dealStatus: string }): boolean {
   return ["proposed", "contracted"].includes(o.status) && !["won", "lost", "cancelled"].includes(o.dealStatus);
 }
 
-/** Monta o contexto a partir da oportunidade (talent_opportunities) — só o que o herói já pode ler. */
+/** Monta o contexto a partir da oportunidade (talent_opportunities) — só o que o Hero já pode ler. */
 export function toHeroCampaign(o: { id: string; deal: { id: string; title: string }; brand: { name: string }; request: { brief: Brief } | null }): HeroCampaign {
   const b = o.request?.brief;
   return {
@@ -160,7 +160,7 @@ export function publishedContentUrl(origin: string, slug: string): string {
   return `${origin.replace(/\/+$/, "")}/content/${slug}`;
 }
 
-/** Entregas do herói que aceitam um link agora: enviar (planejada, em produção, ajuste) ou publicar (aprovada). */
+/** Entregas do Hero que aceitam um link agora: enviar (planejada, em produção, ajuste) ou publicar (aprovada). */
 export function deliverablesAwaitingLink<T extends { status: DeliverableStatus }>(list: T[]): (T & { action: "submit" | "publish" })[] {
   const out: (T & { action: "submit" | "publish" })[] = [];
   for (const d of list) {

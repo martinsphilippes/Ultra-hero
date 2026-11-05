@@ -24,7 +24,7 @@ type Props = {
 const STAGE_PCT: Record<Stage, number> = { idle: 0, preparing: 20, uploading: 55, registering: 85 };
 
 // Envio de foto da receita: reduz no navegador (sem EXIF), envia direto ao bucket privado
-// recipe-media com a sessão do herói (políticas da 0028: pasta própria, rascunho próprio, cota) e
+// recipe-media com a sessão do Hero (políticas da 0028: pasta própria, rascunho próprio, cota) e
 // registra pela action, que confere os bytes e chama recipe_register_media.
 export function RecipeImageUploader({ contentId, creatorId, role, disabled = false, askAlt = true, onUploaded }: Props) {
   const t = useTranslations("recipes.editor.uploader");

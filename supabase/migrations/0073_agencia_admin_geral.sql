@@ -1,5 +1,5 @@
--- 0073 · Admin geral também gerencia os heróis no portal da agência (/agencia/herois).
--- Idempotente (create or replace). Corrige a 0070: escolher, criar e editar o herói pelo portal da agência
+-- 0073 · Admin geral também gerencia os Heros no portal da agência (/agencia/herois).
+-- Idempotente (create or replace). Corrige a 0070: escolher, criar e editar o Hero pelo portal da agência
 -- exigiam ser membro da agência; o admin geral (is_platform_admin, como em agency_can) recebia "forbidden".
 
 create or replace function public.agency_act_as_hero(p_creator uuid)

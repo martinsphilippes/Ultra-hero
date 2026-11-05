@@ -92,7 +92,7 @@ async function BrandPaymentsTab({ agencyId, filterParam }: { agencyId: string; f
       ) : (
         <AgencyPaymentsList items={items} today={today} />
       )}
-      {/* 0111: heróis-clientes (assessoria, mentoria, business plan): a agência marca cada parcela recebida */}
+      {/* 0111: Heros-clientes (assessoria, mentoria, business plan): a agência marca cada parcela recebida */}
       <ClientPayments items={clients.items} side="agency" today={today} />
       <p className="type-caption text-fg-subtle">{tp("simulated")}</p>
     </div>

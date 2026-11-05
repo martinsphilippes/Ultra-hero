@@ -16,7 +16,7 @@ export type FeedFollow = { signedIn: boolean; following: ReadonlySet<string>; pu
 
 type Props = { post: FeedPostData; priority?: boolean; follow?: FeedFollow };
 
-// Post do feed do Início, no formato do Instagram: herói no topo (leva ao perfil dele), capa grande
+// Post do feed do Início, no formato do Instagram: Hero no topo (leva ao perfil dele), capa grande
 // 4:5 (de borda a borda no celular) e legenda com tipo, título e resumo. Capa e título abrem o post.
 export async function FeedPost({ post, priority, follow }: Props) {
   const t = await getTranslations("catalog");
@@ -32,7 +32,7 @@ export async function FeedPost({ post, priority, follow }: Props) {
   return (
     <article aria-labelledby={titleId} className="flex flex-col" data-testid="feed-post">
       {post.creator ? (
-        // cabeçalho: herói (leva ao perfil) e, ao lado, Seguir — fora do link
+        // cabeçalho: Hero (leva ao perfil) e, ao lado, Seguir — fora do link
         <div className="flex items-center justify-between gap-3 px-gutter md:px-0">
           <Link
             href={`/personalities/${post.creator.slug}`}

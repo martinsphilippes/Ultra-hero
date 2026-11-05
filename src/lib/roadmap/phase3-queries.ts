@@ -6,7 +6,7 @@ import { isContractCycle, type ContractCycle } from "./recurrence";
 import { isSector, isStepRecurrence, type Sector, type StepRecurrence } from "./vocab";
 
 // Leituras da Fase 3 dos roteiros (0111): contrato recorrente do negócio, nova venda (indicadores) e insights do
-// publipost (agência e herói). Tudo pelas RPCs (o banco decide quem vê o quê). Sem a migração: { available: false }.
+// publipost (agência e Hero). Tudo pelas RPCs (o banco decide quem vê o quê). Sem a migração: { available: false }.
 
 type Row = Record<string, unknown>;
 const s = (v: unknown): string | null => (typeof v === "string" && v !== "" ? v : null);

@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-// Biblioteca "Programas" do herói como pilha de prateleiras (estilo playlists): título por programa
+// Biblioteca "Programas" do Hero como pilha de prateleiras (estilo playlists): título por programa
 // e quadrados das etapas com rolagem lateral. Roda contra o banco remoto: antes da 0035 a Anitta tem
 // 1 programa (5 etapas); depois, 3 (5, 8 e 6 etapas); com a 0052 só ficam as etapas dela (4, 5 e 3).
 // O que depende da 0035 pula sem ela.
@@ -52,7 +52,7 @@ test.describe("prateleiras de programas", () => {
       await expect(list).toBeVisible();
       const tiles = steps(shelf);
       const total = await tiles.count();
-      // 0052: programa do herói só com etapas dele (o menor da Anitta fica com 3)
+      // 0052: programa do Hero só com etapas dele (o menor da Anitta fica com 3)
       expect(total).toBeGreaterThanOrEqual(3);
       for (let i = 0; i < total; i++) {
         // nome vindo do texto visível + trechos só para leitor de tela: "Etapa 2 de 6: Título[, concluída]"

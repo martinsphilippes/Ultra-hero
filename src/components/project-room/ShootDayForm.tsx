@@ -13,7 +13,7 @@ type Props = { dealId: string; day: ShootDay | null; people: RoomMember[]; timez
 
 type CrewPick = { userId: string; name: string; side: string; role: string; on: boolean };
 
-// Criar/editar a ficha da diária (agência). Equipe: quem está na sala com conta (agência do negócio, heróis, staff que
+// Criar/editar a ficha da diária (agência). Equipe: quem está na sala com conta (agência do negócio, Heros, staff que
 // aceitou); a função vem do convite e pode ser ajustada aqui. Sem ninguém marcado na criação, vai toda a sala.
 export function ShootDayForm({ dealId, day, people, timezone, onClose }: Props) {
   const t = useTranslations("projectRoom.shootForm");

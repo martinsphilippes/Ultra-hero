@@ -17,8 +17,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title") };
 }
 
-// Novo post da agência em nome do herói escolhido (0070): o mesmo composer do herói; as actions agem
-// pelo herói escolhido e o banco confere o vínculo agência ↔ herói.
+// Novo post da agência em nome do Hero escolhido (0070): o mesmo composer do Hero; as actions agem
+// pelo Hero escolhido e o banco confere o vínculo agência ↔ Hero.
 export default async function AgencyHeroPostPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAgency("manager");
   const { id } = await params;
@@ -35,7 +35,7 @@ export default async function AgencyHeroPostPage({ params }: { params: Promise<{
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={t("title")} description={th("postAs", { name: acting.hero.name })} backHref={`/agencia/herois/${id}`} backLabel={acting.hero.name} />
-      {/* receitas e vínculos de produto não são da agência (0045): o atalho leva à página do herói */}
+      {/* receitas e vínculos de produto não são da agência (0045): o atalho leva à página do Hero */}
       <PostComposer configured={configured} photoState={photoState} defaultPillar={defaultPillar} blockOptions={blockOptions} blockHrefs={{ newRecipe: `/agencia/herois/${id}`, links: `/agencia/herois/${id}` }} />
     </div>
   );

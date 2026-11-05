@@ -15,7 +15,7 @@
     "hint": "Vuelve a ver la presentación de cada área.",
     "areas": {
       "app": "La app",
-      "heroi": "Portal del Héroe",
+      "heroi": "Portal del Hero",
       "marca": "Portal de la Marca",
       "agencia": "Portal de la Agencia"
     },
@@ -27,7 +27,7 @@
       "title": "Bienvenida a Groscove Ultra",
       "steps": {
         "heroes": {
-          "title": "Héroes",
+          "title": "Heros",
           "body": "Sigue a atletas, chefs y especialistas y mira de cerca cómo viven."
         },
         "social": {
@@ -40,12 +40,12 @@
         },
         "shop": {
           "title": "Comprar",
-          "body": "La tienda y los coleccionables firmados por los héroes llegan muy pronto."
+          "body": "La tienda y los coleccionables firmados por los Heros llegan muy pronto."
         }
       }
     },
     "heroi": {
-      "title": "Bienvenida al Portal del Héroe",
+      "title": "Bienvenida al Portal del Hero",
       "steps": {
         "opportunities": {
           "title": "Oportunidades",
@@ -77,8 +77,8 @@
           "body": "Pide una campaña con objetivo, presupuesto y fechas."
         },
         "hire": {
-          "title": "Cómo contratar héroes",
-          "body": "Elige héroes en el catálogo; la agencia se encarga de la negociación."
+          "title": "Cómo contratar Heros",
+          "body": "Elige Heros en el catálogo; la agencia se encarga de la negociación."
         },
         "approvals": {
           "title": "Aprobaciones",
@@ -99,7 +99,7 @@
       "steps": {
         "casting": {
           "title": "Casting",
-          "body": "Tus héroes con media kit, redes y disponibilidad."
+          "body": "Tus Heros con media kit, redes y disponibilidad."
         },
         "pipeline": {
           "title": "Pipeline y negocios",
@@ -115,7 +115,7 @@
         },
         "room": {
           "title": "Sala del proyecto y mensajes",
-          "body": "Marca, héroes y equipo en un mismo lugar, cada uno en su canal."
+          "body": "Marca, Heros y equipo en un mismo lugar, cada uno en su canal."
         }
       }
     }

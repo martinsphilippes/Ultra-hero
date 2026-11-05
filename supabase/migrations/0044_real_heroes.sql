@@ -1,16 +1,16 @@
 -- =============================================================================
--- Groscove Ultra · 0044 · Heróis reais: seis pessoas com contrato no lugar dos personagens fictícios
+-- Groscove Ultra · 0044 · Heros reais: seis pessoas com contrato no lugar dos personagens fictícios
 --   Decisão do responsável pelo projeto: ele informa ter contrato com seis pessoas reais e o app passa
 --   a mostrar SÓ elas, com nome e foto reais (fotos de licença livre; créditos em docs/photo-credits.md).
 --   As linhas existentes são reaproveitadas (conteúdos, receitas, programas e vínculos continuam):
 --     tiago-albuquerque -> neymar            davi-nascimento -> gabriel-medina
 --     camila-sato       -> joao-fonseca      rafael-duarte   -> ronaldinho-gaucho
---     lia-monteiro      -> anitta            helena-vilar    -> erick-jacquin (conta demo do herói)
+--     lia-monteiro      -> anitta            helena-vilar    -> erick-jacquin (conta demo do Hero)
 --   Os seis ficam is_fictional = false e rights_status = 'authorized' (titular = a própria pessoa):
 --   o selo "Personagem fictício" sai. O documento do contrato fica para o admin registrar em
---   creator_rights_private (tela do herói no admin).
+--   creator_rights_private (tela do Hero no admin).
 --   bruna-castellano e marcos-ferraz saem do app de forma REVERSÍVEL (nada é apagado):
---     - perfil 'suspended' (a RLS já esconde: lista, página do herói vira 404) e sem fotos (as fotos
+--     - perfil 'suspended' (a RLS já esconde: lista, página do Hero vira 404) e sem fotos (as fotos
 --       eram de pessoas reais sem contrato);
 --     - conteúdo publicado que é etapa (ou substituto) de programa de um dos seis passa ao dono do
 --       programa (assim nenhum programa fica com etapa quebrada); o resto é arquivado
@@ -80,7 +80,7 @@ begin
               or exists (select 1 from public.programs p where p.creator_id = h.id and p.status = 'published') loop
     select to_jsonb(cp) - 'credentials' into v_before from public.creator_profiles cp where cp.id = r.id;
 
-    -- conteúdo publicado usado por programa (publicado) de outro herói: passa ao dono do programa
+    -- conteúdo publicado usado por programa (publicado) de outro Hero: passa ao dono do programa
     with uses as (
       select pi.content_id, p.creator_id, p.is_featured, p.created_at
       from public.program_items pi
@@ -124,7 +124,7 @@ begin
       update public.creator_products set status = 'suspended' where creator_id = r.id and status in ('validated', 'suggested') returning id
     ) select coalesce(array_agg(id), '{}') into v_products from a;
 
-    -- indicações do herói removido e indicações de receitas que acabaram de ser arquivadas
+    -- indicações do Hero removido e indicações de receitas que acabaram de ser arquivadas
     with a as (
       update public.creator_recipe_links set status = 'suspended'
       where status in ('validated', 'suggested') and (creator_id = r.id or content_id = any (v_archived))
@@ -139,11 +139,11 @@ begin
       jsonb_build_object('slug', r.slug, 'status', 'suspended', 'content_moved', v_moved, 'content_archived', to_jsonb(v_archived),
                          'programs_archived', to_jsonb(v_programs), 'creator_products_suspended', to_jsonb(v_products),
                          'recipe_links_suspended', to_jsonb(v_links)),
-      '0044: o app mostra só os seis heróis reais com contrato', 'system'::public.actor_type);
+      '0044: o app mostra só os seis Heros reais com contrato', 'system'::public.actor_type);
   end loop;
 end $$;
 
--- indicação que virou receita do próprio herói (receita movida) não faz sentido: suspensa
+-- indicação que virou receita do próprio Hero (receita movida) não faz sentido: suspensa
 update public.creator_recipe_links l set status = 'suspended'
 from public.content c
 where c.id = l.content_id and c.creator_id = l.creator_id and l.status in ('validated', 'suggested');
@@ -181,10 +181,10 @@ update public.creator_profiles cp
        status = 'active'
   from real_heroes_ids i
  where cp.id = i.id
-   -- só na primeira vez: reaplicar não desfaz o que o admin ou o herói mudarem depois
+   -- só na primeira vez: reaplicar não desfaz o que o admin ou o Hero mudarem depois
    and (cp.slug is distinct from i.new_slug or cp.is_fictional);
 
--- conta demo do herói: nome exibido acompanha o herói
+-- conta demo do Hero: nome exibido acompanha o Hero
 update public.profiles
    set display_name = replace(display_name, 'Helena Vilar', 'Érick Jacquin')
  where display_name like '%Helena Vilar%';

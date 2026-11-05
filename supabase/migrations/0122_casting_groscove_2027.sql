@@ -1,42 +1,42 @@
 -- =============================================================================
 -- Groscove Ultra · 0122 · Importação do "Casting Groscove 2027" (PDF) para o casting da agência Groscove · cenário S124
 -- Pedido do responsável: cadastrar os nomes do documento "Casting Groscove 2027" no Casting da agência dele, do mesmo
--- jeito que o botão "Novo herói" (0112): talento + segmentos + contato de acesso + convite (ou vínculo na hora, se a
+-- jeito que o botão "Novo Hero" (0112): talento + segmentos + contato de acesso + convite (ou vínculo na hora, se a
 -- conta já existe), com a foto, a categoria do selo, os 3 temas e o Instagram de cada um. Migração de DADOS; idempotente;
 -- nada de drop de tabela/coluna; nenhuma função nova executável por anon (S14 segue 18).
 --
 -- Decisões (sem perguntar ao responsável):
 --   • Qual agência: a agência ATIVA (não demo) cujo admin (agency_members.role 'admin', não revogado) tem o e-mail
 --     'agencia@gmail.com'. Sem id fixo no código; se não existir (banco de teste, ambiente novo), a migração não faz nada.
---   • Quem entra: 260 heróis = todos os nomes do documento com página de herói (índice: 259 nomes + Jonathas Groscove,
+--   • Quem entra: 260 Heros = todos os nomes do documento com página de Hero (índice: 259 nomes + Jonathas Groscove,
 --     incluído por decisão do dono com a categoria "Businessman", segmento "Negócios" e 3,7M de seguidores declarados).
---     Fica FORA: MC Kevin (página "Em memória", 1998 · 2021) — pessoa falecida não vira herói.
+--     Fica FORA: MC Kevin (página "Em memória", 1998 · 2021) — pessoa falecida não vira Hero.
 --   • E-mail (decisão do dono, já avisado dos riscos): primeiro nome + inicial do sobrenome @gmail.com, minúsculo, sem
 --     acento/espaço/pontuação; colisão no lote → 2ª letra do sobrenome, depois número. São e-mails PROVÁVEIS, não
---     confirmados: se a pessoa criar conta com esse e-mail ela reivindica o herói (é o desenho da 0112). Nenhum e-mail é
+--     confirmados: se a pessoa criar conta com esse e-mail ela reivindica o Hero (é o desenho da 0112). Nenhum e-mail é
 --     enviado por esta migração (o convite fica pronto; o link é reenviado pela ficha quando o e-mail for confirmado).
 --   • Celular: a 0112 exige celular E.164; o documento não tem. Usamos um número claramente provisório e único
 --     (+55 11 9 0000 0001, …0002, …), e a nota interna diz "Celular a confirmar". A agência corrige pela ficha
 --     (access_contact_save — só o celular mudando não reenvia convite).
 --   • Situação comercial padrão do casting: 'prospect'; disponibilidade 'available'; sem gestor; sem consentimento →
---     fora do catálogo das marcas até o herói consentir (regra de sempre). Página pública (creator_profiles) NÃO é criada.
+--     fora do catálogo das marcas até o Hero consentir (regra de sempre). Página pública (creator_profiles) NÃO é criada.
 --   • Colunas novas em talent_profiles: photo_url (caminho do site /casting/<slug>.webp ou URL https), category_label
 --     (texto do selo, ex. "Musical artist") e topics text[] (os temas do documento, até 5). talent_profiles já tem grant
 --     de SELECT na tabela para authenticated e a RLS (agência staff+ e admin geral) vale para as novas colunas; marca e
 --     visitante continuam sem ler a tabela. A marca vê só pelo cartão fechado talent_public_card: a foto entra lá (a do
---     herói com página tem prioridade) quando o kit mostra "photo", e categoria/temas quando o kit mostra "segments".
+--     Hero com página tem prioridade) quando o kit mostra "photo", e categoria/temas quando o kit mostra "segments".
 --   • Segmentos (por agência): seção do índice → segmento. Cria os que faltarem: Música, Influência, Atuação,
 --     Apresentação, Humor, Moda/Modelo, Fotografia, Imprensa digital, Negócios; Atletas usa o 'esportes' que já existe
 --     (ou cria "Esporte"). "Revelações" é vitrine, não segmento: cada revelação entra pelo segmento do selo dela
 --     (influencer → Influência, musical artist → Música, actor → Atuação).
 --   • Instagram: talent_social_accounts (rede declarada pela agência, handle sem @, URL do QR do documento); seguidores
 --     desconhecidos ficam vazios (só o Jonathas tem o número no documento).
---   • Mesmo caminho do "Novo herói": as mesmas tabelas e o mesmo núcleo interno da 0112 (access_provision: convite
+--   • Mesmo caminho do "Novo Hero": as mesmas tabelas e o mesmo núcleo interno da 0112 (access_provision: convite
 --     'agency_hero' de 14 dias, ou liga na hora quem já tem conta com o e-mail e avisa no sino). agency_hero_create e
 --     agency_talent_save exigem sessão (auth.uid()), então a gravação do talento é replicada aqui com as mesmas regras
 --     (nome 2–80, e-mail único entre talentos não arquivados, contato fora da ficha).
 --   • Regra 0116 (um e-mail, um perfil): se o e-mail já é de uma conta de outro tipo (marca/agência), ou já é contato de
---     outro herói, ou a conta já tem outro talento/herói, o nome é PULADO (nada fica pela metade: cada nome roda num
+--     outro Hero, ou a conta já tem outro talento/Hero, o nome é PULADO (nada fica pela metade: cada nome roda num
 --     bloco próprio) e entra na lista "skipped" do resultado (NOTICE + audit_log 'casting.import').
 --   • Idempotente: um nome já presente no casting da agência (mesmo e-mail de contato OU mesmo @ do Instagram) não é
 --     criado de novo; só completa foto/categoria/temas vazios. Rodar 2x não duplica nem gera convite novo.
@@ -63,7 +63,7 @@ create or replace function public.talent_public_card(p_talent uuid)
 returns jsonb language sql stable security definer set search_path = '' as $$
   select jsonb_strip_nulls(jsonb_build_object(
     'id', t.id, 'name', t.display_name, 'availability', t.availability,
-    -- 0122: a foto do herói com página tem prioridade; sem página, a foto do casting
+    -- 0122: a foto do Hero com página tem prioridade; sem página, a foto do casting
     'photo_url', case when 'photo' = any (k.visible_fields) then coalesce(c.avatar_url, t.photo_url) end,
     'headline', case when 'headline' = any (k.visible_fields) then k.headline end,
     'about', case when 'about' = any (k.visible_fields) then k.about end,
@@ -412,7 +412,7 @@ begin
     end if;
 
     begin
-      -- um herói por e-mail (0112) e um e-mail, um perfil (0116): pula com o motivo, sem gravar nada
+      -- um Hero por e-mail (0112) e um e-mail, um perfil (0116): pula com o motivo, sem gravar nada
       perform pg_advisory_xact_lock(hashtext('access_email:' || v_email));
       if exists (select 1 from public.access_contacts c join public.talent_profiles t on t.id = c.talent_id
                  where c.email = v_email and t.archived_at is null) then

@@ -1,6 +1,6 @@
 // Credenciais do chef (P7): situação do pedido na fila do admin. Regra pura (testada no Vitest).
 
-/** `decision` vem do próprio pedido desde a 0032 (o herói lê; editar o texto limpa). */
+/** `decision` vem do próprio pedido desde a 0032 (o Hero lê; editar o texto limpa). */
 export type CredentialsRequest = { text: string; updated_at: string; decision?: string | null };
 export type CredentialsProfile = { credentials: string | null; credentials_approved_at: string | null };
 export type CredentialsDecisionAudit = { after_data: { approved?: boolean } | null; created_at: string };

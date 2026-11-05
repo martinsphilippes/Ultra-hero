@@ -1,13 +1,13 @@
 -- =============================================================================
--- Ultra Hero · 0030 · Fotos reais nos heróis e nos posts (só DADOS)
---   Os 8 heróis continuam personagens fictícios (nome e selo "Personagem fictício" intactos); só a
+-- Ultra Hero · 0030 · Fotos reais nos Heros e nos posts (só DADOS)
+--   Os 8 Heros continuam personagens fictícios (nome e selo "Personagem fictício" intactos); só a
 --   foto de perfil, a capa e as capas dos posts publicados trocam a arte gerada por foto real
 --   (arquivos em public/heroes e public/content, créditos em docs/photo-credits.md). Decisão do
 --   responsável para a apresentação do app. Idempotente: só troca o que ainda é /placeholders/ ou
 --   vazio, então não sobrescreve capa trocada depois; sem drop nem delete.
 -- =============================================================================
 
--- Heróis: foto de perfil e capa (só troca o que ainda é arte gerada ou vazio).
+-- Heros: foto de perfil e capa (só troca o que ainda é arte gerada ou vazio).
 update public.creator_profiles c
    set avatar_url = case when c.avatar_url is null or c.avatar_url like '/placeholders/%' then v.avatar_url else c.avatar_url end,
        cover_url  = case when c.cover_url  is null or c.cover_url  like '/placeholders/%' then v.cover_url  else c.cover_url  end

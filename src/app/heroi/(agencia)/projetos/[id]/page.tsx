@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("room") };
 }
 
-// Sala do projeto vista pelo herói (cliente ou contratado; 0110): sem as mensagens internas; NDA quando a agência pedir.
+// Sala do projeto vista pelo Hero (cliente ou contratado; 0110): sem as mensagens internas; NDA quando a agência pedir.
 export default async function HeroRoomPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   return <RoomPage portal="talent" dealId={id} backHref="/heroi/projetos" />;

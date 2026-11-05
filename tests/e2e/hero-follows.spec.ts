@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { loginAs } from "./helpers/login";
 import { supabaseEnv } from "./helpers/supabase";
 
-// Seguir heróis e "Você vs Hero" (0054 hero_favorites + 0056). SÓ LEITURA: nenhum teste toca em
+// Seguir Heros e "Você vs Hero" (0054 hero_favorites + 0056). SÓ LEITURA: nenhum teste toca em
 // Seguir/Seguindo nem grava a escolha de comparação (o servidor dos E2E usa o banco remoto).
 // Sem as tabelas no banco, os botões e as abas somem e as páginas seguem normais (é o que se confere).
 
@@ -17,7 +17,7 @@ async function tableExists(table: string): Promise<boolean | null> {
   return res.status === 200 || res.status === 401 || res.status === 403;
 }
 
-test.describe("seguir heróis (visitante)", () => {
+test.describe("seguir Heros (visitante)", () => {
   test("aba Hero: Seguir leva ao login e volta para a mesma página; sem a tabela, sem botão", async ({ page }) => {
     const follows = await tableExists("hero_favorites");
     await page.goto("/personalities");
@@ -41,7 +41,7 @@ test.describe("seguir heróis (visitante)", () => {
     expect(pill.y).toBeLessThan(card.y + 24);
   });
 
-  test("página do herói: Seguir no cabeçalho com a contagem de seguidores (0056)", async ({ page }) => {
+  test("página do Hero: Seguir no cabeçalho com a contagem de seguidores (0056)", async ({ page }) => {
     const [follows, counts] = await Promise.all([tableExists("hero_favorites"), tableExists("creator_follower_counts")]);
     await page.goto("/personalities/neymar");
     await expect(page.getByRole("heading", { level: 1, name: "Neymar" })).toBeVisible();
@@ -74,8 +74,8 @@ test.describe("seguir heróis (visitante)", () => {
   });
 });
 
-test.describe("seguir heróis (conta demo, só leitura)", () => {
-  test("Início com abas, Heróis que sigo e Hoje/Evolução renderizam", async ({ page }) => {
+test.describe("seguir Heros (conta demo, só leitura)", () => {
+  test("Início com abas, Heros que sigo e Hoje/Evolução renderizam", async ({ page }) => {
     const follows = await tableExists("hero_favorites");
     await loginAs(page, "premium", { home: null });
 
@@ -111,7 +111,7 @@ test.describe("seguir heróis (conta demo, só leitura)", () => {
     }
 
     await page.goto("/profile/herois");
-    await expect(page.getByRole("heading", { level: 1, name: "Heróis que sigo" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Heros que sigo" })).toBeVisible();
 
     // Hoje e Evolução seguem de pé com ou sem a 0056 (a comparação só aparece com Hero escolhido)
     await page.goto("/profile/today");

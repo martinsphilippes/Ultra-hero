@@ -2,8 +2,8 @@
 -- Ultra Hero · 0028 · Storage das fotos de receita (bucket privado recipe-media)
 --   Bucket privado servido pelo proxy /media/recipe/[id] (fase 2): a visibilidade de cada foto é
 --   decidida a cada requisição pela RLS de recipe_media (galeria de receita no ar; foto de etapa só
---   com acesso; rascunho só para o herói dono). Caminho: <creator_id>/<content_id>/<uuid>.<ext>.
---   Objetos são imutáveis (sem política de update). Cota diária por herói: menos de 50 objetos e de
+--   com acesso; rascunho só para o Hero dono). Caminho: <creator_id>/<content_id>/<uuid>.<ext>.
+--   Objetos são imutáveis (sem política de update). Cota diária por Hero: menos de 50 objetos e de
 --   100 MB nas últimas 24 h (P3: contas demo seguem só esta cota, sem regra própria).
 --   Bucket e políticas só são criados quando o schema storage existe (Supabase real ou o shim
 --   local); as funções em public são plpgsql e não exigem o schema na criação.
@@ -11,7 +11,7 @@
 -- =============================================================================
 
 -- Caminho válido para envio: regex completa ANTES de qualquer cast (pasta que não é uuid não pode
--- virar erro 22P02 dentro da política) e conteúdo do próprio herói, receita, rascunho fora de revisão.
+-- virar erro 22P02 dentro da política) e conteúdo do próprio Hero, receita, rascunho fora de revisão.
 -- Invoker: a leitura de content passa pela RLS de quem envia.
 create or replace function public.recipe_media_path_ok(p_name text)
 returns boolean language plpgsql stable set search_path = public as $$
@@ -46,7 +46,7 @@ revoke execute on function public.recipe_media_quota_ok() from public, anon;
 grant execute on function public.recipe_media_quota_ok() to authenticated, service_role;
 
 -- Objeto já registrado em recipe_media? Definer de propósito: a política de exclusão não pode
--- depender da RLS de quem chama (herói suspenso não enxerga a linha e a foto pareceria "solta").
+-- depender da RLS de quem chama (Hero suspenso não enxerga a linha e a foto pareceria "solta").
 create or replace function public.recipe_media_registered(p_name text)
 returns boolean language sql stable security definer set search_path = public as $$
   select exists (select 1 from public.recipe_media where storage_path = p_name)
@@ -80,7 +80,7 @@ begin
     values ('recipe-media', 'recipe-media', false, 5242880, array['image/jpeg', 'image/png', 'image/webp'])
     on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types
   $sql$;
-  -- envio: pasta do próprio herói, rascunho de receita próprio, uploads ligados e dentro da cota
+  -- envio: pasta do próprio Hero, rascunho de receita próprio, uploads ligados e dentro da cota
   if not exists (select 1 from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname = 'recipe_media_insert') then
     execute $sql$
       create policy recipe_media_insert on storage.objects for insert to authenticated

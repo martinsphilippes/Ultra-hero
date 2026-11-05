@@ -6,7 +6,7 @@ import { buildPushMessage, chunk, ticketOutcomes, type PushEvent } from "@/lib/p
 const messages = (locale: string) => JSON.parse(readFileSync(path.join(process.cwd(), "messages", locale, "push.json"), "utf8"));
 
 describe("buildPushMessage", () => {
-  it("post de herói favorito: nome do herói no título, título do post no corpo e link do post", () => {
+  it("post de Hero favorito: nome do Hero no título, título do post no corpo e link do post", () => {
     const event: PushEvent = { kind: "hero_post", hero: "Neymar", contentTitle: "Treino de hoje", contentSlug: "treino-de-hoje" };
     expect(buildPushMessage(event, "pt-BR", messages("pt-BR"))).toEqual({ title: "Neymar postou", body: "Treino de hoje", url: "/content/treino-de-hoje" });
   });

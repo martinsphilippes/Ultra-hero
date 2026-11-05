@@ -178,7 +178,7 @@ export function CatalogSwitch({ talentId, visible, consentOk, canEdit }: { talen
   );
 }
 
-// Liga (ou desliga) o herói com página pública: o banco recusa herói já em outro casting.
+// Liga (ou desliga) o Hero com página pública: o banco recusa Hero já em outro casting.
 export function HeroLinkForm({ talentId, heroes, currentId, canEdit, locked }: { talentId: string; heroes: { id: string; name: string; slug?: string | null; avatarUrl?: string | null }[]; currentId: string | null; canEdit: boolean; locked: boolean }) {
   const tp = useTranslations("pickers");
   const t = useTranslations("agency.casting.hero");

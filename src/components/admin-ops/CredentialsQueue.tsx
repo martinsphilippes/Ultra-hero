@@ -13,7 +13,7 @@ type ProfileRow = { id: string; name: string; slug: string; credentials: string 
 type AuditRow = { resource_id: string | null; after_data: { approved?: boolean } | null; created_at: string };
 type QueueRow = { creatorId: string; name: string; slug: string; text: string; updatedAt: string; state: "pending" | "approved" | "rejected" };
 
-// Fila de credenciais do chef (P7) no /admin/herois: pedidos dos heróis com o texto, a situação e
+// Fila de credenciais do chef (P7) no /admin/herois: pedidos dos Heros com o texto, a situação e
 // as decisões. O texto só chega ao perfil público (creator_profiles.credentials) quando aprovado.
 export async function CredentialsQueue() {
   const [t, locale] = await Promise.all([getTranslations("recipes.admin.credentials"), getLocale()]);

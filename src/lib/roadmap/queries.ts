@@ -19,7 +19,7 @@ import {
 } from "./vocab";
 
 // Leituras dos roteiros (0107). Catálogo pela RLS (membros da agência); roteiro, painel do setor, indicadores e
-// projetos do herói-cliente pelas RPCs (o banco decide quem vê o quê). Sem a migração: { available: false }.
+// projetos do Hero-cliente pelas RPCs (o banco decide quem vê o quê). Sem a migração: { available: false }.
 
 export type ServiceStep = {
   id: string;
@@ -362,7 +362,7 @@ export async function getRoadmapIndicators(agencyId: string, days = 90): Promise
   };
 }
 
-// ---------------------------------------------------------------- projetos do herói-cliente
+// ---------------------------------------------------------------- projetos do Hero-cliente
 export type ClientProject = {
   dealId: string;
   title: string;

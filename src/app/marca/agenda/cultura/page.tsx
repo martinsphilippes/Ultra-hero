@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 type Props = { searchParams: Promise<{ territorio?: string }> };
 
 // Real-Time Culture no portal da marca (0101): "Tenho interesse" e "Criar campanha" direto do cartão (dono ou equipe;
-// campanha só com agência ativa). A marca nunca vê heróis interessados.
+// campanha só com agência ativa). A marca nunca vê Heros interessados.
 export default async function BrandCulturePage({ searchParams }: Props) {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;

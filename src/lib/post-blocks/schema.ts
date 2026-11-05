@@ -4,7 +4,7 @@ import type { Pillar } from "@/lib/supabase/helpers";
 // Blocos por pilar do Novo post (0075): lógica pura, compartilhada por composer, actions, página do
 // conteúdo e testes. Rotina não tem bloco; Treino → passos marcáveis por pessoa; Nutrição → receita,
 // produto ou prato; Gastronomia → cardápio do chef. O banco repete os limites (post_block_data_ok).
-// Programa (0076): segundo slot, independente do pilar — aponta para um programa publicado do herói.
+// Programa (0076): segundo slot, independente do pilar — aponta para um programa publicado do Hero.
 
 export const PILLAR_BLOCK_KINDS = ["workout", "nutrition", "menu"] as const;
 export const BLOCK_KINDS = [...PILLAR_BLOCK_KINDS, "program"] as const;
@@ -68,7 +68,7 @@ export type BlockDrafts = {
   workout: { description: string; steps: string[] };
   nutrition: { items: NutritionItem[] };
   menu: { options: { name: string; description: string; recipe_id: string | null }[] };
-  /** Programa do herói (0076): slot à parte, sem programa escolhido = sem bloco. */
+  /** Programa do Hero (0076): slot à parte, sem programa escolhido = sem bloco. */
   program: { program_id: string | null; note: string };
 };
 

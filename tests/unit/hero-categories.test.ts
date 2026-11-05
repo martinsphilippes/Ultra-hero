@@ -33,7 +33,7 @@ const links: HeroCategoryLink[] = [
   { creatorId: "anitta", categoryId: "c-arte", position: 2 },
   { creatorId: "anitta", categoryId: "c-musica", position: 1 },
   { creatorId: "jacquin", categoryId: "c-gastro", position: 1 },
-  // herói suspenso (fora da lista visível) numa categoria só dele
+  // Hero suspenso (fora da lista visível) numa categoria só dele
   { creatorId: "suspenso", categoryId: "c-moda", position: 1 },
 ];
 const visibleIds = creators.map((c) => c.id);
@@ -57,7 +57,7 @@ describe("parseCategoryParam", () => {
 });
 
 describe("visibleCategories", () => {
-  it("na ordem do admin, só com herói visível, com a contagem", () => {
+  it("na ordem do admin, só com Hero visível, com a contagem", () => {
     const visible = visibleCategories(categories, links, visibleIds);
     expect(visible.map((c) => [c.slug, c.count])).toEqual([
       ["esporte", 4],
@@ -66,7 +66,7 @@ describe("visibleCategories", () => {
       ["arte-e-entretenimento", 1],
     ]);
   });
-  it("esconde a categoria cujo único herói não está visível (suspenso)", () => {
+  it("esconde a categoria cujo único Hero não está visível (suspenso)", () => {
     expect(visibleCategories(categories, links, visibleIds).some((c) => c.slug === "moda")).toBe(false);
     expect(visibleCategories(categories, links, [...visibleIds, "suspenso"]).at(-1)?.slug).toBe("moda");
   });
@@ -95,7 +95,7 @@ describe("resolveCategory e creatorsForCategory", () => {
     expect(resolveCategory("moda", visible)).toBeNull();
     expect(resolveCategory(null, visible)).toBeNull();
   });
-  it("filtra os heróis mantendo a ordem editorial", () => {
+  it("filtra os Heros mantendo a ordem editorial", () => {
     expect(creatorsForCategory(creators, links, "c-esporte").map((c) => c.id)).toEqual(["neymar", "medina", "fonseca", "ronaldinho"]);
     expect(creatorsForCategory(creators, links, "c-arte").map((c) => c.id)).toEqual(["anitta"]);
     expect(creatorsForCategory(creators, links, null)).toHaveLength(6);

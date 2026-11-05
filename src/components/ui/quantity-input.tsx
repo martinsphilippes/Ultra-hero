@@ -13,7 +13,7 @@ type QuantityInputProps = Omit<ComponentProps<"input">, "value" | "defaultValue"
 };
 
 /**
- * Quantidade pequena (entregáveis, vagas, heróis): botões − e + e o número no meio. Dá para apagar o número e
+ * Quantidade pequena (entregáveis, vagas, Heros): botões − e + e o número no meio. Dá para apagar o número e
  * digitar outro (o campo pode ficar vazio enquanto digita); ao sair, volta para dentro de min..max.
  * Pedido do responsável (04/11): "não estava conseguindo apagar o 1 para colocar o 3".
  */

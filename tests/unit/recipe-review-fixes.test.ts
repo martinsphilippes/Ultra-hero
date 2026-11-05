@@ -58,7 +58,7 @@ describe("credenciais: a decisão vale para o texto que a fila mostrou", () => {
     server.requestText = "Chef formada pelo Senac";
   });
 
-  it("manda o texto visto para a RPC (0032 recusa com request_changed se o herói editou)", async () => {
+  it("manda o texto visto para a RPC (0032 recusa com request_changed se o Hero editou)", async () => {
     server.rpcResults = [{ error: { message: "request_changed" } }];
     const result = await decideCreatorCredentials({ creatorId: CREATOR, approved: true, expectedText: "Chef formada pelo Senac" }, WHY);
     expect(server.rpcs).toEqual([{ fn: "admin_set_creator_credentials", args: { p_creator: CREATOR, p_approved: true, p_reason: WHY, p_expected_text: "Chef formada pelo Senac" } }]);
@@ -80,7 +80,7 @@ describe("credenciais: a decisão vale para o texto que a fila mostrou", () => {
     expect(server.rpcs[1]).toEqual({ fn: "admin_set_creator_credentials", args: { p_creator: CREATOR, p_approved: false, p_reason: WHY } });
   });
 
-  it("o herói vê 'reprovadas' pela decisão gravada no pedido; editar volta a aguardar", () => {
+  it("o Hero vê 'reprovadas' pela decisão gravada no pedido; editar volta a aguardar", () => {
     const req = { text: "Chef", updated_at: "2026-10-20T10:00:00Z" };
     expect(credentialsState({ ...req, decision: "rejected" }, { credentials: null, credentials_approved_at: null }, undefined)).toBe("rejected");
     expect(credentialsState({ ...req, decision: null }, { credentials: null, credentials_approved_at: null }, undefined)).toBe("pending");
@@ -88,7 +88,7 @@ describe("credenciais: a decisão vale para o texto que a fila mostrou", () => {
   });
 });
 
-describe("exigir revisão só onde o herói tem 'Enviar para revisão'", () => {
+describe("exigir revisão só onde o Hero tem 'Enviar para revisão'", () => {
   beforeEach(() => {
     server.rpcs = [];
   });

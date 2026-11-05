@@ -1,5 +1,5 @@
-// Modelo de valor do valor oferecido (0096): "fixo" = valor TOTAL do evento/campanha, dividido entre os heróis
-// indicados; "por_heroi" = valor POR HERÓI com um MÁXIMO de heróis obrigatório, que limita o investimento
+// Modelo de valor do valor oferecido (0096): "fixo" = valor TOTAL do evento/campanha, dividido entre os Heros
+// indicados; "por_heroi" = valor POR HERO com um MÁXIMO de Heros obrigatório, que limita o investimento
 // (teto = valor × máximo). Lógica pura, sem tela nem banco; o banco confere de novo (value_terms_check).
 
 export const VALUE_MODELS = ["fixo", "por_heroi"] as const;
@@ -23,7 +23,7 @@ export function normalizeTerms(model: unknown, amountCents: number | null | unde
 }
 
 /**
- * Regras do banco: por herói exige valor por herói > 0 e máximo de 1 a 50; fixo aceita valor vazio (opcional) e
+ * Regras do banco: por Hero exige valor por Hero > 0 e máximo de 1 a 50; fixo aceita valor vazio (opcional) e
  * nunca leva máximo. `requireAmount` vale para fixo quando o valor é obrigatório (contraproposta, proposta enviada).
  */
 export function validateTerms(t: ValueTerms, opts: { requireAmount?: boolean } = {}): ValueTermsError | null {
@@ -38,14 +38,14 @@ export function validateTerms(t: ValueTerms, opts: { requireAmount?: boolean } =
   return null;
 }
 
-/** Teto de investimento: por herói = valor × máximo; fixo = o próprio valor. Sem valor, sem teto. */
+/** Teto de investimento: por Hero = valor × máximo; fixo = o próprio valor. Sem valor, sem teto. */
 export function ceilingCents(t: ValueTerms): number | null {
   if (t.amountCents === null) return null;
   if (t.model === "por_heroi") return t.maxHeroes === null ? null : t.amountCents * t.maxHeroes;
   return t.amountCents;
 }
 
-/** Quantos heróis ainda cabem (por herói); fixo não limita (null). */
+/** Quantos Heros ainda cabem (por Hero); fixo não limita (null). */
 export function slotsLeft(t: ValueTerms, used: number): number | null {
   if (t.model !== "por_heroi" || t.maxHeroes === null) return null;
   return Math.max(0, t.maxHeroes - used);
@@ -75,5 +75,5 @@ export function splitProportional(total: number, weights: number[]): number[] {
 
 export const splitEvenly = (total: number, n: number): number[] => splitProportional(total, Array.from({ length: n }, () => 1));
 
-/** Texto "Valor total" / "Valor por herói": a chave de tradução do rótulo do campo. */
+/** Texto "Valor total" / "Valor por Hero": a chave de tradução do rótulo do campo. */
 export const valueLabelKey = (model: ValueModel): "total" | "perHero" => (model === "por_heroi" ? "perHero" : "total");

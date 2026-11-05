@@ -22,7 +22,7 @@ function toProgramOption(row: ProgramRow): ProgramOption {
 }
 
 /**
- * O que o herói (ou o admin por ele) pode escolher: as receitas publicadas dele, os produtos da loja (os
+ * O que o Hero (ou o admin por ele) pode escolher: as receitas publicadas dele, os produtos da loja (os
  * ligados a ele primeiro) e os programas publicados dele. Banco sem a 0075/0076 ou sem cadastro: listas
  * vazias (a tela oferece o cadastro).
  */

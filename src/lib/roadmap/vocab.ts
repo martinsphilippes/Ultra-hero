@@ -16,7 +16,7 @@ export type StepRecurrence = (typeof STEP_RECURRENCES)[number];
 export const SERVICE_RECURRENCES = ["none", "weekly", "biweekly", "monthly"] as const;
 export type ServiceRecurrence = (typeof SERVICE_RECURRENCES)[number];
 
-/** Quem pode ser cliente do serviço: marca, herói ou os dois. */
+/** Quem pode ser cliente do serviço: marca, Hero ou os dois. */
 export const CLIENT_KINDS = ["brand", "talent", "both"] as const;
 export type ClientKind = (typeof CLIENT_KINDS)[number];
 
@@ -55,7 +55,7 @@ export const isClientKind = (v: unknown): v is ClientKind => has(CLIENT_KINDS, v
 export const isMilestone = (v: unknown): v is Milestone => has(MILESTONES, v);
 export const isTodayScope = (v: unknown): v is TodayScope => has(TODAY_SCOPES, v);
 
-/** Cliente do negócio a partir do que foi escolhido (marca, herói ou os dois). */
+/** Cliente do negócio a partir do que foi escolhido (marca, Hero ou os dois). */
 export function clientKindOf(hasBrand: boolean, hasTalent: boolean): ClientKind | null {
   if (hasBrand && hasTalent) return "both";
   if (hasBrand) return "brand";
@@ -63,7 +63,7 @@ export function clientKindOf(hasBrand: boolean, hasTalent: boolean): ClientKind 
   return null;
 }
 
-/** O serviço aceita esse cliente? ("both" aceita marca, herói ou os dois.) */
+/** O serviço aceita esse cliente? ("both" aceita marca, Hero ou os dois.) */
 export function serviceFitsClient(service: ClientKind, client: ClientKind | null): boolean {
   if (!client) return false;
   if (service === "both") return true;

@@ -32,12 +32,12 @@ type Props = {
   requestedDay?: string | null;
   emptyTitle: string;
   emptyHint?: string;
-  /** 0094 (agenda do herói): atalho no cabeçalho da lista do dia (ex.: "Compromisso neste dia"), com o dia e o nome dele. */
+  /** 0094 (agenda do Hero): atalho no cabeçalho da lista do dia (ex.: "Compromisso neste dia"), com o dia e o nome dele. */
   dayAction?: (day: string, dateLabel: string) => ReactNode;
   /** 0094: conteúdo extra e ações de cada item da lista do dia (checklist, editar/excluir). */
   renderExtra?: (event: CalendarEvent) => ReactNode;
   renderActions?: (event: CalendarEvent) => ReactNode;
-  /** Agenda do herói: id do evento → tela que o cartão inteiro abre (campanha). */
+  /** Agenda do Hero: id do evento → tela que o cartão inteiro abre (campanha). */
   ownHrefs?: Record<string, string>;
   /** 0094: avisa o dia selecionado na grade (o "Novo compromisso" do topo abre nele). */
   onDayChange?: (day: string) => void;

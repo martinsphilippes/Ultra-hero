@@ -23,7 +23,7 @@
     "licenseDescription": "De dónde viene el medio y a quién acreditar. Los videos insertados de YouTube o Vimeo exigen la licencia \"inserción de terceros\".",
     "blocks": "Bloques del contenido",
     "blocksDescription": "El pilar define el bloque: entrenamiento con pasos marcables, nutrición con receta, producto o plato, o el menú del chef. El programa es un bloque aparte.",
-    "blocksLoading": "Cargando recetas, productos y programas del héroe…",
+    "blocksLoading": "Cargando recetas, productos y programas del Hero…",
     "blocksRoutine": "Rutina no abre bloque: el contenido sale solo con texto, foto o video. Cambia el pilar para abrir entrenamiento, nutrición o menú.",
     "products": "Productos vinculados",
     "productsDescription": "Productos de la tienda que aparecen en \"Productos relacionados\" en la página del contenido. El vínculo ya sale validado.",
@@ -93,14 +93,14 @@
     "content_not_editable": "Este contenido está en revisión o ya fue publicado y no se puede editar.",
     "forbidden": "No tienes permiso para esta acción.",
     "unauthenticated": "Inicia sesión para continuar.",
-    "creator_unavailable": "Tu perfil de héroe no está activo.",
-    "acting_hero_required": "Elige el héroe en \"Publicar como héroe\", en el inicio de la administración, e inténtalo de nuevo.",
-    "acting_unavailable": "Publicar como héroe aún no está disponible en este entorno.",
+    "creator_unavailable": "Tu perfil de Hero no está activo.",
+    "acting_hero_required": "Elige el Hero en \"Publicar como Hero\", en el inicio de la administración, e inténtalo de nuevo.",
+    "acting_unavailable": "Publicar como Hero aún no está disponible en este entorno.",
     "not_found": "Contenido no encontrado.",
     "media_license_mismatch": "Licencia incoherente con el medio: ajusta la licencia y guarda de nuevo.",
     "recipe_editor_pending": "La edición de recetas vuelve con el nuevo editor.",
-    "owner_only": "Solo el titular del héroe (o la administración) puede hacer esto con lo que ya estuvo publicado.",
-    "hero_not_active": "Tu héroe aún no fue aprobado. El borrador quedó guardado; publica después de la aprobación."
+    "owner_only": "Solo el titular del Hero (o la administración) puede hacer esto con lo que ya estuvo publicado.",
+    "hero_not_active": "Tu Hero aún no fue aprobado. El borrador quedó guardado; publica después de la aprobación."
   },
   "list": {
     "empty": "Todavía no hay elementos.",
@@ -134,7 +134,7 @@
     "unavailable": "El envío de portada no está disponible en este entorno.",
     "disabled": "El envío de fotos está pausado por la administración. Intenta más tarde.",
     "errors": {
-      "creator_required": "Elige el héroe responsable antes de enviar la portada.",
+      "creator_required": "Elige el Hero responsable antes de enviar la portada.",
       "not_media": "Ese archivo no es una foto ni un video. Elige otro.",
       "not_image": "Ese archivo no es una foto. Elige una foto JPG, PNG o WebP, o un video.",
       "empty_file": "El archivo está vacío. Elige otro.",
@@ -144,7 +144,7 @@
       "too_many_uploads": "Se alcanzó el límite de 30 envíos por hora. Intenta más tarde.",
       "uploads_disabled": "El envío de fotos está pausado por la administración. Intenta más tarde.",
       "photo_not_configured": "El envío de portada no está disponible en este entorno.",
-      "not_a_hero": "El héroe elegido no está activo. Elige otro héroe e intenta de nuevo.",
+      "not_a_hero": "El Hero elegido no está activo. Elige otro Hero e intenta de nuevo.",
       "forbidden": "Solo el administrador envía portadas por aquí.",
       "upload_failed": "No se pudo enviar la portada. Revisa la conexión e intenta de nuevo.",
       "unauthenticated": "Inicia sesión para continuar.",
@@ -293,7 +293,7 @@
     },
     "kindHint": {
       "platform_demo": "Material ilustrativo creado por la plataforma; sin medio real.",
-      "own": "Producido por la plataforma o por el héroe, con derechos propios.",
+      "own": "Producido por la plataforma o por el Hero, con derechos propios.",
       "licensed": "Medio alojado aquí con licencia de terceros registrada en la referencia.",
       "third_party_embed": "Video insertado del proveedor; los derechos son del canal de origen."
     },

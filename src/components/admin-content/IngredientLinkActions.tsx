@@ -7,7 +7,7 @@ import { ConfirmActionDialog } from "@/components/admin";
 type Status = "suggested" | "validated" | "suspended" | "rejected";
 
 // Validar / suspender / recusar um vínculo ingrediente ↔ produto (2 passos). Recusar e suspender
-// pedem motivo (mínimo de 5 caracteres), que fica na auditoria e aparece para o herói no editor.
+// pedem motivo (mínimo de 5 caracteres), que fica na auditoria e aparece para o Hero no editor.
 export function IngredientLinkActions({ linkId, status, label }: { linkId: string; status: Status; label: string }) {
   const t = useTranslations("shopping.admin.actions");
   return (

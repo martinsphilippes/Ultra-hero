@@ -26,7 +26,7 @@ const strideB = { torso: 18, hipN: 40, kneeN: 22, ankleN: 36, hipF: -68, kneeF: 
 // Apoio (pernas se cruzando): uma perna sob o corpo, o calcanhar da outra sobe atrás.
 const passA = { torso: 16, hipN: 8, kneeN: 24, ankleN: 6, hipF: -28, kneeF: 124, ankleF: 34, shN: 6, elN: -92, shF: -4, elF: -92 };
 const passB = { torso: 16, hipN: -28, kneeN: 124, ankleN: 34, hipF: 8, kneeF: 24, ankleF: 6, shN: -4, elN: -92, shF: 6, elF: -92 };
-// Voo de herói: corpo na diagonal rumo ao triângulo da marca, braços estendidos à frente, pernas unidas atrás.
+// Voo de Hero: corpo na diagonal rumo ao triângulo da marca, braços estendidos à frente, pernas unidas atrás.
 const flight = { torso: 30, hipN: 34, kneeN: 10, ankleN: 40, hipF: 44, kneeF: 22, ankleF: 44, shN: -176, elN: 0, shF: -162, elF: -6 };
 
 export const POSES: Pose[] = [

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// Agenda e financeiro do herói independente (0094): vocabulário e formulários (módulo puro, cliente e servidor).
+// Agenda e financeiro do Hero independente (0094): vocabulário e formulários (módulo puro, cliente e servidor).
 // Tipos do compromisso = check de hero_events.kind; situação gravada do serviço = check de hero_services.status.
 // "Vencido" NÃO é gravado: é calculado pela data de vencimento (ver finance.ts).
 
@@ -64,7 +64,7 @@ export const heroServiceSchema = z.object({
 });
 export type HeroServiceInput = z.input<typeof heroServiceSchema>;
 
-/** Caminho do comprovante: <herói>/<serviço>/<arquivo>.<ext> (o banco confere o prefixo do herói). */
+/** Caminho do comprovante: <Hero>/<serviço>/<arquivo>.<ext> (o banco confere o prefixo do Hero). */
 const PROOF_PATH = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[0-9a-f-]{36}\.(pdf|jpg|png|webp)$/;
 export function isProofPath(path: string, creatorId: string, serviceId: string): boolean {
   return PROOF_PATH.test(path) && path.startsWith(`${creatorId}/${serviceId}/`);

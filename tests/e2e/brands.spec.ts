@@ -27,12 +27,12 @@ async function expectNoSeriousAxe(page: Page, include: string) {
 }
 
 test.describe("marcas e Smart Tags (público)", () => {
-  test("perfil do herói: faixa de marcas abre o site da marca fora do app", async ({ page }) => {
+  test("perfil do Hero: faixa de marcas abre o site da marca fora do app", async ({ page }) => {
     await page.goto(HERO);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await noHorizontalScroll(page);
     const strip = page.getByTestId("brand-strip");
-    test.skip((await strip.count()) === 0, "banco sem a 0062 (ou herói sem marca)");
+    test.skip((await strip.count()) === 0, "banco sem a 0062 (ou Hero sem marca)");
     const chip = strip.getByTestId("brand-chip").first();
     await expect(chip).toHaveAttribute("target", "_blank");
     await expect(chip).toHaveAttribute("rel", "noopener noreferrer sponsored");
@@ -41,7 +41,7 @@ test.describe("marcas e Smart Tags (público)", () => {
     await expectNoSeriousAxe(page, "[data-testid=brand-strip]");
   });
 
-  test("grade do herói: post com produtos marcados tem o ícone discreto", async ({ page }) => {
+  test("grade do Hero: post com produtos marcados tem o ícone discreto", async ({ page }) => {
     await page.goto(HERO);
     await expect(page.getByTestId("hero-posts")).toBeVisible();
     test.skip((await page.getByTestId("tile-smart-tags").count()) === 0, "banco sem a 0062 (ou sem marcações)");

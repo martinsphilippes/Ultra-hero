@@ -6,7 +6,7 @@ import { isBlockedInNativeApp } from "@/lib/native-app/surface";
 import { portalRolesShown } from "@/lib/seller-ops/portal";
 
 export const SETTINGS_PATH = "/configuracoes";
-/** Portal do Herói (0097): um portal só para o herói (página pública, equipe, conteúdos) e o casting da agência. */
+/** Portal do Hero (0097): um portal só para o Hero (página pública, equipe, conteúdos) e o casting da agência. */
 export const HERO_PORTAL_PATH = "/heroi";
 
 /** Linhas comuns (textos em me.profile.links.<key>, salvo as marcadas em me.settings.rows). */
@@ -23,8 +23,8 @@ export type SettingsLinkKey =
   | "devices"
   | "appearance";
 
-/** Portais (textos em me.profile.portals). "creator" é o Portal do Herói (0097: o antigo escritório do casting e a área
- *  do herói viraram um só; web e app): para quem tem papel de herói ou está num casting. */
+/** Portais (textos em me.profile.portals). "creator" é o Portal do Hero (0097: o antigo escritório do casting e a área
+ *  do Hero viraram um só; web e app): para quem tem papel de Hero ou está num casting. */
 export type SettingsPortalRole = "creator" | "seller" | "professional" | "agency" | "brand" | "admin";
 
 export type SettingsSectionKey = "routine" | "collections" | "purchases" | "account" | "portals";
@@ -43,7 +43,7 @@ const LINK_SECTIONS: Array<{ key: Exclude<SettingsSectionKey, "portals">; items:
     key: "routine",
     items: [
       ["reminders", "/profile/lembretes"],
-      // heróis seguidos e o Hero de comparação (0056)
+      // Heros seguidos e o Hero de comparação (0056)
       ["heroes", "/profile/herois"],
       ["interests", "/profile/interests"],
     ],
@@ -86,15 +86,15 @@ function nativeHidden(href: string): boolean {
 }
 
 export type PortalOptions = {
-  /** Está num casting (0065): também abre o Portal do Herói. */
+  /** Está num casting (0065): também abre o Portal do Hero. */
   hasTalent?: boolean;
   /** Admin geral com conta real (is_platform_admin): supervisiona agência e marca. A conta pública de
    *  demonstração com papel admin não ganha esses atalhos (os portais dizem "indisponível" para ela). */
   platformAdmin?: boolean;
 };
 
-/** Atalhos dos portais (topo do Perfil e seção Portais das Configurações): os do papel e um só "Portal do Herói" para
- *  quem tem papel de herói (titular, membro da equipe ou só no casting) ou está num casting. O admin geral de conta
+/** Atalhos dos portais (topo do Perfil e seção Portais das Configurações): os do papel e um só "Portal do Hero" para
+ *  quem tem papel de Hero (titular, membro da equipe ou só no casting) ou está num casting. O admin geral de conta
  *  real supervisiona os portais de gestão (0064). */
 export function buildPortalItems(roles: readonly string[], sellerPortalEnabled?: boolean, opts: PortalOptions = {}): SettingsItem[] {
   const withManagement = roles.includes("admin") && opts.platformAdmin ? [...roles, "agency", "brand"] : roles;

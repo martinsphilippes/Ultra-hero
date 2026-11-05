@@ -4,12 +4,12 @@ import { z } from "zod";
 // 0085: oportunidade de patrocínio (evento de sistema mantido pela oportunidade).
 // 0089: chamada da marca — só na agenda da agência (gestor+), montada pela tela a partir das chamadas do alvo; não
 // existe em calendar_events nem no feed .ics.
-// 0094: agenda do herói independente — "evento" e "serviço" (data de um serviço cadastrado no financeiro) são só da
-// tela do herói (montados no servidor; não existem em calendar_events nem nos filtros da agência).
+// 0094: agenda do Hero independente — "evento" e "serviço" (data de um serviço cadastrado no financeiro) são só da
+// tela do Hero (montados no servidor; não existem em calendar_events nem nos filtros da agência).
 // 0098: "institutional" = Calendário Groscove (agenda central da plataforma; filtro próprio, fora do filtro de tipo).
 export const EVENT_KINDS = ["campaign", "deliverable", "consult_deadline", "meeting", "recording", "commercial_date", "other", "sponsorship", "brand_call", "hero_event", "hero_service", "institutional"] as const;
 export type EventKind = (typeof EVENT_KINDS)[number];
-/** Tipos que só a agenda do herói usa (fora do filtro de tipo da agência). */
+/** Tipos que só a agenda do Hero usa (fora do filtro de tipo da agência). */
 export const HERO_ONLY_EVENT_KINDS: readonly EventKind[] = ["hero_event", "hero_service"];
 /** Tipos fora do filtro "Tipo" da agência (o Calendário Groscove tem filtro próprio). */
 export const NON_FILTER_EVENT_KINDS: readonly EventKind[] = [...HERO_ONLY_EVENT_KINDS, "institutional"];

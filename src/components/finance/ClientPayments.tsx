@@ -10,8 +10,8 @@ import { ClientInstallmentButton } from "./ClientInstallmentButton";
 
 const STATE_VARIANT: Record<ReturnType<typeof installmentState>, BadgeVariant> = { paid: "success", late: "danger", today: "warning", open: "neutral", forecast: "info" };
 
-// Herói-cliente (0111, D5): o herói vê o "a pagar" à agência (assessoria, mentoria, business plan…); o Adm vê o
-// "a receber" dos heróis e marca cada parcela recebida. Sem comissão nem nada interno. Registro simulado.
+// Hero-cliente (0111, D5): o Hero vê o "a pagar" à agência (assessoria, mentoria, business plan…); o Adm vê o
+// "a receber" dos Heros e marca cada parcela recebida. Sem comissão nem nada interno. Registro simulado.
 export async function ClientPayments({ items, side, today }: { items: ClientReceivable[]; side: "talent" | "agency"; today: string }) {
   if (items.length === 0) return null;
   const [t, tm, locale] = await Promise.all([getTranslations("payments.client"), getTranslations("payments.plan.method"), getLocale() as Promise<Locale>]);

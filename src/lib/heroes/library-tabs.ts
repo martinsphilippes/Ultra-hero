@@ -1,6 +1,6 @@
-// Atalhos da página do herói (0050): regra pura, sem servidor nem banco, testada em unidade.
+// Atalhos da página do Hero (0050): regra pura, sem servidor nem banco, testada em unidade.
 // As fontes (o que alimenta cada atalho) são fixas: LIBRARY_KEYS. A configuração só muda a
-// apresentação. Precedência por campo: exceção do herói > categoria principal > padrão do código.
+// apresentação. Precedência por campo: exceção do Hero > categoria principal > padrão do código.
 import { LIBRARY_KEYS, type LibraryKey } from "@/lib/catalog/creator-libraries";
 
 /** Ícones que o admin pode escolher (o banco aceita só estes; o app mapeia para o lucide). */
@@ -57,7 +57,7 @@ export type CategoryTabRow = {
   isVisible: boolean;
 };
 
-/** Linha da exceção do herói (creator_library_overrides). Campo null = herda. */
+/** Linha da exceção do Hero (creator_library_overrides). Campo null = herda. */
 export type OverrideRow = {
   sourceKey: string;
   label: unknown;
@@ -66,7 +66,7 @@ export type OverrideRow = {
   isVisible: boolean | null;
 };
 
-/** Vínculo do herói com a categoria (position 1 = principal). */
+/** Vínculo do Hero com a categoria (position 1 = principal). */
 export type CategoryLinkRow = { categoryId: string; position: number };
 
 /** De onde veio cada valor: para o admin mostrar "herdado de…" ou "exceção". */
@@ -101,7 +101,7 @@ export function labelForLocale(label: LibraryLabel | null, locale: string): stri
   return (locale === "en" ? label.en : locale === "es" ? label.es : undefined) || label["pt-BR"];
 }
 
-/** Categoria que vale para o herói: a de menor posição entre as visíveis (a principal, posição 1). */
+/** Categoria que vale para o Hero: a de menor posição entre as visíveis (a principal, posição 1). */
 export function primaryCategoryId(links: readonly CategoryLinkRow[]): string | null {
   const sorted = [...links].sort((a, b) => a.position - b.position);
   return sorted[0]?.categoryId ?? null;
@@ -154,7 +154,7 @@ export function resolveLibraryConfig({
 export type LibraryTile = { key: LibraryKey; label: string | null; icon: LibraryIconKey; count: number };
 
 /**
- * Atalhos da página do herói: configuração efetiva, só os visíveis e com itens (ou em `always`),
+ * Atalhos da página do Hero: configuração efetiva, só os visíveis e com itens (ou em `always`),
  * com o rótulo já no idioma (null = rótulo padrão das mensagens).
  */
 export function resolveLibraryTiles({
@@ -195,7 +195,7 @@ export function duplicateLabels(labels: readonly { visible: boolean; text: strin
 }
 
 /**
- * Diferença entre o que o admin quer para o herói e o que ele herdaria: só os campos diferentes
+ * Diferença entre o que o admin quer para o Hero e o que ele herdaria: só os campos diferentes
  * viram exceção (null = herda). Fonte sem diferença fica fora (sem exceção).
  */
 export function overrideDiff(
@@ -229,13 +229,13 @@ export type LibraryTabEditorRow = {
   isVisible: boolean;
   /** Rótulo mostrado quando o campo pt-BR fica vazio (padrão do app ou o herdado da categoria). */
   fallbackLabel: string;
-  /** Só no herói: a linha tem exceção gravada. */
+  /** Só no Hero: a linha tem exceção gravada. */
   overridden?: boolean;
 };
 
 /**
  * Configuração efetiva → linhas do editor. Na categoria, os campos trazem o rótulo da categoria;
- * no herói, só o rótulo da exceção (o herdado aparece como fallbackLabel).
+ * no Hero, só o rótulo da exceção (o herdado aparece como fallbackLabel).
  */
 export function toEditorRows(effective: readonly ResolvedTab[], fallbackLabel: (key: LibraryKey) => string, mode: "category" | "hero"): LibraryTabEditorRow[] {
   return effective.map((tab) => {

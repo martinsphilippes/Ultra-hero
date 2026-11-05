@@ -10,7 +10,7 @@ import { adminProfileSchema, serviceSchema, splitCities, type AdminProfileValues
 import { createClient } from "@/lib/supabase/server";
 
 // Profissionais no admin (0058): perfil, aprovação (registro conferido + nota), serviços e preços,
-// sugeridos (herói, receita, programa), convite da conta e a conta de acesso rápido do exemplo.
+// sugeridos (Hero, receita, programa), convite da conta e a conta de acesso rápido do exemplo.
 // Toda escrita passa por RPC auditada (admin_audit); aqui só a forma e a tradução do erro.
 
 type Result<T extends object = Record<never, never>> = ({ ok: true; message: string } & T) | { ok: false; error: string };

@@ -1,10 +1,10 @@
 // Regras puras dos convites (0091 + 0097): papéis do convite do admin, validade, campos condicionais do formulário,
 // opções enviadas à RPC admin_invite e CNPJ. Testáveis sem banco; o banco confere tudo de novo.
 
-// 0097: o "creator" é o próprio herói. O convite do admin tem 7 papéis (sem "Creator" separado); "Herói" escolhe:
-//   new     → herói novo (nasce pendente de aprovação; a pessoa é a titular, com equipe opcional);
-//   team    → entrar na equipe de um herói existente (titular se ele não tem titular; senão membro);
-//   casting → herói que já está no casting de uma agência (convite de acesso à ficha).
+// 0097: o "creator" é o próprio Hero. O convite do admin tem 7 papéis (sem "Creator" separado); "Hero" escolhe:
+//   new     → Hero novo (nasce pendente de aprovação; a pessoa é a titular, com equipe opcional);
+//   team    → entrar na equipe de um Hero existente (titular se ele não tem titular; senão membro);
+//   casting → Hero que já está no casting de uma agência (convite de acesso à ficha).
 // Por dentro o papel continua app_role 'creator'; convites antigos com 'creator' seguem valendo no aceite.
 export const ADMIN_INVITE_ROLES = ["consumer", "admin", "agency", "brand", "hero", "seller", "professional"] as const;
 export type AdminInviteRole = (typeof ADMIN_INVITE_ROLES)[number];
@@ -26,7 +26,7 @@ export function isOnboardingKind(value: unknown): value is OnboardingKind {
   return typeof value === "string" && (ONBOARDING_ROLES as readonly string[]).includes(value);
 }
 
-/** Passo a passo do /primeiro-acesso: os do convite e, desde o cadastro por perfil (0103), o herói (nasce pendente). */
+/** Passo a passo do /primeiro-acesso: os do convite e, desde o cadastro por perfil (0103), o Hero (nasce pendente). */
 export const WIZARD_KINDS = [...ONBOARDING_ROLES, "hero"] as const;
 export type WizardKind = (typeof WIZARD_KINDS)[number];
 

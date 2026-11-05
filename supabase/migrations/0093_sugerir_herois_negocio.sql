@@ -1,46 +1,46 @@
 -- =============================================================================
--- Groscove Ultra · 0093 · Sugerir heróis no negócio (busca na plataforma, ficha criada ao salvar, herói digitado)
--- Idempotente (create or replace). Depende da 0065 (casting), 0066 (elenco do negócio), 0070 (agência e herói),
+-- Groscove Ultra · 0093 · Sugerir Heros no negócio (busca na plataforma, ficha criada ao salvar, Hero digitado)
+-- Idempotente (create or replace). Depende da 0065 (casting), 0066 (elenco do negócio), 0070 (agência e Hero),
 -- 0087/0091 (convite do creator). Cenário RLS S100. S14 segue 18 (nada novo para o visitante).
 --
--- Pedido do responsável: o diálogo "Sugerir creators do casting" passa a "Sugerir heróis". A caixa lê os
--- heróis da PLATAFORMA (creator_profiles ativos), não só a ficha do casting; a agência pode sugerir um herói que
+-- Pedido do responsável: o diálogo "Sugerir creators do casting" passa a "Sugerir Heros". A caixa lê os
+-- Heros da PLATAFORMA (creator_profiles ativos), não só a ficha do casting; a agência pode sugerir um Hero que
 -- ainda não está no casting (a ficha nasce ao salvar) ou digitar alguém que não está na plataforma.
 --
 -- Decisões:
 --  1) agency_hero_search(p_deal, p_q, p_limit, p_offset): busca no servidor (nome ou endereço, sem acento),
---     20 por página (teto 50), gestor+ do negócio. Devolve só heróis ATIVOS que NÃO estão no casting desta
+--     20 por página (teto 50), gestor+ do negócio. Devolve só Heros ATIVOS que NÃO estão no casting desta
 --     agência (os do casting a tela já tem, com os critérios do briefing) e, para cada um, o selo:
 --       'outside'           fora do casting, selecionável;
 --       'other_agency'      já ligado ao casting de OUTRA agência (índice único de creator_id) ou a conta dele já
 --                           tem ficha em outro casting (regra D10 da 0065): indisponível, a RPC de sugerir também
 --                           recusa (a agência não é identificada);
---       'person_in_casting' a conta do herói já tem outra ficha neste casting (login próprio): indisponível.
+--       'person_in_casting' a conta do Hero já tem outra ficha neste casting (login próprio): indisponível.
 --     Só campos públicos: nome, endereço, foto, chamada, pilares, redes públicas (instagram/youtube/site) e o
 --     número de seguidores na plataforma. Nenhum dado de direitos, conta ou e-mail. Suspenso/pendente não aparece.
---     Agência de demonstração não enxerga heróis reais (D6).
+--     Agência de demonstração não enxerga Heros reais (D6).
 --  2) agency_deal_suggest_heroes(p_deal, p_items jsonb): UMA RPC atômica no lugar de agency_shortlist_set (que
 --     fica como estava, sem uso do app). Gestor+ (colaborador recebe forbidden, como no elenco de antes), negócio
 --     da própria agência e aberto. Itens (máx. 30, sem duplicar): {kind:'talent', talent_id}, {kind:'hero',
 --     creator_id} e {kind:'typed', name, profile?, email?}, todos com reasons opcional.
 --       talent: ficha ativa da agência (como antes).
---       hero:   herói ativo. Se já tem ficha nesta agência, reaproveita (idempotente). Senão a agência CRIA a ficha
---               ligada ao herói (commercial_status 'prospect', SEM consentimento: a consulta e o catálogo seguem
---               exigindo o que já exigiam), respeitando um herói num casting só (creator_already_in_casting), a
+--       hero:   Hero ativo. Se já tem ficha nesta agência, reaproveita (idempotente). Senão a agência CRIA a ficha
+--               ligada ao Hero (commercial_status 'prospect', SEM consentimento: a consulta e o catálogo seguem
+--               exigindo o que já exigiam), respeitando um Hero num casting só (creator_already_in_casting), a
 --               regra D10 (user_has_talent) e a agência de demonstração (demo_locked). Trava de transação por
---               herói e por pessoa, como agency_talent_link_creator.
---       typed:  alguém fora da plataforma: ficha SEM herói só com nome (2 a 80, sem controle nem < >), perfil opcional
+--               Hero e por pessoa, como agency_talent_link_creator.
+--       typed:  alguém fora da plataforma: ficha SEM Hero só com nome (2 a 80, sem controle nem < >), perfil opcional
 --               (@endereço ou link https, guardado nas notas internas) e e-mail opcional (contact_email). Mesmo nome
---               (sem caixa) de ficha sem herói da agência reaproveita a existente. A ficha segue o convite do
+--               (sem caixa) de ficha sem Hero da agência reaproveita a existente. A ficha segue o convite do
 --               creator (agency_invite_talent/0087) para entrar na plataforma. Agência demo respeita o limite de 20.
 --     No máximo 10 fichas novas por salvamento (too_many_new_talents). Tudo numa transação: erro em um item não deixa
 --     ficha pela metade. Sugerir de novo um creator já removido do negócio o traz de volta como sugerido.
 --     Devolve {ids, created, revived}. Auditoria: talent.create (origem) por ficha nova e deal.shortlist.
---  3) Sem aviso novo ao dono do herói: a consulta de interesse (já existente) é o aviso, e a ficha nasce sem
+--  3) Sem aviso novo ao dono do Hero: a consulta de interesse (já existente) é o aviso, e a ficha nasce sem
 --     consentimento. Ficha criada aqui nunca vira catálogo da marca sem a pessoa dar o consentimento.
 -- =============================================================================
 
--- 1) busca de heróis da plataforma para sugerir ------------------------------------------------------------------
+-- 1) busca de Heros da plataforma para sugerir ------------------------------------------------------------------
 create or replace function public.agency_hero_search(p_deal uuid, p_q text default '', p_limit int default 20, p_offset int default 0)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare v_agency uuid; v_q text; v_like text; v_limit int; v_off int; v_rows jsonb; v_more boolean;
@@ -49,7 +49,7 @@ begin
   select d.agency_id into v_agency from public.deals d where d.id = p_deal;
   if v_agency is null or not public.agency_can(v_agency, 'staff') then raise exception 'not_found' using errcode = 'P0002'; end if;
   if not public.agency_can(v_agency, 'manager') then raise exception 'forbidden' using errcode = '42501'; end if;
-  -- D6: a agência de demonstração não enxerga heróis reais
+  -- D6: a agência de demonstração não enxerga Heros reais
   if public.agency_is_demo(v_agency) then return jsonb_build_object('items', '[]'::jsonb, 'has_more', false); end if;
   v_limit := greatest(1, least(coalesce(p_limit, 20), 50));
   v_off := greatest(0, least(coalesce(p_offset, 0), 5000));
@@ -90,7 +90,7 @@ end $$;
 revoke execute on function public.agency_hero_search(uuid, text, int, int) from public, anon;
 grant execute on function public.agency_hero_search(uuid, text, int, int) to authenticated, service_role;
 
--- 2) sugerir heróis no negócio (substitui o uso de agency_shortlist_set) -------------------------------------------
+-- 2) sugerir Heros no negócio (substitui o uso de agency_shortlist_set) -------------------------------------------
 create or replace function public.agency_deal_suggest_heroes(p_deal uuid, p_items jsonb)
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare
@@ -125,7 +125,7 @@ begin
 
     elsif v_kind = 'hero' then
       begin v_creator := (e ->> 'creator_id')::uuid; exception when others then raise exception 'invalid_input' using errcode = '22023'; end;
-      -- só herói ativo (suspenso e pendente não existem para a agência)
+      -- só Hero ativo (suspenso e pendente não existem para a agência)
       select c.id, c.name, c.user_id into v_hero from public.creator_profiles c where c.id = v_creator and c.status = 'active';
       if v_hero.id is null then raise exception 'not_found' using errcode = 'P0002'; end if;
       perform pg_advisory_xact_lock(hashtext('hero_casting:' || v_creator::text));
@@ -133,10 +133,10 @@ begin
       if v_owner is not null then perform pg_advisory_xact_lock(hashtext('talent_person:' || v_owner::text)); end if;
       select t.id into v_talent from public.talent_profiles t where t.creator_id = v_creator and t.agency_id = v_agency and t.archived_at is null;
       if v_talent is null then
-        -- D6: nenhum herói real em agência inventada
+        -- D6: nenhum Hero real em agência inventada
         if v_demo then raise exception 'demo_locked' using errcode = 'P0001'; end if;
         if exists (select 1 from public.talent_profiles t where t.creator_id = v_creator) then raise exception 'creator_already_in_casting' using errcode = 'P0001'; end if;
-        -- D10: a pessoa dona do herói já tem ficha (login próprio sem página ou outro herói dela num casting)
+        -- D10: a pessoa dona do Hero já tem ficha (login próprio sem página ou outro Hero dela num casting)
         if v_owner is not null and exists (
              select 1 from public.talent_profiles t left join public.creator_profiles c2 on c2.id = t.creator_id
              where t.user_id = v_owner or c2.user_id = v_owner) then

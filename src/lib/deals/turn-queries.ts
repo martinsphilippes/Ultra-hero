@@ -27,7 +27,7 @@ import type { DeliverableStatus } from "./vocab";
 
 // "Sua vez" das telas iniciais (05/11): leitura EM LOTE por portal — uma consulta por tabela para os até 50 negócios
 // abertos mais recentes (nada de chamar a ficha de cada negócio) — e a conta em memória (turn-queue.ts). A RLS de cada
-// tabela decide o que entra: o colaborador só lê os negócios dele; a marca, as campanhas dela; o herói, as oportunidades
+// tabela decide o que entra: o colaborador só lê os negócios dele; a marca, as campanhas dela; o Hero, as oportunidades
 // dele. Sem migração nova.
 //
 // Exceção consciente: gestor/colaborador da agência não leem as rodadas da negociação nem as condições de pagamento (só
@@ -169,8 +169,8 @@ export async function brandTurns(input: { brandId: string; role: "owner" | "staf
   return { available: true, items: buildTurnQueue("brand", sources, { today: localDay(new Date(), timeZone), timeZone }), timeZone };
 }
 
-// ---------------------------------------------------------------- herói
-/** As oportunidades do herói numa leitura só por requisição (a tela inicial também lista as pendentes). */
+// ---------------------------------------------------------------- Hero
+/** As oportunidades do Hero numa leitura só por requisição (a tela inicial também lista as pendentes). */
 export const listMyOpportunitiesOnce = cache(() => listOpportunities());
 
 export async function heroTurns(): Promise<TurnResult> {

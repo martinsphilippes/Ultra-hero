@@ -131,7 +131,7 @@ export default async function PipelinePage({ searchParams }: Props) {
                         data-testid="deal-card"
                       >
                         <span className="text-sm font-semibold text-fg">{deal.title}</span>
-                        {/* 04/11: herói cliente com "(cliente)", distinto da marca; os escalados vêm à parte, na linha de baixo */}
+                        {/* 04/11: Hero cliente com "(cliente)", distinto da marca; os escalados vêm à parte, na linha de baixo */}
                         <span className="type-caption text-fg-muted">{[dealClientLabel(td, deal.brand.name, deal.clientTalent?.name), deal.service?.name].filter(Boolean).join(" · ")}</span>
                         <span className="flex flex-wrap items-center gap-1.5 type-caption text-fg-muted">
                           {closed ? <StageBadge stage={deal.stage} outcome={deal.outcome} /> : null}

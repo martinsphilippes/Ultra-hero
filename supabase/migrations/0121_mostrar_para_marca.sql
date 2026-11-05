@@ -9,7 +9,7 @@
 --   • D1 Quem pode: o mesmo critério das outras ações do negócio (deal_write_scope com p_owner_ok): gestor+ da
 --     agência ou o colaborador responsável/da equipe do negócio. Colaborador fora do negócio e outra agência → not_found
 --     /forbidden. Negócio encerrado não muda (invalid_stage).
---   • D2 Exige marca (brand_id): negócio só do herói-cliente (0107) não tem a quem mostrar → brand_required. Exige
+--   • D2 Exige marca (brand_id): negócio só do Hero-cliente (0107) não tem a quem mostrar → brand_required. Exige
 --     também o pedido de campanha (request_id): é por ele que a marca navega (/marca/campanhas/<pedido>).
 --   • D3 Ocultar de novo só antes da confirmação (etapa antes de "aprovado" e sem confirmed_at); depois de confirmado
 --     o negócio fica sempre visível (already_confirmed). Proposta que a própria marca abriu (origem "brand") nunca é
@@ -22,8 +22,8 @@
 --     aviso.
 --   • D7 O que a marca enxerga não muda de regra: tudo continua pelas leituras fechadas (brand_campaign_detail,
 --     brand_workboard, brand_campaigns...). Antes da confirmação ela vê título, briefing, período e situação; não vê
---     cachês, comissão, taxa, orçamento interno, notas internas do pedido da agência, heróis (só propostos/contratados
---     a partir da proposta enviada) nem a conversa herói↔agência (canal talent_agency).
+--     cachês, comissão, taxa, orçamento interno, notas internas do pedido da agência, Heros (só propostos/contratados
+--     a partir da proposta enviada) nem a conversa Hero↔agência (canal talent_agency).
 -- =============================================================================
 
 create or replace function public.agency_deal_set_brand_visible(p_deal uuid, p_visible boolean)

@@ -1,16 +1,16 @@
 -- =============================================================================
--- Ultra Hero · 0049 · Categorias dos heróis (aba Hero)
---   A aba Hero (/personalities) troca os chips de pilar por categorias de QUEM é o herói:
---   "Todos" (fixo, só no app) + as categorias desta tabela, na ordem do admin. Cada herói tem
---   até 2 categorias (posição 1 e 2). Categoria inativa ou sem herói visível fica escondida.
---   Mais adiante cada categoria vai configurar os atalhos da página do herói (hero_library_tabs,
+-- Ultra Hero · 0049 · Categorias dos Heros (aba Hero)
+--   A aba Hero (/personalities) troca os chips de pilar por categorias de QUEM é o Hero:
+--   "Todos" (fixo, só no app) + as categorias desta tabela, na ordem do admin. Cada Hero tem
+--   até 2 categorias (posição 1 e 2). Categoria inativa ou sem Hero visível fica escondida.
+--   Mais adiante cada categoria vai configurar os atalhos da página do Hero (hero_library_tabs,
 --   ver docs/decisions/hero-showcase.md): por isso id e slug estáveis e sort_order.
 --
 -- Rótulos: jsonb {"pt-BR","en","es"}, como product_categories.name e shop_filters.name.
 -- Leitura pública: políticas simples de SELECT (categorias ativas; vínculos de categoria ativa
---   com herói ativo) para anon e authenticated; escrita só do admin, pela RLS com (select is_admin()).
--- Máximo de 2 por herói: garantido pelo banco (position só 1 ou 2 + único (creator_id, position)).
--- Troca atômica das categorias de um herói: admin_set_creator_categories (security invoker, a RLS
+--   com Hero ativo) para anon e authenticated; escrita só do admin, pela RLS com (select is_admin()).
+-- Máximo de 2 por Hero: garantido pelo banco (position só 1 ou 2 + único (creator_id, position)).
+-- Troca atômica das categorias de um Hero: admin_set_creator_categories (security invoker, a RLS
 --   decide; sem execute para o visitante).
 -- Auditoria: gatilho security definer grava em admin_audit cada mudança feita por admin (sem
 --   execute para ninguém: a lista do S14 continua com 17 funções para o visitante).
@@ -44,7 +44,7 @@ create table if not exists public.creator_category_links (
   position smallint not null check (position in (1, 2)),
   created_at timestamptz not null default now(),
   primary key (creator_id, category_id),
-  -- com position só 1 ou 2, isto limita a 2 categorias por herói
+  -- com position só 1 ou 2, isto limita a 2 categorias por Hero
   constraint creator_category_links_position_key unique (creator_id, position)
 );
 create index if not exists creator_category_links_category_idx on public.creator_category_links (category_id);
@@ -67,7 +67,7 @@ drop policy if exists hero_categories_admin on public.hero_categories;
 create policy hero_categories_admin on public.hero_categories for all to authenticated
   using ((select public.is_admin())) with check ((select public.is_admin()));
 
--- vínculo visível: categoria ativa e herói ativo
+-- vínculo visível: categoria ativa e Hero ativo
 drop policy if exists creator_category_links_select_active on public.creator_category_links;
 create policy creator_category_links_select_active on public.creator_category_links for select to anon, authenticated
   using (exists (select 1 from public.hero_categories c where c.id = creator_category_links.category_id and c.is_active)
@@ -78,7 +78,7 @@ create policy creator_category_links_admin on public.creator_category_links for 
 
 -- ---------------------------------------------------------------- 4) auditoria das mudanças do admin
 -- Categoria: resource_type 'hero_category', resource_id = id da categoria.
--- Vínculo: resource_type 'hero_category_link', resource_id = id do herói (trilha por herói).
+-- Vínculo: resource_type 'hero_category_link', resource_id = id do Hero (trilha por Hero).
 create or replace function public.hero_categories_audit()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare v_row jsonb;
@@ -103,7 +103,7 @@ drop trigger if exists trg_audit_creator_category_links on public.creator_catego
 create trigger trg_audit_creator_category_links after insert or update or delete on public.creator_category_links
   for each row execute function public.hero_categories_audit();
 
--- ---------------------------------------------------------------- 5) troca atômica das categorias de um herói
+-- ---------------------------------------------------------------- 5) troca atômica das categorias de um Hero
 -- Security invoker: a RLS de admin decide (quem não é admin recebe forbidden antes).
 -- p_categories na ordem desejada (posição 1, 2); vazio remove todas.
 create or replace function public.admin_set_creator_categories(p_creator uuid, p_categories uuid[])
@@ -135,7 +135,7 @@ insert into public.hero_categories (id, slug, name, sort_order) values
    '{"pt-BR":"Arte e Entretenimento","en":"Arts & Entertainment","es":"Arte y Entretenimiento"}', 40)
 on conflict do nothing;
 
--- Liga pelo slug do herói só quando: a categoria é a do seed, o herói ainda não tem categoria e o
+-- Liga pelo slug do Hero só quando: a categoria é a do seed, o Hero ainda não tem categoria e o
 -- admin nunca mexeu nas categorias dele (sem trilha em admin_audit).
 insert into public.creator_category_links (creator_id, category_id, position)
 select cp.id, c.id, m.position

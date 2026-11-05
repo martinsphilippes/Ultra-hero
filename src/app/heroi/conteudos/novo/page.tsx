@@ -23,11 +23,11 @@ type Props = { searchParams: Promise<{ campanha?: string; bloco?: string }> };
 // Resumo do conteúdo estruturado (content.summary, até 600; ver editors/content/schema).
 const SUMMARY_MAX = 600;
 
-// Novo conteúdo (0092). O creator (titular ou membro da equipe do herói ativo) cria o conteúdo estruturado aqui,
-// no mesmo editor por blocos do admin, com o herói dele fixo (vários heróis: seletor). O admin continua no editor
-// do admin com o herói escolhido já selecionado (sem mudança).
+// Novo conteúdo (0092). O creator (titular ou membro da equipe do Hero ativo) cria o conteúdo estruturado aqui,
+// no mesmo editor por blocos do admin, com o Hero dele fixo (vários Heros: seletor). O admin continua no editor
+// do admin com o Hero escolhido já selecionado (sem mudança).
 // ?campanha= (pedido do responsável, 04/11): faixa da campanha, resumo com as marcas obrigatórias do briefing e
-// ?bloco=treino|programa já no pilar Treino (programa: o único programa publicado do herói já escolhido; com mais de
+// ?bloco=treino|programa já no pilar Treino (programa: o único programa publicado do Hero já escolhido; com mais de
 // um, ele escolhe no bloco). O rascunho segue para o editor com o mesmo contexto (publicado, volta para a campanha).
 export default async function NewContentPage({ searchParams }: Props) {
   const sp = await searchParams;

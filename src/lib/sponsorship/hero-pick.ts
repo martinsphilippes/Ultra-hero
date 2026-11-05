@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { fold, normalizeQuery, validateTypedHero, type TypedHero } from "@/lib/deals/hero-suggest";
 
-// Herói da oportunidade de patrocínio (0095): lógica pura, testada em tests/unit/oportunidade-heroi.test.ts.
-// O herói é a página pública do creator para quem o evento acontece. A agência escolhe entre os heróis da plataforma
-// (ficha do casting, herói fora do casting ou ficha digitada) e o banco confere tudo de novo (agency_sponsorship_save).
+// Hero da oportunidade de patrocínio (0095): lógica pura, testada em tests/unit/oportunidade-heroi.test.ts.
+// O Hero é a página pública do creator para quem o evento acontece. A agência escolhe entre os Heros da plataforma
+// (ficha do casting, Hero fora do casting ou ficha digitada) e o banco confere tudo de novo (agency_sponsorship_save).
 //
 // Consentimento: continua exigido para a oportunidade ficar visível às marcas (status "aberta"); rascunho vale sem ele.
 // Aqui ficam só as regras para avisar antes de enviar; quem decide é o banco.
@@ -12,14 +12,14 @@ export const PICKER_PAGE_SIZE = 20;
 export const HERO_KINDS = ["talent", "hero", "typed"] as const;
 export type HeroKind = (typeof HERO_KINDS)[number];
 export type HeroConsent = "active" | "revoked" | "none";
-/** casting: ficha da agência · outside: herói da plataforma sem ficha aqui · other_agency / person_in_casting: indisponíveis. */
+/** casting: ficha da agência · outside: Hero da plataforma sem ficha aqui · other_agency / person_in_casting: indisponíveis. */
 export type HeroScope = "casting" | "outside" | "other_agency" | "person_in_casting";
 const SCOPES: readonly string[] = ["casting", "outside", "other_agency", "person_in_casting"];
 const CONSENTS: readonly string[] = ["active", "revoked", "none"];
 
-/** Linha da busca de heróis da oportunidade (campos públicos; a RPC não devolve direitos, conta nem e-mail). */
+/** Linha da busca de Heros da oportunidade (campos públicos; a RPC não devolve direitos, conta nem e-mail). */
 export type OpportunityHero = {
-  /** talent: ficha do casting (com ou sem página) · hero: herói da plataforma fora do casting */
+  /** talent: ficha do casting (com ou sem página) · hero: Hero da plataforma fora do casting */
   kind: "talent" | "hero";
   talentId: string | null;
   creatorId: string | null;
@@ -70,7 +70,7 @@ export function parseOpportunityHeroes(raw: unknown): OpportunityHeroPage {
   return { items, hasMore: obj.has_more === true };
 }
 
-/** Chave estável da linha (ficha do casting ou herói da plataforma). */
+/** Chave estável da linha (ficha do casting ou Hero da plataforma). */
 export function heroKey(h: Pick<OpportunityHero, "kind" | "talentId" | "creatorId">): string {
   return h.kind === "talent" ? `t:${h.talentId}` : `h:${h.creatorId}`;
 }
@@ -89,12 +89,12 @@ export function heroSelectable(scope: HeroScope): boolean {
 export { fold, normalizeQuery };
 
 // ---------------------------------------------------------------- a escolha guardada no formulário
-/** Herói escolhido: o que o formulário mostra e o que a RPC recebe. */
+/** Hero escolhido: o que o formulário mostra e o que a RPC recebe. */
 export type HeroChoice = {
   kind: HeroKind;
   /** ficha do casting (kind talent) */
   talentId: string | null;
-  /** herói da plataforma (kind hero) ou página ligada à ficha (kind talent) */
+  /** Hero da plataforma (kind hero) ou página ligada à ficha (kind talent) */
   creatorId: string | null;
   name: string;
   slug: string | null;
@@ -148,12 +148,12 @@ export function choiceFromSearch(h: OpportunityHero): HeroChoice {
   };
 }
 
-/** Escolha a partir do herói digitado (já validado por validateTypedHero). */
+/** Escolha a partir do Hero digitado (já validado por validateTypedHero). */
 export function choiceFromTyped(t: TypedHero): HeroChoice {
   return { kind: "typed", talentId: null, creatorId: null, name: t.name, slug: null, avatarUrl: null, headline: null, pillars: [], consent: "none", profile: t.profile ?? "", email: t.email ?? "" };
 }
 
-/** Escolha a partir do herói que a oportunidade já tem (leitura da agência): é sempre a ficha do casting. */
+/** Escolha a partir do Hero que a oportunidade já tem (leitura da agência): é sempre a ficha do casting. */
 export function choiceFromHeroInfo(h: HeroInfo): HeroChoice {
   return {
     kind: "talent",
@@ -178,14 +178,14 @@ export function heroChoiceToDb(c: HeroChoice): Record<string, string> {
 }
 
 // ---------------------------------------------------------------- consentimento e publicação
-/** O herói pode ser mostrado às marcas? Só com consentimento vigente (a ficha de fora e a digitada ainda não têm). */
+/** O Hero pode ser mostrado às marcas? Só com consentimento vigente (a ficha de fora e a digitada ainda não têm). */
 export function heroHasConsent(c: Pick<HeroChoice, "consent">): boolean {
   return c.consent === "active";
 }
 
 export type PublishBlock = "no_hero" | "consent" | "inactive" | null;
 
-/** Por que não dá para publicar (null = dá). `heroActive` false = a página do herói está suspensa ou saiu do ar. */
+/** Por que não dá para publicar (null = dá). `heroActive` false = a página do Hero está suspensa ou saiu do ar. */
 export function publishBlock(hero: Pick<HeroChoice, "consent"> | null, heroActive = true): PublishBlock {
   if (!hero) return "no_hero";
   if (!heroActive) return "inactive";
@@ -197,8 +197,8 @@ export function formActions(status: "new" | "draft" | "open"): { saveDraft: bool
   return status === "open" ? { saveDraft: false, publish: false, save: true } : { saveDraft: true, publish: true, save: false };
 }
 
-// ---------------------------------------------------------------- herói de uma oportunidade (leituras)
-/** O herói da oportunidade como as leituras trazem (sponsorship_hero_json). A marca só recebe a página com consentimento. */
+// ---------------------------------------------------------------- Hero de uma oportunidade (leituras)
+/** O Hero da oportunidade como as leituras trazem (sponsorship_hero_json). A marca só recebe a página com consentimento. */
 export type HeroInfo = {
   talentId: string;
   name: string;
@@ -228,12 +228,12 @@ export function toHeroInfo(raw: unknown, fallbackName = "", fallbackTalent = "")
   };
 }
 
-/** Endereço da página pública do herói (null sem página ou sem permissão de mostrar). */
+/** Endereço da página pública do Hero (null sem página ou sem permissão de mostrar). */
 export function heroPagePath(h: Pick<HeroInfo, "slug">): string | null {
   return h.slug ? `/personalities/${h.slug}` : null;
 }
 
-/** Atalhos da ficha do herói na agência (casting): ficha e documentos (onde o termo assinado entra). */
+/** Atalhos da ficha do Hero na agência (casting): ficha e documentos (onde o termo assinado entra). */
 export function fichaLinks(talentId: string | null): { ficha: string; documents: string } | null {
   return talentId ? { ficha: `/agencia/casting/${talentId}`, documents: `/agencia/casting/${talentId}/documentos` } : null;
 }

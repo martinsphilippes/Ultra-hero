@@ -1,7 +1,7 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 import { loginAs } from "./helpers/login";
 
-// 0061: aviso de lance superado (pop-up na casca, chave nas Notificações) e visitas à página do herói
+// 0061: aviso de lance superado (pop-up na casca, chave nas Notificações) e visitas à página do Hero
 // (contador e indicadores). Só leitura: o cookie uh-e2e=1 desliga o contador, e o pop-up é exercitado com
 // as leituras do Supabase interceptadas (nenhuma escrita chega ao banco: o "visto" também é interceptado).
 // Sem a 0061 no banco remoto, o que depende dela se pula ou cai no comportamento de reserva.
@@ -26,7 +26,7 @@ async function fakeOutbid(page: Page) {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify([
-        { id: "a1b2c3d4-0000-4000-8000-000000000001", kind: "auction_outbid", collectible_id: ITEM, title: "Bola assinada pelo herói", amount_cents: 156000, updated_at: new Date(now - 30_000).toISOString() },
+        { id: "a1b2c3d4-0000-4000-8000-000000000001", kind: "auction_outbid", collectible_id: ITEM, title: "Bola assinada pelo Hero", amount_cents: 156000, updated_at: new Date(now - 30_000).toISOString() },
       ]),
     });
   });
@@ -48,7 +48,7 @@ test.describe("lance superado", () => {
     const alert = page.getByTestId("outbid-alert");
     await expect(alert).toBeVisible({ timeout: 15_000 });
     await expect(alert).toHaveAttribute("role", "status");
-    await expect(alert).toContainText("Seu lance em Bola assinada pelo herói foi superado");
+    await expect(alert).toContainText("Seu lance em Bola assinada pelo Hero foi superado");
     await expect(alert).toContainText("Lance atual: R$ 1.560,00");
     await expect(page.getByTestId("outbid-alert-cta")).toHaveAttribute("href", `/shop/colecionaveis/${ITEM}`);
     await expect(page.getByTestId("outbid-alert-cta")).toHaveText("Dar novo lance");
@@ -99,8 +99,8 @@ test.describe("lance superado", () => {
   });
 });
 
-test.describe("visitas à página do herói", () => {
-  test("abrir a página do herói avisa o contador (204), sem esperar; corpo inválido também 204", async ({ page }) => {
+test.describe("visitas à página do Hero", () => {
+  test("abrir a página do Hero avisa o contador (204), sem esperar; corpo inválido também 204", async ({ page }) => {
     const beacon = page.waitForResponse((r) => r.url().endsWith("/api/hero-page-views") && r.request().method() === "POST", { timeout: 15_000 });
     await page.goto("/personalities/erick-jacquin");
     expect((await beacon).status()).toBe(204);
@@ -112,13 +112,13 @@ test.describe("visitas à página do herói", () => {
     await loginAs(page, "admin");
     await page.goto("/admin/indicadores?secao=herois&days=30");
     test.skip((await page.getByTestId("indicators-missing").count()) > 0, "banco sem a 0060: indicadores mostram 'Sem dados ainda'");
-    await expect(page.getByText("Visitas à página do herói").first()).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Visitas à página do herói por dia" })).toBeVisible();
+    await expect(page.getByText("Visitas à página do Hero").first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Visitas à página do Hero por dia" })).toBeVisible();
     const csv = await page.request.get("/admin/indicadores/export?secao=herois&days=30");
     expect(csv.status()).toBe(200);
     expect(await csv.text()).toMatch(/,page_views,\d+/);
 
     await page.goto("/admin/indicadores?secao=ranking&days=30");
-    await expect(page.getByRole("heading", { name: "Heróis por visitas à página" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Heros por visitas à página" })).toBeVisible();
   });
 });

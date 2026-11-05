@@ -124,7 +124,7 @@ export function CreatorForm({ id, initial, privateMeta }: Props) {
           <Input type="number" min={0} max={10000} inputMode="numeric" value={String(values.sortOrder)} disabled={pending} onChange={(e) => set("sortOrder", Number(e.target.value))} />
         </FormField>
       </div>
-      {/* foto e capa são fotos reais enviadas pelo próprio herói; aqui só a remoção (moderação) */}
+      {/* foto e capa são fotos reais enviadas pelo próprio Hero; aqui só a remoção (moderação) */}
       <p className="type-caption text-fg-muted">{t("mediaNote")}</p>
       <Switch id="creator-fictional" checked={values.isFictional} onCheckedChange={(c) => set("isFictional", c)} label={t("isFictional")} description={t("isFictionalHint")} disabled={pending} />
       <FormField label={t("rightsNote")} hint={t("rightsNoteHint")}>

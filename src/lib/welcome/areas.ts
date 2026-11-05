@@ -1,13 +1,13 @@
-// Card de boas-vindas por área (app, Portal do Herói, Portal da Marca, Portal da Agência). Módulo puro: passos, chave
+// Card de boas-vindas por área (app, Portal do Hero, Portal da Marca, Portal da Agência). Módulo puro: passos, chave
 // do "já vi" e regras de onde aparece; usado pelos layouts, pela tela de Configurações, pelo card e pelos testes.
 //
 // Decisões (sem perguntar ao dono):
 // - "Já vi" fica no servidor, no user_metadata da própria conta (supabase.auth.updateUser, que MESCLA as chaves): uma
 //   chave por área (uh_welcome_seen_<área> = data ISO). Sem tabela nem coluna nova: account_onboardings é do cadastro
-//   por perfil (criar agência/marca/herói), não de "telas vistas".
+//   por perfil (criar agência/marca/Hero), não de "telas vistas".
 // - Aparece uma vez no primeiro acesso de cada pessoa a cada área; reabre por "Como funciona" (Configurações), que leva
 //   à área com ?como-funciona=1.
-// - Não aparece: sem sessão; nas telas /admin (o layout do admin não monta o card; o admin que entra no Portal do Herói
+// - Não aparece: sem sessão; nas telas /admin (o layout do admin não monta o card; o admin que entra no Portal do Hero
 //   pelo "Publicar como hero" ou supervisiona marca/agência sem ser membro também não vê); nas telas da loja em Coming
 //   soon (/shop, /cart, /checkout: o aviso da loja é o protagonista ali); nos navegadores de E2E (cookie uh-e2e).
 //   Fluxo de cadastro (/login, /primeiro-acesso, /onboarding) fica fora dos layouts que montam o card.

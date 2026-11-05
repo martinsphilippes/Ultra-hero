@@ -18,10 +18,10 @@ import type { ProgramCardData } from "@/lib/catalog/queries";
 import type { LocaleCode, Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
-// Dados das prateleiras de programas (biblioteca "Programas" do herói). Tudo em lote: uma consulta
+// Dados das prateleiras de programas (biblioteca "Programas" do Hero). Tudo em lote: uma consulta
 // por tabela para todos os programas da página, nunca uma por programa (sem N+1).
 
-/** Programa como vem do hub do herói, com a versão atual (para buscar as etapas). */
+/** Programa como vem do hub do Hero, com a versão atual (para buscar as etapas). */
 export type ProgramShelfSource = ProgramCardData & { current_version_id: string | null };
 
 export type ShelfContent = ContentTileData & { duration_minutes: number | null };

@@ -12,7 +12,7 @@ type Props = {
   status: string | null;
 };
 
-// Validar / suspender / rejeitar a alocação produto↔herói (2 passos; a nota vai para a auditoria).
+// Validar / suspender / rejeitar a alocação produto↔Hero (2 passos; a nota vai para a auditoria).
 // Validar não exige justificativa; suspender e rejeitar exigem, como nos vínculos por conteúdo.
 export function CreatorProductActions({ creatorId, productId, status }: Props) {
   const t = useTranslations("adminOps.creators.products.actions");

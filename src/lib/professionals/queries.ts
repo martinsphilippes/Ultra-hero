@@ -175,7 +175,7 @@ export const getPublicProfessional = cache(async (slug: string): Promise<PublicP
 export type SuggestedNutritionists = { available: boolean; items: (ProfessionalCardView & { services: ServiceView[] })[]; source: "recipe" | "hero" | "any" | null };
 
 /**
- * "Contratar nutricionista" (receita e Alimentação): sugeridos da receita, depois do herói, depois
+ * "Contratar nutricionista" (receita e Alimentação): sugeridos da receita, depois do Hero, depois
  * qualquer nutricionista aprovado. Traz os serviços ativos de cada um (para o botão Contratar).
  */
 export async function suggestedNutritionists(input: { contentId: string | null; creatorId: string | null; limit?: number }): Promise<SuggestedNutritionists> {

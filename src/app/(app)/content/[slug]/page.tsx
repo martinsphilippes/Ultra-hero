@@ -174,14 +174,14 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
     user ? supabase.from("content_progress").select("position_seconds, progress_pct").eq("user_id", user.id).eq("content_id", content.id).maybeSingle() : null,
     user ? supabase.from("favorites").select("content_id").eq("user_id", user.id).eq("content_id", content.id).maybeSingle() : null,
     user ? supabase.from("not_interested").select("content_id").eq("user_id", user.id).eq("content_id", content.id).maybeSingle() : null,
-    // receitas usam "Parecidas" (RelatedRecipes); "Mais de {herói}" é só dos outros tipos
+    // receitas usam "Parecidas" (RelatedRecipes); "Mais de {Hero}" é só dos outros tipos
     content.creator_id && content.type !== "recipe"
       ? supabase.from("content").select(CONTENT_CARD_SELECT).eq("creator_id", content.creator_id).eq("status", "published").or(liveContentFilter()).neq("id", content.id).order("published_at", { ascending: false }).limit(3)
       : null,
     user ? getProfile() : null,
   ]);
 
-  // Marcas e produtos (0062): faixa de marcas ao lado do herói, Smart Tags na foto e recomendados
+  // Marcas e produtos (0062): faixa de marcas ao lado do Hero, Smart Tags na foto e recomendados
   // sob o conteúdo. Sem a 0062, tudo vazio.
   const [brandChips, smartTags, recommended] = await Promise.all([
     loadContentBrandChips(supabase, content.id, content.creator_id),
@@ -265,7 +265,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
         })
       : null;
   const servingsParam = parseServingsParam(query.porcoes);
-  // Alimentação (0051): herói da vitrine (?vitrine=, só se a receita está mesmo na vitrine dele),
+  // Alimentação (0051): Hero da vitrine (?vitrine=, só se a receita está mesmo na vitrine dele),
   // assinatura escolhida pelo admin e o produto "Comprar pronto". Sem a 0051: como antes.
   const [showcaseHero, signers, readyMap] = isRecipe
     ? await Promise.all([resolveShowcaseHero(supabase, parseShowcaseSlug(query.vitrine), content), fetchRecipeSigners(supabase, [content.id]), fetchReadyProducts(supabase, [content.id])])
@@ -310,7 +310,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
     <UnavailableCard />
   );
 
-  // post com foto (0043): artigo cuja capa é a foto enviada pelo herói e cujo corpo é a própria foto; a
+  // post com foto (0043): artigo cuja capa é a foto enviada pelo Hero e cujo corpo é a própria foto; a
   // foto vai grande no topo. Com o corpo carregado, o provedor decide (artigo com texto e capa do
   // celular mantém o texto); sem corpo (visitante), vale a capa.
   const photoPost = isPhotoPost(bodyRow ? { ...content, media_provider: bodyRow.media_provider } : content, supabaseBaseUrl());
@@ -435,7 +435,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
             </Link>
           )}
 
-          {/* Marcas (0062): do post e do herói, logo abaixo do nome */}
+          {/* Marcas (0062): do post e do Hero, logo abaixo do nome */}
           {content.creator && brandChips.length > 0 ? <BrandStrip brands={brandChips} heroName={content.creator.name} /> : null}
 
           {(user || isRecipe) && (
@@ -486,7 +486,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
             </div>
           )}
           {isRecipe && recipeActions.nutricionista === "soon" ? <NutritionistSoon /> : null}
-          {/* Contratar nutricionista (Etapa 3, 0058): sugeridos da receita/herói; sem a 0058, a linha "em breve" */}
+          {/* Contratar nutricionista (Etapa 3, 0058): sugeridos da receita/Hero; sem a 0058, a linha "em breve" */}
           {isRecipe && recipeActions.nutricionista === "live" ? <HireNutritionist contentId={content.id} creatorId={trackHero ?? null} source="receita" nextPath={path} /> : null}
         </div>
       </header>
@@ -580,7 +580,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
       <section aria-label={t("feedbackTitle")} className="pt-2 print:hidden">
         <FeedbackWidget context={`content:${content.id}`} />
       </section>
-      {/* denunciar o conteúdo e bloquear o herói (0071, diretriz 1.2 da App Store) */}
+      {/* denunciar o conteúdo e bloquear o Hero (0071, diretriz 1.2 da App Store) */}
       {content.creator ? <ReportBlockActions creatorId={content.creator.id} heroName={content.creator.name} contentId={content.id} signedIn={Boolean(user)} path={`/content/${content.slug}`} /> : null}
     </div>
   );

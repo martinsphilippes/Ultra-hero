@@ -10,7 +10,7 @@ import { COMPARE_METRIC_DEFS, COMPARE_METRICS, type CompareMetricKey } from "@/l
 type Props = { creatorId: string; initial: Partial<Record<CompareMetricKey, number>> };
 
 // Referências para comparação (0056): um campo por indicador, com unidade fixa. Em branco = o
-// indicador não é comparado para este herói.
+// indicador não é comparado para este Hero.
 export function ReferenceMetricsEditor({ creatorId, initial }: Props) {
   const t = useTranslations("follows.admin");
   const tm = useTranslations("follows.compare.metrics");

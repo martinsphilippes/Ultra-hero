@@ -12,7 +12,7 @@ import { formatDate } from "@/i18n/format";
 import type { AccessKind, AccessStatus } from "@/lib/agency/access-contact";
 import { formatBrPhoneInput, formatE164ForDisplay } from "@/lib/auth/phone";
 
-// Acesso de quem a agência cadastrou (0112): herói (talento) ou contato da marca. Só gestor+ e admin geral veem (a
+// Acesso de quem a agência cadastrou (0112): Hero (talento) ou contato da marca. Só gestor+ e admin geral veem (a
 // página só monta para eles; o banco também confere). Situação, e-mail e celular (dado pessoal: só aqui) e as ações
 // Reenviar / Corrigir e-mail / Adicionar contato.
 

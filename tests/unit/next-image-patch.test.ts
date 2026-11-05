@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 // O postinstall (scripts/patch-next-image-optimizer.mjs) tira do otimizador local do Next o socket do
 // navegador: com ele, uma imagem abortada no meio deixava a mesma chave pendurada para sempre e as
-// páginas com capas não terminavam de carregar no `next start` (E2E das páginas de herói).
+// páginas com capas não terminavam de carregar no `next start` (E2E das páginas de Hero).
 const require = createRequire(import.meta.url);
 
 describe("otimizador de imagens do next start", () => {

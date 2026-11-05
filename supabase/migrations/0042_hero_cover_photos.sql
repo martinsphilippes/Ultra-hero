@@ -1,11 +1,11 @@
 -- =============================================================================
--- Ultra Hero · 0042 · Capa do herói com foto real (bucket público hero-covers)
---   As capas desenhadas (/placeholders/cover-*.svg) saem do editor do herói. A capa passa a ser
---   uma foto real enviada pelo próprio herói ativo, no mesmo desenho de segurança da foto de
+-- Ultra Hero · 0042 · Capa do Hero com foto real (bucket público hero-covers)
+--   As capas desenhadas (/placeholders/cover-*.svg) saem do editor do Hero. A capa passa a ser
+--   uma foto real enviada pelo próprio Hero ativo, no mesmo desenho de segurança da foto de
 --   perfil (0031): o navegador recorta e reduz (1600x900, 16:9, sem EXIF); o servidor confere tipo
 --   e dimensões pelos bytes, reserva o envio aqui (kill switch, tipo, tamanho, cota de 20 por dia),
 --   grava no bucket público `hero-covers` com o service role e aplica a URL em
---   creator_profiles.cover_url (só no perfil ativo do próprio herói). Nada é escrito no bucket pela
+--   creator_profiles.cover_url (só no perfil ativo do próprio Hero). Nada é escrito no bucket pela
 --   API com JWT de usuário (sem políticas de insert/update/delete).
 --   Caminho: <user_id>/<uuid>.(webp|jpg). Objetos imutáveis: a troca gera objeto novo e o servidor
 --   apaga o anterior; órfãos e capas de conta excluída saem na limpeza diária
@@ -20,7 +20,7 @@
 
 -- ---------------------------------------------------------------- 1) kill switch
 insert into public.app_settings (key, value, description) values
-  ('hero_covers.uploads_enabled', 'true'::jsonb, 'Kill switch do envio de capa do perfil do herói.')
+  ('hero_covers.uploads_enabled', 'true'::jsonb, 'Kill switch do envio de capa do perfil do Hero.')
 on conflict (key) do nothing;
 
 -- Mesma lista da 0031 + a chave nova (função sql: redefinida inteira, mesma assinatura e grants).
@@ -35,7 +35,7 @@ $$;
 -- ---------------------------------------------------------------- 2) envios (só o servidor e as RPCs escrevem)
 create table if not exists public.hero_cover_uploads (
   id uuid primary key default gen_random_uuid(),
-  -- set null: a conta some e a linha fica até o cron apagar o objeto (e a referência no herói)
+  -- set null: a conta some e a linha fica até o cron apagar o objeto (e a referência no Hero)
   user_id uuid references auth.users (id) on delete set null,
   path text not null unique
     check (path ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(webp|jpg)$'),
@@ -61,8 +61,8 @@ revoke insert, update, delete, truncate, references, trigger on table public.her
 grant select on table public.hero_cover_uploads to authenticated;
 grant all on table public.hero_cover_uploads to service_role;
 
--- ---------------------------------------------------------------- 3) herói ativo (uso interno das RPCs)
--- Mesma regra da tela (heroProfileFor + my_creator_id): papel de herói (ou admin) e perfil vinculado
+-- ---------------------------------------------------------------- 3) Hero ativo (uso interno das RPCs)
+-- Mesma regra da tela (heroProfileFor + my_creator_id): papel de Hero (ou admin) e perfil vinculado
 -- ativo. Devolve o id do perfil ou null. Sem execute para ninguém além do service role: as RPCs
 -- abaixo são security definer e chamam por dentro.
 create or replace function public.hero_cover_active_creator(p_uid uuid)
@@ -75,7 +75,7 @@ $$;
 revoke execute on function public.hero_cover_active_creator(uuid) from public, anon, authenticated;
 grant execute on function public.hero_cover_active_creator(uuid) to service_role;
 
--- ---------------------------------------------------------------- 4) reservar o envio: kill switch, herói ativo, cota e nome do objeto
+-- ---------------------------------------------------------------- 4) reservar o envio: kill switch, Hero ativo, cota e nome do objeto
 create or replace function public.hero_cover_upload_claim(p_bytes int, p_mime text)
 returns text language plpgsql security definer set search_path = public as $$
 declare v_uid uuid := auth.uid(); v_id uuid; v_ext text; v_path text;
@@ -103,7 +103,7 @@ end $$;
 revoke execute on function public.hero_cover_upload_claim(int, text) from public, anon;
 grant execute on function public.hero_cover_upload_claim(int, text) to authenticated, service_role;
 
--- ---------------------------------------------------------------- 5) aplicar a capa no perfil do próprio herói ativo
+-- ---------------------------------------------------------------- 5) aplicar a capa no perfil do próprio Hero ativo
 -- p_url: URL pública montada pelo servidor; precisa terminar em /hero-covers/<path> de um envio do
 -- próprio usuário, não apagado e (com o schema storage presente) já gravado no bucket. Devolve o
 -- cover_url anterior (ou null): o servidor apaga o objeto se era capa própria.
@@ -135,7 +135,7 @@ revoke execute on function public.hero_cover_set(text) from public, anon;
 grant execute on function public.hero_cover_set(text) to authenticated, service_role;
 
 -- ---------------------------------------------------------------- 6) remover a capa (qualquer uma: foto, oficial ou desenho antigo)
--- Só o próprio herói ativo. Devolve o cover_url anterior: o servidor apaga o objeto se era capa própria.
+-- Só o próprio Hero ativo. Devolve o cover_url anterior: o servidor apaga o objeto se era capa própria.
 create or replace function public.hero_cover_clear()
 returns text language plpgsql security definer set search_path = public as $$
 declare v_uid uuid := auth.uid(); v_creator uuid; v_prev text;
@@ -151,8 +151,8 @@ revoke execute on function public.hero_cover_clear() from public, anon;
 grant execute on function public.hero_cover_clear() to authenticated, service_role;
 
 -- ---------------------------------------------------------------- 7) limpeza diária (só o cron, service role)
--- (a) envio com mais de 1 h que nenhum herói referencia (troca que falhou no meio, aba fechada);
--- (b) envio de conta excluída (user_id nulo), mesmo referenciado: o perfil do herói fica no ar sem
+-- (a) envio com mais de 1 h que nenhum Hero referencia (troca que falhou no meio, aba fechada);
+-- (b) envio de conta excluída (user_id nulo), mesmo referenciado: o perfil do Hero fica no ar sem
 --     usuário e a foto da pessoa não pode ficar nele. O cron apaga o objeto pela API, limpa a
 --     referência e marca deleted_at; nunca se apaga storage.objects por SQL.
 create or replace function public.hero_cover_orphan_uploads(p_limit int)

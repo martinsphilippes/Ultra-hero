@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isStrategyStatus, type StrategyFlags, type StrategyStatus } from "./vocab";
 
 // Leituras das estratégias para marcas (0111, D3): banco de ideias e relatório do casting pelas RPCs (só membros da
-// agência; marca e herói nunca leem). Eventos do Calendário Groscove pela RLS da agenda da plataforma.
+// agência; marca e Hero nunca leem). Eventos do Calendário Groscove pela RLS da agenda da plataforma.
 
 type Row = Record<string, unknown>;
 const s = (v: unknown): string | null => (typeof v === "string" && v !== "" ? v : null);
@@ -156,7 +156,7 @@ export async function getCastingReport(agencyId: string, from: string, to: strin
 export type PickerOption = { id: string; name: string };
 export type EventOption = { id: string; title: string; day: string };
 
-/** Opções do formulário: marcas atendidas, segmentos e heróis do casting, eventos do Calendário Groscove (‑30 a +365 dias). */
+/** Opções do formulário: marcas atendidas, segmentos e Heros do casting, eventos do Calendário Groscove (‑30 a +365 dias). */
 export async function strategyFormOptions(agencyId: string, today: string): Promise<{ brands: PickerOption[]; segments: PickerOption[]; talents: PickerOption[]; events: EventOption[] }> {
   const supabase = await createClient();
   const from = new Date(Date.parse(`${today}T00:00:00Z`) - 30 * 86_400_000).toISOString();

@@ -1,10 +1,10 @@
-// Lógica pura do diálogo "Sugerir heróis" do negócio (0093): ordenação, selos, busca, validação do herói digitado
+// Lógica pura do diálogo "Sugerir Heros" do negócio (0093): ordenação, selos, busca, validação do Hero digitado
 // e montagem da lista enviada à RPC agency_deal_suggest_heroes. As regras de nome/perfil/e-mail espelham as da RPC
 // (o banco confere de novo; aqui é só para avisar antes de enviar).
 import type { Reason } from "./vocab";
 
 export const PAGE_SIZE = 20;
-/** Máximo de heróis no elenco do negócio por salvamento (igual à RPC). */
+/** Máximo de Heros no elenco do negócio por salvamento (igual à RPC). */
 export const MAX_SUGGEST = 30;
 /** Máximo de fichas novas criadas num salvamento (igual à RPC). */
 export const MAX_NEW_PER_SAVE = 10;
@@ -12,7 +12,7 @@ export const MAX_SEARCH_LENGTH = 60;
 export const NAME_MIN = 2;
 export const NAME_MAX = 80;
 
-/** casting: ficha da agência · outside: herói da plataforma sem ficha aqui · other_agency / person_in_casting: indisponíveis. */
+/** casting: ficha da agência · outside: Hero da plataforma sem ficha aqui · other_agency / person_in_casting: indisponíveis. */
 export type HeroScope = "casting" | "outside" | "other_agency" | "person_in_casting";
 export type PlatformScope = Exclude<HeroScope, "casting">;
 
@@ -60,7 +60,7 @@ export function parseHeroSearch(raw: unknown): HeroSearchPage {
   return { items, hasMore: obj.has_more === true };
 }
 
-/** Junta a próxima página sem repetir herói (a ordem da busca é estável, mas o clique duplo existe). */
+/** Junta a próxima página sem repetir Hero (a ordem da busca é estável, mas o clique duplo existe). */
 export function mergePlatformPages(current: PlatformHero[], next: PlatformHero[]): PlatformHero[] {
   const seen = new Set(current.map((h) => h.id));
   return [...current, ...next.filter((h) => !seen.has(h.id))];
@@ -81,7 +81,7 @@ export type CastingOption = { id: string; name: string; slug: string | null; rea
 
 export const metCount = (reasons: Reason[]) => reasons.filter((r) => r.met).length;
 
-/** Fichas do casting filtradas pelo texto (nome ou endereço do herói) e ordenadas por critérios atendidos, depois nome. */
+/** Fichas do casting filtradas pelo texto (nome ou endereço do Hero) e ordenadas por critérios atendidos, depois nome. */
 export function filterAndSortCasting<T extends CastingOption>(list: T[], q: string): T[] {
   const needle = fold(normalizeQuery(q));
   return list
@@ -112,7 +112,7 @@ export function followersLabel(followers: number | null, locale: string): string
   return new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 1 }).format(followers);
 }
 
-// ---------------------------------------------------------------- herói digitado
+// ---------------------------------------------------------------- Hero digitado
 export type TypedHeroInput = { name: string; profile: string; email: string };
 export type TypedHero = { name: string; profile: string | null; email: string | null };
 export type TypedHeroErrors = Partial<Record<"name" | "profile" | "email", "required" | "invalid">>;
@@ -136,7 +136,7 @@ export function normalizeProfileRef(raw: string): string | null {
   return LINK.test(link) && link.length <= 200 ? link : null;
 }
 
-/** Valida o herói digitado: nome obrigatório (2 a 80), perfil e e-mail opcionais mas, se vierem, válidos. */
+/** Valida o Hero digitado: nome obrigatório (2 a 80), perfil e e-mail opcionais mas, se vierem, válidos. */
 export function validateTypedHero(input: TypedHeroInput): { ok: true; value: TypedHero } | { ok: false; errors: TypedHeroErrors } {
   const errors: TypedHeroErrors = {};
   const name = cleanHeroName(input.name);
@@ -162,7 +162,7 @@ export type SuggestItem =
   | { kind: "hero"; creatorId: string; reasons: Reason[] }
   | { kind: "typed"; name: string; profile?: string; email?: string; reasons: Reason[] };
 
-/** Monta a lista da RPC: fichas do casting escolhidas, heróis de fora escolhidos e digitados, sem repetir. */
+/** Monta a lista da RPC: fichas do casting escolhidas, Heros de fora escolhidos e digitados, sem repetir. */
 export function buildSuggestItems(input: { talents: { id: string; reasons: Reason[] }[]; heroes: { id: string }[]; typed: TypedHero[] }): SuggestItem[] {
   const out: SuggestItem[] = [];
   const talents = new Set<string>();
@@ -186,7 +186,7 @@ export function buildSuggestItems(input: { talents: { id: string; reasons: Reaso
   return out;
 }
 
-/** Quantas fichas novas o salvamento cria: heróis de fora e digitados (os do casting já têm ficha). */
+/** Quantas fichas novas o salvamento cria: Heros de fora e digitados (os do casting já têm ficha). */
 export function newFichaCount(items: SuggestItem[]): number {
   return items.filter((i) => i.kind !== "talent").length;
 }

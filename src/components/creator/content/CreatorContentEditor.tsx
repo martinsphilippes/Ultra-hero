@@ -15,11 +15,11 @@ type Props = {
   mode: "create" | "edit";
   initial?: Partial<ContentFormValues>;
   readOnly?: boolean;
-  /** Herói em uso (fixo; quem está em mais de uma equipe troca pelo seletor). */
+  /** Hero em uso (fixo; quem está em mais de uma equipe troca pelo seletor). */
   heroId: string;
-  /** Heróis da pessoa: com mais de um, aparece o seletor (só na criação). */
+  /** Heros da pessoa: com mais de um, aparece o seletor (só na criação). */
   heroes: HeroChoice[];
-  /** Herói padrão da pessoa (receitas saem por ele: o Storage das fotos não recebe a escolha). */
+  /** Hero padrão da pessoa (receitas saem por ele: o Storage das fotos não recebe a escolha). */
   defaultHero: { id: string; name: string } | null;
   coverState: "ready" | "disabled" | "not_configured";
   options: ComposerOptions;
@@ -30,7 +30,7 @@ type Props = {
 
 const BLOCK_HREFS = { newRecipe: "/heroi/receitas/nova", links: "/heroi/vinculos", newProgram: null };
 
-// Novo conteúdo do creator (0092): o MESMO editor por blocos do admin (ContentKindPicker + ContentForm), com o herói
+// Novo conteúdo do creator (0092): o MESMO editor por blocos do admin (ContentKindPicker + ContentForm), com o Hero
 // fixo e sem os campos só do admin (licença, conclusão, autor, criar programa; ver lib/creator-content/rules).
 export function CreatorContentEditor({ mode, initial, readOnly = false, heroId, heroes, defaultHero, coverState, options, initialBlocks, campaignId = null }: Props) {
   const t = useTranslations("creator.newContent");

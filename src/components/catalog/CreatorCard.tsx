@@ -9,15 +9,15 @@ import { cn } from "@/lib/utils";
 
 type Props = {
   creator: CreatorCardData;
-  /** Rótulos das categorias do herói (até 2, já traduzidos e na ordem); vazio = sem selo. */
+  /** Rótulos das categorias do Hero (até 2, já traduzidos e na ordem); vazio = sem selo. */
   categories?: readonly { id: string; label: string }[];
   priority?: boolean;
   className?: string;
 };
 
-// Card de personalidade. O selo "Perfil ilustrativo" só sai para herói fictício (is_fictional); pessoa real
+// Card de personalidade. O selo "Perfil ilustrativo" só sai para Hero fictício (is_fictional); pessoa real
 // com direitos pendentes não ganha selo público (a pendência é aviso interno da agência e do admin, RB-05).
-// Selos: as categorias do herói (0049), não os pilares.
+// Selos: as categorias do Hero (0049), não os pilares.
 // Só fotos reais: sem capa, uma superfície lisa do tema; sem foto, as iniciais do nome.
 export async function CreatorCard({ creator, categories = [], priority, className }: Props) {
   const t = await getTranslations("catalog");

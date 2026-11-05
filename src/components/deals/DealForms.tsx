@@ -18,7 +18,7 @@ export type Member = { userId: string; name: string; role?: string | null; jobTi
 
 // ---------------------------------------------------------------- criar / editar
 type DealValues = { title: string; talentBrief: string; expectedStart: string; expectedEnd: string; ownerId: string; notes: string; brandId: string };
-/** Herói do casting que pode ser cliente do negócio (0107). */
+/** Hero do casting que pode ser cliente do negócio (0107). */
 export type ClientTalent = { id: string; name: string; city?: string | null; state?: string | null; avatarUrl?: string | null };
 /** Serviço do catálogo (0107): ao escolher, o roteiro nasce junto com o negócio. */
 export type ServiceOption = { id: string; name: string; clientKind: ClientKind; slaDays: number };
@@ -42,7 +42,7 @@ export function DealForm({
   canSetOwner: boolean;
   talents?: ClientTalent[];
   services?: ServiceOption[];
-  /** 0110: "próximo negócio" sugerido no clipping já chega com cliente, herói e serviço. */
+  /** 0110: "próximo negócio" sugerido no clipping já chega com cliente, Hero e serviço. */
   prefill?: { client?: ClientKind; talentId?: string; serviceId?: string; originDealId?: string };
 }) {
   const t = useTranslations("agency.deal.form");
@@ -53,12 +53,12 @@ export function DealForm({
   const router = useRouter();
   const { toast } = useToast();
   const [v, setV] = useState(initial);
-  // 0107: cliente = marca, herói ou os dois; serviço opcional (gera o roteiro) e início do roteiro (vazio = hoje)
+  // 0107: cliente = marca, Hero ou os dois; serviço opcional (gera o roteiro) e início do roteiro (vazio = hoje)
   const [client, setClient] = useState<ClientKind>(prefill?.client ?? (brands.length > 0 || talents.length === 0 ? "brand" : "talent"));
   const [talentId, setTalentId] = useState(prefill?.talentId ?? "");
   const [serviceId, setServiceId] = useState(prefill?.serviceId ?? "");
   const [startOn, setStartOn] = useState("");
-  // 04/11: heróis da campanha (escalados) ≠ herói cliente. Só com marca: negócio só do herói não tem a aba Heróis.
+  // 04/11: Heros da campanha (escalados) ≠ Hero cliente. Só com marca: negócio só do Hero não tem a aba Heros.
   const [castIds, setCastIds] = useState<string[]>([]);
   const castOn = !dealId && client !== "talent" && talents.length > 0;
   const fitting = services.filter((x) => serviceFitsClient(x.clientKind, client));
@@ -89,7 +89,7 @@ export function DealForm({
           });
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });
-      // falha parcial: o negócio existe; os heróis que não entraram são adicionados depois na aba Heróis
+      // falha parcial: o negócio existe; os Heros que não entraram são adicionados depois na aba Heros
       if (result.castFailed && result.castFailed.length > 0) {
         const names = heroNames(result.castFailed, talents);
         toast({ title: tr("castFailed", { names: names.join(", ") }), variant: "error", duration: 12000 });
@@ -133,7 +133,7 @@ export function DealForm({
       ) : null}
       {castOn ? (
         <div className="flex flex-col gap-2" data-testid="deal-cast">
-          {/* reaproveita a caixa de heróis do casting: escolher adiciona à lista abaixo e a caixa volta ao vazio */}
+          {/* reaproveita a caixa de Heros do casting: escolher adiciona à lista abaixo e a caixa volta ao vazio */}
           <FormField label={tr("cast")} hint={tr("castHint")}>
             <EntitySelect
               value=""

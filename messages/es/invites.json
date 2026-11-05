@@ -4,10 +4,10 @@
     "admin": "Admin",
     "agency": "Agencia",
     "brand": "Marca",
-    "hero": "Héroe",
+    "hero": "Hero",
     "seller": "Proveedor",
     "professional": "Profesional",
-    "heroTeam": "Miembro del equipo del héroe"
+    "heroTeam": "Miembro del equipo del Hero"
   },
   "admin": {
     "linkFor": "Enlace para {email}",
@@ -17,18 +17,18 @@
       "admin": "Control total de Ultra. Vale como máximo 48 horas.",
       "agency": "La persona crea la agencia en el primer acceso y pasa a ser Admin.",
       "brand": "La persona crea la marca en el primer acceso y pasa a ser Dueño. No necesita agencia.",
-      "hero": "Héroe nuevo (pendiente de aprobación), entrar en el equipo de un héroe o un héroe que ya está en el casting de una agencia.",
+      "hero": "Hero nuevo (pendiente de aprobación), entrar en el equipo de un Hero o un Hero que ya está en el casting de una agencia.",
       "seller": "La persona crea la operación en el primer acceso (o entra en una ya registrada).",
       "professional": "La persona crea el perfil profesional en el primer acceso."
     },
     "heroLink": {
-      "pick": "Héroe",
+      "pick": "Hero",
       "pickHint": "Sin titular: la persona pasa a ser titular. Con titular: entra en el equipo."
     },
-    "heroName": "Nombre del héroe",
-    "heroNewHint": "El héroe nace pendiente y se publica cuando el admin lo apruebe.",
+    "heroName": "Nombre del Hero",
+    "heroNewHint": "El Hero nace pendiente y se publica cuando el admin lo apruebe.",
     "heroTeam": {
-      "legend": "Héroe",
+      "legend": "Hero",
       "title": "Miembros del equipo",
       "hint": "Quien acepta esta invitación es el titular. El equipo puede venir después.",
       "later": "Después",
@@ -53,29 +53,29 @@
     "adminConfirm": "Confirmo que esta persona tendrá control total de Ultra",
     "errors": {
       "email": "Ingresa un correo válido.",
-      "hero": "Elige el héroe.",
-      "heroName": "Ingresa el nombre del héroe (2 a 80 letras).",
+      "hero": "Elige el Hero.",
+      "heroName": "Ingresa el nombre del Hero (2 a 80 letras).",
       "teamUser": "Elige al miembro del equipo.",
       "teamEmail": "Ingresa un correo válido y distinto del titular.",
       "days": "Validez fuera del límite (Admin: hasta 48 horas).",
       "adminConfirm": "Marca la confirmación para invitar a un Admin.",
-      "talent": "Elige al héroe del casting."
+      "talent": "Elige al Hero del casting."
     },
     "heroMode": {
       "title": "Tipo de invitación",
-      "new": "Héroe nuevo",
-      "team": "Entrar en el equipo de un héroe",
-      "casting": "Héroe que ya está en el casting de una agencia",
+      "new": "Hero nuevo",
+      "team": "Entrar en el equipo de un Hero",
+      "casting": "Hero que ya está en el casting de una agencia",
       "hints": {
         "new": "La página pública nace pendiente de aprobación y quien acepta pasa a ser titular.",
-        "team": "Héroe sin titular: la persona pasa a ser titular. Con titular: entra como miembro del equipo.",
-        "casting": "Da acceso a la ficha del héroe en el casting de la agencia (oportunidades, agenda, ganancias)."
+        "team": "Hero sin titular: la persona pasa a ser titular. Con titular: entra como miembro del equipo.",
+        "casting": "Da acceso a la ficha del Hero en el casting de la agencia (oportunidades, agenda, ganancias)."
       }
     },
     "heroTalent": {
-      "pick": "Héroe en el casting",
-      "hint": "La lista muestra los héroes del casting de las agencias que aún no tienen acceso.",
-      "none": "Ningún héroe del casting sin acceso ahora.",
+      "pick": "Hero en el casting",
+      "hint": "La lista muestra los Heros del casting de las agencias que aún no tienen acceso.",
+      "none": "Ningún Hero del casting sin acceso ahora.",
       "withPage": "Con página pública",
       "withoutPage": "Aún sin página pública"
     }
@@ -84,10 +84,10 @@
     "successOnboarding": "Solo falta crear tu empresa. Toma un minuto.",
     "successAdmin": "Ahora eres Admin de Ultra.",
     "successConsumer": "Tu cuenta está lista.",
-    "successCreatorFree": "Entraste como héroe. Crea tu página de héroe cuando quieras.",
+    "successCreatorFree": "Entraste como Hero. Crea tu página de Hero cuando quieras.",
     "goOnboarding": "Crear mi empresa",
     "goAdmin": "Ir al Admin",
-    "goHeroTeam": "Crear mi héroe"
+    "goHeroTeam": "Crear mi Hero"
   },
   "onboarding": {
     "metaTitle": "Primer acceso",
@@ -168,25 +168,25 @@
       "go": "Ir al perfil"
     },
     "selfTitle": "Tu registro",
-    "heroSubtitle": "Ponle nombre a tu héroe. El admin lo aprueba antes de publicarlo.",
+    "heroSubtitle": "Ponle nombre a tu Hero. El admin lo aprueba antes de publicarlo.",
     "notNow": "Ahora no",
     "hero": {
-      "title": "Tu héroe",
-      "name": "Nombre del héroe",
-      "roleNote": "Tu héroe queda pendiente hasta que el admin lo apruebe. Mientras tanto ya puedes preparar posts.",
-      "create": "Crear mi héroe",
-      "doneTitle": "Héroe creado",
+      "title": "Tu Hero",
+      "name": "Nombre del Hero",
+      "roleNote": "Tu Hero queda pendiente hasta que el admin lo apruebe. Mientras tanto ya puedes preparar posts.",
+      "create": "Crear mi Hero",
+      "doneTitle": "Hero creado",
       "doneText": "Esperando la aprobación del admin. Ya puedes preparar tus posts.",
-      "go": "Ir al Portal del Héroe"
+      "go": "Ir al Portal del Hero"
     }
   },
   "team": {
     "title": "Equipo",
-    "adminHint": "Como admin, gestiona el equipo de cada héroe desde la ficha del héroe.",
-    "noHeroDescription": "Todavía no tienes un héroe.",
-    "ownerDescription": "Eres el titular. Invita a personas al equipo del héroe.",
-    "memberDescription": "Formas parte del equipo de este héroe.",
-    "pendingApproval": "Héroe esperando la aprobación del admin para publicarse.",
+    "adminHint": "Como admin, gestiona el equipo de cada Hero desde la ficha del Hero.",
+    "noHeroDescription": "Todavía no tienes un Hero.",
+    "ownerDescription": "Eres el titular. Invita a personas al equipo del Hero.",
+    "memberDescription": "Formas parte del equipo de este Hero.",
+    "pendingApproval": "Hero esperando la aprobación del admin para publicarse.",
     "memberNote": "Solo el titular invita, quita o transfiere.",
     "membersTitle": "{count, plural, one {# persona} other {# personas}}",
     "invitesTitle": "Invitaciones pendientes",
@@ -198,9 +198,9 @@
     "transfer": "Hacer titular",
     "remove": "Quitar",
     "transferTitle": "Transferir titularidad",
-    "transferText": "{name} pasa a ser titular del héroe. El titular actual sigue en el equipo.",
+    "transferText": "{name} pasa a ser titular del Hero. El titular actual sigue en el equipo.",
     "removeTitle": "Quitar del equipo",
-    "removeText": "{name} pierde el acceso al héroe y al Portal del Héroe.",
+    "removeText": "{name} pierde el acceso al Hero y al Portal del Hero.",
     "cancel": "Cancelar",
     "transferConfirm": "Transferir",
     "removeConfirm": "Quitar",
@@ -215,27 +215,27 @@
     "emailed": "Enviamos el enlace a {email}. Cópialo también, si quieres.",
     "notEmailed": "Copia el enlace y envíalo a la persona: no se vuelve a mostrar.",
     "link": "Enlace de la invitación",
-    "inviteHint": "La persona entra con su propio acceso y publica por el héroe.",
+    "inviteHint": "La persona entra con su propio acceso y publica por el Hero.",
     "email": "Correo de la persona",
     "days": "Validez",
     "daysOption": "{days, plural, one {# día} other {# días}}",
-    "memberRole": "Miembro del equipo del héroe",
+    "memberRole": "Miembro del equipo del Hero",
     "invited": "Invitación creada",
     "removed": "Quitado del equipo",
     "transferred": "Titularidad transferida",
     "inviteRevoked": "Invitación revocada",
-    "heroCreated": "Héroe creado. Espera la aprobación del admin.",
+    "heroCreated": "Hero creado. Espera la aprobación del admin.",
     "unavailable": "Equipo no disponible por ahora.",
-    "memberProfileNotice": "Solo el titular edita el perfil, la foto y la portada del héroe.",
-    "consentOwnerOnly": "El término de uso de imagen es del titular del héroe. Habla con él si hay que cambiarlo."
+    "memberProfileNotice": "Solo el titular edita el perfil, la foto y la portada del Hero.",
+    "consentOwnerOnly": "El término de uso de imagen es del titular del Hero. Habla con él si hay que cambiarlo."
   },
   "myHero": {
-    "title": "Crear mi héroe",
-    "text": "El héroe es tu página pública en Ultra. Se publica tras la aprobación del admin.",
-    "name": "Nombre del héroe",
+    "title": "Crear mi Hero",
+    "text": "El Hero es tu página pública en Ultra. Se publica tras la aprobación del admin.",
+    "name": "Nombre del Hero",
     "nameHint": "Como lo verá el público.",
     "nameError": "Ingresa el nombre (2 a 80 letras).",
-    "create": "Crear mi héroe"
+    "create": "Crear mi Hero"
   },
   "brand": {
     "transferred": "Propiedad transferida",
@@ -255,16 +255,16 @@
     "newBrandRole": "Dueño de la marca",
     "linkSent": "Solicitud de vínculo creada",
     "newBrandSent": "Invitación de marca nueva creada",
-    "heroRole": "Titular del héroe",
-    "heroSent": "Invitación de héroe creada",
+    "heroRole": "Titular del Hero",
+    "heroSent": "Invitación de Hero creada",
     "errors": {
-      "talent": "Elige al héroe.",
-      "heroName": "Ingresa el nombre del héroe."
+      "talent": "Elige al Hero.",
+      "heroName": "Ingresa el nombre del Hero."
     },
     "brandOpen": "Invitar marca",
-    "heroOpen": "Invitar héroe",
+    "heroOpen": "Invitar Hero",
     "brandTitle": "Invitar marca",
-    "heroTitle": "Invitar héroe",
+    "heroTitle": "Invitar Hero",
     "done": "Listo",
     "cancel": "Cancelar",
     "send": "Generar invitación",
@@ -272,13 +272,13 @@
     "notEmailed": "Copia el enlace y envíalo a la persona: no se vuelve a mostrar.",
     "link": "Enlace de la invitación",
     "brandHint": "Marca nueva: la persona crea la marca y ya queda con la agencia. Dueño de marca en Ultra: recibe una solicitud de vínculo para aceptar.",
-    "heroHint": "Héroe sin página pública: la página nace pendiente y la persona pasa a ser titular. Página sin titular: la persona la asume.",
-    "noTalents": "Todos los héroes del casting ya tienen acceso.",
-    "talent": "Héroe del casting",
+    "heroHint": "Hero sin página pública: la página nace pendiente y la persona pasa a ser titular. Página sin titular: la persona la asume.",
+    "noTalents": "Todos los Heros del casting ya tienen acceso.",
+    "talent": "Hero del casting",
     "pick": "Elige…",
-    "hasHero": "Héroe: {hero}",
-    "noHero": "Sin héroe",
-    "heroName": "Nombre del héroe",
+    "hasHero": "Hero: {hero}",
+    "noHero": "Sin Hero",
+    "heroName": "Nombre del Hero",
     "heroNameHint": "Queda pendiente hasta que el admin lo apruebe.",
     "brandEmail": "Correo del dueño de la marca",
     "heroEmail": "Correo del titular",
@@ -289,7 +289,7 @@
   "paused": {
     "note": "Invitaciones desactivadas por ahora",
     "hint": "Las invitaciones ya enviadas siguen valiendo.",
-    "adminBanner": "Invitaciones pausadas: nadie crea invitaciones nuevas; las ya enviadas siguen valiendo. Las personas se registran solas como Héroe, Marca o Agencia.",
+    "adminBanner": "Invitaciones pausadas: nadie crea invitaciones nuevas; las ya enviadas siguen valiendo. Las personas se registran solas como Hero, Marca o Agencia.",
     "adminTurnOn": "Reactivar en Configuración",
     "selfSignupsLink": "Ver registros nuevos"
   },
@@ -299,26 +299,26 @@
     "notNow": "Ahora no",
     "alreadyText": "Ya tienes este perfil.",
     "errors": {
-      "profile_conflict": "Este correo ya lo usa {kind, select, hero {una cuenta de Héroe} brand {una cuenta de Marca} agency {una cuenta de Agencia} other {una cuenta de otro perfil}}. Usa otro correo.",
+      "profile_conflict": "Este correo ya lo usa {kind, select, hero {una cuenta de Hero} brand {una cuenta de Marca} agency {una cuenta de Agencia} other {una cuenta de otro perfil}}. Usa otro correo.",
       "agency_member_elsewhere": "Ya formas parte de una agencia.",
       "brand_already_owned": "Ya eres Dueño de una marca.",
-      "has_hero": "Ya tienes un héroe.",
+      "has_hero": "Ya tienes un Hero.",
       "rate_limited": "Demasiados intentos hoy. Inténtalo mañana.",
       "experiment_closed": "Los registros están pausados por ahora.",
       "demo_account_forbidden": "Esta cuenta no puede crear perfiles.",
       "unknown": "No se pudo empezar. Inténtalo de nuevo."
     },
     "hero": {
-      "title": "Registro de Héroe",
-      "text": "Crea la página de tu héroe y trabaja con marcas.",
-      "step1": "Ponle nombre a tu héroe.",
+      "title": "Registro de Hero",
+      "text": "Crea la página de tu Hero y trabaja con marcas.",
+      "step1": "Ponle nombre a tu Hero.",
       "step2": "El admin lo aprueba antes de publicarlo.",
-      "step3": "Mientras tanto, prepara tus posts en el Portal del Héroe.",
-      "go": "Ir al Portal del Héroe"
+      "step3": "Mientras tanto, prepara tus posts en el Portal del Hero.",
+      "go": "Ir al Portal del Hero"
     },
     "brand": {
       "title": "Registro de Marca",
-      "text": "Contrata héroes y haz campañas.",
+      "text": "Contrata Heros y haz campañas.",
       "step1": "Indica el nombre y el sitio de la marca.",
       "step2": "Te conviertes en Dueño de la marca.",
       "step3": "Publica convocatorias para las agencias.",
@@ -326,7 +326,7 @@
     },
     "agency": {
       "title": "Registro de Agencia",
-      "text": "Representa héroes y gestiona negocios.",
+      "text": "Representa Heros y gestiona negocios.",
       "step1": "Indica el nombre de la agencia.",
       "step2": "Te conviertes en Admin de la agencia.",
       "step3": "Arma tu casting y atiende marcas.",
@@ -335,17 +335,17 @@
   },
   "selfSignups": {
     "title": "Registros nuevos",
-    "description": "Agencias, marcas y héroes creados sin invitación en los últimos 14 días.",
+    "description": "Agencias, marcas y Heros creados sin invitación en los últimos 14 días.",
     "back": "Inicio",
     "empty": "Ningún registro nuevo.",
     "unavailable": "Lista no disponible por ahora.",
     "noName": "Aún sin nombre",
     "open": "Ver y suspender",
-    "approve": "Aprobar héroe",
+    "approve": "Aprobar Hero",
     "kinds": {
       "agency": "Agencia",
       "brand": "Marca",
-      "hero": "Héroe"
+      "hero": "Hero"
     },
     "states": {
       "inProgress": "En curso",

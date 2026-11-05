@@ -1,5 +1,5 @@
 -- =============================================================================
--- Ultra Hero · 0059 · Programas com produto e profissional ligados (Etapa 4 da vitrine do herói)
+-- Ultra Hero · 0059 · Programas com produto e profissional ligados (Etapa 4 da vitrine do Hero)
 --   Decisão do responsável (docs/decisions/hero-showcase.md): "programa pode ter 1 produto e/ou 1
 --   serviço". Aceitamos até 3 produtos por programa, em ordem, com nota opcional ("por que este
 --   produto"), e um serviço (opcional) por profissional sugerido no programa.

@@ -122,7 +122,7 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
 
   return (
     <div className="flex flex-col gap-6">
-      {/* atalho "Conteúdos" de Publicar como hero: a faixa do herói escolhido */}
+      {/* atalho "Conteúdos" de Publicar como hero: a faixa do Hero escolhido */}
       <ActingHeroForCreator creatorId={creator} />
       <PageHeader
         title={t("title")}

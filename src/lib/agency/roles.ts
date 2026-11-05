@@ -39,7 +39,7 @@ export type AgencyNavKey = (typeof AGENCY_NAV)[number];
 export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false): AgencyNavKey[] {
   // Estratégias para marcas (0111): banco de ideias mensal — todo membro propõe; Estratégia/Adm aprovam
   const keys: AgencyNavKey[] = ["dashboard", "pipeline", "tasks", "agenda", "strategies", "casting", "brands", "notifications"];
-  // Heróis (0070): gestor+ cria os perfis e publica em nome deles
+  // Heros (0070): gestor+ cria os perfis e publica em nome deles
   if (agencyCan(role, "manager", platformAdmin)) keys.splice(1, 0, "heroes");
   // Patrocínio (0085): gestor+ publica e decide; as respostas das marcas não são do colaborador
   if (agencyCan(role, "manager", platformAdmin)) keys.splice(keys.indexOf("agenda") + 1, 0, "sponsorships");

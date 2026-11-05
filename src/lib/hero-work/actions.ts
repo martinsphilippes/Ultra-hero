@@ -10,9 +10,9 @@ import { heroEventRange, toggleChecklist, toChecklist } from "./agenda";
 import { heroWorkFail } from "./errors";
 import { heroEventSchema, heroServiceSchema, isProofPath, PROOF_MIME_TYPES, type HeroEventInput, type HeroServiceInput } from "./vocab";
 
-// Ações da agenda e do financeiro do herói independente (0094). Escrita direta nas tabelas, sob RLS: só o titular (herói
+// Ações da agenda e do financeiro do Hero independente (0094). Escrita direta nas tabelas, sob RLS: só o titular (Hero
 // não suspenso) grava; o banco confere de novo e o resultado vazio de um update/delete vira "sem permissão". Registro
-// simulado: nada aqui movimenta dinheiro. Fuso fixo: o padrão do app (o herói independente não tem agência).
+// simulado: nada aqui movimenta dinheiro. Fuso fixo: o padrão do app (o Hero independente não tem agência).
 
 export type HeroWorkResult = { ok: true; message: string; id?: string; url?: string; checklist?: { text: string; done: boolean }[] } | { ok: false; error: string };
 

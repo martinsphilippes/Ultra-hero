@@ -8,11 +8,11 @@
 --
 -- Decisões (sem perguntar ao responsável):
 --   • D1 Fonte única: deal_payment_plans (um plano por negócio) = valor ACORDADO com a marca + condições (forma,
---     estrutura, datas, regra relativa, repasse ao herói, nota fiscal) em jsonb normalizado (payment_plan_clean). Só o
+--     estrutura, datas, regra relativa, repasse ao Hero, nota fiscal) em jsonb normalizado (payment_plan_clean). Só o
 --     Adm da agência grava (agency_payment_plan_save), antes da contratação. Depois da contratação as parcelas mudam
 --     pelo caminho que já existe (agency_receivable_split, 0090) e o repasse pela agenda do pagamento (0082).
 --   • D2 Valor que a marca paga = o ACORDADO (não mais a soma dos cachês + taxa). Sugestão para o Adm: a rodada aceita
---     da negociação (0106; por herói = valor × heróis propostos, até o máximo), senão o valor oferecido (0096), senão
+--     da negociação (0106; por Hero = valor × Heros propostos, até o máximo), senão o valor oferecido (0096), senão
 --     cachês + taxa (fórmula antiga). Comissão da agência = acordado − Σ repasses. Identidade mantida e conferida:
 --     a receber da marca = comissão + Σ repasses (finance_identity). Acordado menor que os repasses é recusado
 --     (agreed_below_payouts). A taxa gravada no lançamento (rate_bp) passa a ser a taxa efetiva (limitada a 50%).
@@ -21,36 +21,36 @@
 --     em dias corridos; vencimento em fim de semana/feriado fica como está (anotado: quem paga antecipa). Mensal soma
 --     k meses ao 1º vencimento (31/01 → 28/02, como o Postgres). Centavo que sobra na divisão vai para as primeiras
 --     parcelas (mesma regra de splitEvenly, 0090). Espelho em TypeScript: src/lib/finance/payment-plan.ts (vitest).
---   • D4 Repasse ao herói: N dias após a agência RECEBER tudo (última parcela; depois de paga, a data real do último
---     pagamento) | data fixa | N dias após a entrega aprovada; forma PIX ou TED. Nota fiscal: exigida do herói
+--   • D4 Repasse ao Hero: N dias após a agência RECEBER tudo (última parcela; depois de paga, a data real do último
+--     pagamento) | data fixa | N dias após a entrega aprovada; forma PIX ou TED. Nota fiscal: exigida do Hero
 --     (lembrete na tela de ganhos) e/ou emitida pela agência para a marca (informativo).
 --   • D5 Eventos: assinatura = aceite da marca nos termos vivos (senão a confirmação; antes disso, hoje); entrega =
 --     todas as entregas aprovadas/publicadas (data real) ou, antes, a maior data de entrega prevista/fim previsto do
 --     negócio; publicação = idem com a publicação. Previsões nunca ficam no passado.
 --   • D6 PREVISTO: financial_entries ganha a situação 'forecast' ("Previsto · aguardando contratação"): nasce quando o
---     plano é salvo, se refaz quando cachês/elenco/termos mudam e no cron diário, aparece para marca (Pagamentos), herói
+--     plano é salvo, se refaz quando cachês/elenco/termos mudam e no cron diário, aparece para marca (Pagamentos), Hero
 --     (Ganhos) e agência (Financeiro) e NÃO conta como aberto (não vence, não recebe informe, nota nem agenda). Na
 --     confirmação da contratação (agency_contract_confirm → agency_finance_generate) o previsto é refeito como
---     EM ABERTO ('planned') com os heróis contratados. Negócio perdido/cancelado: o previsto é cancelado (gatilho que
+--     EM ABERTO ('planned') com os Heros contratados. Negócio perdido/cancelado: o previsto é cancelado (gatilho que
 --     já existe). Lançamentos e parcelas gerados pelo plano ficam marcados (from_plan): o cron recalcula a data de
 --     quem depende de entrega/publicação enquanto não houver informe/pagamento/agendamento; parcelas redivididas à mão
 --     (0090) deixam de seguir o plano.
 --   • D7 Termos: enviar termos de negócio com marca exige o plano (payment_terms_required) — é o caso do "Mulheres"
 --     (aprovado, termos em rascunho): ao enviar, a agência é levada às condições. O envio congela uma cópia do plano
 --     por versão (deal_terms_payments); a contratação usa a cópia ASSINADA. O texto assinado (hash) passa a levar as
---     condições da PARTE: a marca assina o valor total e as parcelas; o herói assina o cachê dele, quando e como
+--     condições da PARTE: a marca assina o valor total e as parcelas; o Hero assina o cachê dele, quando e como
 --     recebe e se a nota é exigida (nunca o valor da marca nem a comissão). Termos antigos sem cópia: texto igual ao de
 --     antes (hash igual). Plano mudado depois do envio = aviso "envie nova versão dos termos" (terms_pending).
 --     Gestor/colaborador nunca leem valores: o comprovante da assinatura volta sem a seção de pagamento para eles e a
 --     coluna signed_text sai da leitura direta de authenticated (só pela RPC do comprovante).
---   • D8 Negócio só do herói (cliente herói, 0107): sem pedido, sem termos e sem marca; o plano é recusado
---     (invalid_state) e fica documentado como pendência (o herói pagar à agência pede outro tipo de lançamento:
+--   • D8 Negócio só do Hero (cliente Hero, 0107): sem pedido, sem termos e sem marca; o plano é recusado
+--     (invalid_state) e fica documentado como pendência (o Hero pagar à agência pede outro tipo de lançamento:
 --     financial_entries.brand_id é obrigatório). Negócios já em produção mantêm os lançamentos (nada é refeito).
---   • D9 Avisos: o "a receber" da marca já avisava (brand_payment_due_scan, 0090). Novo payout_due: repasse ao herói
---     3 dias antes, no dia e vencido — para o herói (titular) e para o Adm (quem paga). Plano salvo avisa a marca
+--   • D9 Avisos: o "a receber" da marca já avisava (brand_payment_due_scan, 0090). Novo payout_due: repasse ao Hero
+--     3 dias antes, no dia e vencido — para o Hero (titular) e para o Adm (quem paga). Plano salvo avisa a marca
 --     (payment_plan, sem valor). Só no sino (o e-mail segue as regras de inbox_kind_emails, sem mudança).
 --   • D10 Leitura: deal_payment_plan_json por quem vê — Adm (tudo, sugestão, repasses, comissão), gestor/equipe do
---     negócio (condições e datas, sem valor), marca (total e parcelas, sem cachês nem repasse), herói titular (só o
+--     negócio (condições e datas, sem valor), marca (total e parcelas, sem cachês nem repasse), Hero titular (só o
 --     repasse dele). RLS das tabelas novas: só Adm da agência e admin da plataforma; o resto pelas RPCs.
 --   • D11 Cotas (sponsorship_tiers, 0088): value_model 'fixo' (valor total da cota no evento, completado pelas marcas que
 --     entram, até "slots") | 'por_marca' (padrão = comportamento de antes: valor por marca × quantidade de marcas =
@@ -173,7 +173,7 @@ begin
   else
     v_pct := null; v_br := null; v_bd := null; v_bo := null;
   end if;
-  -- repasse ao herói
+  -- repasse ao Hero
   if v_pr not in ('after_receipt', 'fixed_date', 'after_delivery') or v_pm not in ('pix', 'transfer') or v_pd not between 0 and 365 then
     raise exception 'invalid_input' using errcode = '22023';
   end if;
@@ -240,7 +240,7 @@ end $$;
 revoke execute on function public.payment_plan_parts(jsonb, bigint, date, date, date) from public, anon;
 grant execute on function public.payment_plan_parts(jsonb, bigint, date, date, date) to authenticated, service_role;
 
--- vencimento do repasse ao herói (p_received = última parcela, ou a data real do último pagamento)
+-- vencimento do repasse ao Hero (p_received = última parcela, ou a data real do último pagamento)
 create or replace function public.payment_plan_payout_due(p jsonb, p_received date, p_del date)
 returns date language sql immutable set search_path = '' as $$
   select case p ->> 'payout_rule' when 'after_receipt' then p_received + coalesce((p ->> 'payout_days')::int, 0)
@@ -270,7 +270,7 @@ create index if not exists deal_payment_plans_agency_idx on public.deal_payment_
 drop trigger if exists deal_payment_plans_touch on public.deal_payment_plans;
 create trigger deal_payment_plans_touch before update on public.deal_payment_plans for each row execute function public.set_updated_at();
 
--- cópia do plano congelada em cada versão enviada dos termos (o que a marca e os heróis assinam)
+-- cópia do plano congelada em cada versão enviada dos termos (o que a marca e os Heros assinam)
 create table if not exists public.deal_terms_payments (
   terms_id uuid primary key constraint deal_terms_payments_terms_fk references public.deal_terms (id) on delete cascade,
   deal_id uuid not null constraint deal_terms_payments_deal_fk references public.deals (id) on delete cascade,
@@ -341,7 +341,7 @@ end $$;
 revoke execute on function public.deal_payment_events(uuid) from public, anon, authenticated;
 grant execute on function public.deal_payment_events(uuid) to service_role;
 
--- quantos heróis contam para o valor "por herói": propostos/contratados, até o máximo acordado (no mínimo 1)
+-- quantos Heros contam para o valor "por Hero": propostos/contratados, até o máximo acordado (no mínimo 1)
 create or replace function public.deal_payment_heroes(p_deal uuid, p_max int)
 returns int language sql stable security definer set search_path = '' as $$
   select greatest(1, least(coalesce(p_max, 50), (select count(*)::int from public.deal_talents dt where dt.deal_id = p_deal and dt.status in ('proposed', 'contracted'))))
@@ -491,7 +491,7 @@ begin
   v_agency := public.deal_write_scope(p_deal, false);
   if not public.agency_can(v_agency, 'admin') then raise exception 'forbidden' using errcode = '42501'; end if;
   select * into d from public.deals where id = p_deal for update;
-  -- cliente herói sem marca: fora (D8)
+  -- cliente Hero sem marca: fora (D8)
   if d.brand_id is null then raise exception 'invalid_state' using errcode = 'P0001'; end if;
   if public.deal_payment_effective(p_deal) then raise exception 'plan_locked' using errcode = 'P0001'; end if;
   begin
@@ -704,14 +704,14 @@ begin
                        || ('Observações: ' || coalesce(nullif(p ->> 'notes', ''), '—'));
   elsif p_party = 'talent' then
     select (e ->> 'fee_cents')::bigint into v_fee from jsonb_array_elements(s.payouts) e where e ->> 'deal_talent_id' = p_deal_talent::text;
-    v_lines := array['', 'REPASSE AO HERÓI (agência → herói)',
+    v_lines := array['', 'REPASSE AO HERO (agência → Hero)',
       'Seu cachê: ' || coalesce(public.brl_text(v_fee), 'a definir'),
       'Quando: ' || case p ->> 'payout_rule'
         when 'after_receipt' then case when coalesce((p ->> 'payout_days')::int, 0) = 0 then 'quando a agência receber da marca' else (p ->> 'payout_days') || ' dias após a agência receber da marca' end
         when 'fixed_date' then 'em ' || to_char((p ->> 'payout_on')::date, 'DD/MM/YYYY')
         else case when coalesce((p ->> 'payout_days')::int, 0) = 0 then 'na entrega aprovada' else (p ->> 'payout_days') || ' dias após a entrega aprovada' end end,
       'Forma: ' || case p ->> 'payout_method' when 'transfer' then 'transferência (TED)' else 'PIX' end,
-      'Nota fiscal do herói: ' || case when (p ->> 'invoice_talent')::boolean then 'exigida' else 'não exigida' end];
+      'Nota fiscal do Hero: ' || case when (p ->> 'invoice_talent')::boolean then 'exigida' else 'não exigida' end];
   else
     return null;
   end if;
@@ -731,12 +731,12 @@ grant execute on function public.deal_terms_signable_text_for(uuid, text, uuid) 
 -- tira a seção de pagamento (gestor/colaborador da agência não leem valores)
 create or replace function public.terms_text_without_payment(p text)
 returns text language sql immutable set search_path = '' as $$
-  select regexp_replace(coalesce(p, ''), E'\\n\\n(CONDIÇÕES DE PAGAMENTO|REPASSE AO HERÓI) .*$', '')
+  select regexp_replace(coalesce(p, ''), E'\\n\\n(CONDIÇÕES DE PAGAMENTO|REPASSE AO HERO) .*$', '')
 $$;
 revoke execute on function public.terms_text_without_payment(text) from public, anon;
 grant execute on function public.terms_text_without_payment(text) to authenticated, service_role;
 
--- prévia (MESMA assinatura da 0084): marca → versão da marca; herói → a dele; Adm → a da marca; gestor/colaborador → sem pagamento
+-- prévia (MESMA assinatura da 0084): marca → versão da marca; Hero → a dele; Adm → a da marca; gestor/colaborador → sem pagamento
 create or replace function public.terms_sign_preview(p_terms uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare v_text text; v_version int; v_status text; v_side text; v_deal uuid; v_agency uuid; v_dt uuid;
@@ -999,7 +999,7 @@ end $$;
 revoke execute on function public.agency_finance_summary(uuid) from public, anon;
 grant execute on function public.agency_finance_summary(uuid) to authenticated, service_role;
 
--- ganhos do herói (MESMA assinatura da 0094): + previsto, forma, regra do repasse e nota exigida
+-- ganhos do Hero (MESMA assinatura da 0094): + previsto, forma, regra do repasse e nota exigida
 create or replace function public.talent_payouts()
 returns jsonb language sql stable security definer set search_path = '' as $$
   select coalesce(jsonb_agg(jsonb_build_object('id', f.id, 'deal_title', d.title, 'deal_talent_id', f.deal_talent_id, 'status', f.status,
@@ -1103,7 +1103,7 @@ begin
     v_refreshed := v_refreshed + public.deal_payment_refresh(x.deal_id);
     v_deals := v_deals + 1;
   end loop;
-  -- repasse ao herói: 3 dias antes, no dia (tolerância de 2 dias) e vencido (3 a 10 dias); herói titular e Adm
+  -- repasse ao Hero: 3 dias antes, no dia (tolerância de 2 dias) e vencido (3 a 10 dias); Hero titular e Adm
   for x in select f.id, f.agency_id, f.talent_id, f.deal_talent_id, d.title, t.display_name,
                   coalesce(f.scheduled_on, f.due_on) as due,
                   coalesce(f.scheduled_on, f.due_on) - (now() at time zone coalesce(a.timezone, 'America/Sao_Paulo'))::date as days
@@ -1211,7 +1211,7 @@ begin
     coalesce(public.sponsorship_audience_clean(jsonb_strip_nulls(jsonb_build_object('target_audience', p_data -> 'target_audience',
       'target_age_bands', p_data -> 'target_age_bands', 'target_states', p_data -> 'target_states', 'region_note', p_data -> 'region_note'))),
       '{}'::jsonb) end;
-  -- herói (0095): ficha do casting, herói da plataforma fora do casting (a ficha nasce aqui) ou herói digitado
+  -- Hero (0095): ficha do casting, Hero da plataforma fora do casting (a ficha nasce aqui) ou Hero digitado
   if p_data ? 'hero' and jsonb_typeof(p_data -> 'hero') <> 'null' then
     if jsonb_typeof(p_data -> 'hero') <> 'object' then raise exception 'invalid_input' using errcode = '22023'; end if;
     v_hero := p_data -> 'hero';

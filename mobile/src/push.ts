@@ -6,7 +6,7 @@ import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import type { NativeToWeb } from "../../src/lib/native-app/bridge-contract";
 
-// No primeiro plano a pessoa já está no app: post de herói aparece como banner; conquista e
+// No primeiro plano a pessoa já está no app: post de Hero aparece como banner; conquista e
 // programa a web já mostrou na tela (toast), então não repete. Lance superado (0061) aparece: o pop-up
 // da web não roda no app (os Colecionáveis não existem nas lojas).
 Notifications.setNotificationHandler({

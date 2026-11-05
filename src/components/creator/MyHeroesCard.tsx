@@ -9,14 +9,14 @@ import { WorkOnHeroButton } from "./content/WorkOnHeroButton";
 
 type Props = {
   heroes: MyHero[];
-  /** Herói em uso (o escolhido ou o padrão). */
+  /** Hero em uso (o escolhido ou o padrão). */
   currentId: string | null;
-  /** Casting da agência do herói padrão (só o nome da agência; nunca valores). */
+  /** Casting da agência do Hero padrão (só o nome da agência; nunca valores). */
   agency?: { heroId: string; name: string } | null;
 };
 
-// "Você trabalha para" (0092): os heróis em que a pessoa é titular ou membro da equipe, com papel, situação e o
-// herói em uso para postar e criar conteúdo. Titular de um único herói vê o cartão compacto.
+// "Você trabalha para" (0092): os Heros em que a pessoa é titular ou membro da equipe, com papel, situação e o
+// Hero em uso para postar e criar conteúdo. Titular de um único Hero vê o cartão compacto.
 export async function MyHeroesCard({ heroes, currentId, agency = null }: Props) {
   const [t, ts] = await Promise.all([getTranslations("me.profile.worksFor"), getTranslations("adminCommon.status")]);
   if (heroes.length === 0) return null;

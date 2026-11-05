@@ -2,14 +2,14 @@ import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { DEMO_HERO_ID, loginAsAdminActing } from "./helpers/acting";
 
-// Envio REAL para o Cloudflare Stream: o admin posta pelo herói da conta demo ("Publicar como hero",
-// 0045; o herói usa o mesmo composer). Só roda com E2E_STREAM_REAL=1 num ambiente com Stream + service
+// Envio REAL para o Cloudflare Stream: o admin posta pelo Hero da conta demo ("Publicar como hero",
+// 0045; o Hero usa o mesmo composer). Só roda com E2E_STREAM_REAL=1 num ambiente com Stream + service
 // role e a 0045. Sobe um vídeo de 3 s, confere progresso e o botão Publicar, NÃO publica, descarta e
 // confere que o rascunho sumiu.
 
 const FIXTURE = path.join(__dirname, "..", "fixtures", "video-3s.mp4");
 
-// Rascunhos do herói na lista do admin (filtrada pelo herói). O id do rascunho novo não aparece na tela
+// Rascunhos do Hero na lista do admin (filtrada pelo Hero). O id do rascunho novo não aparece na tela
 // do composer, então o descarte é conferido pela lista: o rascunho criado pelo envio some.
 async function draftLinks(page: Page): Promise<string[]> {
   await page.goto(`/admin/content?creator=${DEMO_HERO_ID}&status=draft`);
@@ -22,7 +22,7 @@ test.describe("composer: envio real para o Cloudflare (E2E_STREAM_REAL=1)", () =
   test.skip(process.env.E2E_STREAM_REAL !== "1", "envio real desligado: defina E2E_STREAM_REAL=1 num ambiente com o Stream configurado");
 
   test("sobe 3 s pela galeria, libera Publicar com título, descarta e o rascunho some", async ({ page }, testInfo) => {
-    // Um projeto basta: cada execução consome um dos 10 envios por hora do herói.
+    // Um projeto basta: cada execução consome um dos 10 envios por hora do Hero.
     test.skip(testInfo.project.name !== "mobile", "envio real roda só no projeto mobile");
     test.setTimeout(180_000);
     await loginAsAdminActing(page, "post");

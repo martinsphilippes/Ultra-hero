@@ -17,7 +17,7 @@ type Props = {
   invitesEnabled?: boolean;
 };
 
-// Equipe do herói (0091): titular + creators da equipe (social media, editor…), cada um com login próprio.
+// Equipe do Hero (0091): titular + creators da equipe (social media, editor…), cada um com login próprio.
 // O titular (ou o admin) convida, remove e transfere a titularidade; o membro só consulta.
 export function HeroTeamPanel({ creatorId, heroName, team, invitesEnabled = true }: Props) {
   const t = useTranslations("invites.team");

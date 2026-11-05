@@ -70,7 +70,7 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
       setError(t("budgetInvalid"));
       return null;
     }
-    // 0096: por herói exige o valor por herói e o máximo de heróis (o banco confere de novo)
+    // 0096: por Hero exige o valor por Hero e o máximo de Heros (o banco confere de novo)
     if (valueMode === "editable") {
       const problem = validateTerms({ model: v.valueModel, amountCents: cents, maxHeroes: v.maxHeroes });
       if (problem === "value_per_hero_required" || problem === "max_heroes_required") {

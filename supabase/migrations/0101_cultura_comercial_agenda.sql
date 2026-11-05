@@ -19,16 +19,16 @@
 --     mesmo slug — só se a campanha ainda não tem segmento (nunca sobrescreve escolha). Sem correspondência, nada muda.
 --   • Histórico no evento: calendar_event_commercial(p_event) devolve os itens ligados que a pessoa pode ver, pelas MESMAS
 --     regras de leitura de hoje (marca: só os dela, inclusive rascunhos; agência gestor+: os dela, sem rascunho de marca;
---     colaborador: negócios dele; herói: negócios em que foi consultado e patrocínios dele já publicados; admin: tudo o que
---     não é rascunho de marca). Nunca valores. A marca nunca recebe herói por aqui.
+--     colaborador: negócios dele; Hero: negócios em que foi consultado e patrocínios dele já publicados; admin: tudo o que
+--     não é rascunho de marca). Nunca valores. A marca nunca recebe Hero por aqui.
 --   • Oportunidades abertas por evento (Real-Time Culture): calendar_event_opportunities() devolve, por evento da
 --     plataforma, quantos patrocínios/chamadas ABERTOS ligados a pessoa vê (só números).
---   • Conteúdos editoriais (M2): tabela leve agenda_posts (a auditoria recomendou não usar content, que exige herói autor
+--   • Conteúdos editoriais (M2): tabela leve agenda_posts (a auditoria recomendou não usar content, que exige Hero autor
 --     e cairia no Explorar público). Notícia ou dica: título, texto, imagem opcional (URL https — sem upload novo nesta
 --     etapa), link opcional, evento opcional, estado draft | scheduled | published com published_at (programado vira
 --     publicado sozinho quando a data chega, sem cron — mesma regra e mesma função platform_event_state da 0098). Autor:
 --     admin (escopo 'platform', para todos com portal) ou agência gestor+ (escopo 'agency', para a própria rede: equipe da
---     agência, marcas que ela atende e heróis do casting). Rascunho e programado futuro só os editores veem. Não há feed
+--     agência, marcas que ela atende e Heros do casting). Rascunho e programado futuro só os editores veem. Não há feed
 --     do consumidor: o conteúdo aparece só na Real-Time Culture e no detalhe do evento dos portais.
 --   • Hashtags do mês e trending topics do trimestre: calendar_imports.meta (0099) é só dos editores; platform_culture_meta
 --     devolve só o mês/trimestre pedido para quem tem portal.
@@ -146,7 +146,7 @@ begin
       end as side) s
     where r.calendar_event_id = p_event and s.side is not null
     union all
-    -- chamadas da marca (agência: publicadas que chegaram a ela; herói: nunca)
+    -- chamadas da marca (agência: publicadas que chegaram a ela; Hero: nunca)
     select c.created_at, jsonb_build_object('kind', 'brand_call', 'id', c.id, 'title', c.title, 'status', c.status, 'starts_on', c.starts_on, 'side', s.side)
     from public.brand_calls c
     cross join lateral (select case
@@ -157,7 +157,7 @@ begin
       end as side) s
     where c.calendar_event_id = p_event and s.side is not null
     union all
-    -- patrocínios da agência (marca: os que chegam a ela; herói: os dele já publicados)
+    -- patrocínios da agência (marca: os que chegam a ela; Hero: os dele já publicados)
     select o.created_at, jsonb_build_object('kind', 'sponsorship', 'id', o.id, 'title', o.title, 'status', o.status,
              'starts_on', (o.starts_at at time zone 'America/Sao_Paulo')::date, 'side', s.side)
     from public.sponsorship_opportunities o
@@ -251,8 +251,8 @@ create index if not exists agenda_posts_published_idx on public.agenda_posts (pu
 create index if not exists agenda_posts_agency_idx on public.agenda_posts (agency_id, published_at desc) where agency_id is not null;
 create index if not exists agenda_posts_event_idx on public.agenda_posts (calendar_event_id) where calendar_event_id is not null;
 
--- rede de uma agência para a pessoa: equipe (qualquer papel), marcas atendidas (vínculo ativo) e heróis do casting
--- (a ficha com login ou o herói ligado à ficha, titular e equipe)
+-- rede de uma agência para a pessoa: equipe (qualquer papel), marcas atendidas (vínculo ativo) e Heros do casting
+-- (a ficha com login ou o Hero ligado à ficha, titular e equipe)
 create or replace function public.my_agency_network_ids()
 returns uuid[] language sql stable security definer set search_path = '' as $$
   select coalesce(array_agg(distinct x.agency_id), '{}'::uuid[]) from (

@@ -5,7 +5,7 @@ import { loginAsAdminActing } from "./helpers/acting";
 import { loginAs } from "./helpers/login";
 import { deletePhotoPostAsService, serviceRoleKey } from "./helpers/supabase";
 
-// Composer de post do herói com a conta de demonstração "Herói / Chef". Só telas e estados:
+// Composer de post do Hero com a conta de demonstração "Hero / Chef". Só telas e estados:
 // nada é publicado nem enviado (o banco dos E2E é o remoto, visível para todos). O envio real
 // para o Cloudflare fica em creator-post-real.spec.ts, ligado só com E2E_STREAM_REAL=1; o envio
 // real de foto (0043) fica no fim deste arquivo, ligado só com E2E_POST_PHOTO_REAL=1.
@@ -16,8 +16,8 @@ async function loginAsHero(page: Page) {
   await loginAs(page, "creator");
 }
 
-test.describe("portal do herói: novo post com foto ou vídeo", () => {
-  test("Novo post no Portal do Herói (0097): menu do portal, sino e o Perfil leva de volta ao Novo post", async ({ page }) => {
+test.describe("portal do Hero: novo post com foto ou vídeo", () => {
+  test("Novo post no Portal do Hero (0097): menu do portal, sino e o Perfil leva de volta ao Novo post", async ({ page }) => {
     await loginAsHero(page);
     await page.goto("/heroi/post/novo");
     // portal único: menu (lateral no tablet/desktop, três linhas no celular) com os grupos e "Voltar ao app"
@@ -28,13 +28,13 @@ test.describe("portal do herói: novo post com foto ou vídeo", () => {
     await expect(page.getByTestId("hero-new-post")).toHaveAttribute("href", "/heroi/post/novo");
   });
 
-  test("endereço antigo do creator redireciona para o Portal do Herói", async ({ page }) => {
+  test("endereço antigo do creator redireciona para o Portal do Hero", async ({ page }) => {
     await loginAsHero(page);
     await page.goto("/creator/post/new");
     await expect(page).toHaveURL(/\/heroi\/post\/novo$/);
   });
 
-  test("herói: Meus conteúdos abre no portal, com Novo post e Novo conteúdo (0092)", async ({ page }) => {
+  test("Hero: Meus conteúdos abre no portal, com Novo post e Novo conteúdo (0092)", async ({ page }) => {
     await loginAsHero(page);
     await page.goto("/heroi/conteudos");
     await expect(page).toHaveURL(/\/heroi\/conteudos$/);
@@ -42,7 +42,7 @@ test.describe("portal do herói: novo post com foto ou vídeo", () => {
     await expect(page.getByTestId("new-content")).toHaveAttribute("href", "/heroi/conteudos/novo");
   });
 
-  test("admin: Novo post pelo herói escolhido abre o mesmo composer, com a faixa do herói", async ({ page }) => {
+  test("admin: Novo post pelo Hero escolhido abre o mesmo composer, com a faixa do Hero", async ({ page }) => {
     await loginAsAdminActing(page, "post");
     await expect(page.getByRole("heading", { level: 1, name: "Novo post" })).toBeVisible();
     await expect(page.getByRole("button", { name: /Tirar foto/ })).toBeVisible();
@@ -127,13 +127,13 @@ test.describe("portal do herói: novo post com foto ou vídeo", () => {
     await expect(page.getByRole("button", { name: /Tirar foto/ })).toBeVisible();
   });
 
-  test("admin: Conteúdos do herói abre a lista do admin filtrada pelo herói; os endereços antigos levam para lá", async ({ page }) => {
+  test("admin: Conteúdos do Hero abre a lista do admin filtrada pelo Hero; os endereços antigos levam para lá", async ({ page }) => {
     await loginAsAdminActing(page, "content");
-    // a lista do admin, filtrada pelo herói escolhido, com a faixa e o "Novo conteúdo" já com o herói
+    // a lista do admin, filtrada pelo Hero escolhido, com a faixa e o "Novo conteúdo" já com o Hero
     await expect(page.getByRole("heading", { level: 1, name: "Conteúdos" })).toBeVisible();
     const heroId = new URL(page.url()).searchParams.get("creator")!;
     await expect(page.getByRole("link", { name: "Novo conteúdo" })).toHaveAttribute("href", `/admin/content/new?creator=${heroId}`);
-    // o painel do herói (modo do admin) leva os filtros para a lista do admin
+    // o painel do Hero (modo do admin) leva os filtros para a lista do admin
     await page.goto("/heroi/conteudos?status=draft");
     await expect(page).toHaveURL(new RegExp(`/admin/content\\?creator=${heroId}&status=draft$`));
     await page.goto("/heroi/conteudos/novo");
@@ -144,7 +144,7 @@ test.describe("portal do herói: novo post com foto ou vídeo", () => {
 // ---------------------------------------------------------------- envio real de foto (0043)
 // Só com E2E_POST_PHOTO_REAL=1 num ambiente com a 0043 e o service role (o banco dos E2E é o remoto).
 // O descarte é conferido pela própria tela; a publicação limpa tudo no fim com o service role do
-// .env.local (o herói não apaga um post que já foi ao ar), inclusive se o teste falhar no meio.
+// .env.local (o Hero não apaga um post que já foi ao ar), inclusive se o teste falhar no meio.
 test.describe("composer: envio real de foto (E2E_POST_PHOTO_REAL=1)", () => {
   test.skip(process.env.E2E_POST_PHOTO_REAL !== "1", "envio real de foto desligado: defina E2E_POST_PHOTO_REAL=1 num ambiente com a 0043");
 

@@ -4,8 +4,8 @@ import { createRecipeDraft } from "@/app/heroi/receitas/actions";
 import { suggestLink } from "@/app/heroi/vinculos/actions";
 import { buildPayload, emptyDraft } from "@/lib/recipes/draft";
 
-// Quem grava pelo herói (0045): conteúdos, receitas e vínculos só o admin pelo herói escolhido; o
-// herói comum fica só com o Novo post; o herói nunca vem do cliente.
+// Quem grava pelo Hero (0045): conteúdos, receitas e vínculos só o admin pelo Hero escolhido; o
+// Hero comum fica só com o Novo post; o Hero nunca vem do cliente.
 
 const ids = vi.hoisted(() => ({
   USER: "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
@@ -25,14 +25,14 @@ const state = vi.hoisted(() => ({
 }));
 
 vi.mock("server-only", () => ({}));
-// 0092: o herói escolhido (cookie) vale no Novo post; aqui, sem escolha
+// 0092: o Hero escolhido (cookie) vale no Novo post; aqui, sem escolha
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));
 vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
 vi.mock("next-intl/server", () => ({ getTranslations: async () => (k: string) => k, getLocale: async () => "pt-BR" }));
 vi.mock("@/lib/auth/session", () => ({
   getUser: async () => ({ id: ids.USER }),
   hasRole: async (r: string) => (r === "admin" ? state.admin : r === "creator" && state.creator),
-  // papel de herói com escopo do herói (o escopo "talent" do escritório não vale para o Novo post)
+  // papel de Hero com escopo do Hero (o escopo "talent" do escritório não vale para o Novo post)
   getRoles: async () => (state.creator ? [{ role: "creator", scope_type: "creator" }] : []),
 }));
 vi.mock("@/lib/acting-hero/server", () => ({
@@ -75,21 +75,21 @@ beforeEach(() => {
 });
 
 describe("creatorActionContext", () => {
-  it("herói comum: Novo post com o próprio perfil; gestão (conteúdos, receitas, vínculos) recusada", async () => {
+  it("Hero comum: Novo post com o próprio perfil; gestão (conteúdos, receitas, vínculos) recusada", async () => {
     expect(await creatorActionContext("post")).toMatchObject({ ok: true, creatorId: ids.OWN, actingFor: null });
     expect(await creatorActionContext()).toEqual({ ok: false, error: "forbidden" });
     expect(await creatorActionContext("manage")).toEqual({ ok: false, error: "forbidden" });
-    // o cliente do herói nunca leva o cabeçalho de outro herói
+    // o cliente do Hero nunca leva o cabeçalho de outro Hero
     expect(state.clients.every((c) => c === null)).toBe(true);
   });
 
-  it("herói comum não age por outro herói nem com um herói 'escolhido' (o modo é só do admin)", async () => {
+  it("Hero comum não age por outro Hero nem com um Hero 'escolhido' (o modo é só do admin)", async () => {
     state.acting = { status: "ok", hero: { id: ids.ACTING } };
     expect(await creatorActionContext("post")).toMatchObject({ ok: true, creatorId: ids.OWN });
     expect(await creatorActionContext("manage")).toEqual({ ok: false, error: "forbidden" });
   });
 
-  it("admin: sem herói escolhido pede a escolha; com herói, grava por ele com o cabeçalho", async () => {
+  it("admin: sem Hero escolhido pede a escolha; com Hero, grava por ele com o cabeçalho", async () => {
     state.admin = true;
     expect(await creatorActionContext("manage")).toEqual({ ok: false, error: "acting_hero_required" });
     expect(await creatorActionContext("post")).toEqual({ ok: false, error: "acting_hero_required" });
@@ -108,8 +108,8 @@ describe("creatorActionContext", () => {
   });
 });
 
-describe("actions de gestão chamadas direto pelo herói comum", () => {
-  it("sugerir vínculo segue do admin (forbidden); criar receita é do herói desde a 0092 (chega ao banco, que confere o dono)", async () => {
+describe("actions de gestão chamadas direto pelo Hero comum", () => {
+  it("sugerir vínculo segue do admin (forbidden); criar receita é do Hero desde a 0092 (chega ao banco, que confere o dono)", async () => {
     const draft = emptyDraft();
     draft.title = "Bolo";
     const built = buildPayload(draft);
@@ -120,7 +120,7 @@ describe("actions de gestão chamadas direto pelo herói comum", () => {
     expect(state.inserts).toEqual([]);
   });
 
-  it("admin pelo herói escolhido sugere vínculo no conteúdo do herói", async () => {
+  it("admin pelo Hero escolhido sugere vínculo no conteúdo do Hero", async () => {
     state.admin = true;
     state.acting = { status: "ok", hero: { id: ids.ACTING } };
     expect(await suggestLink({ contentId: ids.CONTENT, productId: ids.PRODUCT, note: "" })).toEqual({ ok: true });

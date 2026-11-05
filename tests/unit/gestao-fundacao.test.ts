@@ -33,7 +33,7 @@ describe("hierarquia da agência", () => {
     expect(canSeeValues(null, true)).toBe(true);
   });
 
-  it("menu por nível: Equipe só para o Adm, Configurações e Heróis para gestor+", () => {
+  it("menu por nível: Equipe só para o Adm, Configurações e Heros para gestor+", () => {
     expect(agencyNavKeys("staff")).toEqual(["dashboard", "pipeline", "tasks", "agenda", "strategies", "casting", "brands", "notifications"]);
     expect(agencyNavKeys("manager")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings"]);
     expect(agencyNavKeys("admin")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings", "team", "finance", "history"]);
@@ -103,7 +103,7 @@ describe("erros das RPCs", () => {
 });
 
 describe("avisos", () => {
-  it("55 tipos, iguais ao check do banco (recriado na 0112 com os avisos de acesso do herói e da marca)", () => {
+  it("55 tipos, iguais ao check do banco (recriado na 0112 com os avisos de acesso do Hero e da marca)", () => {
     expect(INBOX_KINDS).toHaveLength(55);
     const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0112_heroi_conta_vinculada.sql"), "utf8");
     for (const kind of INBOX_KINDS) expect(sql).toContain(`'${kind}'`);

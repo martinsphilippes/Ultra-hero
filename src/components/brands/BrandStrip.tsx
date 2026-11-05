@@ -9,7 +9,7 @@ import { trackBrandClick } from "./track";
 
 type Props = {
   brands: readonly BrandChipView[];
-  /** Nome do herói (rótulo da lista para leitor de tela). */
+  /** Nome do Hero (rótulo da lista para leitor de tela). */
   heroName: string;
   className?: string;
 };
@@ -26,7 +26,7 @@ const TONE = {
 // ciano misturado à cor do texto: claro no tema escuro, escuro no claro (contraste nos dois e nos templates)
 const LABEL_TONE = { solid: "text-accent-text", outline: "text-fg-muted", dashed: "text-[color-mix(in_oklab,#14b8a6_60%,var(--color-fg))]" } as const;
 
-// Marcas ao lado do nome do herói (página do herói, do programa e do conteúdo): logos pequenos em
+// Marcas ao lado do nome do Hero (página do Hero, do programa e do conteúdo): logos pequenos em
 // chips, rolagem lateral quando são muitas. Cada chip abre o site da marca (fora do app) e diz o
 // tipo de relação: patrocinador, marca mencionada ou produto identificado.
 export function BrandStrip({ brands, heroName, className }: Props) {

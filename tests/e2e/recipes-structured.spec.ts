@@ -7,7 +7,7 @@ import { seedUuid } from "./helpers/seed";
 // (Fase 2: o editor antigo segue só para leitura, mas "Editar" leva ao editor de receitas.)
 // Funciona com o remoto antes e depois da migração: nenhuma tela usa as tabelas novas na fase 1.
 //  - as páginas públicas das receitas antigas seguem iguais (título, resumo, tempo e o bloqueio);
-//  - o herói não cria mais conteúdo pelo portal (0045: só o admin, pelo herói escolhido);
+//  - o Hero não cria mais conteúdo pelo portal (0045: só o admin, pelo Hero escolhido);
 //  - o endereço antigo do editor leva a receita ao editor de receitas; o editor do admin mostra a receita só
 //    para leitura, com o aviso, sem Publicar nem Despublicar.
 
@@ -28,7 +28,7 @@ test.describe("receitas estruturadas (fase 1): nada visível muda e o editor ant
     });
   }
 
-  test("o herói cria conteúdo estruturado pelo próprio portal, com o seletor de tipo (0092)", async ({ page }) => {
+  test("o Hero cria conteúdo estruturado pelo próprio portal, com o seletor de tipo (0092)", async ({ page }) => {
     await loginAs(page, "creator");
     await page.goto("/heroi/conteudos/novo");
     await expect(page).toHaveURL(/\/heroi\/conteudos\/novo$/);
@@ -37,9 +37,9 @@ test.describe("receitas estruturadas (fase 1): nada visível muda e o editor ant
     await expect(page.getByRole("combobox", { name: "Tipo", exact: true })).toBeVisible();
   });
 
-  test("admin pelo herói: o endereço antigo do editor leva a receita ao editor de receitas", async ({ page }) => {
+  test("admin pelo Hero: o endereço antigo do editor leva a receita ao editor de receitas", async ({ page }) => {
     await loginAsAdminActing(page, "content");
-    const id = seedUuid("content:g1"); // receita do herói da conta demo
+    const id = seedUuid("content:g1"); // receita do Hero da conta demo
     await page.goto(`/heroi/conteudos/${id}/editar`);
     await expect(page).toHaveURL(new RegExp(`/heroi/receitas/${id}/editar$`));
     // receita no ar: o editor mostra o estado e as ações possíveis, sem o assistente

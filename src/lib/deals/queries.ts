@@ -22,9 +22,9 @@ export type DealListItem = {
   requestId: string | null;
   talentCount: number;
   isDemo: boolean;
-  /** 0107: herói-cliente (ficha do casting), quando o cliente é (também) o herói */
+  /** 0107: Hero-cliente (ficha do casting), quando o cliente é (também) o Hero */
   clientTalent: { id: string; name: string } | null;
-  /** 0107: nomes crus do cliente ("Marca · Herói"). Para mostrar, use dealClientLabel (põe "(cliente)" no herói). */
+  /** 0107: nomes crus do cliente ("Marca · Hero"). Para mostrar, use dealClientLabel (põe "(cliente)" no Hero). */
   clientLabel: string;
   /** 0107: serviço do catálogo e início do roteiro */
   service: { id: string; name: string } | null;
@@ -214,7 +214,7 @@ export async function listDealTalents(dealId: string): Promise<DealTalentRow[]> 
       city: r.talent?.city ?? null,
       state: r.talent?.state ?? null,
       availability: r.talent?.availability ?? "available",
-      // login = conta própria da ficha ou conta dono do herói ligado (herói sem dono não responde: a agência registra)
+      // login = conta própria da ficha ou conta dono do Hero ligado (Hero sem dono não responde: a agência registra)
       hasLogin: Boolean(r.talent?.user_id || r.talent?.creator?.user_id),
       hasHero: Boolean(r.talent?.creator_id),
       avatarUrl: r.talent?.creator?.avatar_url ?? null,
@@ -320,7 +320,7 @@ export async function getRequest(id: string): Promise<RequestRow | null> {
 export async function getRequestBudget(requestId: string): Promise<{ min: number | null; max: number | null; note: string; valueModel: ValueModel; maxHeroes: number | null } | null> {
   const supabase = await createClient();
   const { data } = await supabase.from("campaign_request_budgets").select("budget_min_cents, budget_max_cents, note, value_model, max_heroes").eq("request_id", requestId).maybeSingle();
-  // 0096: modelo de valor — fixo (total do evento) ou por herói (valor por herói × máximo de heróis)
+  // 0096: modelo de valor — fixo (total do evento) ou por Hero (valor por Hero × máximo de Heros)
   return data ? { min: data.budget_min_cents, max: data.budget_max_cents, note: data.note, valueModel: data.value_model === "por_heroi" ? "por_heroi" : "fixo", maxHeroes: data.max_heroes } : null;
 }
 
@@ -440,7 +440,7 @@ export type TalentCard = {
   name: string;
   availability: string;
   photoUrl?: string | null;
-  /** Texto do selo e temas do herói (0122), quando o kit mostra os segmentos. */
+  /** Texto do selo e temas do Hero (0122), quando o kit mostra os segmentos. */
   category?: string | null;
   topics?: string[];
   headline?: string;

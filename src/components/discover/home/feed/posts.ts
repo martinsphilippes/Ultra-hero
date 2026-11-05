@@ -13,7 +13,7 @@ export const FEED_PAGE_SIZE = 10;
  */
 export type FeedPostData = ContentTileData & { summary: string | null; creator_id: string | null; smart_tags?: SmartTagView[]; body?: { media_provider: string } | null };
 
-// Mesmo recorte do quadro do Explorar, mais o resumo (legenda do post), o id do herói (botão Seguir) e o
+// Mesmo recorte do quadro do Explorar, mais o resumo (legenda do post), o id do Hero (botão Seguir) e o
 // provedor do corpo (rótulo Foto × Artigo).
 export const FEED_POST_SELECT = `${CONTENT_TILE_SELECT}, summary, creator_id, body:content_bodies(media_provider)`;
 

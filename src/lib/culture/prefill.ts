@@ -169,7 +169,7 @@ export type SponsorshipPrefill = {
   calendarEventId: string;
 };
 
-/** Oportunidade de patrocínio da agência a partir do evento (o herói é escolhido depois, no formulário). */
+/** Oportunidade de patrocínio da agência a partir do evento (o Hero é escolhido depois, no formulário). */
 export function sponsorshipPrefill(e: PrefillEvent, today: string): SponsorshipPrefill {
   const { start, end } = proposalPeriod(e, today, MAX_SPONSORSHIP_DAYS);
   const sameDay = start === end;

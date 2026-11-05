@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title") };
 }
 
-// Avisos do Portal do Herói (0097): os do sino de quem tem herói ou está num casting (agência, equipe, marcas).
+// Avisos do Portal do Hero (0097): os do sino de quem tem Hero ou está num casting (agência, equipe, marcas).
 export default async function HeroInboxPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   return <InboxHub portal="hero" basePath="/heroi/avisos" searchParams={await searchParams} />;
 }

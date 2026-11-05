@@ -10,7 +10,7 @@ type Props = {
   name: string;
   email: string | null;
   avatarUrl: string | null;
-  /** Funções da conta já traduzidas (Herói, Agência, Marca…). */
+  /** Funções da conta já traduzidas (Hero, Agência, Marca…). */
   roles: string[];
   settingsHref: string;
   labels: { open: string; settings: string; signout: string; role: string };

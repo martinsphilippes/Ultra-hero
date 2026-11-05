@@ -26,7 +26,7 @@ import {
 import type { DealTalentRow } from "@/lib/deals/queries";
 import type { Conflict } from "@/lib/offer/counteroffer";
 
-/** Ficha do casting da agência (com ou sem herói ligado) que pode entrar no negócio. */
+/** Ficha do casting da agência (com ou sem Hero ligado) que pode entrar no negócio. */
 export type Candidate = { id: string; name: string; slug: string | null; hasHero: boolean; avatarUrl: string | null; city: string | null; state: string | null; availability: string; hasLogin: boolean; reasons: DealTalentRow["reasons"] };
 
 type Props = {
@@ -41,9 +41,9 @@ type Props = {
 
 type TypedEntry = TypedHero & { key: string };
 
-// Sugerir heróis ao negócio (0093). Três origens: ficha do casting (ordenada pelos critérios do briefing), herói da
-// plataforma que ainda não está no casting (busca no servidor, 20 por vez; a ficha nasce ao salvar) e herói digitado
-// que não está na plataforma (ficha só com o nome). Herói que já é de outra agência aparece indisponível, sem escolha.
+// Sugerir Heros ao negócio (0093). Três origens: ficha do casting (ordenada pelos critérios do briefing), Hero da
+// plataforma que ainda não está no casting (busca no servidor, 20 por vez; a ficha nasce ao salvar) e Hero digitado
+// que não está na plataforma (ficha só com o nome). Hero que já é de outra agência aparece indisponível, sem escolha.
 export function SuggestHeroesDialog({ dealId, candidates, current, conflicts, onClose, actions = { search: searchHeroesAction, suggest: suggestHeroesAction } }: Props) {
   const t = useTranslations("agency.deal.talents");
   const tx = useTranslations("offer.conflict");

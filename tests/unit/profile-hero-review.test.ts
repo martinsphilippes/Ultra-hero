@@ -23,8 +23,8 @@ import enMe from "../../messages/en/me.json";
 import esCreator from "../../messages/es/creator.json";
 import esMe from "../../messages/es/me.json";
 
-// Perfil do herói no /profile: o topo exige o papel (como o portal); o editor "Editar perfil" fica
-// recolhido; um avatar só para o herói ativo (só foto real, no editor; nada de avatar em Dados) e a
+// Perfil do Hero no /profile: o topo exige o papel (como o portal); o editor "Editar perfil" fica
+// recolhido; um avatar só para o Hero ativo (só foto real, no editor; nada de avatar em Dados) e a
 // capa só com foto real (envio próprio, 0042). Nenhuma ilustração em lugar nenhum.
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: () => undefined, push: () => undefined }) }));
@@ -47,7 +47,7 @@ function render(children: ReactNode) {
   );
 }
 
-describe("seção do herói no /profile: só com o papel", () => {
+describe("seção do Hero no /profile: só com o papel", () => {
   const profile = { id: "c1" };
   it("creator ou admin veem o perfil; sem o papel (mesmo com a linha em creator_profiles) não", () => {
     expect(heroProfileFor(["consumer", "creator"], profile)).toBe(profile);
@@ -59,9 +59,9 @@ describe("seção do herói no /profile: só com o papel", () => {
     expect(heroProfileFor(["creator"], null)).toBeNull();
   });
 
-  it("a página usa a regra para a seção e para os textos de herói em Dados", () => {
+  it("a página usa a regra para a seção e para os textos de Hero em Dados", () => {
     const source = readFileSync(path.resolve(__dirname, "../../src/app/(app)/profile/page.tsx"), "utf8");
-    // papéis com escopo: o creator do escritório (escopo talent) não reabre o editor do herói
+    // papéis com escopo: o creator do escritório (escopo talent) não reabre o editor do Hero
     expect(source).toMatch(/const heroProfile = heroProfileFor\(heroRoleNames\(roles\), creator\.profile\);/);
     expect(source).not.toMatch(/const heroProfile = creator\.profile/);
   });
@@ -80,7 +80,7 @@ const read = (rel: string) => readFileSync(path.resolve(__dirname, "../..", rel)
 // src das <img> renderizadas (next/image codifica a URL em /_next/image?url=)
 const imgSrcs = (html: string) => Array.from(html.matchAll(/<img[^>]*src="([^"]+)"/g), (m) => decodeURIComponent(m[1].replace(/&amp;/g, "&")));
 
-describe("editor do herói: só foto real, sem ilustrações", () => {
+describe("editor do Hero: só foto real, sem ilustrações", () => {
   it("perfil ativo: 'Sua foto' com o envio de foto e a capa com envio de foto real; nenhuma grade de ilustrações", () => {
     const html = render(createElement(CreatorProfileForm, { ...formProps, showPhotoPicker: true, photoState, coverState }));
     expect(count(html, 'data-testid="avatar-photo"')).toBe(1);
@@ -120,7 +120,7 @@ describe("editor do herói: só foto real, sem ilustrações", () => {
     expect(html).toContain('data-testid="hero-cover-empty"');
   });
 
-  it("foto e capa oficiais (fotos reais dos heróis demo) continuam; envio pronto mostra 'Remover capa'", () => {
+  it("foto e capa oficiais (fotos reais dos Heros demo) continuam; envio pronto mostra 'Remover capa'", () => {
     const html = render(
       createElement(CreatorProfileForm, {
         ...formProps,
@@ -185,7 +185,7 @@ describe("Avatar: só foto real; sem foto, as iniciais", () => {
 describe("Dados: foto só pelo envio", () => {
   const dataProps = { displayName: "Érick", avatarUrl: "/placeholders/avatar-3.svg", locale: "pt-BR" as const, theme: "dark" as const, photoState };
 
-  it("herói ativo: sem avatar nem atalho repetido ('Editar perfil' fica só no topo da página)", () => {
+  it("Hero ativo: sem avatar nem atalho repetido ('Editar perfil' fica só no topo da página)", () => {
     const html = render(createElement(ProfileDataForm, { ...dataProps, avatarInHeroEditor: true }));
     expect(html).not.toContain('data-testid="avatar-in-hero-editor"');
     expect(html).not.toContain("Editar perfil");
@@ -193,7 +193,7 @@ describe("Dados: foto só pelo envio", () => {
     expect(html).not.toContain('name="avatar"');
   });
 
-  it("quem não é herói (ou herói inativo): a foto fica em Dados, sem ilustrações; ilustração antiga vira as iniciais", () => {
+  it("quem não é Hero (ou Hero inativo): a foto fica em Dados, sem ilustrações; ilustração antiga vira as iniciais", () => {
     const html = render(createElement(ProfileDataForm, dataProps));
     expect(html).toContain('data-testid="avatar-photo"');
     // o único grupo de rádios é o do tema
@@ -220,7 +220,7 @@ describe("Editar perfil recolhido", () => {
     expect(html).toMatch(/<section id="editar-perfil" aria-labelledby="hero-editor-title" hidden=""/);
     expect(html).toContain('<h2 id="hero-editor-title" tabindex="-1"');
     expect(count(html, ">Fechar</span></button>")).toBe(2);
-    // o link da página pública vem depois do botão (o Portal do herói continua o primeiro link da página)
+    // o link da página pública vem depois do botão (o Portal do Hero continua o primeiro link da página)
     expect(html).toContain('href="/personalities/erick-jacquin"');
     expect(html.indexOf("Editar perfil")).toBeLessThan(html.indexOf('href="/personalities/erick-jacquin"'));
   });

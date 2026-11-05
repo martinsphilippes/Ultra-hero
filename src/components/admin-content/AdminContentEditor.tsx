@@ -33,7 +33,7 @@ const NO_OPTIONS: ComposerOptions = { recipes: [], products: [], programs: [] };
 const BLOCK_HREFS = { newRecipe: "/heroi/receitas/nova", links: "/admin/links", newProgram: "/admin/programs/new" };
 
 // Envolve o ContentForm compartilhado com a escolha da personalidade (campo só do admin). As opções dos
-// blocos (receitas, produtos, programas; 0075/0076) seguem o herói escolhido.
+// blocos (receitas, produtos, programas; 0075/0076) seguem o Hero escolhido.
 export function AdminContentEditor({ mode, contentId, initial, creators, initialCreatorId, readOnly = false, coverState, initialBlocks }: Props) {
   const t = useTranslations("adminContent.content.form");
   const tc = useTranslations("adminContent.common");
@@ -47,7 +47,7 @@ export function AdminContentEditor({ mode, contentId, initial, creators, initial
   // o que vai ser criado (só na criação): estruturado fica aqui; post, receita e programa têm editor próprio
   const [kind, setKind] = useState<ContentKind>("structured");
 
-  // troca de herói: recarrega receitas, produtos e programas dele (resposta antiga é descartada)
+  // troca de Hero: recarrega receitas, produtos e programas dele (resposta antiga é descartada)
   useEffect(() => {
     if (!creatorId) {
       setOptions(NO_OPTIONS);
@@ -102,7 +102,7 @@ export function AdminContentEditor({ mode, contentId, initial, creators, initial
         />
       </FormField>
       {mode === "create" ? <ContentKindPicker value={kind} onChange={setKind} creatorId={creatorId || null} /> : null}
-      {/* a capa é reservada em nome do herói escolhido acima (post_photo_upload_claim pelo admin, 0045) */}
+      {/* a capa é reservada em nome do Hero escolhido acima (post_photo_upload_claim pelo admin, 0045) */}
       {mode === "edit" || kind === "structured" ? (
         <ContentForm
           mode={mode}

@@ -12,16 +12,16 @@ import { HireButton } from "./HireButton";
 import { ServiceMeta, VerifiedBadge } from "./ProfessionalBits";
 
 type Props = {
-  /** Receita aberta (página) ou null (Alimentação do herói). */
+  /** Receita aberta (página) ou null (Alimentação do Hero). */
   contentId: string | null;
-  /** Herói da vitrine (sugeridos dele entram depois dos da receita). */
+  /** Hero da vitrine (sugeridos dele entram depois dos da receita). */
   creatorId: string | null;
   source: Extract<TapSource, "receita" | "alimentacao">;
   /** Para onde voltar depois do login. */
   nextPath: string;
 };
 
-// "Contratar nutricionista" (Etapa 3, 0058): sugeridos da receita, depois do herói, senão qualquer
+// "Contratar nutricionista" (Etapa 3, 0058): sugeridos da receita, depois do Hero, senão qualquer
 // nutricionista aprovado. Cada um com "Contratar" (1º serviço; carrinho, pagamento simulado) e "Ver
 // perfil". No app das lojas só o perfil. Sem a 0058 no banco: a linha "em breve" de antes.
 export async function HireNutritionist({ contentId, creatorId, source, nextPath }: Props) {

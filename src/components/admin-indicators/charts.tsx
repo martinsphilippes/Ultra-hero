@@ -126,7 +126,7 @@ export function Funnel({ steps, label, ofPrevious }: { steps: FunnelStep[]; labe
   );
 }
 
-/** Grade de números pequenos (rótulo em cima, valor embaixo) para cartões de herói/profissional. */
+/** Grade de números pequenos (rótulo em cima, valor embaixo) para cartões de Hero/profissional. */
 export function StatGrid({ stats, className }: { stats: { key: string; label: ReactNode; value: ReactNode }[]; className?: string }) {
   return (
     <dl className={cn("grid grid-cols-3 gap-x-3 gap-y-2", className)}>

@@ -234,7 +234,7 @@ export async function acceptInvitation(input: { token: string; acceptTerms: bool
     const roles: AcceptedRole[] = ["creator", "seller", "professional", "agency", "brand", "admin", "consumer"];
     if (!roles.includes(role as AcceptedRole)) return fail("generic");
     revalidatePath("/admin/invitations");
-    // convite do escritório com herói ligado (0087): o escopo é do herói, mas o destino é o escritório
+    // convite do escritório com Hero ligado (0087): o escopo é do Hero, mas o destino é o escritório
     const scopeType = typeof row.talent_id === "string" ? "talent" : typeof row.scope_type === "string" ? row.scope_type : null;
     return { ok: true, role: role as AcceptedRole, scopeType, home: portalHomeForAccepted([row]) };
   } catch (error) {
@@ -255,8 +255,8 @@ const creatorSchema = z
     headline: z.string().trim().max(140).optional().or(z.literal("")),
     bio: z.string().trim().max(2000).optional().or(z.literal("")),
     pillars: z.array(z.enum(PILLARS as [string, ...string[]])).min(1).max(4),
-    // Foto e capa não passam por aqui: são fotos reais enviadas pelo próprio herói (0031, 0042).
-    // Herói novo nasce sem foto e sem capa; a edição pelo admin nunca regrava as duas colunas.
+    // Foto e capa não passam por aqui: são fotos reais enviadas pelo próprio Hero (0031, 0042).
+    // Hero novo nasce sem foto e sem capa; a edição pelo admin nunca regrava as duas colunas.
     isFictional: z.boolean(),
     rightsNote: z.string().trim().max(500).optional().or(z.literal("")),
     sortOrder: z.coerce.number().int().min(0).max(10000),
@@ -348,7 +348,7 @@ export async function updateCreator(id: string, input: CreatorFormValues): Promi
   }
 }
 
-// Tira do ar a foto enviada pelo herói (foto imprópria). Service role: apaga o
+// Tira do ar a foto enviada pelo Hero (foto imprópria). Service role: apaga o
 // objeto e limpa a referência no perfil público e no perfil do usuário; fica na auditoria.
 export async function adminRemoveCreatorPhoto(input: { id: string }, justification: string): Promise<Result> {
   const actor = await admin();
@@ -363,8 +363,8 @@ export async function adminRemoveCreatorPhoto(input: { id: string }, justificati
     if (!creator) return fail("not_found");
     if (!isStoredAvatarUrl(creator.avatar_url, base)) return fail("no_photo");
     const client = createAdminClient();
-    // Só apaga o objeto quando a foto é do usuário ligado ao herói. avatar_url é gravável pelo
-    // próprio herói: se ele apontou para a foto de outra pessoa, só a referência dele sai.
+    // Só apaga o objeto quando a foto é do usuário ligado ao Hero. avatar_url é gravável pelo
+    // próprio Hero: se ele apontou para a foto de outra pessoa, só a referência dele sai.
     let released: { unlinked: boolean; deleted: boolean };
     if (creator.user_id && storedAvatarOwner(creator.avatar_url, base) === creator.user_id) {
       released = await releaseStoredAvatar(client, { url: creator.avatar_url as string, baseUrl: base });
@@ -394,9 +394,9 @@ export async function adminRemoveCreatorPhoto(input: { id: string }, justificati
   }
 }
 
-// Tira do ar a capa enviada pelo herói (0042), como a foto: service role apaga o objeto e limpa a
+// Tira do ar a capa enviada pelo Hero (0042), como a foto: service role apaga o objeto e limpa a
 // referência no perfil público; fica na auditoria. Capa de outra pessoa (cover_url gravado pela API)
-// ou de herói sem usuário: só a referência sai (o objeto fica para o dono ou para a limpeza diária).
+// ou de Hero sem usuário: só a referência sai (o objeto fica para o dono ou para a limpeza diária).
 export async function adminRemoveCreatorCover(input: { id: string }, justification: string): Promise<Result> {
   const actor = await admin();
   const parsed = z.object({ id: z.uuid(), justification: requiredJustification }).safeParse({ ...input, justification });
@@ -459,13 +459,13 @@ export async function setCreatorStatus(input: { id: string; status: "active" | "
   }
 }
 
-// ---------------------------------------------------------------- produtos do herói (alocação direta)
+// ---------------------------------------------------------------- produtos do Hero (alocação direta)
 // Sem export: arquivo "use server" só exporta funções async (o Next recusa o módulo inteiro, erro E352,
 // e todas as actions daqui quebram, inclusive o aceite de convite).
 const CREATOR_PRODUCT_STATUSES = ["validated", "suspended", "rejected"] as const;
 export type CreatorProductStatus = (typeof CREATOR_PRODUCT_STATUSES)[number];
 
-// Define a alocação produto↔herói pela RPC auditada (upsert). A página pública do herói é
+// Define a alocação produto↔Hero pela RPC auditada (upsert). A página pública do Hero é
 // revalidada pelo slug para a aba Produtos refletir na hora.
 export async function setCreatorProduct(input: { creatorId: string; productId: string; status: CreatorProductStatus }, note: string): Promise<Result> {
   await admin();

@@ -48,7 +48,7 @@ export default async function BrandSponsorshipPage({ params }: Props) {
       </Link>
       <PageHeader title={o.title} description={t("offeredBy", { agency: o.agencyName })} actions={<SponsorshipStatusBadge status={o.status} />} />
       <section className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4">
-        {/* 0095: o herói do evento (foto, nome, nicho e link da página pública — só com o consentimento dele) */}
+        {/* 0095: o Hero do evento (foto, nome, nicho e link da página pública — só com o consentimento dele) */}
         <div className="flex flex-col gap-1">
           <HeroCard hero={o.hero} side="brand" />
           {o.talent.inCatalog ? (

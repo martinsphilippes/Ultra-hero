@@ -15,16 +15,16 @@ import { HERO_ANCHOR } from "@/lib/creator/hero-anchors";
 import { HeroEditorDisclosure } from "./HeroEditorDisclosure";
 import { socialsFrom } from "./profile-schema";
 
-// Topo do /profile para o herói, no formato do Instagram: cabeçalho público (foto, nome, selo e bio
+// Topo do /profile para o Hero, no formato do Instagram: cabeçalho público (foto, nome, selo e bio
 // recolhida), os Portais logo abaixo (na página) e "Editar perfil" com o editor recolhido.
 
-/** Cabeçalho do herói: o que o público vê. Sem links aqui: o Portal do herói é o primeiro link da página. */
+/** Cabeçalho do Hero: o que o público vê. Sem links aqui: o Portal do Hero é o primeiro link da página. */
 export async function HeroProfileHeader({ profile }: { profile: CreatorProfile }) {
   const [ts, tcat] = await Promise.all([getTranslations("adminCommon.status"), getTranslations("catalog")]);
   return (
     <section id={HERO_ANCHOR} aria-labelledby="hero-profile-name" data-testid="profile-hero" className="flex scroll-mt-20 flex-col gap-3">
       <div className="flex items-center gap-4">
-        {/* o avatar único do herói: só foto real; sem foto, as iniciais (como na página pública) */}
+        {/* o avatar único do Hero: só foto real; sem foto, as iniciais (como na página pública) */}
         <Avatar src={profile.avatar_url} name={profile.name} size="xl" alt="" />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <h2 id="hero-profile-name" className="type-h3 break-words text-fg">

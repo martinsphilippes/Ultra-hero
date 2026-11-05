@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Props = { searchParams: Promise<{ mes?: string }> };
 
-// Estratégias para marcas (0111, D3; processo mensal do PDF): banco de ideias do mês (marca, segmento, herói, data do
+// Estratégias para marcas (0111, D3; processo mensal do PDF): banco de ideias do mês (marca, segmento, Hero, data do
 // Calendário Groscove, texto) com aprovação da Estratégia, relatório do que o casting postou e envio à marca como
 // oportunidade de patrocínio. Interno da agência: todo membro propõe; Estratégia/Adm aprovam.
 export default async function StrategiesPage({ searchParams }: Props) {

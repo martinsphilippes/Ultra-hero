@@ -23,7 +23,7 @@ type Props = {
 };
 
 // Cadastro por perfil (0103): nome, e-mail e senha → a conta nasce, a pessoa entra e segue para o passo a
-// passo do perfil (Herói, Marca ou Agência). Passo 1 de 2 (o 2 é o /primeiro-acesso).
+// passo do perfil (Hero, Marca ou Agência). Passo 1 de 2 (o 2 é o /primeiro-acesso).
 export function ProfileSignupForm({ profile, alternatives, passwordless = false, defaultEmail }: Props) {
   const t = useTranslations("auth");
   const [state, formAction, pending] = useActionState(profileSignupAction, initialAuthState);

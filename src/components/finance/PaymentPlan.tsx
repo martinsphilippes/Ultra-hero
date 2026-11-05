@@ -30,8 +30,8 @@ import {
 import { confirmClientBillingAction, savePaymentPlanAction } from "@/lib/finance/plan-actions";
 import { brlToCents, centsToBrl } from "@/lib/money/brl-input";
 
-// Condições de pagamento (0108): o Adm define o valor ACORDADO e como/quando a marca paga e o herói recebe; a
-// prévia (parcelas, repasse, comissão) é a mesma conta do banco (payment-plan.ts). Gestor/equipe, marca e herói veem
+// Condições de pagamento (0108): o Adm define o valor ACORDADO e como/quando a marca paga e o Hero recebe; a
+// prévia (parcelas, repasse, comissão) é a mesma conta do banco (payment-plan.ts). Gestor/equipe, marca e Hero veem
 // o resumo do que lhes cabe (o banco já corta os valores de quem não pode). Registro simulado: nada é cobrado.
 
 const STATUS_VARIANT: Record<PlanStatus, BadgeVariant> = { none: "warning", saved: "info", forecast: "info", effective: "success" };
@@ -55,7 +55,7 @@ function useRuleText() {
   };
 }
 
-/** Texto curto de quando o herói recebe. */
+/** Texto curto de quando o Hero recebe. */
 function usePayoutText() {
   const t = useTranslations("payments.plan");
   const locale = useLocale() as Locale;
@@ -509,7 +509,7 @@ export function DealPaymentPlanCard({ dealId, view, today }: { dealId: string; v
   );
 }
 
-/** 0111: o Adm efetiva a cobrança do herói-cliente (o previsto vira em aberto; o plano trava). */
+/** 0111: o Adm efetiva a cobrança do Hero-cliente (o previsto vira em aberto; o plano trava). */
 function ConfirmClientBillingButton({ dealId }: { dealId: string }) {
   const t = useTranslations("payments.client");
   const { toast } = useToast();

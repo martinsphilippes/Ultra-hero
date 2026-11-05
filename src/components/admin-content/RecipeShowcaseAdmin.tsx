@@ -17,11 +17,11 @@ type Props = {
   contentId: string;
   /** Autor da receita (content.creator): a receita sempre está na vitrine dele. */
   author: Hero | null;
-  /** Heróis com a receita na vitrine (vínculo validado). */
+  /** Heros com a receita na vitrine (vínculo validado). */
   showcase: Hero[];
-  /** Heróis ativos (para adicionar à vitrine e para escolher o chef). */
+  /** Heros ativos (para adicionar à vitrine e para escolher o chef). */
   heroes: Hero[];
-  /** false = 0051 ausente: só os heróis da vitrine (0024) podem ser editados. */
+  /** false = 0051 ausente: só os Heros da vitrine (0024) podem ser editados. */
   available: boolean;
   /** Valor do seletor "Quem assina": "author", "none" ou o id do chef. */
   signer: string;

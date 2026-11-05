@@ -213,7 +213,7 @@ describe("login só com e-mail", () => {
 describe("cadastro sem senha", () => {
   const profileForm = { profile: "hero", fullName: "Ana Souza", email: "ana@exemplo.com" };
 
-  it("perfil (Herói): sem campo senha, cria com senha gerada guardada no cofre, entra e abre o passo a passo", async () => {
+  it("perfil (Hero): sem campo senha, cria com senha gerada guardada no cofre, entra e abre o passo a passo", async () => {
     expect(await run(profileSignupAction(idle, form(profileForm)))).toEqual({ redirect: "/primeiro-acesso" });
     expect(state.createUserCalls).toEqual([
       expect.objectContaining({ email: "ana@exemplo.com", email_confirm: true, user_metadata: { full_name: "Ana Souza" } }),

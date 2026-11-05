@@ -96,7 +96,7 @@ export default async function EditContentPage({ params, searchParams }: Params) 
 
   const { data: row } = await supabase.from("content").select(CONTENT_SELECT).eq("id", id).maybeSingle();
   const content = (row as ContentRow | null) ?? null;
-  // RLS só devolve conteúdo do herói em uso; o filtro por creator_id é defesa extra (e não revela ids)
+  // RLS só devolve conteúdo do Hero em uso; o filtro por creator_id é defesa extra (e não revela ids)
   if (!content || content.creator_id !== ctx.creatorId) notFound();
   if (content.type === "recipe") redirect(`/heroi/receitas/${id}/editar`);
 
@@ -115,7 +115,7 @@ export default async function EditContentPage({ params, searchParams }: Params) 
   const latest = reviewRows[0] ?? null;
   // mesma regra do banco (content_review_required): tipo sem linha exige revisão
   const reviewRequired = setting?.review_required ?? true;
-  // herói pendente (0092): o rascunho fica guardado; publicar só depois da aprovação do admin
+  // Hero pendente (0092): o rascunho fica guardado; publicar só depois da aprovação do admin
   const heroPending = ctx.profile?.status === "pending";
   const step = creatorPublishStep({ status: content.status, reviewStatus: content.review_status, reviewRequired });
   const editable = creatorCanEdit({ status: content.status, reviewStatus: content.review_status, type: content.type });

@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Negócio aberto pela própria agência (briefing recebido fora do portal): cria o pedido de origem
 // "agência" e o negócio em "briefing recebido". A marca só vê quando a agência confirmar.
-// 0107: o cliente pode ser a marca, o herói (ficha do casting) ou os dois; escolher o serviço gera o roteiro na hora.
+// 0107: o cliente pode ser a marca, o Hero (ficha do casting) ou os dois; escolher o serviço gera o roteiro na hora.
 type Props = { searchParams: Promise<{ marca?: string; heroi?: string; servico?: string; origem?: string }> };
 
 // 0110: ?marca=&heroi=&servico=<slug> vêm do "próximo negócio" sugerido no clipping (só preenchem; a agência confere).

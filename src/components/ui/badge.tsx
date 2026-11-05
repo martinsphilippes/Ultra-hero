@@ -58,7 +58,7 @@ export function Badge({ variant = "neutral", size = "md", icon, className, child
 
 // Etiqueta de pilar já traduzida.
 // Na parte do consumidor a etiqueta é neutra (a cor vem do conteúdo, não da interface). Os portais de
-// trabalho (admin e herói) ainda usam a cor do pilar para varrer listas: passam tone="pillar".
+// trabalho (admin e Hero) ainda usam a cor do pilar para varrer listas: passam tone="pillar".
 export function PillarBadge({ pillar, tone = "neutral", ...props }: Omit<BadgeProps, "variant" | "children"> & { pillar: Pillar; tone?: "neutral" | "pillar" }) {
   const t = useTranslations("common.pillars");
   return (

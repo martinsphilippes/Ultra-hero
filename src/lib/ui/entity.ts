@@ -91,7 +91,7 @@ export function brandOption(tp: PickerT, b: { id: string; name: string; logoUrl?
   return { value: b.id, name: b.name, role: tp("roles.brand"), avatarUrl: b.logoUrl ?? null, detail: b.detail ?? null };
 }
 
-/** Herói (página pública, creator_profiles) → opção com o endereço da página. */
+/** Hero (página pública, creator_profiles) → opção com o endereço da página. */
 export function heroOption(
   tp: PickerT,
   h: { id: string; name: string; slug?: string | null; avatarUrl?: string | null; detail?: string | null },

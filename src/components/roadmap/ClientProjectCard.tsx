@@ -7,7 +7,7 @@ import { formatPlainDate } from "@/i18n/format";
 import type { ClientProject } from "@/lib/roadmap/queries";
 import { RoadmapProgress } from "./RoadmapProgress";
 
-// Projeto em que o herói é cliente da agência (0107): andamento em dias úteis e só as etapas visíveis ao cliente.
+// Projeto em que o Hero é cliente da agência (0107): andamento em dias úteis e só as etapas visíveis ao cliente.
 export async function ClientProjectCard({ project, limit }: { project: ClientProject; limit?: number }) {
   const [t, tl, locale] = await Promise.all([getTranslations("roadmap.hero"), getTranslations("projectRoom.link"), getLocale() as Promise<Locale>]);
   const nextIndex = project.steps.findIndex((s) => !s.done);
@@ -21,7 +21,7 @@ export async function ClientProjectCard({ project, limit }: { project: ClientPro
             {[project.progress?.service, project.brand, project.agency].filter(Boolean).join(" · ")}
           </span>
         </div>
-        {/* 04/11: o herói aqui é o cliente (contrata a agência), não um herói escalado numa campanha */}
+        {/* 04/11: o Hero aqui é o cliente (contrata a agência), não um Hero escalado numa campanha */}
         <span className="flex flex-wrap gap-1.5">
           <Badge variant="info" size="sm">
             {t("youAreClient")}

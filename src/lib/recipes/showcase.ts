@@ -1,13 +1,13 @@
-// Alimentação na vitrine do herói (Etapa 2, 0051). Regras puras (servidor, navegador e testes):
+// Alimentação na vitrine do Hero (Etapa 2, 0051). Regras puras (servidor, navegador e testes):
 // quem assina a receita, a linha de assinatura, quais ações aparecem e a validação do contador.
 
-/** Pessoa da assinatura (herói): o slug identifica (os cards não trazem o id). */
+/** Pessoa da assinatura (Hero): o slug identifica (os cards não trazem o id). */
 export type ShowcasePerson = { slug: string; name: string; avatar_url: string | null; is_fictional?: boolean };
 
 /**
  * Assinatura escolhida pelo admin (recipe_signers). `undefined` = sem linha (o autor assina, como
  * antes da 0051, e também quando a 0051 não está no banco); `{ chef: null }` = sem chef, só indicada;
- * `{ chef }` = esse herói chef assina (embed nulo = chef fora do ar, tratado como sem chef).
+ * `{ chef }` = esse Hero chef assina (embed nulo = chef fora do ar, tratado como sem chef).
  */
 export type SignerOverride = { chef: ShowcasePerson | null } | undefined;
 
@@ -23,11 +23,11 @@ export type RecipeSignature =
   | { kind: "none"; chef: null; hero: null };
 
 /**
- * Linha de assinatura. O herói da vitrine é o da página de onde a pessoa veio (?vitrine=) ou, sem
+ * Linha de assinatura. O Hero da vitrine é o da página de onde a pessoa veio (?vitrine=) ou, sem
  * ele, o autor (a receita sempre está na vitrine do autor).
- *   chef = herói da vitrine (ou sem herói) → "Receita de <chef>"
- *   chef ≠ herói da vitrine               → "Receita de <chef> · indicada por <herói>"
- *   sem chef                               → "Indicada por <herói>"
+ *   chef = Hero da vitrine (ou sem Hero) → "Receita de <chef>"
+ *   chef ≠ Hero da vitrine               → "Receita de <chef> · indicada por <Hero>"
+ *   sem chef                               → "Indicada por <Hero>"
  */
 export function recipeSignature(input: { author: ShowcasePerson | null; signer: SignerOverride; showcaseHero?: ShowcasePerson | null }): RecipeSignature {
   const chef = effectiveChef(input.author, input.signer);
@@ -79,7 +79,7 @@ export function cardActionVisibility(input: { readyProduct: { purchasable: boole
 // ---------------------------------------------------------------- contador de toques
 export const RECIPE_ACTIONS = ["fazer", "comprar_pronto", "lista_compras"] as const;
 export type RecipeActionKey = (typeof RECIPE_ACTIONS)[number];
-/** Origem do toque: card da Alimentação do herói ou página da receita. */
+/** Origem do toque: card da Alimentação do Hero ou página da receita. */
 export const RECIPE_ACTION_SOURCES = ["alimentacao", "receita"] as const;
 export type RecipeActionSource = (typeof RECIPE_ACTION_SOURCES)[number];
 
@@ -118,7 +118,7 @@ export function createBumpLimiter(max: number, windowMs: number) {
   };
 }
 
-/** Slug de herói vindo da URL (?vitrine=): só o formato de slug; o resto o servidor confere. */
+/** Slug de Hero vindo da URL (?vitrine=): só o formato de slug; o resto o servidor confere. */
 export function parseShowcaseSlug(value: string | string[] | undefined | null): string | null {
   const raw = Array.isArray(value) ? value[0] : value;
   if (typeof raw !== "string") return null;
@@ -143,7 +143,7 @@ export function parseSignerChoice(value: unknown): SignerChoice | null {
   return null;
 }
 
-/** Endereço da receita levando o herói da vitrine (para a assinatura e os contadores). */
+/** Endereço da receita levando o Hero da vitrine (para a assinatura e os contadores). */
 export function showcaseRecipeHref(slug: string, heroSlug: string | null, hash?: string): string {
   const base = heroSlug ? `/content/${slug}?vitrine=${encodeURIComponent(heroSlug)}` : `/content/${slug}`;
   return hash ? `${base}#${hash}` : base;

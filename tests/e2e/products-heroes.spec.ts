@@ -1,7 +1,7 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 // Produtos Ultra.e Life (migração 0021): 7 produtos reais com imagem e link para a loja oficial. A 0021
-// alocava os 7 a TODOS os heróis; a 0052 tira essa alocação em massa e cada herói passa a mostrar só o
+// alocava os 7 a TODOS os Heros; a 0052 tira essa alocação em massa e cada Hero passa a mostrar só o
 // que indica (alocação feita pelo admin + produtos dos próprios conteúdos). Roda contra o banco remoto,
 // com e sem a 0052: cada teste confere o estado que encontrar.
 
@@ -17,7 +17,7 @@ async function hasBlanketAllocation(page: Page): Promise<boolean> {
   return (await page.getByTestId("hero-libraries").getByRole("link").filter({ hasText: "Produtos" }).filter({ hasText: /7 itens/i }).count()) === 1;
 }
 
-/** Conteúdos do próprio herói (grade de posts da página dele). */
+/** Conteúdos do próprio Hero (grade de posts da página dele). */
 async function ownContentHrefs(page: Page, slug: string): Promise<Set<string>> {
   await page.goto(`/personalities/${slug}`);
   await expect(page.getByTestId("hero-stats")).toBeVisible();
@@ -35,9 +35,9 @@ async function expectLoadedImage(img: Locator) {
   await expect.poll(async () => img.evaluate((el) => ((el as HTMLImageElement).complete ? (el as HTMLImageElement).naturalWidth : 0)), { timeout: 15_000 }).toBeGreaterThan(0);
 }
 
-test.describe("produtos do herói", () => {
+test.describe("produtos do Hero", () => {
   // ronaldinho-gaucho: sem vínculo por conteúdo no seed. Com a 0052 não indica produto nenhum: sem atalho.
-  test("com a 0052, herói que não indica produto não mostra o atalho Produtos e a biblioteca fica vazia", async ({ page }) => {
+  test("com a 0052, Hero que não indica produto não mostra o atalho Produtos e a biblioteca fica vazia", async ({ page }) => {
     test.skip(await hasBlanketAllocation(page), "banco sem a 0052 (alocação em massa da 0021)");
     for (const slug of ["ronaldinho-gaucho", "neymar"]) {
       await page.goto(`/personalities/${slug}`);
@@ -51,18 +51,18 @@ test.describe("produtos do herói", () => {
     }
   });
 
-  test("os produtos ligados por conteúdo são só de conteúdos do próprio herói", async ({ page }) => {
+  test("os produtos ligados por conteúdo são só de conteúdos do próprio Hero", async ({ page }) => {
     for (const slug of ["erick-jacquin", "joao-fonseca"]) {
       const own = await ownContentHrefs(page, slug);
       await page.goto(`/personalities/${slug}/produtos`);
       await expect(page.getByRole("heading", { level: 1 })).toHaveText("Produtos");
       const usedIn = await page.getByTestId("library-products").locator('a[href^="/content/"]').evaluateAll((nodes) => nodes.map((n) => n.getAttribute("href") ?? ""));
-      for (const href of usedIn) expect(own.has(href), `${slug}: "usado em" ${href} é do próprio herói`).toBe(true);
+      for (const href of usedIn) expect(own.has(href), `${slug}: "usado em" ${href} é do próprio Hero`).toBe(true);
     }
   });
 
   // ronaldinho-gaucho: sem vínculo por conteúdo no seed; a biblioteca existe só pela alocação direta.
-  test("sem a 0052: herói só com alocação direta mostra os 7 produtos da marca, em ordem e com imagem", async ({ page }) => {
+  test("sem a 0052: Hero só com alocação direta mostra os 7 produtos da marca, em ordem e com imagem", async ({ page }) => {
     test.skip(!(await hasBlanketAllocation(page)), "banco com a 0052: a alocação em massa saiu (teste acima)");
     await page.goto("/personalities/ronaldinho-gaucho");
     await expect(page.getByTestId("hero-stats")).toContainText(/7\s*produtos/i);
@@ -83,13 +83,13 @@ test.describe("produtos do herói", () => {
       // preço real da marca, com o rótulo de demonstração do carrinho de teste
       await expect(card.getByText(/R\$\s?(69,90|89,90)/)).toBeVisible();
       await expect(card.getByText(/preço ilustrativo/i)).toBeVisible();
-      // alocação direta: nenhum "usado em" neste herói
+      // alocação direta: nenhum "usado em" neste Hero
       await expect(card.locator('a[href^="/content/"]')).toHaveCount(0);
     }
   });
 
   // erick-jacquin: tem vínculos validados por conteúdo (seed 0008); sem a 0052, também a alocação em massa.
-  test("herói com produtos ligados por conteúdo: alocação direta primeiro, depois os vinculados, sem repetir", async ({ page }) => {
+  test("Hero com produtos ligados por conteúdo: alocação direta primeiro, depois os vinculados, sem repetir", async ({ page }) => {
     const blanket = await hasBlanketAllocation(page);
     await page.goto("/personalities/erick-jacquin/produtos");
     const cards = productCards(page);
@@ -119,8 +119,8 @@ test.describe("produtos do herói", () => {
   });
 
   test("cada card da Ultra.e Life tem o link da loja oficial em nova aba, sem tirar o carrinho de teste", async ({ page }) => {
-    // com a 0052 nenhum herói do seed indica produto da marca; o link da loja segue coberto na página do produto (abaixo)
-    test.skip(!(await hasBlanketAllocation(page)), "banco com a 0052: nenhum herói com os produtos da marca alocados");
+    // com a 0052 nenhum Hero do seed indica produto da marca; o link da loja segue coberto na página do produto (abaixo)
+    test.skip(!(await hasBlanketAllocation(page)), "banco com a 0052: nenhum Hero com os produtos da marca alocados");
     await page.goto("/personalities/ronaldinho-gaucho/produtos");
     const cards = productCards(page);
     await expect(cards).toHaveCount(7);

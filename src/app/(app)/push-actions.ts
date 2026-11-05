@@ -9,7 +9,7 @@ import { getNativeApp } from "@/lib/native-app/server";
 import { EXPO_PUSH_TOKEN, PUSH_TOKEN_COOKIE } from "@/lib/push/constants";
 import { createClient } from "@/lib/supabase/server";
 
-// Seguir herói (hero_favorites) e push do app das lojas (0054; docs/decisions/push-notifications.md). Regras de
+// Seguir Hero (hero_favorites) e push do app das lojas (0054; docs/decisions/push-notifications.md). Regras de
 // acesso no banco: RLS de hero_favorites, RPC register_push_token, RLS de notification_preferences.
 
 type Result<T extends object = Record<never, never>> = ({ ok: true } & T) | { ok: false; error: string };
@@ -21,7 +21,7 @@ const fail = (error: unknown): { ok: false; error: string } => {
 
 export async function toggleHeroFavorite(input: { creatorId: string; favorite: boolean; path?: string }): Promise<Result<{ favorite: boolean }>> {
   const parsed = z
-    // caminhos onde o botão Seguir aparece (página do herói, aba Hero, Início e Heróis que sigo)
+    // caminhos onde o botão Seguir aparece (página do Hero, aba Hero, Início e Heros que sigo)
     .object({ creatorId: z.uuid(), favorite: z.boolean(), path: z.string().regex(/^\/(personalities(\/[a-z0-9-]+)?|inicio|profile\/herois)$/).optional() })
     .safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
@@ -32,7 +32,7 @@ export async function toggleHeroFavorite(input: { creatorId: string; favorite: b
     const { creatorId, favorite, path } = parsed.data;
     if (favorite) {
       const { error } = await supabase.from("hero_favorites").upsert({ user_id: user.id, creator_id: creatorId }, { onConflict: "user_id,creator_id", ignoreDuplicates: true });
-      // 42501: herói fora do ar (política hero_favorites_insert_own)
+      // 42501: Hero fora do ar (política hero_favorites_insert_own)
       if (error) return error.code === "42501" ? { ok: false, error: "hero_unavailable" } : fail(error.message);
       await trackEvent("favorite.add", { item_type: "hero", item_id: creatorId });
     } else {
@@ -70,7 +70,7 @@ export async function registerPushToken(input: { token: string }): Promise<Resul
   }
 }
 
-// A pessoa aceitou o push no contexto (favoritou um herói, ligou na tela de avisos): liga o canal e
+// A pessoa aceitou o push no contexto (favoritou um Hero, ligou na tela de avisos): liga o canal e
 // os tipos pedidos, sem mexer nos outros.
 export async function enablePush(input: { types: Array<"hero_posts" | "achievements" | "streak_reminders"> }): Promise<Result> {
   const parsed = z.object({ types: z.array(z.enum(["hero_posts", "achievements", "streak_reminders"])).max(3) }).safeParse(input);

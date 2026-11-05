@@ -16,8 +16,8 @@ type Props =
   | { mode: "category"; targetId: string; rows: LibraryTabEditorRow[] }
   | { mode: "hero"; targetId: string; rows: LibraryTabEditorRow[]; inheritedFrom: string | null };
 
-// Editor dos 7 atalhos da página do herói (0050): rótulo pt-BR/en/es, ícone da lista fixa, ordem
-// (subir/descer) e visível. Salva tudo numa ação só. No herói, só o que difere do herdado vira exceção.
+// Editor dos 7 atalhos da página do Hero (0050): rótulo pt-BR/en/es, ícone da lista fixa, ordem
+// (subir/descer) e visível. Salva tudo numa ação só. No Hero, só o que difere do herdado vira exceção.
 export function LibraryTabsEditor(props: Props) {
   const { mode, targetId } = props;
   const t = useTranslations("adminContent.heroCategories.tabs");

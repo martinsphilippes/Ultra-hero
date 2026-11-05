@@ -20,7 +20,7 @@ type Props = {
   isLoggedIn: boolean;
   /** Quantidade já no carrinho (0 se nenhuma). */
   inCart: number;
-  /** Para onde voltar depois do login (biblioteca de produtos do herói). */
+  /** Para onde voltar depois do login (biblioteca de produtos do Hero). */
   nextPath: string;
   /** Origem do interesse (product_interest.source); a lista de compras usa "content_link". */
   source?: InterestSource;

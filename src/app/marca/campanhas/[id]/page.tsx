@@ -156,7 +156,7 @@ export default async function BrandCampaignPage({ params }: Props) {
       </Link>
     </p>
   ) : null;
-  // "Próximo passo" (04/11): a mesma regra da agência e do herói, com o que a marca lê (aceites e entregas da execução)
+  // "Próximo passo" (04/11): a mesma regra da agência e do Hero, com o que a marca lê (aceites e entregas da execução)
   const flowTermsView = flowTerms(execution?.terms);
   const fallbackStage = stageFromBrandStatus(detail.brandStatus);
   const flow: FlowInput = {

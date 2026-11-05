@@ -117,7 +117,7 @@ export function CreatorProfileForm({ initial, avatarUrl, coverUrl, readOnly = fa
         </div>
 
         <div className="flex flex-col gap-5 rounded-2xl border border-border bg-surface p-4 sm:p-5">
-          {/* Um avatar só para o herói: a foto (enviada e removida pelas actions próprias, que já gravam
+          {/* Um avatar só para o Hero: a foto (enviada e removida pelas actions próprias, que já gravam
               o app e a página pública). Sem foto: as iniciais. */}
           <fieldset className="flex min-w-0 flex-col gap-3" data-testid="hero-avatar">
             <legend className="text-base font-semibold text-fg">{t("avatarTitle")}</legend>

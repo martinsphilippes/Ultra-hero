@@ -2,7 +2,7 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 
-// Estado confirmado do seguir por herói, compartilhado na aba: o mesmo herói aparece em vários
+// Estado confirmado do seguir por Hero, compartilhado na aba: o mesmo Hero aparece em vários
 // posts do feed e todos os botões dele mudam juntos. Some ao recarregar (o servidor é a fonte).
 const confirmed = new Map<string, boolean>();
 const listeners = new Set<() => void>();
@@ -25,7 +25,7 @@ export function useConfirmedFollow(creatorId: string, initial: boolean): boolean
   return useSyncExternalStore(subscribe, get, () => initial);
 }
 
-/** Leitura de vários heróis de uma vez (re-renderiza a cada mudança confirmada). */
+/** Leitura de vários Heros de uma vez (re-renderiza a cada mudança confirmada). */
 export function useFollowLookup(): (creatorId: string, initial: boolean) => boolean {
   const v = useSyncExternalStore(subscribe, () => version, () => 0);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- a versão invalida a leitura

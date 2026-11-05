@@ -1,5 +1,5 @@
 // Novos cadastros por autosserviço (0103, admin_self_signups): leitura pura do retorno e o atalho de cada um para as
-// telas do admin que já existem (agência: lista com editar/suspender; marca: ficha; herói: ficha com aprovar/suspender).
+// telas do admin que já existem (agência: lista com editar/suspender; marca: ficha; Hero: ficha com aprovar/suspender).
 export type SelfSignupKind = "agency" | "brand" | "hero";
 export type SelfSignupRow = {
   id: string;
@@ -36,7 +36,7 @@ export function parseSelfSignups(data: unknown): SelfSignupRow[] {
   });
 }
 
-/** Onde o admin vê/suspende (ou aprova, no herói) o que nasceu. Sem resultado ainda: nenhum. */
+/** Onde o admin vê/suspende (ou aprova, no Hero) o que nasceu. Sem resultado ainda: nenhum. */
 export function adminHrefFor(row: Pick<SelfSignupRow, "kind" | "resultId">): string | null {
   if (!row.resultId) return null;
   if (row.kind === "agency") return "/admin/agencia";

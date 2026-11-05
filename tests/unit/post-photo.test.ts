@@ -12,7 +12,7 @@ import { fitLongEdge, mediaKindOf, pickOptions, validatePhotoSource, validatePos
 // validações (arquivo escolhido e bytes no servidor), caminhos do bucket, o que conta como "post com
 // foto", a ordem das etapas das actions (reservar → gravar → rascunho → corpo), o desfazer em cada
 // falha, o editor mantendo a foto e a limpeza diária. As regras do banco (dono da foto, cota, kill
-// switch, herói ativo, uma foto por corpo) são testadas de verdade no S55 do RLS.
+// switch, Hero ativo, uma foto por corpo) são testadas de verdade no S55 do RLS.
 
 const BASE = "https://proj.supabase.co";
 const ids = vi.hoisted(() => ({
@@ -139,9 +139,9 @@ vi.mock("@/lib/auth/session", () => ({
   hasRole: async (role: string) => (role === "admin" ? state.isAdmin : role === "creator" && state.isCreator),
   getRoles: async () => (state.isCreator ? [{ role: "creator", scope_type: "creator" }] : []),
 }));
-// admin agindo pelo herói escolhido (0045): o herói vem do cookie revalidado no banco
+// admin agindo pelo Hero escolhido (0045): o Hero vem do cookie revalidado no banco
 vi.mock("@/lib/acting-hero/server", () => ({
-  getActingHero: async () => ((state.creatorId ? { status: "ok", hero: { id: state.creatorId, slug: "heroi", name: "Herói", avatar_url: null } } : { status: "none" })),
+  getActingHero: async () => ((state.creatorId ? { status: "ok", hero: { id: state.creatorId, slug: "heroi", name: "Hero", avatar_url: null } } : { status: "none" })),
   actingClient: async () => (await import("@/lib/supabase/server")).createClient(),
 }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => client("user") }));
@@ -292,7 +292,7 @@ describe("startPhotoPost", () => {
     expect(state.log.filter((l) => l.includes("claim"))).toEqual([]);
   });
 
-  it("sem sessão de herói, sem service role ou banco sem a 0043: nada é gravado", async () => {
+  it("sem sessão de Hero, sem service role ou banco sem a 0043: nada é gravado", async () => {
     state.isCreator = false;
     expect(await startPhotoPost(form(webp(800, 600)))).toEqual({ ok: false, error: "forbidden" });
     state.isCreator = true;
@@ -347,7 +347,7 @@ describe("publishPhotoPost", () => {
     expect(state.log.filter((l) => l.startsWith("user:rpc:creator_"))).toEqual(["user:rpc:creator_set_draft_slug", "user:rpc:creator_publish_content"]);
   });
 
-  it("conteúdo de outro herói, sem foto no corpo ou sem título: nada é gravado", async () => {
+  it("conteúdo de outro Hero, sem foto no corpo ou sem título: nada é gravado", async () => {
     state.content = { ...state.content, creator_id: ids.OTHER };
     expect(await publishPhotoPost(PUBLISH)).toEqual({ ok: false, error: "forbidden" });
     state.content = { ...state.content, creator_id: ids.CREATOR };
@@ -432,7 +432,7 @@ describe("editor de conteúdo com post de foto", () => {
   });
 
   it("salvar mantém a foto do rascunho; trocar por outra é recusado; criar com foto só pelo composer", async () => {
-    // editor de conteúdo: só o admin, pelo herói escolhido (0045)
+    // editor de conteúdo: só o admin, pelo Hero escolhido (0045)
     state.isAdmin = true;
     expect(await updateContent(values(PATH))).toEqual({ ok: true, id: ids.CONTENT });
     expect(state.writes.find((w) => w.op === "upsert")?.payload).toMatchObject({ media_provider: "upload", media_ref: PATH });

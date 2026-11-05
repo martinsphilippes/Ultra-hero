@@ -5,7 +5,7 @@ import type { Database } from "@/lib/supabase/database.types";
 import { COVER_BUCKET } from "./constants";
 import { publicCoverUrl, storedCoverPath } from "./paths";
 
-// Operações de Storage da capa do herói (0042), sempre com o service role (o bucket não aceita
+// Operações de Storage da capa do Hero (0042), sempre com o service role (o bucket não aceita
 // escrita pela API com JWT de usuário). Mesmo desenho da foto de perfil (lib/avatar/server).
 
 type Admin = SupabaseClient<Database>;
@@ -29,7 +29,7 @@ export async function markCoverDeleted(admin: Admin, path: string): Promise<void
 }
 
 /**
- * Tira a capa do ar: primeiro limpa a referência no perfil do herói, depois apaga o objeto e marca o
+ * Tira a capa do ar: primeiro limpa a referência no perfil do Hero, depois apaga o objeto e marca o
  * envio. Se o Storage falhar, o envio fica pendente sem referência e a limpeza diária tenta de novo.
  */
 export async function releaseStoredCover(admin: Admin, input: { url: string; baseUrl: string }): Promise<{ unlinked: boolean; deleted: boolean }> {

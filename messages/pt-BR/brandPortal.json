@@ -3,8 +3,8 @@
   "meta": {
     "dashboard": "Marca",
     "team": "Equipe da marca",
-    "creators": "Heróis",
-    "creator": "Herói",
+    "creators": "Heros",
+    "creator": "Hero",
     "campaigns": "Campanhas",
     "newCampaign": "Nova proposta",
     "campaign": "Campanha",
@@ -34,7 +34,7 @@
         "body": "Briefing em 5 passos e o andamento de cada campanha."
       },
       "creators": {
-        "title": "Busca de heróis",
+        "title": "Busca de Heros",
         "body": "Catálogo autorizado, com os critérios de cada sugestão."
       },
       "approvals": {
@@ -47,19 +47,19 @@
       }
     },
     "newCampaign": "Nova proposta",
-    "seeCreators": "Buscar heróis",
+    "seeCreators": "Buscar Heros",
     "seeCampaigns": "Ver campanhas",
     "approvalsNote": "Termos, roteiros e entregas para aprovar ficam dentro de cada campanha.",
-    "suggestedTitle": "Heróis sugeridos pela agência",
+    "suggestedTitle": "Heros sugeridos pela agência",
     "suggestedHint": "Confirmados ou contratados nas suas campanhas abertas, com os dados que autorizaram mostrar.",
-    "suggestedNone": "Nenhum herói confirmado nas campanhas abertas ainda.",
+    "suggestedNone": "Nenhum Hero confirmado nas campanhas abertas ainda.",
     "nextEventsTitle": "Próximas datas",
     "nextEventsNone": "Nenhuma data publicada nos próximos dias.",
     "seeAgenda": "Ver agenda",
     "proposeOnDay": "Proposta neste dia",
     "proposeOnDayLabel": "Nova proposta para {date}",
     "shortcuts": {
-      "heroes": "Heróis",
+      "heroes": "Heros",
       "campaigns": "Campanhas",
       "team": "Equipe",
       "label": "Atalhos da marca"
@@ -79,12 +79,12 @@
     "inviteRevoked": "Convite revogado."
   },
   "creators": {
-    "title": "Heróis",
-    "description": "Heróis da agência {agency} disponíveis para sua marca.",
+    "title": "Heros",
+    "description": "Heros da agência {agency} disponíveis para sua marca.",
     "descriptionNoAgency": "Sua marca ainda não está ligada a uma agência.",
     "filters": {
       "search": "Buscar",
-      "searchPlaceholder": "Nome do herói",
+      "searchPlaceholder": "Nome do Hero",
       "segment": "Segmento",
       "all": "Todos",
       "state": "UF",
@@ -98,10 +98,10 @@
       "available": "Disponível",
       "limited": "Agenda limitada"
     },
-    "sourceNote": "Métricas declaradas pelo herói ou pela agência, sempre com a data do dado. Sem valores: a proposta comercial é feita com a agência.",
-    "emptyFiltered": "Nenhum herói com estes filtros.",
-    "empty": "Nenhum herói liberado no catálogo ainda.",
-    "emptyHint": "A agência libera os heróis conforme o consentimento de cada um.",
+    "sourceNote": "Métricas declaradas pelo Hero ou pela agência, sempre com a data do dado. Sem valores: a proposta comercial é feita com a agência.",
+    "emptyFiltered": "Nenhum Hero com estes filtros.",
+    "empty": "Nenhum Hero liberado no catálogo ainda.",
+    "emptyHint": "A agência libera os Heros conforme o consentimento de cada um.",
     "unavailable": "Catálogo em atualização",
     "unavailableHint": "O catálogo aparece assim que o banco for atualizado.",
     "noHeadline": "Sem chamada",
@@ -120,13 +120,13 @@
     "networksTitle": "Redes e métricas declaradas",
     "brandsTitle": "Marcas que já acompanham",
     "availabilityTitle": "Disponibilidade comercial",
-    "availabilityHint": "Períodos declarados pelo herói ou pela agência. A agenda privada nunca aparece.",
+    "availabilityHint": "Períodos declarados pelo Hero ou pela agência. A agenda privada nunca aparece.",
     "noPeriods": "Nenhum período declarado. Pergunte à agência na proposta.",
     "blocked": "indisponível",
     "representedBy": "Representado por {agency}.",
     "consentMissing": "sem consentimento (kit indisponível)",
     "shortlistsLink": "Pré-seleção",
-    "compareHint": "Marque de 2 a 4 heróis para comparar lado a lado.",
+    "compareHint": "Marque de 2 a 4 Heros para comparar lado a lado.",
     "consentNote": "Só aparece quem autorizou estar no catálogo, com os dados que o media kit libera."
   },
   "campaigns": {
@@ -145,29 +145,29 @@
     "startsOn": "início {date}",
     "updatedAt": "atualizada em {date}",
     "newTitle": "Nova proposta de campanha",
-    "newDescription": "Vai para {agency}, que analisa, consulta os heróis e confirma com você. Salve como rascunho quando quiser.",
+    "newDescription": "Vai para {agency}, que analisa, consulta os Heros e confirma com você. Salve como rascunho quando quiser.",
     "untitled": "Proposta sem título",
     "submittedAt": "Enviada em {date}",
     "stepsLabel": "Andamento",
     "sections": {
       "summary": "Resumo da proposta",
       "messages": "Conversa com a agência",
-      "talents": "Heróis",
+      "talents": "Heros",
       "deliverables": "Entregas",
       "attachments": "Anexos do briefing",
       "terms": "Termos da campanha",
       "approvals": "Roteiros para aprovar"
     },
-    "requestedTalent": "Herói escolhido por você",
+    "requestedTalent": "Hero escolhido por você",
     "talentStatus": {
       "proposed": "Confirmado pela agência",
       "contracted": "Contratado"
     },
-    "talentsPending": "A agência está consultando os heróis. Você vê o elenco confirmado assim que a campanha for aprovada.",
-    "talentsNone": "Nenhum herói nesta campanha.",
+    "talentsPending": "A agência está consultando os Heros. Você vê o elenco confirmado assim que a campanha for aprovada.",
+    "talentsNone": "Nenhum Hero nesta campanha.",
     "deliverablesNone": "As entregas aparecem depois da confirmação.",
     "dueAt": "prazo {date}",
-    "agencyNote": "Valores, contratos e a negociação com os heróis ficam com a agência.",
+    "agencyNote": "Valores, contratos e a negociação com os Heros ficam com a agência.",
     "seeCatalog": "Ver catálogo",
     "form": {
       "blocks": {
@@ -177,7 +177,7 @@
         "deliverables": "4. Redes e entregáveis",
         "budget": "5. Valor e observações"
       },
-      "forCreator": "Proposta endereçada a {name}. A agência pode sugerir outros heróis.",
+      "forCreator": "Proposta endereçada a {name}. A agência pode sugerir outros Heros.",
       "title": "Nome da campanha",
       "objective": "Objetivo",
       "product": "Produto ou serviço",
@@ -214,7 +214,7 @@
       "submit": "Enviar à agência",
       "incompleteHint": "Para enviar: título, objetivo, data de início, uma rede e um entregável.",
       "confirmTitle": "Enviar a proposta?",
-      "confirmHint": "A agência recebe o briefing e começa a consultar os heróis. Você acompanha o andamento aqui e pode cancelar enquanto não houver confirmação.",
+      "confirmHint": "A agência recebe o briefing e começa a consultar os Heros. Você acompanha o andamento aqui e pode cancelar enquanto não houver confirmação.",
       "back": "Voltar",
       "budgetInvalid": "Informe o valor como 15.000,00.",
       "incomplete": "Falta algo: título, objetivo, data de início, uma rede e um entregável.",
@@ -223,8 +223,8 @@
       "budgetNegotiatingHint": "Patrocínio: o valor sai da negociação na oportunidade.",
       "budgetNegotiatingPlaceholder": "A combinar",
       "valueErrors": {
-        "value_per_hero_required": "No valor por herói, informe quanto cada herói recebe.",
-        "max_heroes_required": "No valor por herói, informe o máximo de heróis (de 1 a 50)."
+        "value_per_hero_required": "No valor por Hero, informe quanto cada Hero recebe.",
+        "max_heroes_required": "No valor por Hero, informe o máximo de Heros (de 1 a 50)."
       },
       "groups": {
         "item": "Entregável {n}",
@@ -237,7 +237,7 @@
         "networkRequired": "Escolha pelo menos uma rede.",
         "rowProblem": "Entregável {n}: {problem}",
         "tooMany": "São {count} combinações de tipo e rede; o máximo é {max}. Tire alguns tipos ou redes.",
-        "tooManyTotal": "Somando todos os heróis, a proposta tem {count} combinações diferentes de tipo e rede; o máximo é {max}."
+        "tooManyTotal": "Somando todos os Heros, a proposta tem {count} combinações diferentes de tipo e rede; o máximo é {max}."
       }
     },
     "cancel": {
@@ -260,7 +260,7 @@
     "unavailableHint": "A agenda aparece assim que o banco for atualizado.",
     "empty": "Nada neste mês.",
     "emptyHint": "Quando uma campanha for confirmada, ela entra aqui com as datas de publicação.",
-    "note": "Prazos internos de produção e a agenda dos heróis não aparecem: só o que vale para a marca."
+    "note": "Prazos internos de produção e a agenda dos Heros não aparecem: só o que vale para a marca."
   },
   "budget": {
     "title": "Verba",
@@ -281,17 +281,17 @@
     },
     "committedHint": "O que a marca paga pelos contratados (sem cachê e taxa separados).",
     "paymentDue": "Pagamento à agência previsto para {date}",
-    "byTalent": "Por herói",
+    "byTalent": "Por Hero",
     "talentProposed": "Em proposta",
     "talentContracted": "Contratado",
-    "noTalents": "Nenhum herói proposto ainda.",
+    "noTalents": "Nenhum Hero proposto ainda.",
     "edit": "Definir verba",
     "editTalent": "Definir verba de {name}",
     "editTitle": "Verba da campanha",
     "editTalentTitle": "Verba · {name}",
     "amount": "Valor (R$)",
     "amountHint": "Em branco volta ao que foi informado à agência.",
-    "amountTalentHint": "Em branco tira a verba deste herói.",
+    "amountTalentHint": "Em branco tira a verba deste Hero.",
     "amountInvalid": "Valor inválido. Use o formato 15.000,00.",
     "save": "Salvar",
     "cancel": "Cancelar",
@@ -302,7 +302,7 @@
     "overviewHint": "Reservado, comprometido e pago em todas as campanhas enviadas.",
     "overviewEmpty": "Nenhuma campanha com verba ou contratação ainda.",
     "overCount": "{count, plural, one {# campanha passou da verba} other {# campanhas passaram da verba}}",
-    "talentsOver": "{count, plural, one {# herói acima da verba} other {# heróis acima da verba}}",
+    "talentsOver": "{count, plural, one {# Hero acima da verba} other {# Heros acima da verba}}",
     "seeCampaign": "Ver campanha",
     "lockedHint": "Verba definida fica travada. Para mudar, use “Pedir alteração de verba”: a agência avalia e o dono confirma."
   }

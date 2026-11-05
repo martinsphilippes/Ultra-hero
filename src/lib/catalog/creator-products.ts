@@ -67,7 +67,7 @@ export type CreatorProductDirectRow<P extends { id: string }> = {
 };
 
 /**
- * Une as duas origens da aba Produtos do herói: alocações diretas validadas (ordem de sort_order,
+ * Une as duas origens da aba Produtos do Hero: alocações diretas validadas (ordem de sort_order,
  * desempate pela ordem de chegada) primeiro, depois os produtos vinculados por conteúdo que ainda
  * não apareceram. Produto repetido entre as origens conta uma vez e mantém o "usado em" do vínculo.
  * Linhas sem produto (RLS escondeu, arquivado) ou com status diferente de validated são ignoradas.

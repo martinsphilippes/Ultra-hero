@@ -35,7 +35,7 @@ export function recipeMediaPath(creatorId: string, contentId: string, fileId: st
   return `${creatorId}/${contentId}/${fileId}.${extForMime(mime)}`;
 }
 
-/** Caminho válido para este herói e esta receita? (ids em minúsculas, como o Postgres grava uuid) */
+/** Caminho válido para este Hero e esta receita? (ids em minúsculas, como o Postgres grava uuid) */
 export function parseRecipeMediaPath(path: string): { creatorId: string; contentId: string; fileId: string; mime: RecipeImageMime } | null {
   const m = PATH_RE.exec(path);
   if (!m) return null;

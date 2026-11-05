@@ -1,9 +1,9 @@
--- 0020: feed do Explorar em grade (estilo Instagram): ordem com variedade de heróis e rotação por semente.
--- Cada "rodada" traz no máximo um post por herói: row_number() por creator_id, embaralhado pela semente.
+-- 0020: feed do Explorar em grade (estilo Instagram): ordem com variedade de Heros e rotação por semente.
+-- Cada "rodada" traz no máximo um post por Hero: row_number() por creator_id, embaralhado pela semente.
 -- A ordem é determinística para a mesma semente, então a rolagem infinita (offset) não repete nem pula
 -- posts. A semente muda por dia no app; com texto de busca o app usa search_content (relevância).
 -- Security invoker: a política content_select já libera só o que está publicado e no ar; a função
--- repete o filtro content_is_live para admins e heróis não verem rascunhos aqui.
+-- repete o filtro content_is_live para admins e Heros não verem rascunhos aqui.
 create or replace function public.explore_feed(
   p_pillar public.pillar default null,
   p_type public.content_type default null,

@@ -71,7 +71,7 @@ export async function syncTimezone(input: { timezone: string }): Promise<Result>
 // (avatar-actions): aqui ela só é aceita se já é a atual da própria pessoa (salvar sem trocar).
 // Ilustração não é mais aceita como valor novo. avatarUrl ausente = a pessoa não mexeu no avatar:
 // o do banco fica (a tela Dados nunca o envia: foto entra e sai pelo envio/remoção).
-// Herói ativo (papel e perfil ativo vinculado): um avatar só, então um avatar que chegue aqui (POST
+// Hero ativo (papel e perfil ativo vinculado): um avatar só, então um avatar que chegue aqui (POST
 // direto, aba antiga) vale também no perfil público. Ordem: app primeiro, depois o perfil público; se
 // a segunda falhar, o avatar do app volta ao anterior e a tela avisa (os dois nunca ficam diferentes).
 export async function updateProfile(input: { displayName: string; avatarUrl?: string | null; locale: string; theme: string }): Promise<Result> {
@@ -107,7 +107,7 @@ export async function updateProfile(input: { displayName: string; avatarUrl?: st
       previous = current?.avatar_url ?? null;
       next = parsed.data.avatarUrl ?? null;
       if (!acceptsAvatarChoice(next, previous, user.id, base)) return { ok: false, error: "invalid_input" };
-      // mesma regra da tela: herói (ou admin) com o perfil ativo tem um avatar só
+      // mesma regra da tela: Hero (ou admin) com o perfil ativo tem um avatar só
       if (linked && linked.status === "active" && heroProfileFor(heroRoleNames(roles), linked)) hero = { id: linked.id, avatar_url: linked.avatar_url };
     }
     const { error } = await supabase
@@ -126,7 +126,7 @@ export async function updateProfile(input: { displayName: string; avatarUrl?: st
         return { ok: false, error: "avatar_not_saved" };
       }
     }
-    // Tirou a foto (null): ela sai do ar também no perfil de herói.
+    // Tirou a foto (null): ela sai do ar também no perfil de Hero.
     const released = avatarChanged ? Array.from(new Set([previous, hero?.avatar_url ?? null])).filter((url): url is string => url !== next && storedAvatarOwner(url, base) === user.id) : [];
     if (base && released.length > 0 && hasAdminClient()) {
       const admin = createAdminClient();
@@ -253,7 +253,7 @@ export async function deleteAccount(input: { confirmation: string }): Promise<Re
     const supabase = await createClient();
     // Evento antes da exclusão (depois ele é desvinculado pela anonimização).
     await trackEvent("account.delete", { self_service: true });
-    // Fotos de perfil e capa de herói próprias lidas antes (depois o perfil some e o herói fica sem usuário).
+    // Fotos de perfil e capa de Hero próprias lidas antes (depois o perfil some e o Hero fica sem usuário).
     const base = supabaseBaseUrl();
     let photos: string[] = [];
     let cover: string | null = null;
@@ -268,7 +268,7 @@ export async function deleteAccount(input: { confirmation: string }): Promise<Re
     const { error } = await supabase.rpc("delete_my_account");
     if (error) return fail(error.message);
     // Só depois da exclusão confirmada (exclusão bloqueada não perde a foto): a foto sai do Storage e
-    // do perfil público do herói, que fica no ar sem usuário. Melhor esforço: o envio ficou sem dono
+    // do perfil público do Hero, que fica no ar sem usuário. Melhor esforço: o envio ficou sem dono
     // (user_id nulo) e a limpeza diária apaga o que falhar aqui.
     if (base && (photos.length > 0 || cover)) {
       try {

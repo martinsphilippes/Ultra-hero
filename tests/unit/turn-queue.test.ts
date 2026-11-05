@@ -117,7 +117,7 @@ describe("adaptadores (linhas em lote → FlowInput)", () => {
     expect(buildTurnQueue("brand", [brandSource(c, rows, { isOwner: true, canAct: true })], { today: TODAY, timeZone: TZ })[0]).toMatchObject({ step: { code: "answerCounter" } });
   });
 
-  it("herói: convite a responder, termos a aceitar e entrega a criar", () => {
+  it("Hero: convite a responder, termos a aceitar e entrega a criar", () => {
     const base = { respondBy: "2026-11-07", consultedAt: "2026-11-01T00:00:00Z", brandName: "Marca X", deliverables: [] };
     const invite = heroSource({ ...base, id: "dt1", status: "consulted", deal: { id: "deal-1", title: "Verão", status: "open" } }, { terms: [], acceptances: [] }, false);
     const terms = heroSource(

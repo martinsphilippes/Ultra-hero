@@ -17,7 +17,7 @@ type Props = {
   className?: string;
 };
 
-// Capa de quadro/post (grade do herói, Explorar, feed do Início). Sem capa, ou se a capa falha
+// Capa de quadro/post (grade do Hero, Explorar, feed do Início). Sem capa, ou se a capa falha
 // (miniatura do Stream fora do ar, arquivo apagado), mostra o placeholder da marca do pilar e, em
 // vídeo, um play no centro: nunca um quadrado vazio. Client component por causa do onError.
 export function CoverImage({ src, pillar, video, sizes, priority, className }: Props) {

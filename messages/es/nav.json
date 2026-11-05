@@ -8,7 +8,7 @@
   },
   "portals": {
     "admin": "Admin",
-    "creator": "Héroe",
+    "creator": "Hero",
     "seller": "Proveedor",
     "professional": "Profesional",
     "agency": "Agencia",
@@ -19,8 +19,8 @@
     "dashboard": "Panel",
     "users": "Usuarios",
     "invitations": "Invitaciones",
-    "creators": "Héroes",
-    "heroCategories": "Categorías de héroes",
+    "creators": "Heros",
+    "heroCategories": "Categorías de Heros",
     "sellers": "Proveedores",
     "content": "Contenidos",
     "programs": "Programas",
@@ -94,7 +94,7 @@
   "portalLabel": "Portal",
   "portalDescription": {
     "admin": "Administración de Groscove Ultra",
-    "creator": "Portal del Héroe",
+    "creator": "Portal del Hero",
     "seller": "Área del proveedor",
     "professional": "Área del profesional",
     "agency": "Centro de trabajo de la agencia",
@@ -104,7 +104,7 @@
   "backToProfile": "Perfil",
   "agency": {
     "dashboard": "Inicio",
-    "heroes": "Héroes",
+    "heroes": "Heros",
     "brands": "Marcas",
     "notifications": "Avisos y mensajes",
     "settings": "Configuración",
@@ -125,7 +125,7 @@
     "notifications": "Avisos y mensajes",
     "campaigns": "Campañas",
     "library": "Biblioteca",
-    "catalog": "Héroes",
+    "catalog": "Heros",
     "agenda": "Agenda",
     "sponsorships": "Patrocinios",
     "payments": "Pagos"

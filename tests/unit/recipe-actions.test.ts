@@ -3,8 +3,8 @@ import { createRecipeDraft, deleteRecipeDraft, duplicateRecipe, publishRecipe, r
 import { cleanupRecipeOrphans } from "@/app/api/cron/_lib/recipe-orphans";
 import { buildPayload, emptyDraft } from "@/lib/recipes/draft";
 
-// Actions do Portal do Chef sem Next, Supabase nem Cloudflare: desde a 0045 é o admin agindo pelo herói
-// escolhido (o herói vem do cookie revalidado, nunca do cliente); erros do
+// Actions do Portal do Chef sem Next, Supabase nem Cloudflare: desde a 0045 é o admin agindo pelo Hero
+// escolhido (o Hero vem do cookie revalidado, nunca do cliente); erros do
 // banco viram códigos (stale_draft, recipe_incomplete com os itens, invalid_payload com o caminho),
 // os dois modos de revisão escolhem a RPC certa, a foto com bytes que não batem é apagada e a
 // exclusão do rascunho limpa o Storage. Também a limpeza diária das fotos órfãs.
@@ -42,9 +42,9 @@ vi.mock("next-intl/server", () => ({
   getLocale: async () => "pt-BR",
 }));
 vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user, hasRole: async (r: string) => (r === "admin" ? state.isAdmin : r === "creator" && state.isCreator) }));
-// admin agindo pelo herói escolhido (0045): o herói vem do cookie revalidado no banco
+// admin agindo pelo Hero escolhido (0045): o Hero vem do cookie revalidado no banco
 vi.mock("@/lib/acting-hero/server", () => ({
-  getActingHero: async () => ((state.creatorId ? { status: "ok", hero: { id: state.creatorId, slug: "heroi", name: "Herói", avatar_url: null } } : { status: "none" })),
+  getActingHero: async () => ((state.creatorId ? { status: "ok", hero: { id: state.creatorId, slug: "heroi", name: "Hero", avatar_url: null } } : { status: "none" })),
   actingClient: async () => (await import("@/lib/supabase/server")).createClient(),
 }));
 vi.mock("@/lib/supabase/admin", () => ({
@@ -185,14 +185,14 @@ describe("saveRecipe", () => {
     expect(await saveRecipe({ id: ids.CONTENT, payload: bad, expectedUpdatedAt: UPDATED })).toEqual({ ok: false, error: "invalid_payload", detail: "categories.0" });
     expect(calls("recipe_save")).toHaveLength(0);
   });
-  it("receita de outro herói ou conteúdo que não é receita: recusa sem chamar a RPC", async () => {
+  it("receita de outro Hero ou conteúdo que não é receita: recusa sem chamar a RPC", async () => {
     state.content = ownDraftRow({ creator_id: ids.OTHER });
     expect(await saveRecipe({ id: ids.CONTENT, payload: payload(), expectedUpdatedAt: UPDATED })).toEqual({ ok: false, error: "forbidden" });
     state.content = ownDraftRow({ type: "article" });
     expect(await saveRecipe({ id: ids.CONTENT, payload: payload(), expectedUpdatedAt: UPDATED })).toEqual({ ok: false, error: "not_recipe" });
     expect(calls("recipe_save")).toHaveLength(0);
   });
-  it("sem sessão de herói", async () => {
+  it("sem sessão de Hero", async () => {
     state.user = null;
     expect(await saveRecipe({ id: ids.CONTENT, payload: payload(), expectedUpdatedAt: UPDATED })).toEqual({ ok: false, error: "unauthenticated" });
   });
@@ -261,7 +261,7 @@ describe("registerRecipeMedia: bytes mágicos e limpeza do Storage", () => {
     expect(state.removed).toEqual([[path]]);
     expect(calls("recipe_register_media")).toHaveLength(0);
   });
-  it("caminho de outro herói ou de outra receita: invalid_path", async () => {
+  it("caminho de outro Hero ou de outra receita: invalid_path", async () => {
     expect(await registerRecipeMedia({ ...input, path: `${ids.OTHER}/${ids.CONTENT}/${ids.FILE}.webp` })).toEqual({ ok: false, error: "invalid_path" });
     expect(await registerRecipeMedia({ ...input, path: "../../etc/passwd" })).toEqual({ ok: false, error: "invalid_path" });
   });
@@ -322,7 +322,7 @@ describe("excluir e duplicar", () => {
     expect(await deleteRecipeDraft({ id: ids.CONTENT })).toEqual({ ok: false, error: "delete_unavailable" });
     expect(calls("creator_delete_recipe_draft")).toHaveLength(0);
   });
-  it("receita de outro herói: forbidden sem chamar a RPC", async () => {
+  it("receita de outro Hero: forbidden sem chamar a RPC", async () => {
     state.content = ownDraftRow({ creator_id: ids.OTHER });
     expect(await deleteRecipeDraft({ id: ids.CONTENT })).toEqual({ ok: false, error: "forbidden" });
     expect(calls("creator_delete_recipe")).toHaveLength(0);

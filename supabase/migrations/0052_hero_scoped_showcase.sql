@@ -1,23 +1,23 @@
 -- =============================================================================
--- Ultra Hero · 0052 · Página do herói só com o que é do herói
---   Pedido do dono: ao abrir um herói, Programas e Produtos mostram só o que é dele.
---   1) Programas: etapa de programa de herói só com conteúdo do próprio herói. Limpa as etapas
---      herdadas da troca dos heróis fictícios pelos reais (0044), que ficaram com conteúdo de outro
---      herói, e um gatilho impede que voltem (inserir/trocar etapa, substituição, trocar o herói).
---   2) Produtos: remove as alocações em massa da 0021 (os 7 produtos Ultra.e Life em TODO herói).
---      Fica só o que foi alocado de propósito (por admin ou sugerido pelo herói) + os produtos
---      vinculados aos conteúdos do próprio herói (content_product_links, já filtrados no app).
+-- Ultra Hero · 0052 · Página do Hero só com o que é do Hero
+--   Pedido do dono: ao abrir um Hero, Programas e Produtos mostram só o que é dele.
+--   1) Programas: etapa de programa de Hero só com conteúdo do próprio Hero. Limpa as etapas
+--      herdadas da troca dos Heros fictícios pelos reais (0044), que ficaram com conteúdo de outro
+--      Hero, e um gatilho impede que voltem (inserir/trocar etapa, substituição, trocar o Hero).
+--   2) Produtos: remove as alocações em massa da 0021 (os 7 produtos Ultra.e Life em TODO Hero).
+--      Fica só o que foi alocado de propósito (por admin ou sugerido pelo Hero) + os produtos
+--      vinculados aos conteúdos do próprio Hero (content_product_links, já filtrados no app).
 --   (Treinos = só conteúdo do tipo workout é regra do app: src/lib/catalog/creator-libraries.ts.)
 --
 -- Por que apagar as etapas na própria versão em vez de criar uma versão nova:
 --   - nada referencia program_items por id (substituições usam versão + conteúdo; progresso é por
 --     conteúdo em completions; certificado guarda um snapshot); apagar não quebra chave nenhuma;
 --   - inscrição fica presa à versão: uma versão nova deixaria quem já está inscrito vendo as etapas
---     de outro herói; limpando a versão, todo mundo passa a ver só as etapas do herói;
+--     de outro Hero; limpando a versão, todo mundo passa a ver só as etapas do Hero;
 --   - para o inscrito só sai etapa (nenhuma entra): ninguém perde progresso, concluir fica igual ou
 --     mais fácil; certificado já emitido não muda;
 --   - versão nova também exigiria copiar traduções (program_localizations) e conceito por versão.
---   Programa arquivado não é tocado (programas dos heróis removidos na 0044 continuam como estão,
+--   Programa arquivado não é tocado (programas dos Heros removidos na 0044 continuam como estão,
 --   para a remoção seguir reversível); vale para rascunho e publicado, em todas as versões.
 --   Posições são renumeradas 1..n na ordem atual. Substituições cujo item original saiu também saem.
 --   Cada programa limpo ganha um registro em admin_audit (ator system) com o que saiu.
@@ -25,13 +25,13 @@
 -- Alocações da 0021 = linhas de creator_products sem autor (created_by nulo), nunca validadas por
 --   alguém (validated_by nulo), validadas, de produto Ultra.e Life e SEM nenhum registro em
 --   admin_audit para a linha (toda alocação do admin passa por admin_set_creator_product, que audita).
---   Suspensas da 0044 (heróis removidos) ficam. Um registro de auditoria por herói com o que saiu.
+--   Suspensas da 0044 (Heros removidos) ficam. Um registro de auditoria por Hero com o que saiu.
 --
 -- Gatilhos security definer com search_path fixo e sem execute para anon/authenticated (a lista do
 --   S14 continua com 17 funções para o visitante). Idempotente: reaplicar não apaga nem audita nada.
 -- =============================================================================
 
--- ---------------------------------------------------------------- 1) etapas de outro herói
+-- ---------------------------------------------------------------- 1) etapas de outro Hero
 do $$
 declare
   r record;
@@ -84,13 +84,13 @@ begin
       jsonb_build_object('remaining_by_version', (
         select coalesce(jsonb_object_agg(v.id, (select count(*) from public.program_items pi where pi.version_id = v.id)), '{}'::jsonb)
         from public.program_versions v where v.program_id = r.program_id)),
-      '0052: programa do herói só com conteúdos do próprio herói (etapas herdadas da troca de heróis da 0044)',
+      '0052: programa do Hero só com conteúdos do próprio Hero (etapas herdadas da troca de Heros da 0044)',
       'system');
   end loop;
 end $$;
 
--- ---------------------------------------------------------------- 2) regra: etapa é do herói do programa
--- Programa sem herói (editorial) aceita qualquer conteúdo. Vale para etapa (program_items.content_id)
+-- ---------------------------------------------------------------- 2) regra: etapa é do Hero do programa
+-- Programa sem Hero (editorial) aceita qualquer conteúdo. Vale para etapa (program_items.content_id)
 -- e para o substituto (program_item_substitutions.replacement_content_id).
 create or replace function public.program_items_owner_guard()
 returns trigger language plpgsql security definer set search_path = public as $$
@@ -120,7 +120,7 @@ drop trigger if exists trg_program_item_substitutions_owner on public.program_it
 create trigger trg_program_item_substitutions_owner before insert or update of version_id, replacement_content_id on public.program_item_substitutions
   for each row execute function public.program_items_owner_guard();
 
--- Trocar o herói do programa: só se todas as etapas (de qualquer versão) forem do novo herói.
+-- Trocar o Hero do programa: só se todas as etapas (de qualquer versão) forem do novo Hero.
 create or replace function public.programs_creator_change_guard()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
@@ -163,6 +163,6 @@ begin
   loop
     perform public.audit_log('creator_product.seed_cleanup', 'creator', r.creator_id::text,
       jsonb_build_object('slug', r.creator_slug, 'removed', r.removed), null,
-      '0052: Produtos do herói só com o que ele indica (sai a alocação em massa da 0021)', 'system');
+      '0052: Produtos do Hero só com o que ele indica (sai a alocação em massa da 0021)', 'system');
   end loop;
 end $$;

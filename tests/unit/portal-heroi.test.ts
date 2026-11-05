@@ -5,8 +5,8 @@ import { HERO_PORTAL_ROOT, isHeroPortalLink, legacyHeroPortalTarget } from "@/li
 import { heroPortalSections } from "@/lib/hero-work/rules";
 import { inboxKindEmails, inboxKindPushes, safeInboxLink } from "@/lib/inbox/kinds";
 
-// 0097: o CREATOR é o próprio HERÓI. Para o usuário não existe mais "creator" (nem "creador"/"criador") nem o
-// "escritório": um portal só, o Portal do Herói, em /heroi. Os endereços antigos redirecionam para sempre.
+// 0097: o CREATOR é o próprio HERO. Para o usuário não existe mais "creator" (nem "creador"/"criador") nem o
+// "escritório": um portal só, o Portal do Hero, em /heroi. Os endereços antigos redirecionam para sempre.
 
 const LOCALES = ["pt-BR", "en", "es"] as const;
 const ROOT = path.join(process.cwd(), "messages");
@@ -32,7 +32,7 @@ describe("nenhum texto visível fala em creator (0097)", () => {
       const found = visibleTexts(locale).filter(([, text]) => /creator|creador|criador/i.test(text));
       expect(found).toEqual([]);
     });
-    it(`${locale}: sem o "escritório" do creator (virou o Portal do Herói)`, () => {
+    it(`${locale}: sem o "escritório" do creator (virou o Portal do Hero)`, () => {
       const pattern = locale === "pt-BR" ? /escrit[oó]rio/i : locale === "es" ? /\boficina\b/i : /\boffice\b/i;
       const found = visibleTexts(locale).filter(([key, text]) => pattern.test(text) && !key.startsWith("legal."));
       expect(found).toEqual([]);
@@ -40,12 +40,12 @@ describe("nenhum texto visível fala em creator (0097)", () => {
   }
   it("o portal tem o mesmo nome nos três idiomas", () => {
     const portal = (l: string) => JSON.parse(readFileSync(path.join(ROOT, l, "me.json"), "utf8")).profile.portals.creator;
-    expect([portal("pt-BR"), portal("en"), portal("es")]).toEqual(["Portal do Herói", "Hero Portal", "Portal del Héroe"]);
+    expect([portal("pt-BR"), portal("en"), portal("es")]).toEqual(["Portal do Hero", "Hero Portal", "Portal del Hero"]);
   });
 });
 
 describe("endereços antigos /creator/* → /heroi/* (308 no middleware)", () => {
-  it("portal do herói", () => {
+  it("portal do Hero", () => {
     expect(legacyHeroPortalTarget("/creator")).toBe("/heroi");
     expect(legacyHeroPortalTarget("/creator/")).toBe("/heroi");
     expect(legacyHeroPortalTarget("/creator/post/new")).toBe("/heroi/post/novo");
@@ -96,7 +96,7 @@ describe("endereços antigos /creator/* → /heroi/* (308 no middleware)", () =>
 });
 
 describe("links do sino, e-mail e push", () => {
-  it("o link gravado no banco (/creator/escritorio/...) vira o do Portal do Herói, com a query", () => {
+  it("o link gravado no banco (/creator/escritorio/...) vira o do Portal do Hero, com a query", () => {
     expect(safeInboxLink("/creator/escritorio/oportunidades/d1#conversa")).toBe("/heroi/oportunidades/d1#conversa");
     expect(safeInboxLink("/creator/escritorio/agenda?mes=2026-11")).toBe("/heroi/agenda?mes=2026-11");
     expect(safeInboxLink("/agencia/negocios/x")).toBe("/agencia/negocios/x");
@@ -118,7 +118,7 @@ describe("agenda e financeiro unificados", () => {
     expect(heroPortalSections({ casting: true, hasHero: true, heroHasAgency: true, ownCount: 2 })).toEqual({ agency: true, own: true });
     expect(heroPortalSections({ casting: false, hasHero: true, heroHasAgency: false, ownCount: 0 })).toEqual({ agency: false, own: true });
     expect(heroPortalSections({ casting: true, hasHero: false, heroHasAgency: false, ownCount: 0 })).toEqual({ agency: true, own: false });
-    // herói em uso que não é o do casting (ex.: membro da equipe de outro herói): os próprios por inteiro
+    // Hero em uso que não é o do casting (ex.: membro da equipe de outro Hero): os próprios por inteiro
     expect(heroPortalSections({ casting: true, hasHero: true, heroHasAgency: false, ownCount: 0 })).toEqual({ agency: true, own: true });
   });
 });

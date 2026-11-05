@@ -36,7 +36,7 @@ describe("sem demonstração na interface", () => {
     expect(load("pt-BR").get("commerce.checkout.statement")).toBe(load("pt-BR").get("common.paymentsInactive"));
   });
 
-  it("selo de herói fictício vira Perfil ilustrativo", () => {
+  it("selo de Hero fictício vira Perfil ilustrativo", () => {
     expect(load("pt-BR").get("catalog.fictional")).toBe("Perfil ilustrativo");
     expect(load("en").get("catalog.fictional")).toBe("Illustrative profile");
     expect(load("es").get("catalog.fictional")).toBe("Perfil ilustrativo");

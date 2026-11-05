@@ -11,7 +11,7 @@
     "completedBadge": "Completado",
     "summaryLabel": "Resumen",
     "creatorFictional": "Perfil ilustrativo",
-    "aboutCreator": "Sobre el héroe",
+    "aboutCreator": "Sobre el Hero",
     "moreFromCreator": "Más de {name}",
     "relatedProducts": "Productos relacionados",
     "relatedProductsNote": "Vínculos validados por el equipo editorial. Precios ilustrativos; ninguna compra real.",
@@ -236,9 +236,9 @@
       "idea": "La idea",
       "nutritionTeaser": "Para saber qué comer en este mismo programa.",
       "nutritionContents": "Para comer bien",
-      "nutritionContentsNote": "Recetas y contenidos de nutrición de este programa y del propio héroe.",
+      "nutritionContentsNote": "Recetas y contenidos de nutrición de este programa y del propio Hero.",
       "nutritionProducts": "Productos para este programa",
-      "nutritionProductsNote": "Comidas, kits, suplementos y bebidas vinculados al programa, a sus contenidos o al héroe.",
+      "nutritionProductsNote": "Comidas, kits, suplementos y bebidas vinculados al programa, a sus contenidos o al Hero.",
       "support": "Apoyo",
       "supportTeaser": "Productos y profesionales recomendados para este programa.",
       "supportProducts": "Productos del programa",
@@ -320,7 +320,7 @@
       "openRecipe": "Abrir receta"
     },
     "program": {
-      "title": "Programa del héroe",
+      "title": "Programa del Hero",
       "tag": "Programa",
       "weeks": "Programa · {n} semanas",
       "open": "Abrir programa"

@@ -1,9 +1,9 @@
 -- =============================================================================
--- Ultra Hero · 0035 · Prateleiras de programas: +2 programas publicados por herói
--- Dados de DEMONSTRAÇÃO (personagens fictícios). A biblioteca "Programas" do herói virou uma pilha
--- de prateleiras (estilo playlists); com 1 programa por herói ela ficava vazia demais para mostrar.
--- Cada herói ganha 2 programas novos (o original fica intacto), com 6 a 8 etapas feitas de conteúdos
--- JÁ publicados do próprio herói e, quando faltam, do outro herói do mesmo pilar.
+-- Ultra Hero · 0035 · Prateleiras de programas: +2 programas publicados por Hero
+-- Dados de DEMONSTRAÇÃO (personagens fictícios). A biblioteca "Programas" do Hero virou uma pilha
+-- de prateleiras (estilo playlists); com 1 programa por Hero ela ficava vazia demais para mostrar.
+-- Cada Hero ganha 2 programas novos (o original fica intacto), com 6 a 8 etapas feitas de conteúdos
+-- JÁ publicados do próprio Hero e, quando faltam, do outro Hero do mesmo pilar.
 -- Idempotente: ids fixos (seed_uuid), "on conflict do nothing" e nada é atualizado se já existir.
 -- Sem destaque (is_featured = false): Início e Explorar continuam com os mesmos destaques.
 -- =============================================================================
@@ -147,7 +147,7 @@ insert into seed_shelf values
    'Domingo de Preparación', 'Una tarde de cocina organizada para toda la semana.',
    'Arroz, omelet al horno y sopa en la misma tarde, con mise en place para ganar tiempo y cuchillos a punto. Recetas demostrativas; revisa los alérgenos.');
 
--- Programa: só entra se o herói existir. created_at fica 1–2 dias ANTES do programa original do herói,
+-- Programa: só entra se o Hero existir. created_at fica 1–2 dias ANTES do programa original do Hero,
 -- para a ordem "destaque, depois mais recentes" manter o original na frente da biblioteca.
 -- Sem alvo no conflito: um slug já usado no remoto (criado pelo admin) não aborta a migração.
 insert into public.programs (id, slug, creator_id, pillar, cover_url, status, is_featured, featured_rank, created_at)

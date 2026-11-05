@@ -19,7 +19,7 @@ type Props = {
   services: ServiceOption[];
 };
 
-// Compromisso do herói: tipo, título, quando (data/hora início e fim, ou dia inteiro), local, contratante, serviço
+// Compromisso do Hero: tipo, título, quando (data/hora início e fim, ou dia inteiro), local, contratante, serviço
 // vinculado (opcional), observações e o que executar em checklist. O mesmo diálogo cria e edita (id preenchido).
 export function HeroEventDialog({ open, onOpenChange, initial, services }: Props) {
   const t = useTranslations("heroWork.agenda.form");

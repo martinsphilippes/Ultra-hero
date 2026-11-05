@@ -107,14 +107,14 @@ test.describe("visitante", () => {
     await expect(page.getByRole("rowheader", { name: "Lembretes: itens de rotina e marcações diárias" })).toBeVisible();
   });
 
-  // Vídeos gravados pelos heróis já passam pelo Cloudflare Stream: a política cita o operador, o dado
+  // Vídeos gravados pelos Heros já passam pelo Cloudflare Stream: a política cita o operador, o dado
   // guardado e o prazo (atualizada junto com a fase 1 de receitas).
-  test("política de privacidade cita o Cloudflare Stream e o prazo dos vídeos dos heróis", async ({ page }) => {
+  test("política de privacidade cita o Cloudflare Stream e o prazo dos vídeos dos Heros", async ({ page }) => {
     await page.goto("/legal/privacy");
     const main = page.locator("main");
     await expect(main.getByText(/Cloudflare \(Stream\):/)).toBeVisible();
-    await expect(main.getByText(/Vídeos dos heróis:/)).toBeVisible();
-    await expect(page.getByRole("rowheader", { name: "Vídeos enviados por heróis" })).toBeVisible();
+    await expect(main.getByText(/Vídeos dos Heros:/)).toBeVisible();
+    await expect(page.getByRole("rowheader", { name: "Vídeos enviados por Heros" })).toBeVisible();
     await expect(main.locator("time[datetime='2026-10-30']")).toBeVisible();
   });
 
@@ -123,7 +123,7 @@ test.describe("visitante", () => {
     await page.goto("/legal/privacy");
     const main = page.locator("main");
     await expect(main.getByText(/Fotos e vídeos de receitas:/)).toBeVisible();
-    await expect(page.getByRole("rowheader", { name: "Fotos de receitas enviadas por heróis" })).toBeVisible();
+    await expect(page.getByRole("rowheader", { name: "Fotos de receitas enviadas por Heros" })).toBeVisible();
   });
 
   // Receitas fase 3: avaliações por estrelas (o que fica guardado e por quanto tempo).
@@ -152,7 +152,7 @@ test.describe("visitante", () => {
     await expect(page.getByText(/demonstração/i)).toHaveCount(0);
   });
 
-  // RB-05/RB-06 (0044): os heróis são pessoas reais com uso autorizado (nota de direitos com o titular,
+  // RB-05/RB-06 (0044): os Heros são pessoas reais com uso autorizado (nota de direitos com o titular,
   // sem selo de fictício) e todo conteúdo expõe crédito/licença.
   test("perfil de personalidade mostra a nota de direitos como autorizado e o conteúdo mostra crédito/licença", async ({ page }) => {
     await page.goto("/personalities/anitta");

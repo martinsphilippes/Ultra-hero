@@ -9,7 +9,7 @@ import { getUser, hasRole } from "@/lib/auth/session";
 import { parseSignerChoice } from "@/lib/recipes/showcase";
 import { createClient } from "@/lib/supabase/server";
 
-// Alimentação na vitrine (0051), pelo admin, na tela da receita (/admin/content/[id]): heróis da
+// Alimentação na vitrine (0051), pelo admin, na tela da receita (/admin/content/[id]): Heros da
 // vitrine (creator_recipe_links, RPC auditada da 0024), quem assina (recipe_signers) e o produto
 // "Comprar pronto" (recipe_ready_products). RLS: só o admin escreve; a auditoria é do banco.
 
@@ -32,7 +32,7 @@ async function done(contentId: string, key: "heroAdded" | "heroRemoved" | "signe
   return { ok: true, message: t(key) };
 }
 
-/** Põe (validado) ou tira (suspenso) a receita da vitrine de um herói. A vitrine do autor é fixa. */
+/** Põe (validado) ou tira (suspenso) a receita da vitrine de um Hero. A vitrine do autor é fixa. */
 export async function setRecipeShowcaseHeroAction(contentId: string, creatorId: string, on: boolean): Promise<ActionResult> {
   const parsed = z.object({ contentId: uuid, creatorId: uuid, on: z.boolean() }).safeParse({ contentId, creatorId, on });
   if (!parsed.success) return failWith("invalid_input");
@@ -51,7 +51,7 @@ export async function setRecipeShowcaseHeroAction(contentId: string, creatorId: 
   }
 }
 
-/** Quem assina: "author" (apaga a linha), "none" (sem chef) ou o id de um herói chef. */
+/** Quem assina: "author" (apaga a linha), "none" (sem chef) ou o id de um Hero chef. */
 export async function setRecipeSignerAction(contentId: string, choice: string): Promise<ActionResult> {
   const id = uuid.safeParse(contentId);
   const signer = parseSignerChoice(choice);

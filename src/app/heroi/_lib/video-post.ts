@@ -5,15 +5,15 @@ import { CloudflareStreamError, InvalidMediaRefError, NotConfiguredError, getStr
 import type { ActionFailure } from "./action-utils";
 import type { CreatorSupabase } from "./content-insert";
 
-// Regras de vídeo do herói usadas pelo composer e pelo botão Publicar do editor: um vídeo do
-// Cloudflare só vai ao ar pronto, dentro de 3 minutos e enviado pelo próprio herói.
+// Regras de vídeo do Hero usadas pelo composer e pelo botão Publicar do editor: um vídeo do
+// Cloudflare só vai ao ar pronto, dentro de 3 minutos e enviado pelo próprio Hero.
 
 /** Código do Cloudflare para vídeo cortado pelo maxDurationSeconds do ticket. */
 const DURATION_EXCEEDED = "ERR_DURATION_EXCEED_CONSTRAINT";
 
 /**
  * Lê o setting "video.provider" (public_settings) e diz se o envio de vídeo está ligado. Exige
- * também o service role: o vínculo uid → herói (stream_uploads) só é gravado por ele, então sem
+ * também o service role: o vínculo uid → Hero (stream_uploads) só é gravado por ele, então sem
  * a chave no servidor a tela mostra "não configurado" em vez de falhar no meio do envio.
  */
 export async function readVideoUploadConfigured(supabase: CreatorSupabase): Promise<boolean> {
@@ -49,8 +49,8 @@ export type StreamCheck = { ok: true; durationSec: number | null } | ActionFailu
 
 /**
  * Confere o vídeo no Cloudflare antes de publicar. O uid sempre vem do banco (content_bodies do
- * rascunho do herói), nunca do cliente; o campo `creator` do vídeo (gravado pelo Upload-Creator
- * do ticket) tem de ser exatamente o herói da sessão — ausente também recusa. O banco confere
+ * rascunho do Hero), nunca do cliente; o campo `creator` do vídeo (gravado pelo Upload-Creator
+ * do ticket) tem de ser exatamente o Hero da sessão — ausente também recusa. O banco confere
  * ainda o vínculo em stream_uploads na RPC de publicação (0026).
  */
 export async function checkStreamVideo(uid: string | null, creatorId: string): Promise<StreamCheck> {

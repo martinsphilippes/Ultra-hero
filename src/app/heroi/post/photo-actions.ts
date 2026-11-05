@@ -23,9 +23,9 @@ import { setDraftSlug } from "../_lib/draft-slug";
 import { schedulePushDispatch } from "@/lib/push/schedule";
 
 // Post com foto (0043). Os bytes passam pelo servidor: tipo e dimensões conferidos pelos magic
-// bytes, envio reservado no banco (herói ativo, cota, kill switch), objeto gravado no bucket público
+// bytes, envio reservado no banco (Hero ativo, cota, kill switch), objeto gravado no bucket público
 // com o service role e rascunho criado com a foto na capa e no corpo. O banco recusa foto que não
-// foi reservada pelo próprio herói (gatilhos da 0043). O cliente só conhece o contentId.
+// foi reservada pelo próprio Hero (gatilhos da 0043). O cliente só conhece o contentId.
 
 type StartResult = { ok: true; contentId: string } | ActionFailure;
 type PublishResult = { ok: true; slug: string } | ActionFailure;
@@ -64,7 +64,7 @@ export async function startPhotoPost(formData: FormData): Promise<StartResult> {
   const ctx = await creatorActionContext("post");
   if (!ctx.ok) return ctx;
   const { supabase, creatorId, userId } = ctx;
-  // Termos do Parceiro (0068): quem envia (herói, ou a agência no admin pelo herói) confirma os direitos antes
+  // Termos do Parceiro (0068): quem envia (Hero, ou a agência no admin pelo Hero) confirma os direitos antes
   if (!(await hasUploadRights(supabase, userId))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
   const base = supabaseBaseUrl();
   if (!hasAdminClient() || !base) return { ok: false, error: "photo_not_configured" };
@@ -119,7 +119,7 @@ export async function startPhotoPost(formData: FormData): Promise<StartResult> {
     return inserted;
   }
 
-  // Corpo com o cliente do usuário: o gatilho da 0043 confere que a foto é do próprio herói.
+  // Corpo com o cliente do usuário: o gatilho da 0043 confere que a foto é do próprio Hero.
   const { error: bodyError } = await supabase.from("content_bodies").insert({
     content_id: inserted.id,
     body: { kind: "article", format: "photo", intro: "", sections: [], key_points: [] } as unknown as NonNullable<Json>,
@@ -150,7 +150,7 @@ export async function publishPhotoPost(input: { contentId: string; title: string
   const { supabase, creatorId } = ctx;
 
   const { data: content } = await supabase.from("content").select("id, slug, status, creator_id, published_at").eq("id", contentId).maybeSingle();
-  // A RLS já esconde conteúdo de outros heróis; a comparação é a defesa extra (e não revela ids).
+  // A RLS já esconde conteúdo de outros Heros; a comparação é a defesa extra (e não revela ids).
   if (!content || content.creator_id !== creatorId) return { ok: false, error: "forbidden" };
   // Segundo toque depois de publicar (rede lenta): devolve o mesmo resultado.
   if (content.status === "published") return { ok: true, slug: content.slug };
@@ -162,7 +162,7 @@ export async function publishPhotoPost(input: { contentId: string; title: string
   const { error: updateError } = await supabase.from("content").update({ title, summary: caption || null, pillar }).eq("id", contentId);
   if (updateError) return failFrom(updateError);
 
-  // bloco do pilar (0075): o banco confere dono, forma e referências (receita do herói, produto no ar).
+  // bloco do pilar (0075): o banco confere dono, forma e referências (receita do Hero, produto no ar).
   // Sem bloco, apaga o que uma tentativa anterior de publicar (com outro pilar) possa ter deixado.
   const { error: blockError } = block
     ? await supabase.rpc("post_block_set", { p_content: contentId, p_kind: block.kind, p_data: block.data })
@@ -182,7 +182,7 @@ export async function publishPhotoPost(input: { contentId: string; title: string
   revalidatePost();
   revalidatePath("/inicio");
   revalidatePath("/explore");
-  // post no ar: avisa quem favoritou o herói (fila enchida pelo banco, 0054)
+  // post no ar: avisa quem favoritou o Hero (fila enchida pelo banco, 0054)
   schedulePushDispatch();
   return { ok: true, slug };
 }

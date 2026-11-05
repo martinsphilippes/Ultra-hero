@@ -134,7 +134,7 @@ export function InviteForm({ professionalId, linked }: { professionalId: string;
 
 type Target = "creator" | "content" | "program";
 
-/** Sugeridos: heróis, receitas e programas onde o profissional aparece. */
+/** Sugeridos: Heros, receitas e programas onde o profissional aparece. */
 export function SuggestionsEditor({
   professionalId,
   current,

@@ -1,4 +1,4 @@
-// Esqueleto do feed: dois posts no formato final (herói, capa 4:5, legenda) para não haver salto.
+// Esqueleto do feed: dois posts no formato final (Hero, capa 4:5, legenda) para não haver salto.
 export function FeedSkeleton() {
   return (
     <div aria-hidden="true" className="flex flex-col gap-8">

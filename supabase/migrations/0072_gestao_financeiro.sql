@@ -10,7 +10,7 @@
 -- Painéis: agency_dashboard (COL+; finanças só Adm), brand_dashboard (marca), talent_office_summary (creator).
 -- Alertas (cron diário /api/cron/agency, service role): creator sem contato há N dias (1×/semana), tarefa vencida
 -- (1×/dia), limpeza de avisos e de documentos pendentes. Patrocínio: negócio contratado vira creator_brands
--- 'sponsor' do herói ligado, por ação humana do gestor. Histórico (auditoria da agência) para o Adm.
+-- 'sponsor' do Hero ligado, por ação humana do gestor. Histórico (auditoria da agência) para o Adm.
 -- Idempotente (reaplica sem efeito); funções com search_path fixo; nenhuma executável pelo visitante.
 
 -- 1) taxa de serviço ------------------------------------------------------------------------------------------------
@@ -470,7 +470,7 @@ end $$;
 revoke execute on function public.documents_orphans_purge(text[]) from public, anon, authenticated;
 grant execute on function public.documents_orphans_purge(text[]) to service_role;
 
--- 6) patrocínio na área social (gestor+, ação humana): negócio contratado → marca patrocinadora do herói ligado -------
+-- 6) patrocínio na área social (gestor+, ação humana): negócio contratado → marca patrocinadora do Hero ligado -------
 create or replace function public.agency_publish_sponsorship(p_deal_talent uuid)
 returns boolean language plpgsql security definer set search_path = '' as $$
 declare dt public.deal_talents%rowtype; d public.deals%rowtype; v_agency uuid; v_creator uuid; v_existing uuid;
@@ -483,7 +483,7 @@ begin
   if dt.status <> 'contracted' or not (d.stage = 'production' or (d.stage = 'closed' and d.outcome = 'won')) then raise exception 'invalid_state' using errcode = 'P0001'; end if;
   select t.creator_id into v_creator from public.talent_profiles t where t.id = dt.talent_id;
   if v_creator is null then raise exception 'no_hero' using errcode = 'P0001'; end if;
-  -- o herói só aparece como patrocinado com consentimento comercial vigente e página ativa
+  -- o Hero só aparece como patrocinado com consentimento comercial vigente e página ativa
   if not exists (select 1 from public.talent_profiles t join public.creator_profiles c on c.id = t.creator_id
                  where t.id = dt.talent_id and t.consent_at is not null and t.consent_revoked_at is null and c.status = 'active') then
     raise exception 'consent_required' using errcode = 'P0001';

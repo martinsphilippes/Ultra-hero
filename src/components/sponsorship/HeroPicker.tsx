@@ -21,16 +21,16 @@ import {
 type Props = {
   value: HeroChoice | null;
   onChange: (choice: HeroChoice | null) => void;
-  /** Já há respostas das marcas: o herói não muda. */
+  /** Já há respostas das marcas: o Hero não muda. */
   locked?: boolean;
   disabled?: boolean;
   /** Ação do servidor (padrão); os testes de tela trocam por dados de exemplo. */
   search?: (input: { q: string; offset?: number }) => Promise<OpportunityHeroSearchResult>;
 };
 
-// Caixa "Herói" da oportunidade de patrocínio (0095). Lê os heróis da PLATAFORMA (ativos), com busca no servidor (nome ou
+// Caixa "Hero" da oportunidade de patrocínio (0095). Lê os Heros da PLATAFORMA (ativos), com busca no servidor (nome ou
 // endereço), 20 por vez, e o selo: "No seu casting", "Fora do casting" (a ficha nasce ao salvar) ou indisponível ("Em outra
-// agência", "Pessoa já no casting"). Alguém que não está na plataforma entra digitado (ficha só com o nome). O herói
+// agência", "Pessoa já no casting"). Alguém que não está na plataforma entra digitado (ficha só com o nome). O Hero
 // escolhido aparece no cartão (EntityCard) com o selo e o consentimento; trocar abre a busca de novo.
 export function HeroPicker({ value, onChange, locked = false, disabled = false, search = searchOpportunityHeroesAction }: Props) {
   const t = useTranslations("sponsorship.agency.form.heroPicker");
@@ -145,7 +145,7 @@ export function HeroPicker({ value, onChange, locked = false, disabled = false, 
 
   if (locked) return summary;
 
-  // Enter dentro da caixa não envia o formulário da oportunidade: na busca nada acontece e no herói digitado adiciona
+  // Enter dentro da caixa não envia o formulário da oportunidade: na busca nada acontece e no Hero digitado adiciona
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== "Enter" || (e.target as HTMLElement).tagName !== "INPUT") return;
     e.preventDefault();

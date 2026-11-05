@@ -3,8 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import type { CategoryLinkRow, CategoryTabRow, OverrideRow } from "./library-tabs";
 
-// Leituras da configuração dos atalhos do herói (0050). Sem a 0050 no banco (tabelas ausentes) ou
-// com erro de leitura, devolve listas vazias: a página do herói usa os padrões do código.
+// Leituras da configuração dos atalhos do Hero (0050). Sem a 0050 no banco (tabelas ausentes) ou
+// com erro de leitura, devolve listas vazias: a página do Hero usa os padrões do código.
 
 type Client = SupabaseClient<Database>;
 
@@ -30,7 +30,7 @@ export function toOverrideRow(row: OverrideDbRow): OverrideRow {
   return { sourceKey: row.source_key, label: row.label, icon: row.icon, sortOrder: row.sort_order, isVisible: row.is_visible };
 }
 
-/** Categorias do herói (só ativas, na ordem da posição) com os atalhos de cada uma, e a exceção do herói. */
+/** Categorias do Hero (só ativas, na ordem da posição) com os atalhos de cada uma, e a exceção do Hero. */
 export async function fetchCreatorLibraryConfig(supabase: Client, creatorId: string): Promise<CreatorLibraryConfig> {
   try {
     const [linksRes, overridesRes] = await Promise.all([

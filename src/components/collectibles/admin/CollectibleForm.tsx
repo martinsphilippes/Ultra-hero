@@ -32,7 +32,7 @@ type Props = {
   photoState: PostPhotoState;
 };
 
-// Formulário do colecionável (celular primeiro): textos, herói, fotos tiradas ou escolhidas no celular
+// Formulário do colecionável (celular primeiro): textos, Hero, fotos tiradas ou escolhidas no celular
 // (até 8, enviadas na hora; a lista de URLs é gravada ao salvar), autenticidade, preço inicial, 1 a 4
 // botões de incremento e duração.
 export function CollectibleForm({ id, initial, heroes, locked, photoState }: Props) {

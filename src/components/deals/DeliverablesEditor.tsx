@@ -17,7 +17,7 @@ import { DeliverableStatusBadge } from "./StatusBadges";
 
 type Talent = { dealTalentId: string; name: string } & TalentPickFields;
 // Linha nova: vários tipos e várias redes (pedido do responsável, 04/11); ao salvar vira um entregável por
-// tipo × rede, todos com o mesmo herói, título, orientações e datas. Linhas já salvas são registros com histórico
+// tipo × rede, todos com o mesmo Hero, título, orientações e datas. Linhas já salvas são registros com histórico
 // próprio e seguem com um tipo e uma rede.
 type Item = DeliverableItemInput & { status: DeliverableRow["status"] | "new"; kinds: DeliverableKind[]; networks: Network[] };
 /** Teto de itens enviados (o mesmo de deliverablesSchema). */

@@ -76,7 +76,7 @@ type ShowcaseData = {
   ready: { id: string; title: string; status: string } | null;
 };
 
-// Vitrine da receita (0051): heróis com vínculo validado (0024), heróis ativos, assinatura e produto
+// Vitrine da receita (0051): Heros com vínculo validado (0024), Heros ativos, assinatura e produto
 // pronto. Sem a 0051 (tabelas ausentes), só a parte da vitrine fica editável.
 async function loadShowcase(contentId: string): Promise<ShowcaseData> {
   const supabase = await createClient();

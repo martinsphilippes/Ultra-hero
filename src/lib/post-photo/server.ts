@@ -6,7 +6,7 @@ import { POST_PHOTO_BUCKET } from "./constants";
 import { publicPostPhotoUrl } from "./paths";
 
 // Operações de Storage da foto do post (0043), sempre com o service role (o bucket não aceita
-// escrita pela API com JWT de usuário). Mesmo desenho da capa do herói (lib/hero-cover/server).
+// escrita pela API com JWT de usuário). Mesmo desenho da capa do Hero (lib/hero-cover/server).
 
 type Admin = SupabaseClient<Database>;
 

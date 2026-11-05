@@ -69,20 +69,20 @@
     "call": "Abrir chamada para agências a partir deste evento",
     "needsAgency": "Para criar campanha, a marca precisa de uma agência ativa. A chamada vai para várias agências.",
     "membersOnly": "Só o dono e a equipe da marca criam propostas.",
-    "heroesHidden": "A marca vê só quantos heróis se interessaram, nunca quem."
+    "heroesHidden": "A marca vê só quantos Heros se interessaram, nunca quem."
   },
   "agency": {
     "create": "Criar oportunidade de patrocínio a partir deste evento",
-    "heroLater": "O herói é escolhido no formulário.",
+    "heroLater": "O Hero é escolhido no formulário.",
     "managersOnly": "Gestor ou Adm cria oportunidades."
   },
   "compat": {
     "title": "Compatibilidade",
-    "hint": "Heróis do seu casting e marcas que você atende com interesse neste evento.",
-    "hintAdmin": "Todos os heróis e marcas com interesse neste evento.",
-    "heroes": "Heróis",
+    "hint": "Heros do seu casting e marcas que você atende com interesse neste evento.",
+    "hintAdmin": "Todos os Heros e marcas com interesse neste evento.",
+    "heroes": "Heros",
     "brands": "Marcas",
-    "noHeroes": "Nenhum herói com interesse.",
+    "noHeroes": "Nenhum Hero com interesse.",
     "noBrands": "Nenhuma marca com interesse.",
     "withHero": "Abrir oportunidade com {name}",
     "forBrand": "Abrir oportunidade para {name}",
@@ -148,8 +148,8 @@
       "scheduled": "Programado",
       "published": "Publicado"
     },
-    "audienceAdmin": "Vai para todos os perfis com portal (heróis, marcas e agências).",
-    "audienceAgency": "Vai para a sua rede: equipe, marcas atendidas e heróis do casting.",
+    "audienceAdmin": "Vai para todos os perfis com portal (Heros, marcas e agências).",
+    "audienceAgency": "Vai para a sua rede: equipe, marcas atendidas e Heros do casting.",
     "form": {
       "kind": "Tipo",
       "title": "Título",

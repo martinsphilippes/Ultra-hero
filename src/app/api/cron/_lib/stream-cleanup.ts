@@ -81,7 +81,7 @@ export async function cleanupStreamUploads(admin: Admin, provider: StreamCleanup
       try {
         const status = await provider.getVideoStatus(row.uid);
         if (status.state !== "incomplete" && status.state !== "errored") {
-          // vídeo bom: o herói ainda pode publicar; volta para o fim da fila
+          // vídeo bom: o Hero ainda pode publicar; volta para o fim da fila
           const { error } = await admin.from("stream_uploads").update({ checked_at: stamp }).eq("uid", row.uid);
           if (error) result.stream_errors += 1;
           continue;
@@ -97,7 +97,7 @@ export async function cleanupStreamUploads(admin: Admin, provider: StreamCleanup
     budget -= 1;
 
     // O banco confere tudo de novo com as linhas travadas (a fila foi lida antes das consultas ao
-    // Cloudflare): se o herói trocou a mídia ou publicou nesse meio-tempo, nada é apagado.
+    // Cloudflare): se o Hero trocou a mídia ou publicou nesse meio-tempo, nada é apagado.
     // p_draft nulo é válido (envio órfão); o gerador de tipos não marca parâmetros de função como anuláveis
     const { data: discardedNow, error: discardError } = await admin.rpc("stream_cleanup_discard", { p_uid: row.uid, p_draft: draftId as string });
     if (discardError) {

@@ -22,7 +22,7 @@ export function profileConflictParams(error: unknown): { kind: BusinessKind | "o
   return { kind: profileConflictKind(error) ?? "other" };
 }
 
-/** Tipo de perfil de negócio pelos papéis da conta (creator = herói). Nulo = só consumidor (ou admin). */
+/** Tipo de perfil de negócio pelos papéis da conta (creator = Hero). Nulo = só consumidor (ou admin). */
 export function businessKindOfRoles(roles: readonly string[]): BusinessKind | null {
   if (roles.includes("agency")) return "agency";
   if (roles.includes("brand")) return "brand";

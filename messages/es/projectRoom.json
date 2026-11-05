@@ -48,7 +48,7 @@
     "sides": {
       "agency": "Agencia",
       "brand": "Marca",
-      "talent": "Héroe",
+      "talent": "Hero",
       "staff": "Staff externo",
       "system": "Sistema"
     }
@@ -83,7 +83,7 @@
     "arrived": "{n} de {total} llegaron",
     "sides": {
       "agency": "Agencia",
-      "talent": "Héroe",
+      "talent": "Hero",
       "staff": "Staff externo"
     },
     "notYet": "En camino",
@@ -161,7 +161,7 @@
     "copyFailed": "No se pudo copiar. Selecciona el enlace.",
     "sides": {
       "agency": "Agencia",
-      "talent": "Héroe",
+      "talent": "Hero",
       "staff": "Staff externo",
       "brand": "Marca"
     },
@@ -198,10 +198,10 @@
     "askFeedback": "Pedir al cliente feedback del día",
     "briefing": "Briefing fijado",
     "briefingHint": "Aparece arriba de la sala para todos.",
-    "ndaHeroes": "Los héroes también firman el NDA",
+    "ndaHeroes": "Los Heros también firman el NDA",
     "ndaHeroesHint": "El staff externo siempre firma.",
     "save": "Guardar",
-    "confirmArchive": "¿Archivar la sala? Staff, héroes y marca pierden el acceso; la agencia sigue leyendo.",
+    "confirmArchive": "¿Archivar la sala? Staff, Heros y marca pierden el acceso; la agencia sigue leyendo.",
     "archive": "Archivar sala"
   },
   "room": {
@@ -211,7 +211,7 @@
     "people": "{n} personas",
     "count": {
       "agency": "Agencia {n}",
-      "talent": "Héroe {n}",
+      "talent": "Hero {n}",
       "staff": "Staff externo {n}",
       "brand": "Marca {n}"
     },
@@ -271,13 +271,13 @@
     "team": "Equipo",
     "roles": {
       "agency": "Agencia",
-      "talent": "Héroe"
+      "talent": "Hero"
     },
     "shootDays": "Jornadas",
     "feedback": "Valoraciones del cliente",
     "parties": {
       "brand": "Marca",
-      "talent": "Héroe cliente"
+      "talent": "Hero cliente"
     },
     "moments": {
       "production_day": "Día de la producción",
@@ -321,7 +321,7 @@
     "split": "{promoters} promotores · {passives} neutros · {detractors} detractores · {pending} esperando",
     "parties": {
       "brand": "Marca",
-      "talent": "Héroe cliente"
+      "talent": "Hero cliente"
     },
     "moments": {
       "production_day": "Día de la producción",

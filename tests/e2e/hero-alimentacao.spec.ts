@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { loginAs } from "./helpers/login";
 import { seedUuid } from "./helpers/seed";
 
-// Alimentação completa (0051): assinatura da vitrine ("Receita de <chef> · indicada por <herói>"),
+// Alimentação completa (0051): assinatura da vitrine ("Receita de <chef> · indicada por <Hero>"),
 // ações nos cards da Alimentação (Fazer, Lista de compras, Comprar pronto com produto ligado), a linha
 // "Nutricionista: em breve" (com a 0058, "Contratar nutricionista") e o painel "Vitrine (Alimentação)" do admin. Só leitura: nada é gravado
 // (o cookie uh-e2e=1 também desliga o contador de toques). Sem a 0051 no banco, a assinatura e as
@@ -23,7 +23,7 @@ async function expectNoSeriousAxe(page: Page, include: string) {
   expect(serious, JSON.stringify(serious.map((v) => v.id))).toEqual([]);
 }
 
-test.describe("Alimentação do herói", () => {
+test.describe("Alimentação do Hero", () => {
   test("cards indicados pela Anitta: assinatura do chef, 'Indicada por Anitta' e as ações Fazer e Lista", async ({ page }) => {
     await page.goto("/personalities/anitta/alimentacao");
     const card = page.getByTestId("recipe-card").first();
@@ -31,7 +31,7 @@ test.describe("Alimentação do herói", () => {
     const slug = (await card.getAttribute("data-slug"))!;
     await expect(card.getByTestId("recipe-endorsed")).toContainText("Indicada por Anitta");
     await expect(card.getByTestId("recipe-signature")).toBeVisible();
-    // o título leva o herói da vitrine para a página da receita
+    // o título leva o Hero da vitrine para a página da receita
     await expect(card.getByRole("link").first()).toHaveAttribute("href", `/content/${slug}?vitrine=anitta`);
     const actions = card.getByTestId("recipe-card-actions");
     await expect(actions.getByTestId("recipe-card-make")).toHaveAttribute("href", `/content/${slug}/cozinha`);
@@ -83,7 +83,7 @@ test.describe("página da receita", () => {
     // sem a 0058: "em breve"; com ela, a seção "Contratar nutricionista"
     await expect(page.getByTestId("recipe-nutritionist-soon").or(page.getByTestId("hire-nutritionist"))).toBeVisible();
 
-    // herói suspenso / inexistente / formato inválido: vale o autor
+    // Hero suspenso / inexistente / formato inválido: vale o autor
     for (const vitrine of ["bruna-castellano", "nao-existe", "..%2Fadmin"]) {
       await page.goto(`/content/${G1.slug}?vitrine=${vitrine}`);
       await expect(page.getByTestId("recipe-page-signature")).toHaveAttribute("data-kind", "chef");
@@ -108,7 +108,7 @@ test.describe("página da receita", () => {
 });
 
 test.describe("admin: vitrine da receita (só leitura)", () => {
-  test("/admin/content/[id] de uma receita mostra 'Vitrine (Alimentação)' com o autor e os heróis da vitrine", async ({ page }) => {
+  test("/admin/content/[id] de uma receita mostra 'Vitrine (Alimentação)' com o autor e os Heros da vitrine", async ({ page }) => {
     await loginAs(page, "admin");
     await page.goto(`/admin/content/${seedUuid("content:g1")}`);
     await expect(page.getByRole("heading", { level: 2, name: "Vitrine (Alimentação)" })).toBeVisible();

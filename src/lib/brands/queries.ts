@@ -20,7 +20,7 @@ export const PRODUCT_SELECT = `id, name, image_url, description, external_url, p
 
 type ChipRow = { relationship: string; brand: Record<string, unknown> | null };
 
-/** Marcas do herói (faixa ao lado do nome). */
+/** Marcas do Hero (faixa ao lado do nome). */
 export async function loadCreatorBrandChips(supabase: Client, creatorId: string | null | undefined): Promise<BrandChipView[]> {
   if (!creatorId) return [];
   try {
@@ -37,7 +37,7 @@ export async function loadCreatorBrandChips(supabase: Client, creatorId: string 
   }
 }
 
-/** Marcas do conteúdo (citadas no post) + as do herói; o conteúdo vem primeiro. */
+/** Marcas do conteúdo (citadas no post) + as do Hero; o conteúdo vem primeiro. */
 export async function loadContentBrandChips(supabase: Client, contentId: string, creatorId: string | null | undefined): Promise<BrandChipView[]> {
   try {
     const [own, hero] = await Promise.all([

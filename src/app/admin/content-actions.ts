@@ -70,7 +70,7 @@ export async function reviewContentAction(
           p_feedback: parsed.data.feedback || undefined,
         });
     if (error) return fail(error);
-    // aprovado para agora: avisa quem favoritou o herói (agendado sai no cron; 0054)
+    // aprovado para agora: avisa quem favoritou o Hero (agendado sai no cron; 0054)
     if (parsed.data.decision === "approved" && !schedule.value) schedulePushDispatch();
     revalidatePath("/admin/content");
     revalidatePath(`/admin/content/${parsed.data.contentId}`);
@@ -356,7 +356,7 @@ export async function setReviewRequiredAction(type: string, on: boolean, justifi
     .object({ type: z.enum(["video", "recipe", "workout", "guide", "article"]), on: z.boolean(), justification: z.string().trim().min(5).max(500) })
     .safeParse({ type, on, justification });
   if (!parsed.success) return fail("invalid_input");
-  // só receita tem "Enviar para revisão" no portal: ligar para outro tipo travaria o herói
+  // só receita tem "Enviar para revisão" no portal: ligar para outro tipo travaria o Hero
   if (!reviewChangeAllowed(parsed.data.type, parsed.data.on)) return fail("review_flow_unavailable");
   try {
     await requireAdmin();
@@ -374,7 +374,7 @@ export async function setReviewRequiredAction(type: string, on: boolean, justifi
 
 // ---------------------------------------------------------------- buscas (SearchPicker) ---
 // Conteúdo por título; `publishedOnly` para itens de programa, destaques e vínculos. `creatorId` limita
-// aos conteúdos de um herói (etapas do programa do herói, 0052).
+// aos conteúdos de um Hero (etapas do programa do Hero, 0052).
 export async function searchContentAction(q: string, publishedOnly = true, creatorId: string | null = null): Promise<PickResult> {
   const parsed = z.object({ q: z.string().trim().min(2).max(80), publishedOnly: z.boolean(), creatorId: z.uuid().nullable() }).safeParse({ q, publishedOnly, creatorId });
   if (!parsed.success) return { ok: true, items: [] };

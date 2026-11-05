@@ -8,10 +8,10 @@ import { POST_PHOTO_MAX_UPLOAD_BYTES } from "@/lib/post-photo/constants";
 import { isPhotoPost } from "@/lib/post-photo/paths";
 import { COVER_VIDEO_MAX_SOURCE_BYTES, frameTimeFor, validateVideoSource } from "@/lib/post-photo/video-frame";
 
-// Capa do conteúdo pelo celular (editor do admin): a action reserva a foto em nome do herói escolhido
+// Capa do conteúdo pelo celular (editor do admin): a action reserva a foto em nome do Hero escolhido
 // (cabeçalho x-acting-hero), confere os bytes, grava no bucket e devolve a URL; a prévia só mostra
 // caminho da plataforma ou foto do bucket; um quadro de vídeo vira capa; artigo com texto e capa
-// enviada não vira "post com foto". As regras do banco (admin por herói ativo, cota, kill switch)
+// enviada não vira "post com foto". As regras do banco (admin por Hero ativo, cota, kill switch)
 // são testadas de verdade no RLS (S55 e 0045).
 
 const BASE = "https://proj.supabase.co";
@@ -32,7 +32,7 @@ const state = vi.hoisted(() => ({
   hasAdmin: true,
   claim: { data: null, error: null } as Result,
   uploadError: null as { message: string } | null,
-  /** O que acting_hero_id() devolve: o herói honrado pelo banco (null = cabeçalho ignorado). */
+  /** O que acting_hero_id() devolve: o Hero honrado pelo banco (null = cabeçalho ignorado). */
   acting: null as string | null,
   actingFor: [] as string[],
   log: [] as string[],
@@ -61,7 +61,7 @@ vi.mock("@/lib/partner-terms/server", () => ({ hasUploadRights: async () => stat
 vi.mock("@/lib/auth/session", () => ({
   getUser: async () => state.user,
   hasRole: async (role: string) => role === "admin" && state.isAdmin,
-  // 0092: o creator também envia a capa pelo Novo conteúdo dele; aqui a conta comum (sem papel de herói)
+  // 0092: o creator também envia a capa pelo Novo conteúdo dele; aqui a conta comum (sem papel de Hero)
   getRoles: async () => [],
 }));
 vi.mock("@/lib/acting-hero/server", () => ({
@@ -106,14 +106,14 @@ beforeEach(() => {
 });
 
 describe("uploadContentCover", () => {
-  it("reserva pelo herói escolhido, grava com o service role e devolve a URL pública", async () => {
+  it("reserva pelo Hero escolhido, grava com o service role e devolve a URL pública", async () => {
     const result = await uploadContentCover(form(webp(1600, 900)));
     expect(result).toEqual({ ok: true, coverUrl: URL_ });
     expect(state.actingFor).toEqual([ids.CREATOR]);
     expect(state.log).toEqual([`user:rpc:post_photo_upload_claim:${webp(1600, 900).length}:image/webp`, `admin:storage:upload:post-photos/${PATH}:image/webp:upsert=false`]);
   });
 
-  it("só admin, com sessão e com o herói escolhido", async () => {
+  it("só admin, com sessão e com o Hero escolhido", async () => {
     state.user = null;
     expect(await uploadContentCover(form(webp(800, 600)))).toEqual({ ok: false, error: "unauthenticated" });
     state.user = { id: ids.USER };
@@ -143,7 +143,7 @@ describe("uploadContentCover", () => {
     expect(state.log).toEqual([]);
   });
 
-  it("herói escolhido que o banco não honra (inativo, inexistente, admin com perfil próprio): not_a_hero, sem reservar", async () => {
+  it("Hero escolhido que o banco não honra (inativo, inexistente, admin com perfil próprio): not_a_hero, sem reservar", async () => {
     state.acting = null;
     expect(await uploadContentCover(form(webp(800, 600)))).toEqual({ ok: false, error: "not_a_hero" });
     state.acting = ids.USER;
@@ -157,7 +157,7 @@ describe("uploadContentCover", () => {
     expect(state.log).toEqual([]);
   });
 
-  it("erros do banco viram códigos da tela: kill switch, cota, herói inativo, migração ausente", async () => {
+  it("erros do banco viram códigos da tela: kill switch, cota, Hero inativo, migração ausente", async () => {
     state.claim = { data: null, error: { message: "uploads_disabled" } };
     expect(await uploadContentCover(form(webp(800, 600)))).toEqual({ ok: false, error: "uploads_disabled" });
     state.claim = { data: null, error: { message: "too_many_uploads" } };

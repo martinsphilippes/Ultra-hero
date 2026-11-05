@@ -24,8 +24,8 @@
   },
   "clientKinds": {
     "brand": "Marca",
-    "talent": "Héroe",
-    "both": "Marca y héroe"
+    "talent": "Hero",
+    "both": "Marca y Hero"
   },
   "milestones": {
     "client_entry": "Entrada del cliente",
@@ -88,8 +88,8 @@
     "startOnHint": "Vacío = hoy. Fines de semana y feriados pasan al siguiente día hábil.",
     "replace": "Cambiar servicio",
     "start": "Generar plan",
-    "heroClient": "Héroe cliente (contrata a la agencia)",
-    "heroClientHint": "Úsalo solo cuando el propio héroe es el cliente, ej.: representación artística (ve el proyecto en el Portal del Héroe). Quien trabaja en la campaña va en la pestaña Héroes.",
+    "heroClient": "Hero cliente (contrata a la agencia)",
+    "heroClientHint": "Úsalo solo cuando el propio Hero es el cliente, ej.: representación artística (ve el proyecto en el Portal del Hero). Quien trabaja en la campaña va en la pestaña Heros.",
     "noHeroClient": "Ninguno (cliente solo la marca)",
     "saveClient": "Guardar cliente",
     "unavailable": "Planes en actualización. Vuelve en un momento.",
@@ -109,26 +109,26 @@
   },
   "newDeal": {
     "client": "Cliente",
-    "clientHint": "Quién contrata a la agencia: la marca, el propio héroe o ambos.",
+    "clientHint": "Quién contrata a la agencia: la marca, el propio Hero o ambos.",
     "clientKinds": {
       "brand": "Marca",
-      "talent": "Héroe cliente",
+      "talent": "Hero cliente",
       "both": "Ambos"
     },
-    "hero": "Héroe cliente (contrata a la agencia)",
-    "heroHint": "Úsalo solo cuando el propio héroe es el cliente, ej.: representación artística. Para quien trabajará en la campaña, usa 'Héroes de la campaña'.",
+    "hero": "Hero cliente (contrata a la agencia)",
+    "heroHint": "Úsalo solo cuando el propio Hero es el cliente, ej.: representación artística. Para quien trabajará en la campaña, usa 'Heros de la campaña'.",
     "service": "Servicio",
     "serviceHint": "Elegir ahora ya genera el plan con los plazos.",
     "serviceLater": "Elegir después",
     "serviceOption": "{name} · {days} días hábiles",
     "startOn": "Inicio del plan",
     "startOnHint": "Vacío = hoy.",
-    "cast": "Héroes de la campaña (opcional)",
-    "castHint": "Quién trabajará en la campaña. Entran como sugeridos en la pestaña Héroes del negocio.",
-    "castAdd": "Agregar héroe del casting…",
-    "castChosen": "{count, plural, one {# héroe de la campaña} other {# héroes de la campaña}}",
+    "cast": "Heros de la campaña (opcional)",
+    "castHint": "Quién trabajará en la campaña. Entran como sugeridos en la pestaña Heros del negocio.",
+    "castAdd": "Agregar Hero del casting…",
+    "castChosen": "{count, plural, one {# Hero de la campaña} other {# Heros de la campaña}}",
     "castRemove": "Quitar a {name} de la campaña",
-    "castFailed": "Negocio creado; no fue posible agregar {names}: agrégalos en la pestaña Héroes."
+    "castFailed": "Negocio creado; no fue posible agregar {names}: agrégalos en la pestaña Heros."
   },
   "today": {
     "title": "Hoy en mi sector",

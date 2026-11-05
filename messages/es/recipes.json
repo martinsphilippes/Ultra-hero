@@ -96,7 +96,7 @@
     "informedByChef": "Informado por el chef",
     "allergensNotInformed": "Alérgenos no informados por el chef",
     "nutritionInformed": "Información nutricional informada por el chef, aún no validada",
-    "credentialsLabel": "Credenciales informadas por el héroe",
+    "credentialsLabel": "Credenciales informadas por el Hero",
     "units": {
       "g": {
         "one": "g",
@@ -262,14 +262,14 @@
       "content_incomplete": "Falta el título.",
       "missing_title": "Falta el título.",
       "missing_body": "Guarda el borrador antes de publicar.",
-      "creator_unavailable": "Tu perfil de héroe está inactivo o sin vínculo.",
-      "acting_hero_required": "Elige el héroe en \"Publicar como héroe\", en el inicio de la administración, e inténtalo de nuevo.",
-      "acting_unavailable": "Publicar como héroe aún no está disponible en este entorno.",
+      "creator_unavailable": "Tu perfil de Hero está inactivo o sin vínculo.",
+      "acting_hero_required": "Elige el Hero en \"Publicar como Hero\", en el inicio de la administración, e inténtalo de nuevo.",
+      "acting_unavailable": "Publicar como Hero aún no está disponible en este entorno.",
       "duplicate": "Ya existe un registro igual.",
       "network": "Sin conexión. Intenta de nuevo.",
       "generic": "Algo salió mal. Intenta de nuevo.",
-      "owner_only": "Solo el titular del héroe (o la administración) archiva o elimina una receta que ya estuvo publicada.",
-      "hero_not_active": "Tu héroe aún no fue aprobado. La receta quedó guardada; publica después de la aprobación."
+      "owner_only": "Solo el titular del Hero (o la administración) archiva o elimina una receta que ya estuvo publicada.",
+      "hero_not_active": "Tu Hero aún no fue aprobado. La receta quedó guardada; publica después de la aprobación."
     }
   },
   "portal": {
@@ -842,7 +842,7 @@
   },
   "admin": {
     "reviewTitle": "Revisión antes de publicar",
-    "reviewDescription": "Con la revisión activada, el héroe envía a revisión en lugar de publicar directamente. El cambio vale de inmediato y queda en la auditoría.",
+    "reviewDescription": "Con la revisión activada, el Hero envía a revisión en lugar de publicar directamente. El cambio vale de inmediato y queda en la auditoría.",
     "reviewCaption": "Regla de revisión por tipo de contenido",
     "reviewColumn": "Revisión",
     "reviewOn": "Activada",
@@ -855,11 +855,11 @@
     "changed": "Regla de revisión actualizada.",
     "unavailable": "La regla de revisión por tipo llega con la migración 0027.",
     "credentials": {
-      "title": "Credenciales de los héroes",
-      "description": "Solicitudes enviadas por los héroes. El texto solo aparece en el perfil público después de aprobado, con la etiqueta «Credenciales informadas por el héroe».",
+      "title": "Credenciales de los Heros",
+      "description": "Solicitudes enviadas por los Heros. El texto solo aparece en el perfil público después de aprobado, con la etiqueta «Credenciales informadas por el Hero».",
       "empty": "Ninguna solicitud pendiente de aprobación.",
       "caption": "Solicitudes de credenciales",
-      "hero": "Héroe",
+      "hero": "Hero",
       "requested": "Texto solicitado",
       "status": "Situación",
       "updated": "Solicitado el",
@@ -870,12 +870,12 @@
       "reject": "Rechazar",
       "approveTitle": "¿Aprobar las credenciales de {name}?",
       "rejectTitle": "¿Rechazar las credenciales de {name}?",
-      "approveDescription": "El texto pasa a aparecer en el perfil público con la etiqueta «Credenciales informadas por el héroe».",
-      "rejectDescription": "El texto sale del perfil público. El héroe puede editar la solicitud y enviarla de nuevo.",
+      "approveDescription": "El texto pasa a aparecer en el perfil público con la etiqueta «Credenciales informadas por el Hero».",
+      "rejectDescription": "El texto sale del perfil público. El Hero puede editar la solicitud y enviarla de nuevo.",
       "approvedDone": "Credenciales aprobadas.",
       "rejectedDone": "Credenciales rechazadas."
     },
-    "reviewNoFlow": "El portal del héroe no tiene “Enviar a revisión” para este tipo: solo se puede desactivar."
+    "reviewNoFlow": "El portal del Hero no tiene “Enviar a revisión” para este tipo: solo se puede desactivar."
   },
   "chef": {
     "title": "Especialidades y credenciales",
@@ -886,7 +886,7 @@
     "specialtiesSaved": "Especialidades guardadas.",
     "credentials": "Credenciales",
     "credentialsHint": "Formación, cursos, premios. Hasta 300 caracteres.",
-    "credentialsNotice": "Las credenciales aparecen en el perfil público solo después de la aprobación de la administración, con la etiqueta «Credenciales informadas por el héroe». Editar o retirar la solicitud quita el texto aprobado del perfil hasta una nueva aprobación.",
+    "credentialsNotice": "Las credenciales aparecen en el perfil público solo después de la aprobación de la administración, con la etiqueta «Credenciales informadas por el Hero». Editar o retirar la solicitud quita el texto aprobado del perfil hasta una nueva aprobación.",
     "send": "Enviar para aprobación",
     "withdraw": "Retirar solicitud",
     "statusApproved": "Aprobadas y visibles en el perfil.",

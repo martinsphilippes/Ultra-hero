@@ -96,7 +96,7 @@ async function resolveEvents(admin: Admin, rows: OutboxRow[], locales: Map<strin
     if (row.kind === "hero_post") {
       const c = contentById.get(str(p.content_id) ?? "");
       const creator = one(c?.creator ?? null);
-      // saiu do ar, voltou a rascunho ou o herói foi suspenso antes do envio: não avisa;
+      // saiu do ar, voltou a rascunho ou o Hero foi suspenso antes do envio: não avisa;
       // reagendado para depois (o gatilho não vê a troca de data de quem já está publicado): espera
       const published = c && c.status === "published" && creator?.status === "active";
       if (published && c.publish_at && new Date(c.publish_at) > new Date()) out.set(row.id, { defer: c.publish_at });
@@ -266,7 +266,7 @@ export async function dispatchPushOutbox(admin: Admin): Promise<DispatchResult> 
 }
 
 /**
- * Esvazia a fila em lotes até acabar o que está vencido ou o tempo do cron (um herói com muitos
+ * Esvazia a fila em lotes até acabar o que está vencido ou o tempo do cron (um Hero com muitos
  * seguidores enche a fila de uma vez; um lote só deixaria o resto para o dia seguinte).
  */
 export async function drainPushOutbox(admin: Admin, budgetMs = 45_000): Promise<DispatchResult & { rounds: number }> {

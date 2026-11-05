@@ -19,7 +19,7 @@ async function postsByIds(supabase: Client, ids: string[]): Promise<FeedPostData
 }
 
 // Uma página do feed do Início ("Todos"). Usa a mesma RPC do Explorar (explore_feed): variedade de
-// heróis e ordem que gira uma vez por dia pela semente, estável entre páginas.
+// Heros e ordem que gira uma vez por dia pela semente, estável entre páginas.
 export async function homeFeedPage(seed: number, offset: number): Promise<HomeFeedPage> {
   const supabase = await createClient();
   const safeOffset = Math.max(0, Math.min(Math.trunc(offset) || 0, MAX_OFFSET));
@@ -35,7 +35,7 @@ export async function homeFeedPage(seed: number, offset: number): Promise<HomeFe
   return { items: spreadCreators(await postsByIds(supabase, ids)), hasMore, nextOffset };
 }
 
-// Feed "Seguindo": só posts no ar dos heróis seguidos, do mais recente ao mais antigo (a RLS de
+// Feed "Seguindo": só posts no ar dos Heros seguidos, do mais recente ao mais antigo (a RLS de
 // content já esconde o que não está no ar; o filtro repete a regra para não depender só dela).
 export async function followingFeedPage(creatorIds: readonly string[], offset: number): Promise<HomeFeedPage> {
   const safeOffset = Math.max(0, Math.min(Math.trunc(offset) || 0, MAX_OFFSET));

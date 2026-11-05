@@ -30,7 +30,7 @@ let deleteFails: Set<string>;
 let queries: { table: string; filters: string[] }[];
 let candidateCalls: { p_cutoff: string; p_limit: number }[];
 let discardCalls: string[];
-// simula o herói mexendo no conteúdo entre a leitura da fila e o descarte (consulta ao Cloudflare)
+// simula o Hero mexendo no conteúdo entre a leitura da fila e o descarte (consulta ao Cloudflare)
 let discardRace: ((uid: string) => void) | null;
 
 // Espelho de stream_cleanup_candidates (0026).
@@ -311,7 +311,7 @@ describe("cleanupStreamUploads", () => {
     expect(result).toMatchObject({ stream_checked: 0, stream_videos_deleted: 0 });
   });
 
-  it("herói troca a mídia do rascunho enquanto a limpeza consulta o Cloudflare: rascunho e vídeo ficam", async () => {
+  it("Hero troca a mídia do rascunho enquanto a limpeza consulta o Cloudflare: rascunho e vídeo ficam", async () => {
     contents.push({ id: "c1", status: "draft", published_at: null, media_ref: uid(16) });
     uploads.push({ uid: uid(16), content_id: "c1", expires_at: old, discarded_at: null, provider_deleted_at: null });
     statuses[uid(16)] = { state: "errored", durationSec: null, creatorId: "c", reason: null };
@@ -326,7 +326,7 @@ describe("cleanupStreamUploads", () => {
     expect(result).toMatchObject({ stream_drafts_removed: 0, stream_videos_deleted: 0 });
   });
 
-  it("herói publica enquanto a limpeza consulta o Cloudflare: nada é apagado", async () => {
+  it("Hero publica enquanto a limpeza consulta o Cloudflare: nada é apagado", async () => {
     contents.push({ id: "c1", status: "draft", published_at: null, media_ref: uid(17) });
     uploads.push({ uid: uid(17), content_id: "c1", expires_at: old, discarded_at: null, provider_deleted_at: null });
     statuses[uid(17)] = { state: "incomplete", durationSec: null, creatorId: "c", reason: null };

@@ -12,7 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 
 // Fila de credenciais do chef (P7): aprovar copia o texto do pedido para o perfil público com
 // credentials_approved_at; reprovar limpa os dois. Tudo pela RPC auditada admin_set_creator_credentials.
-// A decisão vale só para o texto que o admin viu na fila (expectedText): se o herói editou depois,
+// A decisão vale só para o texto que o admin viu na fila (expectedText): se o Hero editou depois,
 // a RPC (0032) recusa com request_changed e o admin recarrega a fila.
 export async function decideCreatorCredentials(input: { creatorId: string; approved: boolean; expectedText: string }, justification: string): Promise<ActionResult> {
   const parsed = z

@@ -1,13 +1,13 @@
--- 0071 · Denunciar conteúdo ou herói e bloquear herói (conteúdo de terceiros: diretriz 1.2 da App Store).
+-- 0071 · Denunciar conteúdo ou Hero e bloquear Hero (conteúdo de terceiros: diretriz 1.2 da App Store).
 -- Idempotente (create if not exists / or replace / drop policy if exists).
 --
 -- Decisões (31/10/2026, lançamento público):
---   • qualquer conta denuncia um conteúdo ou um herói (motivo de uma lista fixa + detalhe opcional); a equipe
---     analisa em /admin/denuncias e pode tirar o conteúdo do ar (arquivar) ou suspender o herói. Limite de 20
+--   • qualquer conta denuncia um conteúdo ou um Hero (motivo de uma lista fixa + detalhe opcional); a equipe
+--     analisa em /admin/denuncias e pode tirar o conteúdo do ar (arquivar) ou suspender o Hero. Limite de 20
 --     denúncias por dia por conta;
---   • bloquear um herói some com ele e com tudo o que ele publicou para quem bloqueou, em todo o app: a regra
+--   • bloquear um Hero some com ele e com tudo o que ele publicou para quem bloqueou, em todo o app: a regra
 --     mora nas políticas de leitura de content e creator_profiles (is_blocked_creator). Desbloquear fica em
---     Perfil › Heróis (my_blocked_heroes, que enxerga os bloqueados);
+--     Perfil › Heros (my_blocked_heroes, que enxerga os bloqueados);
 --   • exclusão da conta: os bloqueios saem junto (cascade); as denúncias ficam, sem o vínculo com quem
 --     denunciou (set null), como diz a Política de Privacidade.
 
@@ -49,7 +49,7 @@ create policy hero_blocks_select_own on public.hero_blocks for select to authent
 drop policy if exists content_reports_select_admin on public.content_reports;
 create policy content_reports_select_admin on public.content_reports for select to authenticated using ((select public.is_platform_admin()));
 
--- 2) quem chama bloqueou este herói? (anônimo: nunca) ----------------------------------------------------------------
+-- 2) quem chama bloqueou este Hero? (anônimo: nunca) ----------------------------------------------------------------
 create or replace function public.is_blocked_creator(p_creator uuid)
 returns boolean language sql stable security definer set search_path = '' as $$
   select p_creator is not null and auth.uid() is not null
@@ -58,7 +58,7 @@ $$;
 revoke execute on function public.is_blocked_creator(uuid) from public;
 grant execute on function public.is_blocked_creator(uuid) to anon, authenticated, service_role;
 
--- 3) leitura: o bloqueado some para quem bloqueou (dono, admin e agência pelo herói seguem vendo) ----------------------
+-- 3) leitura: o bloqueado some para quem bloqueou (dono, admin e agência pelo Hero seguem vendo) ----------------------
 drop policy if exists content_select on public.content;
 create policy content_select on public.content for select to anon, authenticated using (
   (public.content_is_live(status, publish_at) and not public.is_blocked_creator(creator_id))
@@ -99,7 +99,7 @@ language sql stable security definer set search_path = '' as $$
   order by b.created_at desc
 $$;
 
--- 5) denunciar (conteúdo ou herói) ----------------------------------------------------------------------------------
+-- 5) denunciar (conteúdo ou Hero) ----------------------------------------------------------------------------------
 create or replace function public.report_content(p_content uuid, p_creator uuid, p_reason text, p_details text)
 returns uuid language plpgsql security definer set search_path = '' as $$
 declare v_uid uuid := auth.uid(); v_creator uuid := p_creator; v_id uuid;
@@ -124,7 +124,7 @@ begin
   return v_id;
 end $$;
 
--- 6) triagem (admin geral): dispensar ou agir (arquivar o conteúdo e/ou suspender o herói), auditado -------------
+-- 6) triagem (admin geral): dispensar ou agir (arquivar o conteúdo e/ou suspender o Hero), auditado -------------
 create or replace function public.admin_resolve_report(p_id uuid, p_status text, p_archive_content boolean, p_suspend_creator boolean)
 returns void language plpgsql security definer set search_path = public as $$
 declare r public.content_reports%rowtype;

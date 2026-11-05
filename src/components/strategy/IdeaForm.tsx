@@ -23,7 +23,7 @@ export type IdeaFormValues = {
 
 type Target = "brand" | "prospect";
 
-// Ideia de estratégia para marca (0111, D3): marca atendida ou empresa-alvo, segmento, herói, data do Calendário
+// Ideia de estratégia para marca (0111, D3): marca atendida ou empresa-alvo, segmento, Hero, data do Calendário
 // Groscove e o texto. Mobile first: um campo por linha, alvos ≥ 44 px. A IA é opcional (sem chave, a equipe escreve).
 export function IdeaForm({
   initial,

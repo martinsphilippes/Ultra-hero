@@ -1,6 +1,6 @@
 -- =============================================================================
--- Groscove Ultra · 0123 · Página pública (aba Heróis) para os heróis importados do "Casting Groscove 2027" · cenário S125
--- Pedido do dono (informado do risco de uso de imagem): criar e PUBLICAR agora a página pública de cada herói que a 0122
+-- Groscove Ultra · 0123 · Página pública (aba Heros) para os Heros importados do "Casting Groscove 2027" · cenário S125
+-- Pedido do dono (informado do risco de uso de imagem): criar e PUBLICAR agora a página pública de cada Hero que a 0122
 -- importou para o casting da agência Groscove. Migração de DADOS; idempotente; nada de drop de tabela/coluna; nenhuma
 -- função nova executável por anon (S14 segue 18).
 --
@@ -10,17 +10,17 @@
 --     casting (photo_url '/casting/<slug>.(webp|jpg|png)'): o CHECK da 0122 só aceita esse caminho local ou https, e só
 --     a importação grava caminho local; então essa é a marca robusta do lote (não depende do texto do documento).
 --   • Como: o mesmo núcleo do botão "Criar página pública" da ficha (0112 talent_page_create — página já ligada ao
---     talento por talent_profiles.creator_id, que é o vínculo que "Heróis da agência" e "publicar em nome" usam via
+--     talento por talent_profiles.creator_id, que é o vínculo que "Heros da agência" e "publicar em nome" usam via
 --     agency_hero_ids). agency_talent_create_page exige sessão; aqui chamamos o núcleo interno, como a 0122 fez.
 --     Talento já com login próprio (conta existente ligada na importação ou convite já aceito): o núcleo passa o login
---     para o herói da MESMA pessoa (regra da 0112). Se a conta já tem outro herói (has_hero), o nome é pulado e listado.
+--     para o Hero da MESMA pessoa (regra da 0112). Se a conta já tem outro Hero (has_hero), o nome é pulado e listado.
 --   • Página: slug = o da foto (/casting/anitta.webp → anitta; slug de menos de 3 letras, como "pk", usa o @ do
 --     Instagram, "pkdelas", em vez do "pk-creator" do free_slug); nome = nome do casting; foto (avatar_url) = a foto do
 --     casting; capa vazia (o card e a página já têm superfície lisa sem capa); headline = categoria em pt-BR (mapa
 --     abaixo); bio = os temas do documento ("MPB · Música autoral · Turnês internacionais"; sem temas, sem bio);
---     is_fictional = false; rights_status 'pending' (sem titular): o público não vê selo (só herói fictício ganha selo)
+--     is_fictional = false; rights_status 'pending' (sem titular): o público não vê selo (só Hero fictício ganha selo)
 --     e a agência/admin veem o aviso interno "Registrar autorização de imagem" (needsImageAuthorization); status
---     'active' = publicada na aba Heróis. sort_order 1000 + página do documento: os heróis editoriais (10–80) seguem
+--     'active' = publicada na aba Heros. sort_order 1000 + página do documento: os Heros editoriais (10–80) seguem
 --     na frente e o lote entra na ordem do documento.
 --   • Pilares (obrigatório 1–4; o app só tem routine, training, nutrition, gastronomy — pilares de bem-estar): segmento
 --     Esporte → training; todos os outros segmentos (Música, Influência, Atuação, Apresentação, Humor, Moda/Modelo,
@@ -28,15 +28,15 @@
 --     Fitness/Corrida/Esporte/Futebol/Surfe/Jiu-jitsu/Emagrecimento/Motociclismo → training; Alimentação/Nutrição →
 --     nutrition; Gastronomia/Culinária/Receitas → gastronomy.
 --   • Colisão de slug: slug já usado por OUTRA pessoa → sufixo -2, -3… (free_slug). Mesmo slug E mesmo nome (a mesma
---     pessoa — ex.: Anitta e Neymar já são heróis editoriais desde a 0044) com a página existente real, sem titular e
+--     pessoa — ex.: Anitta e Neymar já são Heros editoriais desde a 0044) com a página existente real, sem titular e
 --     fora de qualquer casting: NÃO cria uma segunda página; liga o talento à página existente (sem mexer em conteúdo,
 --     foto ou direitos dela). Se essa página não puder ser ligada (tem titular, é de outro casting, é fictícia ou o
 --     talento já tem login), o nome é pulado com o motivo 'same_person_page_exists' (melhor que duas páginas da mesma
---     pessoa na aba Heróis).
+--     pessoa na aba Heros).
 --   • Reivindicação: o aceite (accept_invitation_core, 0091, sem mudança) lê talent_profiles.creator_id NA HORA do
 --     aceite; com página, a conta vira titular dela (creator_profiles.user_id + papel creator escopo creator). Então a
 --     página criada DEPOIS do convite já é coberta — o convite pendente da 0122 continua valendo (S125 confere).
---   • Categorias do herói (chips da aba, 0049) são curadoria do admin: não são criadas aqui.
+--   • Categorias do Hero (chips da aba, 0049) são curadoria do admin: não são criadas aqui.
 --   • Idempotente: só pega talento sem página; rodar de novo não cria nada. Resumo em audit_log 'casting.publish'
 --     (cada página também tem o 'agency.hero.create' do núcleo).
 -- =============================================================================

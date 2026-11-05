@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // Evento do Calendário Groscove na marca (0098): detalhe e "Tenho interesse" (dono ou equipe). A marca vê só o
-// próprio interesse e as contagens totais — nunca a lista de heróis interessados (regra M4).
+// próprio interesse e as contagens totais — nunca a lista de Heros interessados (regra M4).
 export default async function BrandGroscoveEventPage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
@@ -51,7 +51,7 @@ export default async function BrandGroscoveEventPage({ params }: { params: Promi
           <InterestCounts counts={counts} />
           <p className="type-caption text-fg-subtle">{t("interest.notContractBrand")}</p>
         </section>
-        {/* 0101: propor a partir do evento pelos fluxos existentes; a marca vê só as propostas dela (nunca heróis) */}
+        {/* 0101: propor a partir do evento pelos fluxos existentes; a marca vê só as propostas dela (nunca Heros) */}
         <BrandEventActions eventId={event.id} interested={mine?.state === "interested"} canPropose={Boolean(ctx.role)} hasAgency={Boolean(ctx.agency)} closed={closed} />
         <EventPosts posts={posts.items} portal="brand" />
         <EventCommercialPanel items={history} />

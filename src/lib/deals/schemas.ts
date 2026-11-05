@@ -81,7 +81,7 @@ export const brandRequestSchema = z.object({
   brief: briefSchema.default({ ...EMPTY_BRIEF }),
   /** Valor oferecido em centavos (null = não informado). */
   budgetMaxCents: z.number().int().min(0).max(10_000_000_000).nullable(),
-  /** Modelo do valor oferecido (0096): fixo = total do evento; por_heroi = valor por herói com máximo de heróis. */
+  /** Modelo do valor oferecido (0096): fixo = total do evento; por_heroi = valor por Hero com máximo de Heros. */
   valueModel: z.enum(VALUE_MODELS),
   maxHeroes: z.number().int().min(1).max(50).nullable(),
   budgetNote: z.string().trim().max(300),
@@ -92,7 +92,7 @@ export const brandRequestSchema = z.object({
 });
 export type BrandRequestInput = z.input<typeof brandRequestSchema>;
 
-// 0107: cliente = marca e/ou herói (ficha do casting) e, opcionalmente, o serviço (gera o roteiro a partir de startOn)
+// 0107: cliente = marca e/ou Hero (ficha do casting) e, opcionalmente, o serviço (gera o roteiro a partir de startOn)
 export const dealCreateSchema = z
   .object({
     brandId: z.union([z.literal(""), uuid]),
@@ -107,7 +107,7 @@ export const dealCreateSchema = z
     notes: z.string().trim().max(2000),
     /** 0111: negócio de origem (o "próximo negócio" do clipping) */
     originDealId: z.union([z.literal(""), uuid]).default(""),
-    /** 04/11: heróis da campanha (fichas do casting) escalados logo depois de criar — os mesmos da aba Heróis */
+    /** 04/11: Heros da campanha (fichas do casting) escalados logo depois de criar — os mesmos da aba Heros */
     campaignTalentIds: z.array(uuid).max(30).default([]),
   })
   .refine((d) => d.brandId !== "" || d.clientTalentId !== "", { path: ["brandId"], message: "client_required" });

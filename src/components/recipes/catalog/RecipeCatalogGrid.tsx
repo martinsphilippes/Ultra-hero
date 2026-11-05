@@ -11,13 +11,13 @@ import { RECIPE_GRID } from "./grid";
 
 type Props = {
   params: RecipeCatalogParams;
-  /** Catálogo dentro do chef (biblioteca do herói). */
+  /** Catálogo dentro do chef (biblioteca do Hero). */
   creator: string | null;
   nextCursor: string | null;
   initialCount: number;
   /** Registra recipe.catalog_filter (só os nomes) quando há busca ou filtro. */
   track: "explore" | "chef" | null;
-  /** Alimentação do herói (0051): as próximas páginas vêm com as ações da vitrine. */
+  /** Alimentação do Hero (0051): as próximas páginas vêm com as ações da vitrine. */
   showcase?: boolean;
   children: ReactNode;
 };

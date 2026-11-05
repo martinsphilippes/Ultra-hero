@@ -26,8 +26,8 @@ export async function generateMetadata(): Promise<Metadata> {
 type Props = { searchParams: Promise<{ data?: string; evento?: string; heroi?: string; marca?: string; ideia?: string }> };
 
 // Nova oportunidade de patrocínio (0085), gestor+. Da agenda chega com ?data=AAAA-MM-DD.
-// 0095: o primeiro campo é o HERÓI (busca na plataforma, fora do casting ou digitado); sem trava de elenco. O consentimento
-// do herói só é exigido para publicar às marcas; o rascunho vale sem ele.
+// 0095: o primeiro campo é o HERO (busca na plataforma, fora do casting ou digitado); sem trava de elenco. O consentimento
+// do Hero só é exigido para publicar às marcas; o rascunho vale sem ele.
 export default async function NewSponsorshipPage({ searchParams }: Props) {
   const ctx = await requireAgency("manager");
   const sp = await searchParams;
@@ -38,10 +38,10 @@ export default async function NewSponsorshipPage({ searchParams }: Props) {
   const date = sp.data && /^\d{4}-\d{2}-\d{2}$/.test(sp.data) && sp.data >= today ? sp.data : plusDays(today, 14);
   // prazo padrão: 3 dias antes do evento (ou amanhã, se o evento é logo)
   const respond = plusDays(date, -3) > today ? plusDays(date, -3) : plusDays(today, 1) <= date ? plusDays(today, 1) : date;
-  // 0101: "Criar oportunidade de patrocínio a partir deste evento" — o herói é escolhido no formulário; da compatibilidade
+  // 0101: "Criar oportunidade de patrocínio a partir deste evento" — o Hero é escolhido no formulário; da compatibilidade
   // pode vir já com a ficha do casting (?heroi=) ou com a marca interessada como público escolhido (?marca=)
   const pre = from.event ? sponsorshipPrefill(from.event, today) : null;
-  // 0111: "Enviar à marca" de uma ideia aprovada (banco de estratégias) chega com ?ideia= e herói/marca/data
+  // 0111: "Enviar à marca" de uma ideia aprovada (banco de estratégias) chega com ?ideia= e Hero/marca/data
   const ideaId = sp.ideia && /^[0-9a-f-]{36}$/i.test(sp.ideia) ? sp.ideia : "";
   let hero: HeroChoice | null = null;
   if ((pre || ideaId) && sp.heroi && /^[0-9a-f-]{36}$/i.test(sp.heroi)) {

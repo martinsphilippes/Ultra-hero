@@ -1,9 +1,9 @@
-// "Publicar como hero" (0045): só o admin cria e gerencia conteúdo pelos heróis. Módulo puro
+// "Publicar como hero" (0045): só o admin cria e gerencia conteúdo pelos Heros. Módulo puro
 // (cliente e servidor): nomes do cookie/cabeçalho, os 6 atalhos e para onde cada um leva.
 
-/** Último herói escolhido pelo admin (httpOnly; o servidor sempre revalida no banco). */
+/** Último Hero escolhido pelo admin (httpOnly; o servidor sempre revalida no banco). */
 export const ACTING_HERO_COOKIE = "uh_acting_hero";
-/** Cabeçalho que o servidor manda ao PostgREST; o banco só honra para admin com herói ativo. */
+/** Cabeçalho que o servidor manda ao PostgREST; o banco só honra para admin com Hero ativo. */
 export const ACTING_HERO_HEADER = "x-acting-hero";
 export const ACTING_HERO_MAX_AGE = 60 * 60 * 24 * 30;
 
@@ -26,8 +26,8 @@ export function isHeroCard(value: unknown): value is HeroCard {
   return typeof value === "string" && (HERO_CARDS as readonly string[]).includes(value);
 }
 
-// Atalho → tela. Conteúdos usam o módulo de conteúdo do admin (já cria para qualquer herói), com o
-// herói pré-selecionado; post, receitas, vínculos e painel usam o portal do herói no modo do admin.
+// Atalho → tela. Conteúdos usam o módulo de conteúdo do admin (já cria para qualquer Hero), com o
+// Hero pré-selecionado; post, receitas, vínculos e painel usam o portal do Hero no modo do admin.
 export function heroCardHref(card: HeroCard, heroId: string): string {
   const creator = encodeURIComponent(heroId);
   switch (card) {
@@ -46,7 +46,7 @@ export function heroCardHref(card: HeroCard, heroId: string): string {
   }
 }
 
-/** Em qual atalho a tela atual está (para "Trocar hero" voltar ao mesmo fluxo com o novo herói). */
+/** Em qual atalho a tela atual está (para "Trocar hero" voltar ao mesmo fluxo com o novo Hero). */
 export function heroCardForPath(pathname: string): HeroCard {
   if (pathname.startsWith("/heroi/post")) return "post";
   if (pathname.startsWith("/heroi/receitas")) return "recipes";

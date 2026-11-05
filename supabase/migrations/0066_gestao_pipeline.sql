@@ -1423,7 +1423,7 @@ returns jsonb language sql stable security definer set search_path = '' as $$
 $$;
 revoke execute on function public.talent_public_card(uuid) from public, anon, authenticated;
 
--- o creator pode ser mostrado à marca? (consentimento vigente, liberado, não arquivado, herói ativo) — a mesma
+-- o creator pode ser mostrado à marca? (consentimento vigente, liberado, não arquivado, Hero ativo) — a mesma
 -- regra do catálogo vale para a escolha na proposta e para a campanha (revisão P1a)
 create or replace function public.talent_brand_card_ok(p_talent uuid, p_agency uuid)
 returns boolean language sql stable security definer set search_path = '' as $$

@@ -23,7 +23,7 @@
 --   • Escrita só do admin geral (is_platform_admin, o mecanismo existente — sem comparar e-mail), sempre por RPC
 --     security definer auditada. "Restaurar padrão agora" despublica (volta a rascunho) os temas ativos neste momento;
 --     o interruptor global (seasonal_theme_settings.enabled) desliga tudo sem mexer nos temas.
---   • Áreas: app do consumidor ('app'), portais herói/agência/marca ('portals') e página institucional/entrada
+--   • Áreas: app do consumidor ('app'), portais Hero/agência/marca ('portals') e página institucional/entrada
 --     ('institutional'). Admin, checkout, carrinho, planos e pagamentos NUNCA recebem tema: a trava fica no app (lista
 --     fixa de caminhos excluídos), não depende do cadastro.
 --   • Imagens: bucket público próprio `theme-assets` (até 2 MiB; png, jpeg, webp — sem SVG/GIF: nada de script nem

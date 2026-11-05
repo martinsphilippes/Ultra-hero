@@ -15,12 +15,12 @@ import { SPONSORSHIP_DECISIONS, SPONSORSHIP_RESPONSES, sponsorshipInstants, spon
 
 // Oportunidade de patrocínio (0085): a agência (gestor+) publica e decide; a marca (dono ou equipe) responde.
 // As RPCs conferem tudo de novo e geram os avisos (sino e fila de e-mail, que sai depois da resposta).
-// 0095: o herói (página pública do creator) é o primeiro campo; a oportunidade nasce rascunho ou publicada, e só publicar
-// exige o consentimento do herói.
+// 0095: o Hero (página pública do creator) é o primeiro campo; a oportunidade nasce rascunho ou publicada, e só publicar
+// exige o consentimento do Hero.
 
 export type SponsorshipResult = { ok: true; message: string; id?: string; requestId?: string | null; status?: "draft" | "open" } | { ok: false; error: string };
 
-/** Erro de publicar com texto próprio da oportunidade (consentimento e página do herói); o resto segue o padrão da agência. */
+/** Erro de publicar com texto próprio da oportunidade (consentimento e página do Hero); o resto segue o padrão da agência. */
 async function publishFail(error: unknown): Promise<{ ok: false; error: string }> {
   const message = error instanceof Error ? error.message : ((error as { message?: string } | null)?.message ?? "");
   if (message.includes("consent_required")) {
@@ -97,7 +97,7 @@ export async function saveSponsorshipAction(input: SponsorshipInput): Promise<Sp
 
 const publishSchema = z.object({ id: z.uuid() });
 
-/** Publica um rascunho às marcas (gestor+): o banco confere consentimento, página do herói ativa e prazo. */
+/** Publica um rascunho às marcas (gestor+): o banco confere consentimento, página do Hero ativa e prazo. */
 export async function publishSponsorshipAction(input: z.input<typeof publishSchema>): Promise<SponsorshipResult> {
   await requireAgency("manager");
   const parsed = publishSchema.safeParse(input);
@@ -136,7 +136,7 @@ export async function discardSponsorshipDraftAction(input: z.input<typeof publis
 
 export type OpportunityHeroSearchResult = ({ ok: true } & OpportunityHeroPage) | { ok: false; error: string };
 
-/** Busca no servidor dos heróis para a caixa "Herói" (20 por página): casting, fora do casting e indisponíveis. */
+/** Busca no servidor dos Heros para a caixa "Hero" (20 por página): casting, fora do casting e indisponíveis. */
 export async function searchOpportunityHeroesAction(input: { q: string; offset?: number }): Promise<OpportunityHeroSearchResult> {
   const ctx = await requireAgency("manager");
   const parsed = z.object({ q: z.string().max(200), offset: z.number().int().min(0).max(5000).optional() }).safeParse(input);

@@ -5,7 +5,7 @@ import { useId, useLayoutEffect, useRef, useState } from "react";
 
 type Props = { headline: string | null; bio: string | null };
 
-// Bio do herói como no Instagram: uma linha só e "mais" para quem quiser ler o resto. O que importa
+// Bio do Hero como no Instagram: uma linha só e "mais" para quem quiser ler o resto. O que importa
 // na página são os conteúdos abaixo.
 export function HeroBio({ headline, bio }: Props) {
   const t = useTranslations("discover.personalities.profile");

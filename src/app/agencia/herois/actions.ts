@@ -18,8 +18,8 @@ import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { PILLARS, rpcErrorCode, type Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
-// Heróis da agência (0070): gestor+ cria e edita o perfil, escolhe o herói em nome de quem publica
-// (auditado) e troca a foto dele. O banco confere o vínculo agência ↔ herói em cada chamada.
+// Heros da agência (0070): gestor+ cria e edita o perfil, escolhe o Hero em nome de quem publica
+// (auditado) e troca a foto dele. O banco confere o vínculo agência ↔ Hero em cada chamada.
 
 type Result<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 
@@ -43,7 +43,7 @@ function revalidateHeroes(slug?: string) {
   if (slug) revalidatePath(`/personalities/${slug}`);
 }
 
-// 0112: criar herói saiu daqui — o herói nasce só pelo Casting ("Novo herói": createHeroAction em
+// 0112: criar Hero saiu daqui — o Hero nasce só pelo Casting ("Novo Hero": createHeroAction em
 // src/app/agencia/casting/actions.ts, com o acesso e a página opcional). Aqui fica editar, escolher e trocar a foto.
 
 const updateSchema = heroSchema.omit({ slug: true }).extend({ id: z.uuid() });
@@ -70,7 +70,7 @@ export async function updateHeroAction(input: z.input<typeof updateSchema>): Pro
   }
 }
 
-// Escolher o herói (auditado no banco); o cookie só lembra a escolha, o banco confere a cada requisição.
+// Escolher o Hero (auditado no banco); o cookie só lembra a escolha, o banco confere a cada requisição.
 export async function chooseHeroAction(heroId: string): Promise<Result> {
   await requireAgency("manager");
   const parsed = z.uuid().safeParse(heroId);
@@ -93,9 +93,9 @@ export async function chooseHeroAction(heroId: string): Promise<Result> {
   }
 }
 
-// ---------------------------------------------------------------- foto do herói escolhido
+// ---------------------------------------------------------------- foto do Hero escolhido
 // Mesmo desenho da foto de perfil (0031): bytes conferidos no servidor, envio reservado na cota de quem
-// envia, gravado pelo service role e aplicado só no herói escolhido (hero_avatar_set). A foto anterior
+// envia, gravado pelo service role e aplicado só no Hero escolhido (hero_avatar_set). A foto anterior
 // fica sem referência e sai na limpeza diária.
 export type HeroAvatarResult = { ok: true; avatarUrl: string | null } | { ok: false; error: AvatarError };
 

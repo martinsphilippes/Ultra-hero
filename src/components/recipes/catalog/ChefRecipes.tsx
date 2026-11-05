@@ -18,12 +18,12 @@ type Props = {
   params: RecipeCatalogParams;
 };
 
-// Biblioteca "Receitas" do herói (perfil público do chef): primeiro as receitas que ele assina, com
+// Biblioteca "Receitas" do Hero (perfil público do chef): primeiro as receitas que ele assina, com
 // busca e filtros (recipe_catalog com p_creator, carregamento progressivo); depois as que ele
 // indica, assinadas por outros chefs. Busca e filtros só aparecem quando há receitas próprias e
 // valem para elas; com busca ou filtro ativo, as indicadas saem e um aviso explica.
 // Alimentação completa (0051): cada card traz a assinatura da vitrine (chef escolhido pelo admin ·
-// indicada por este herói) e as ações Fazer, Lista de compras e, com produto ligado, Comprar pronto.
+// indicada por este Hero) e as ações Fazer, Lista de compras e, com produto ligado, Comprar pronto.
 export async function ChefRecipes({ recipes, hero, params }: Props) {
   const [t, tl] = await Promise.all([getTranslations("recipes.chefProfile"), getTranslations("recipes.library")]);
   const base = hubHref(hero.slug, "alimentacao");
@@ -88,7 +88,7 @@ export async function ChefRecipes({ recipes, hero, params }: Props) {
         </section>
       ) : null}
 
-      {/* Contratar nutricionista (Etapa 3, 0058): sugeridos deste herói; sem a 0058, a linha "em breve" */}
+      {/* Contratar nutricionista (Etapa 3, 0058): sugeridos deste Hero; sem a 0058, a linha "em breve" */}
       <HireNutritionist contentId={null} creatorId={hero.id} source="alimentacao" nextPath={base} />
     </div>
   );

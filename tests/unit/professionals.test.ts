@@ -139,7 +139,7 @@ describe("quem vê Contratar", () => {
 });
 
 describe("sugeridos e contador", () => {
-  it("receita, depois herói, depois qualquer um; sem repetir", () => {
+  it("receita, depois Hero, depois qualquer um; sem repetir", () => {
     const a = { id: "a" };
     const b = { id: "b" };
     const c = { id: "c" };

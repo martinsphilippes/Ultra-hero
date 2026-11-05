@@ -7,8 +7,8 @@ import { isMissingFunction } from "@/lib/acting-hero/server";
 import { getUser, hasRole } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 
-// "Publicar como hero": o admin toca num herói do seletor. O banco confere admin e herói ativo e
-// audita a escolha (admin_act_as_hero, 0045); só então o cookie lembra o herói e a tela abre o fluxo.
+// "Publicar como hero": o admin toca num Hero do seletor. O banco confere admin e Hero ativo e
+// audita a escolha (admin_act_as_hero, 0045); só então o cookie lembra o Hero e a tela abre o fluxo.
 
 export type ChooseHeroResult = { ok: true; href: string } | { ok: false; error: string };
 

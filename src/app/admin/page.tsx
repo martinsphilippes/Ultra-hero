@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type SearchParams = Promise<{ days?: string; heroi?: string }>;
 
-// Painel do admin: "Publicar como hero" no topo (só o admin cria e gerencia conteúdo pelos heróis),
+// Painel do admin: "Publicar como hero" no topo (só o admin cria e gerencia conteúdo pelos Heros),
 // KPIs do admin_metrics, mini-gráfico diário, kill switches e pendências.
 export default async function AdminHomePage({ searchParams }: { searchParams: SearchParams }) {
   const { days: rawDays, heroi } = await searchParams;
@@ -39,7 +39,7 @@ export default async function AdminHomePage({ searchParams }: { searchParams: Se
   );
 }
 
-// Heróis ativos para o seletor e o último escolhido (revalidado no banco a cada visita).
+// Heros ativos para o seletor e o último escolhido (revalidado no banco a cada visita).
 async function HeroPublishingSection({ initialCard }: { initialCard: HeroCard | null }) {
   const supabase = await createClient();
   const [{ data: heroes }, acting, available] = await Promise.all([
@@ -75,7 +75,7 @@ async function DashboardContent({ days }: { days: number }) {
     supabase.from("test_fulfillments").select("id", { count: "exact", head: true }).eq("status", "awaiting"),
     supabase.from("test_fulfillments").select("id", { count: "exact", head: true }).eq("status", "preparing"),
     supabase.from("creator_profiles").select("id", { count: "exact", head: true }).eq("status", "pending"),
-    // 0103: agências, marcas e heróis criados por autosserviço nos últimos 7 dias (a lista fica em /admin/cadastros)
+    // 0103: agências, marcas e Heros criados por autosserviço nos últimos 7 dias (a lista fica em /admin/cadastros)
     supabase
       .from("account_onboardings")
       .select("id", { count: "exact", head: true })
@@ -101,7 +101,7 @@ async function DashboardContent({ days }: { days: number }) {
   const events = `${metrics}#events-title`;
 
   const pending = [
-    // 0092: heróis criados por convite nascem pendentes; o admin aprova em Personalidades
+    // 0092: Heros criados por convite nascem pendentes; o admin aprova em Personalidades
     { key: "pendingHeroes", count: pendingHeroes.count ?? 0, href: "/admin/herois", nav: tn("creators") },
     { key: "selfSignups", count: selfSignups.count ?? 0, href: "/admin/cadastros", nav: tn("invitations") },
     { key: "inReview", count: inReview.count ?? 0, href: "/admin/content", nav: tn("content") },

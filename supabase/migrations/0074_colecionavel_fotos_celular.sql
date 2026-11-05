@@ -6,10 +6,10 @@
 --   grava no bucket público `post-photos` com o service role. A URL pública entra em
 --   collectibles.photos (o CHECK da 0057 já aceita https://).
 --
---   * collectible_photo_upload_claim: reserva pelo ADMIN (sem herói; post_photo_upload_claim exige
---     herói ativo ou o admin agindo por um). Mesma tabela post_photo_uploads, mesmo kill switch
+--   * collectible_photo_upload_claim: reserva pelo ADMIN (sem Hero; post_photo_upload_claim exige
+--     Hero ativo ou o admin agindo por um). Mesma tabela post_photo_uploads, mesmo kill switch
 --     (post_photos.uploads_enabled), mesma cota de 30 por hora por conta e mesmo nome de objeto
---     <user_id>/<uuid>.(webp|jpg). Nada muda para o herói.
+--     <user_id>/<uuid>.(webp|jpg). Nada muda para o Hero.
 --   * post_photo_orphan_uploads: a foto usada por um colecionável deixa de contar como órfã (senão a
 --     limpeza diária apagaria a foto 1 h depois do envio). Mesma assinatura e grants da 0043.
 -- Regras: nada de drop/truncate; search_path fixo; grants explícitos; nenhuma função nova com execute
@@ -46,7 +46,7 @@ grant execute on function public.collectible_photo_upload_claim(int, text) to au
 
 -- ---------------------------------------------------------------- 2) limpeza diária preserva as fotos dos colecionáveis
 -- Igual à 0043, com uma referência a mais: collectibles.photos (URL pública do objeto). Ao contrário da foto
--- do post (conteúdo do próprio herói, que sai junto com a conta), a foto do colecionável é da plataforma:
+-- do post (conteúdo do próprio Hero, que sai junto com a conta), a foto do colecionável é da plataforma:
 -- fica mesmo que a conta do admin que enviou tenha sido excluída (user_id nulo).
 create or replace function public.post_photo_orphan_uploads(p_limit int)
 returns setof text language plpgsql stable set search_path = public as $$

@@ -17,10 +17,10 @@ import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { rpcErrorCode } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
-// Capa do herói (0042): envio e remoção, no mesmo desenho da foto de perfil (avatar-actions). Os
+// Capa do Hero (0042): envio e remoção, no mesmo desenho da foto de perfil (avatar-actions). Os
 // bytes passam pelo servidor, que confere tipo e proporção pelos magic bytes, reserva o envio no
-// banco (herói ativo, cota e kill switch), grava no bucket público com o service role e aplica a URL
-// no perfil do próprio herói ativo (hero_cover_set). A capa anterior, se era foto própria, sai do ar.
+// banco (Hero ativo, cota e kill switch), grava no bucket público com o service role e aplica a URL
+// no perfil do próprio Hero ativo (hero_cover_set). A capa anterior, se era foto própria, sai do ar.
 
 export type CoverResult = { ok: true; coverUrl: string | null } | { ok: false; error: CoverError };
 
@@ -33,13 +33,13 @@ function rpcFailure(error: { code?: string; message?: string } | null): CoverErr
   return toCoverError(rpcErrorCode(error.message));
 }
 
-// mesma regra da tela: herói (ou admin) com o perfil vinculado; o banco confere de novo (ativo e papel)
+// mesma regra da tela: Hero (ou admin) com o perfil vinculado; o banco confere de novo (ativo e papel)
 async function isHero(): Promise<boolean> {
   return heroProfileFor(heroRoleNames(await getRoles()), true) !== null;
 }
 
-// Agência (0070) e admin geral no portal da agência (0072): a capa vai para o herói escolhido; o banco
-// confere o vínculo (acting_hero_id). Sem herói escolhido, o próprio perfil de herói, como antes.
+// Agência (0070) e admin geral no portal da agência (0072): a capa vai para o Hero escolhido; o banco
+// confere o vínculo (acting_hero_id). Sem Hero escolhido, o próprio perfil de Hero, como antes.
 async function agencyActingHero(): Promise<ActingHero | null> {
   if (!(await hasRole("agency")) && !(await hasRole("admin"))) return null;
   const acting = await getActingHero();
@@ -86,7 +86,7 @@ export async function uploadHeroCover(formData: FormData): Promise<CoverResult> 
 
   try {
     const supabase = acting ? await actingClient(acting.id) : await createClient();
-    // Termos do Parceiro (0068): quem envia (herói, ou a agência no admin pelo herói) confirma os direitos antes
+    // Termos do Parceiro (0068): quem envia (Hero, ou a agência no admin pelo Hero) confirma os direitos antes
     if (!(await hasUploadRights(supabase, user.id))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
     const { data: path, error: claimError } = await supabase.rpc("hero_cover_upload_claim", { p_bytes: bytes.length, p_mime: check.image.mime });
     if (claimError || typeof path !== "string") return { ok: false, error: rpcFailure(claimError) };
@@ -122,7 +122,7 @@ export async function uploadHeroCover(formData: FormData): Promise<CoverResult> 
   }
 }
 
-// Sem entrada: tira a capa do perfil do próprio herói ativo (foto enviada, oficial ou desenho antigo).
+// Sem entrada: tira a capa do perfil do próprio Hero ativo (foto enviada, oficial ou desenho antigo).
 // Foto própria também sai do bucket; o resto só perde a referência.
 export async function removeHeroCover(): Promise<CoverResult> {
   const user = await getUser();

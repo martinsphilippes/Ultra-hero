@@ -1,17 +1,17 @@
 -- =============================================================================
--- Groscove Ultra · 0094 · Agenda e financeiro do herói (creator logado) · cenário S101
--- Pedido do responsável (03/11): "o herói precisa acessar a agenda dele rapidamente para ver os compromissos e tudo
+-- Groscove Ultra · 0094 · Agenda e financeiro do Hero (creator logado) · cenário S101
+-- Pedido do responsável (03/11): "o Hero precisa acessar a agenda dele rapidamente para ver os compromissos e tudo
 -- que ele precisa executar, além da parte financeira para saber quanto vai receber de cada serviço".
 -- Idempotente; nada de drop de tabela/coluna; S14 segue 18 (nenhuma função nova com execute para anon; as de
 -- apoio são security definer só para authenticated/service_role).
 --
 -- Decisões (sem perguntar ao responsável):
---   • Herói COM agência (ligado a um talento do casting): reaproveita o escritório que já existe (agenda e ganhos em
---     /creator/escritorio). Nada de tabela nova para ele. Para a tela saber se o herói em uso é o do casting, o
+--   • Hero COM agência (ligado a um talento do casting): reaproveita o escritório que já existe (agenda e ganhos em
+--     /creator/escritorio). Nada de tabela nova para ele. Para a tela saber se o Hero em uso é o do casting, o
 --     talent_my_context() ganha a chave creator_id (mesma assinatura, só um campo a mais).
---   • Herói INDEPENDENTE (sem agência): duas tabelas escopadas ao herói (creator_profile_id), com RLS direta (sem RPC de
+--   • Hero INDEPENDENTE (sem agência): duas tabelas escopadas ao Hero (creator_profile_id), com RLS direta (sem RPC de
 --     escrita) e grants explícitos, anon nada:
---       hero_events    · compromissos do herói (gravação | evento | reunião | entrega | outro), com o que executar
+--       hero_events    · compromissos do Hero (gravação | evento | reunião | entrega | outro), com o que executar
 --                        em checklist simples (jsonb validado), contratante em texto e serviço vinculado opcional.
 --       hero_services  · "serviços e ganhos": quem contratou, data do serviço, valor a receber (centavos BRL), vencimento,
 --                        situação (a receber | recebido | cancelado; "vencido" NÃO é gravado: é calculado pela data),
@@ -19,26 +19,26 @@
 --   • Quem enxerga o quê (a equipe não precisa ver o que o titular recebe):
 --       agenda     · titular e membros da equipe leem; só o TITULAR cria, edita e exclui (membro só consulta);
 --       financeiro · só o titular (e o admin, para suporte). Membro não lê nem escreve (RLS). O admin só lê.
---       herói SUSPENSO não escreve (leitura continua para o titular poder se organizar).
+--       Hero SUSPENSO não escreve (leitura continua para o titular poder se organizar).
 --   • Itens de serviço com data aparecem na agenda sem cadastro duplo: hero_service_dates() devolve, para a equipe,
 --     só título, contratante e data do serviço (nunca valor, vencimento nem situação). Um serviço que já tem
 --     compromisso vinculado não aparece duas vezes (a tela deduplica).
---   • Escritório de herói com agência: o financeiro segue a mesma regra. Antes (0091) o membro da equipe abria o
+--   • Escritório de Hero com agência: o financeiro segue a mesma regra. Antes (0091) o membro da equipe abria o
 --     escritório inteiro e lia o repasse (cachê) do titular. Agora my_talent_owner_id() (nova, authenticated) só devolve
 --     o talento para o titular, e talent_payouts() (MESMA assinatura) e a política de leitura do repasse a usam: o membro
 --     da equipe continua na agenda, tarefas, oportunidades etc., mas não vê o cachê. Valor da marca e comissão nunca
 --     chegam ao creator (regras 0072/0082 intactas).
---   • Comprovante: bucket privado hero-proofs (pdf/jpg/png/webp, até 10 MB), caminho <herói>/<serviço>/<arquivo>.
+--   • Comprovante: bucket privado hero-proofs (pdf/jpg/png/webp, até 10 MB), caminho <Hero>/<serviço>/<arquivo>.
 --     A agência e o armazenamento de documentos da agência (agency-docs) não valem para quem não tem agência; aqui só o
---     titular (e o admin, leitura) lê e envia. O navegador envia direto; o caminho é validado no banco (prefixo do herói).
---   • Feed .ics privado: calendar_feed_resolve (MESMA assinatura, 0067) passa a incluir os compromissos do herói e as
---     datas de serviço (sem valores) dos heróis em que a pessoa está na equipe. Mesmo link/token do feed da pessoa.
---   • Lembrete de vencimento no sino: FICOU DE FORA. O sino do creator só existe no escritório do casting; o herói
+--     titular (e o admin, leitura) lê e envia. O navegador envia direto; o caminho é validado no banco (prefixo do Hero).
+--   • Feed .ics privado: calendar_feed_resolve (MESMA assinatura, 0067) passa a incluir os compromissos do Hero e as
+--     datas de serviço (sem valores) dos Heros em que a pessoa está na equipe. Mesmo link/token do feed da pessoa.
+--   • Lembrete de vencimento no sino: FICOU DE FORA. O sino do creator só existe no escritório do casting; o Hero
 --     independente não tem onde ver o aviso. O vencido aparece em destaque no Financeiro e no resumo do Perfil.
 -- =============================================================================
 
 -- 1) funções de apoio (security definer; políticas e storage chamam como o próprio usuário) -------------------------
--- heróis (não suspensos) de que a pessoa logada é titular: quem ESCREVE agenda e financeiro
+-- Heros (não suspensos) de que a pessoa logada é titular: quem ESCREVE agenda e financeiro
 create or replace function public.my_active_owned_creator_ids()
 returns uuid[] language sql stable security definer set search_path = '' as $$
   select coalesce(array_agg(c.id), '{}'::uuid[]) from public.creator_profiles c
@@ -47,7 +47,7 @@ $$;
 revoke execute on function public.my_active_owned_creator_ids() from public, anon;
 grant execute on function public.my_active_owned_creator_ids() to authenticated, service_role;
 
--- talento do casting só para o TITULAR (o membro da equipe do herói recebe null): ganhos/cachê
+-- talento do casting só para o TITULAR (o membro da equipe do Hero recebe null): ganhos/cachê
 create or replace function public.my_talent_owner_id()
 returns uuid language sql stable security definer set search_path = '' as $$
   select t from (select public.my_talent_id() as t) x where x.t is not null and public.talent_user_id(x.t) = auth.uid()
@@ -74,7 +74,7 @@ end $$;
 revoke execute on function public.hero_checklist_valid(jsonb) from public, anon;
 grant execute on function public.hero_checklist_valid(jsonb) to authenticated, service_role;
 
--- 2) serviços e ganhos do herói ---------------------------------------------------------------------------------------
+-- 2) serviços e ganhos do Hero ---------------------------------------------------------------------------------------
 create table if not exists public.hero_services (
   id uuid primary key default gen_random_uuid(),
   creator_profile_id uuid not null references public.creator_profiles (id) on delete cascade,
@@ -98,7 +98,7 @@ create table if not exists public.hero_services (
 create index if not exists hero_services_hero_idx on public.hero_services (creator_profile_id, service_on desc);
 create index if not exists hero_services_open_idx on public.hero_services (creator_profile_id, due_on) where status = 'receivable';
 
--- 3) compromissos do herói --------------------------------------------------------------------------------------------
+-- 3) compromissos do Hero --------------------------------------------------------------------------------------------
 create table if not exists public.hero_events (
   id uuid primary key default gen_random_uuid(),
   creator_profile_id uuid not null references public.creator_profiles (id) on delete cascade,
@@ -120,7 +120,7 @@ create table if not exists public.hero_events (
 create index if not exists hero_events_hero_idx on public.hero_events (creator_profile_id, starts_at);
 create index if not exists hero_events_service_idx on public.hero_events (service_id) where service_id is not null;
 
--- gatilho comum: updated_at, herói imutável, serviço vinculado do mesmo herói, created_by
+-- gatilho comum: updated_at, Hero imutável, serviço vinculado do mesmo Hero, created_by
 create or replace function public.hero_work_guard()
 returns trigger language plpgsql security definer set search_path = '' as $$
 begin
@@ -159,7 +159,7 @@ grant select, insert, update, delete on public.hero_events to authenticated;
 grant all on public.hero_services to service_role;
 grant all on public.hero_events to service_role;
 
--- financeiro: só o titular lê (o admin geral também, para suporte); só o titular de herói não suspenso escreve
+-- financeiro: só o titular lê (o admin geral também, para suporte); só o titular de Hero não suspenso escreve
 drop policy if exists hero_services_select on public.hero_services;
 create policy hero_services_select on public.hero_services for select to authenticated
   using (creator_profile_id = any ((select public.my_owned_creator_ids())::uuid[]) or (select public.is_platform_admin()));
@@ -248,7 +248,7 @@ begin
     'availability', t.availability, 'availability_note', t.availability_note,
     'consent_at', t.consent_at, 'consent_version', t.consent_version, 'consent_revoked_at', t.consent_revoked_at,
     'catalog_visible', t.catalog_visible, 'has_public_page', t.creator_id is not null,
-    -- 0094: o herói (página pública) ligado ao talento: a tela sabe se o herói em uso é o do casting
+    -- 0094: o Hero (página pública) ligado ao talento: a tela sabe se o Hero em uso é o do casting
     'creator_id', t.creator_id,
     'agency', a.name, 'agency_is_demo', a.is_demo,
     'is_team_member', public.talent_user_id(t.id) is distinct from auth.uid(),
@@ -287,7 +287,7 @@ $$;
 revoke execute on function public.talent_payouts() from public, anon;
 grant execute on function public.talent_payouts() to authenticated, service_role;
 
--- 9) feed .ics: + compromissos e datas de serviço do herói (MESMA assinatura, copiada da 0067) ------------------------
+-- 9) feed .ics: + compromissos e datas de serviço do Hero (MESMA assinatura, copiada da 0067) ------------------------
 create or replace function public.calendar_feed_resolve(p_token text)
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare f public.calendar_feeds%rowtype; out jsonb;
@@ -303,7 +303,7 @@ begin
     from public.calendar_events_for_user(f.user_id) e
     where e.starts_at >= now() - interval '90 days' and e.starts_at <= now() + interval '366 days'
     union all
-    -- 0094: compromissos do herói (titular e equipe); o contratante vai no lugar da marca e o checklist na descrição
+    -- 0094: compromissos do Hero (titular e equipe); o contratante vai no lugar da marca e o checklist na descrição
     select jsonb_build_object('id', h.id, 'kind', 'hero_' || h.kind, 'title', h.title, 'subtitle', null,
              'description', nullif(btrim(h.notes || case when jsonb_array_length(h.checklist) > 0 then E'\n' || (
                  select string_agg((case when (i ->> 'done')::boolean then '[x] ' else '[ ] ' end) || (i ->> 'text'), E'\n')

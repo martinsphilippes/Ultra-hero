@@ -1,9 +1,9 @@
 -- =============================================================================
 -- Ultra Hero · 0031 · Foto de perfil (bucket público avatars)
---   A pessoa envia a própria foto (usuário comum e herói). O navegador recorta e redimensiona
+--   A pessoa envia a própria foto (usuário comum e Hero). O navegador recorta e redimensiona
 --   (512x512, sem EXIF); o servidor confere tipo e dimensões pelos bytes, reserva o envio aqui
 --   (cota de 20 por dia, kill switch), grava no bucket público `avatars` com o service role e
---   aplica a URL em profiles.avatar_url e, se a pessoa é herói, em creator_profiles.avatar_url.
+--   aplica a URL em profiles.avatar_url e, se a pessoa é Hero, em creator_profiles.avatar_url.
 --   Nada é escrito no bucket pela API com JWT de usuário (sem políticas de insert/update/delete).
 --   Caminho: <user_id>/<uuid>.(webp|jpg). Objetos imutáveis: a troca gera objeto novo e o
 --   servidor apaga o anterior; órfãos e fotos de conta excluída saem na limpeza diária
@@ -16,7 +16,7 @@
 
 -- ---------------------------------------------------------------- 1) kill switch
 insert into public.app_settings (key, value, description) values
-  ('avatars.uploads_enabled', 'true'::jsonb, 'Kill switch do envio de foto de perfil (usuários e heróis).')
+  ('avatars.uploads_enabled', 'true'::jsonb, 'Kill switch do envio de foto de perfil (usuários e Heros).')
 on conflict (key) do nothing;
 
 -- Mesma lista da 0027 + a chave nova (função sql: redefinida inteira, mesma assinatura e grants).
@@ -31,7 +31,7 @@ $$;
 -- ---------------------------------------------------------------- 2) envios (só o servidor e as RPCs escrevem)
 create table if not exists public.avatar_uploads (
   id uuid primary key default gen_random_uuid(),
-  -- set null: a conta some e a linha fica até o cron apagar o objeto (e a referência no herói)
+  -- set null: a conta some e a linha fica até o cron apagar o objeto (e a referência no Hero)
   user_id uuid references auth.users (id) on delete set null,
   path text not null unique
     check (path ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(webp|jpg)$'),
@@ -88,7 +88,7 @@ grant execute on function public.avatar_upload_claim(int, text) to authenticated
 -- ---------------------------------------------------------------- 4) aplicar a foto nos dois lados (uma transação)
 -- p_url: URL pública montada pelo servidor; precisa terminar em /avatars/<path> de um envio do
 -- próprio usuário, não apagado e (com o schema storage presente) já gravado no bucket. Devolve os
--- avatar_url anteriores (perfil e herói, sem repetição): o servidor apaga os que eram foto própria.
+-- avatar_url anteriores (perfil e Hero, sem repetição): o servidor apaga os que eram foto própria.
 create or replace function public.avatar_set_photo(p_url text)
 returns text[] language plpgsql security definer set search_path = public as $$
 declare v_uid uuid := auth.uid(); v_path text; v_prev text[]; v_stored boolean := true;
@@ -119,7 +119,7 @@ grant execute on function public.avatar_set_photo(text) to authenticated, servic
 
 -- ---------------------------------------------------------------- 5) limpeza diária (só o cron, service role)
 -- (a) envio com mais de 1 h que nenhum perfil referencia (troca que falhou no meio, aba fechada);
--- (b) envio de conta excluída (user_id nulo), mesmo referenciado: o perfil do herói fica no ar sem
+-- (b) envio de conta excluída (user_id nulo), mesmo referenciado: o perfil do Hero fica no ar sem
 --     usuário e a foto da pessoa não pode ficar nele. O cron apaga o objeto pela API, limpa as
 --     referências e marca deleted_at; nunca se apaga storage.objects por SQL.
 create or replace function public.avatar_orphan_uploads(p_limit int)

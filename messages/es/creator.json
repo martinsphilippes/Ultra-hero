@@ -1,17 +1,17 @@
 {
   "unavailable": {
     "inactive": {
-      "title": "Perfil de héroe inactivo",
-      "description": "Tu perfil de héroe está suspendido o pendiente. Mientras tanto, el portal es de solo lectura: no puedes crear contenidos, sugerir vínculos ni editar el perfil.",
+      "title": "Perfil de Hero inactivo",
+      "description": "Tu perfil de Hero está suspendido o pendiente. Mientras tanto, el portal es de solo lectura: no puedes crear contenidos, sugerir vínculos ni editar el perfil.",
       "descriptionNamed": "El perfil de {name} está suspendido o pendiente. Mientras tanto, el portal es de solo lectura: no puedes crear contenidos, sugerir vínculos ni editar el perfil."
     },
     "unlinked": {
-      "title": "Cuenta sin perfil de héroe",
-      "description": "Tu cuenta tiene el rol de héroe, pero no está vinculada a un perfil activo. Acepta la invitación recibida por correo o habla con la administración."
+      "title": "Cuenta sin perfil de Hero",
+      "description": "Tu cuenta tiene el rol de Hero, pero no está vinculada a un perfil activo. Acepta la invitación recibida por correo o habla con la administración."
     },
     "acting_unavailable": {
-      "title": "Publicar como héroe no disponible",
-      "description": "La base de datos de este entorno aún no tiene la actualización que permite a la administración publicar para los héroes (0045)."
+      "title": "Publicar como Hero no disponible",
+      "description": "La base de datos de este entorno aún no tiene la actualización que permite a la administración publicar para los Heros (0045)."
     },
     "help": "¿Dudas? Habla con el equipo editorial de Groscove Ultra."
   },
@@ -84,7 +84,7 @@
       }
     },
     "notFoundTitle": "Contenido no encontrado",
-    "notFoundDescription": "Puede haber sido eliminado o pertenecer a otro héroe."
+    "notFoundDescription": "Puede haber sido eliminado o pertenecer a otro Hero."
   },
   "publish": {
     "button": "Publicar",
@@ -123,7 +123,7 @@
     "withdrawn": "Volvió a borrador",
     "archive": "Archivar",
     "archiveTitle": "¿Archivar este contenido?",
-    "archiveDescription": "Sale de la lista activa y no aparece en la app. Lo que ya estuvo publicado solo lo archiva el titular del héroe.",
+    "archiveDescription": "Sale de la lista activa y no aparece en la app. Lo que ya estuvo publicado solo lo archiva el titular del Hero.",
     "archiveConfirm": "Archivar",
     "archived": "Archivado"
   },
@@ -195,9 +195,9 @@
       "generic": "No se pudo completar. Inténtalo de nuevo.",
       "unauthenticated": "Tu sesión expiró. Vuelve a iniciar sesión para continuar.",
       "forbidden": "Esta cuenta no puede publicar este video.",
-      "creator_unavailable": "Tu perfil de héroe no está activo.",
-      "acting_hero_required": "Elige el héroe en \"Publicar como héroe\", en el inicio de la administración, e inténtalo de nuevo.",
-      "acting_unavailable": "Publicar como héroe aún no está disponible en este entorno.",
+      "creator_unavailable": "Tu perfil de Hero no está activo.",
+      "acting_hero_required": "Elige el Hero en \"Publicar como Hero\", en el inicio de la administración, e inténtalo de nuevo.",
+      "acting_unavailable": "Publicar como Hero aún no está disponible en este entorno.",
       "invalid_input": "Revisa los campos e inténtalo de nuevo.",
       "video_not_configured": "El video aún no está configurado: pide al administrador que active Cloudflare Stream.",
       "not_video": "Este archivo no es un video. Graba uno nuevo o elige otro de la galería.",
@@ -234,7 +234,7 @@
       "upload_rights_required": "Antes del primer envío, confirma que tienes los derechos sobre la foto o el video.",
       "invalid_block": "Los campos del pilar no son válidos. Revisa e intenta de nuevo.",
       "invalid_reference": "Una receta o producto elegido ya no está disponible. Quítalo y elige otro.",
-      "hero_not_active": "Tu héroe aún no fue aprobado. El post quedó guardado como borrador; publica después de la aprobación."
+      "hero_not_active": "Tu Hero aún no fue aprobado. El post quedó guardado como borrador; publica después de la aprobación."
     },
     "photo": {
       "draftTitle": "Post con foto",
@@ -272,7 +272,7 @@
         "too_many_uploads": "Enviaste demasiadas fotos en la última hora. Espera un poco y vuelve a intentarlo.",
         "uploads_disabled": "El envío de fotos está en pausa por la administración.",
         "photo_not_configured": "El envío de fotos no está disponible en este entorno.",
-        "not_a_hero": "Tu perfil de héroe no está activo.",
+        "not_a_hero": "Tu perfil de Hero no está activo.",
         "upload_failed": "La foto no se envió. Toca Intentar de nuevo.",
         "network": "Se cayó la conexión. Cuando vuelva, toca Intentar de nuevo.",
         "forbidden": "Esta cuenta no puede publicar esta foto.",
@@ -280,11 +280,11 @@
         "missing_media": "La foto no quedó vinculada a este post. Descártala y envíala de nuevo.",
         "missing_body": "La foto no quedó vinculada a este post. Descártala y envíala de nuevo.",
         "not_photo": "Este borrador no tiene una foto enviada desde el celular.",
-        "hero_not_active": "Tu héroe aún no fue aprobado. La foto quedó guardada como borrador; publica después de la aprobación."
+        "hero_not_active": "Tu Hero aún no fue aprobado. La foto quedó guardada como borrador; publica después de la aprobación."
       }
     },
-    "talentOnly": "Disponible solo para héroes con página pública",
-    "talentOnlyHint": "Tu acceso es el Portal del Héroe: media kit, consentimiento y avisos.",
+    "talentOnly": "Disponible solo para Heros con página pública",
+    "talentOnlyHint": "Tu acceso es el Portal del Hero: media kit, consentimiento y avisos.",
     "blocks": {
       "counter": "{count}/{max}",
       "errors": {
@@ -340,11 +340,11 @@
         "addOption": "Agregar opción"
       },
       "program": {
-        "title": "Programa del héroe",
-        "hint": "Un programa publicado del héroe entra en el contenido como atajo. Quien lo abra ve la tarjeta y va directo al programa.",
+        "title": "Programa del Hero",
+        "hint": "Un programa publicado del Hero entra en el contenido como atajo. Quien lo abra ve la tarjeta y va directo al programa.",
         "pick": "Programa",
         "none": "Sin programa",
-        "noPrograms": "Este héroe todavía no tiene programa publicado.",
+        "noPrograms": "Este Hero todavía no tiene programa publicado.",
         "createProgram": "Crear programa",
         "unavailable": "Programa fuera del aire (quítalo o cámbialo)",
         "weeks": "{n} semanas",
@@ -410,7 +410,7 @@
     "viewPublic": "Ver página pública",
     "editProfile": "Editar perfil",
     "editorTitle": "Editar perfil",
-    "editorDescription": "Lo que cambies aquí aparece en tu página pública de héroe.",
+    "editorDescription": "Lo que cambies aquí aparece en tu página pública de Hero.",
     "close": "Cerrar",
     "inactiveNotice": "Perfil suspendido o pendiente: la edición está bloqueada hasta que la administración lo reactive.",
     "lockedFields": "El nombre, el slug, los pilares y la nota de derechos los mantiene la plataforma. Tú editas titular, bio, foto, portada y redes.",
@@ -421,17 +421,17 @@
     "avatarTitle": "Foto de perfil",
     "avatarShared": "Vale en la app y en tu página pública.",
     "avatarReadOnly": "Foto de tu página pública. Mientras el perfil esté bloqueado, la foto de la app queda en Datos.",
-    "photoHint": "Una sola foto para todo: aparece en tu avatar y en tu página pública de héroe. Sin foto, se muestran tus iniciales.",
+    "photoHint": "Una sola foto para todo: aparece en tu avatar y en tu página pública de Hero. Sin foto, se muestran tus iniciales.",
     "cover": {
       "title": "Portada",
-      "hint": "Foto real que aparece arriba de tu tarjeta en la lista de héroes. Sube solo una foto tuya o que tengas derecho a usar.",
+      "hint": "Foto real que aparece arriba de tu tarjeta en la lista de Heros. Sube solo una foto tuya o que tengas derecho a usar.",
       "none": "Sin portada",
       "currentAlt": "Portada actual de tu perfil",
       "take": "Tomar foto",
       "gallery": "Elegir de la galería",
       "remove": "Quitar portada",
       "removeConfirmTitle": "¿Quitar la portada?",
-      "removeConfirmBody": "La portada sale de tu tarjeta en la lista de héroes, que queda con el fondo liso. Puedes subir otra cuando quieras.",
+      "removeConfirmBody": "La portada sale de tu tarjeta en la lista de Heros, que queda con el fondo liso. Puedes subir otra cuando quieras.",
       "removeConfirm": "Quitar",
       "cancel": "Cancelar",
       "previewTitle": "Vista previa de la portada",
@@ -454,7 +454,7 @@
         "too_many_uploads": "Llegaste al límite de 20 envíos de portada en 24 horas. Inténtalo mañana.",
         "uploads_disabled": "El envío de portadas está pausado por la administración. Inténtalo más tarde.",
         "cover_not_configured": "El envío de portada no está disponible en este entorno.",
-        "not_a_hero": "Solo el héroe con el perfil activo puede cambiar la portada.",
+        "not_a_hero": "Solo el Hero con el perfil activo puede cambiar la portada.",
         "upload_failed": "No se pudo subir la portada. Revisa la conexión e inténtalo de nuevo.",
         "unauthenticated": "Inicia sesión para continuar.",
         "generic": "No se pudo completar. Inténtalo de nuevo.",
@@ -467,7 +467,7 @@
     "savedDescription": "Tu perfil público fue actualizado.",
     "fixFields": "{count, plural, =1 {Hay 1 campo por corregir.} other {Hay # campos por corregir.}}",
     "rightsTitle": "Nota de derechos y licencias",
-    "rightsDescription": "Registro mantenido por la plataforma sobre licencias, imagen y derechos de este héroe. Solo lectura: los cambios los hace la administración.",
+    "rightsDescription": "Registro mantenido por la plataforma sobre licencias, imagen y derechos de este Hero. Solo lectura: los cambios los hace la administración.",
     "rightsEmpty": "Ninguna nota registrada."
   },
   "errors": {
@@ -475,9 +475,9 @@
     "protected_column": "El campo \"{column}\" solo puede cambiarlo la administración.",
     "unauthenticated": "Inicia sesión para continuar.",
     "invalid_input": "Datos inválidos.",
-    "creator_unavailable": "Tu perfil de héroe no está activo.",
-    "acting_hero_required": "Elige el héroe en \"Publicar como héroe\", en el inicio de la administración, e inténtalo de nuevo.",
-    "acting_unavailable": "Publicar como héroe aún no está disponible en este entorno.",
+    "creator_unavailable": "Tu perfil de Hero no está activo.",
+    "acting_hero_required": "Elige el Hero en \"Publicar como Hero\", en el inicio de la administración, e inténtalo de nuevo.",
+    "acting_unavailable": "Publicar como Hero aún no está disponible en este entorno.",
     "avatar_not_saved": "Los demás campos se guardaron, pero la foto no cambió. Intenta guardar de nuevo.",
     "not_found": "No encontrado.",
     "content_not_found": "Contenido no encontrado.",
@@ -506,19 +506,19 @@
     "stream_media_forbidden": "Este video no fue enviado por esta cuenta y no se puede usar aquí.",
     "recipe_editor_pending": "La edición de recetas vuelve con el nuevo editor.",
     "review_required": "La administración exige revisión para este tipo de contenido y el portal aún no permite enviarlo a revisión. Habla con la administración.",
-    "owner_only": "Solo el titular del héroe (o la administración) puede retirar del aire, archivar o eliminar lo que ya estuvo publicado.",
+    "owner_only": "Solo el titular del Hero (o la administración) puede retirar del aire, archivar o eliminar lo que ya estuvo publicado.",
     "already_archived": "Este contenido ya está archivado.",
     "not_in_review": "Este contenido no está en revisión.",
-    "hero_not_active": "Tu héroe aún no fue aprobado. El borrador quedó guardado; publica después de la aprobación."
+    "hero_not_active": "Tu Hero aún no fue aprobado. El borrador quedó guardado; publica después de la aprobación."
   },
   "newContent": {
     "title": "Nuevo contenido",
     "description": "Contenido estructurado de {name}: texto o video con bloques del pilar (entreno con pasos, nutrición, menú), programa y productos. Guarda el borrador y publica cuando esté listo.",
-    "heroLabel": "Héroe",
-    "heroHint": "Formas parte de más de un héroe. El contenido sale por el héroe elegido.",
-    "heroSwitchError": "No se pudo cambiar de héroe. Inténtalo de nuevo.",
-    "recipeOtherHero": "Las recetas salen por el héroe {name}.",
-    "ownerOnly": "Retirar del aire y archivar contenido publicado es tarea del titular del héroe.",
+    "heroLabel": "Hero",
+    "heroHint": "Formas parte de más de un Hero. El contenido sale por el Hero elegido.",
+    "heroSwitchError": "No se pudo cambiar de Hero. Inténtalo de nuevo.",
+    "recipeOtherHero": "Las recetas salen por el Hero {name}.",
+    "ownerOnly": "Retirar del aire y archivar contenido publicado es tarea del titular del Hero.",
     "kind": {
       "label": "¿Qué vas a crear?",
       "structured": {
@@ -538,20 +538,20 @@
         "cta": "Abrir el editor de recetas"
       }
     },
-    "publishAfterApproval": "Tu héroe aún espera aprobación: el borrador queda guardado y publicas en cuanto sea aprobado.",
+    "publishAfterApproval": "Tu Hero aún espera aprobación: el borrador queda guardado y publicas en cuanto sea aprobado.",
     "campaignProgramNote": "Elige el programa en el bloque Programa, más abajo.",
     "campaignPublishNote": "Después de publicar, envía el enlace como entrega en la campaña.",
     "campaignSend": "Enviar como entrega de la campaña"
   },
   "pending": {
-    "notice": "Tu héroe espera la aprobación de Ultra. Ya puedes preparar posts y contenidos: aparecen para el público en cuanto el héroe sea aprobado."
+    "notice": "Tu Hero espera la aprobación de Ultra. Ya puedes preparar posts y contenidos: aparecen para el público en cuanto el Hero sea aprobado."
   },
   "home": {
-    "eyebrow": "Portal del Héroe",
-    "title": "Portal del Héroe",
+    "eyebrow": "Portal del Hero",
+    "title": "Portal del Hero",
     "intro": "Tus posts, contenidos, agenda y finanzas en un solo lugar.",
     "quickTitle": "Atajos",
-    "createTitle": "Crear mi héroe",
+    "createTitle": "Crear mi Hero",
     "createHint": "Tu página pública nace pendiente de aprobación; ya puedes preparar posts."
   }
 }

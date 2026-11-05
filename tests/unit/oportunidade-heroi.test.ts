@@ -29,7 +29,7 @@ const C1 = "22222222-2222-4222-8222-222222222222";
 const castingRow = { kind: "talent", talent_id: T1, creator_id: C1, slug: "ana", name: "Ana", avatar_url: "https://i/a.png", headline: "Corre", pillars: ["training", "routine"], followers: 1200, scope: "casting", consent: "active", socials: { instagram: "@ana" } };
 const outsideRow = { kind: "hero", talent_id: null, creator_id: C1, slug: "beto", name: "Beto", avatar_url: null, headline: null, pillars: [], followers: null, scope: "outside", consent: null, socials: {} };
 
-describe("busca de heróis da oportunidade", () => {
+describe("busca de Heros da oportunidade", () => {
   it("lê a RPC com tolerância: linha ruim some, campos limpos", () => {
     const page = parseOpportunityHeroes({ items: [castingRow, outsideRow, { kind: "hero", name: "sem id", scope: "outside" }, { kind: "talent", talent_id: T1 }, null, { kind: "x", name: "Z", talent_id: T1 }], has_more: true });
     expect(page.items.map((h) => h.name)).toEqual(["Ana", "Beto"]);
@@ -53,7 +53,7 @@ describe("busca de heróis da oportunidade", () => {
     expect(heroSelectable("other_agency")).toBe(false);
     expect(heroSelectable("person_in_casting")).toBe(false);
   });
-  it("junta a próxima página sem repetir (ficha e herói têm chaves diferentes)", () => {
+  it("junta a próxima página sem repetir (ficha e Hero têm chaves diferentes)", () => {
     const { items } = parseOpportunityHeroes({ items: [castingRow, outsideRow] });
     expect(heroKey(items[0])).toBe(`t:${T1}`);
     expect(heroKey(items[1])).toBe(`h:${C1}`);
@@ -62,7 +62,7 @@ describe("busca de heróis da oportunidade", () => {
   });
 });
 
-describe("herói escolhido e o que vai para a RPC", () => {
+describe("Hero escolhido e o que vai para a RPC", () => {
   const { items } = parseOpportunityHeroes({ items: [castingRow, outsideRow] });
   it("ficha do casting: kind talent com o consentimento da ficha", () => {
     const c = choiceFromSearch(items[0]);
@@ -70,13 +70,13 @@ describe("herói escolhido e o que vai para a RPC", () => {
     expect(heroChoiceToDb(c)).toEqual({ kind: "talent", talent_id: T1 });
     expect(heroHasConsent(c)).toBe(true);
   });
-  it("herói fora do casting: a ficha nasce ao salvar, sempre sem consentimento", () => {
+  it("Hero fora do casting: a ficha nasce ao salvar, sempre sem consentimento", () => {
     const c = choiceFromSearch(items[1]);
     expect(c).toMatchObject({ kind: "hero", talentId: null, creatorId: C1, consent: "none" });
     expect(heroChoiceToDb(c)).toEqual({ kind: "hero", creator_id: C1 });
     expect(heroHasConsent(c)).toBe(false);
   });
-  it("herói digitado: nome limpo, perfil e e-mail opcionais, sem consentimento", () => {
+  it("Hero digitado: nome limpo, perfil e e-mail opcionais, sem consentimento", () => {
     const checked = validateTypedHero({ name: "  Dani   <Souza> ", profile: "dani.souza", email: "Dani@Teste.COM" });
     expect(checked.ok).toBe(true);
     if (!checked.ok) return;
@@ -85,7 +85,7 @@ describe("herói escolhido e o que vai para a RPC", () => {
     expect(c.consent).toBe("none");
     expect(heroChoiceToDb(choiceFromTyped({ name: "Só Nome", profile: null, email: null }))).toEqual({ kind: "typed", name: "Só Nome", profile: "", email: "" });
   });
-  it("herói que a oportunidade já tem volta como ficha do casting", () => {
+  it("Hero que a oportunidade já tem volta como ficha do casting", () => {
     const info = toHeroInfo({ talent_id: T1, name: "Ana", has_hero: true, hero_active: true, creator_id: C1, slug: "ana", pillars: ["training"], consent: "none" });
     expect(choiceFromHeroInfo(info)).toMatchObject({ kind: "talent", talentId: T1, creatorId: C1, consent: "none", slug: "ana" });
   });
@@ -124,7 +124,7 @@ describe("consentimento: só publicar exige; rascunho vale sem", () => {
   });
 });
 
-describe("formulário: herói e publicar entram no schema", () => {
+describe("formulário: Hero e publicar entram no schema", () => {
   const base = {
     id: null, title: "Maratona", description: "", location: "", date: "2026-11-20", endDate: "", startTime: "08:00", endTime: "13:00", allDay: false, expectedReach: "",
     perks: [], networks: ["instagram" as const], respondDate: "2026-11-15", respondTime: "18:00", audience: "all" as const, brandIds: [],
@@ -132,7 +132,7 @@ describe("formulário: herói e publicar entram no schema", () => {
     public: { targetAudience: "", targetAgeBands: [], targetStates: [], regionNote: "" },
     publish: false,
   };
-  it("herói obrigatório; sem ele não passa", () => {
+  it("Hero obrigatório; sem ele não passa", () => {
     const hero = choiceFromSearch(parseOpportunityHeroes({ items: [outsideRow] }).items[0]);
     expect(sponsorshipSchema.safeParse({ ...base, hero }).success).toBe(true);
     expect(sponsorshipSchema.safeParse({ ...base, hero: null }).success).toBe(false);
@@ -141,7 +141,7 @@ describe("formulário: herói e publicar entram no schema", () => {
   });
 });
 
-describe("leituras trazem o herói", () => {
+describe("leituras trazem o Hero", () => {
   const hero = { talent_id: T1, name: "Ana", has_hero: true, hero_active: true, creator_id: C1, slug: "ana", avatar_url: "https://i/a.png", headline: "Corre", pillars: ["training"], consent: "active" };
   it("toHeroInfo tolera vazio e entrega endereço da página só com slug", () => {
     expect(toHeroInfo(null, "Fallback", T1)).toMatchObject({ name: "Fallback", talentId: T1, hasHero: false, heroActive: false, consent: "none", slug: null, pillars: [] });
@@ -158,7 +158,7 @@ describe("leituras trazem o herói", () => {
     expect(d?.hero.consent).toBe("none");
     expect(d?.status).toBe("draft");
   });
-  it("marca: herói com foto, nome, nicho e página; sem consentimento só o nome", () => {
+  it("marca: Hero com foto, nome, nicho e página; sem consentimento só o nome", () => {
     const [full, bare] = toBrandSponsorships([
       { id: "o1", title: "M", status: "open", talent: { id: T1, name: "Ana", in_catalog: true }, hero: { talent_id: T1, name: "Ana", has_hero: true, hero_active: true, creator_id: C1, slug: "ana", avatar_url: "https://i/a.png", pillars: ["training"] } },
       { id: "o2", title: "N", status: "open", talent: { id: T1, name: "Ana", in_catalog: false }, hero: { talent_id: T1, name: "Ana", has_hero: true, hero_active: true, pillars: [] } },
@@ -173,7 +173,7 @@ describe("leituras trazem o herói", () => {
 });
 
 describe("erros e textos", () => {
-  it("herói inativo é um código conhecido e traduzido", () => {
+  it("Hero inativo é um código conhecido e traduzido", () => {
     expect(AGENCY_ERROR_CODES).toContain("hero_inactive");
     expect(agencyErrorCode(new Error("hero_inactive"))).toBe("hero_inactive");
     expect(agencyErrorCode(new Error("consent_required"))).toBe("consent_required");
@@ -182,7 +182,7 @@ describe("erros e textos", () => {
       expect(agency.errors.hero_inactive).toBeTruthy();
     }
   });
-  it("os três idiomas têm a tela do herói e sem 'creator' nas telas da oportunidade", () => {
+  it("os três idiomas têm a tela do Hero e sem 'creator' nas telas da oportunidade", () => {
     for (const l of ["pt-BR", "en", "es"]) {
       const d = JSON.parse(readFileSync(path.join(process.cwd(), "messages", l, "sponsorship.json"), "utf8")) as { agency: { form: Record<string, unknown>; draft: Record<string, string> }; hero: Record<string, unknown>; status: Record<string, string>; brand: Record<string, string> };
       for (const k of ["hero", "heroHint", "heroLocked", "heroRequired", "consentNotice", "saveDraft", "publishDraft", "heroPicker"]) expect(d.agency.form[k], `${l} form.${k}`).toBeTruthy();
@@ -193,11 +193,11 @@ describe("erros e textos", () => {
       expect(d.hero.seePage).toBeTruthy();
       expect(d.brand.seeCatalog).toBeTruthy();
     }
-    // pt-BR: a tela da agência e da marca fala em herói (creator fica para login/pessoa/consulta)
+    // pt-BR: a tela da agência e da marca fala em Hero (creator fica para login/pessoa/consulta)
     const pt = JSON.parse(readFileSync(path.join(process.cwd(), "messages", "pt-BR", "sponsorship.json"), "utf8")) as { agency: { form: { heroHint: string; consentNotice: string; tiers: { hintAdmin: string } }; description: string }; brand: { description: string } };
-    expect(pt.agency.form.heroHint).toContain("herói");
+    expect(pt.agency.form.heroHint).toContain("Hero");
     expect(pt.agency.form.consentNotice).toContain("Documentos");
-    expect(pt.agency.form.consentNotice).toContain("Portal do Herói");
+    expect(pt.agency.form.consentNotice).toContain("Portal do Hero");
     expect(JSON.stringify([pt.agency.description, pt.brand.description, pt.agency.form.tiers.hintAdmin])).not.toMatch(/heroi/i);
   });
 });

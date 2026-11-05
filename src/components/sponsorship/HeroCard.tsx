@@ -5,13 +5,13 @@ import { heroPagePath, type HeroInfo } from "@/lib/sponsorship/hero-pick";
 
 type Props = {
   hero: HeroInfo;
-  /** agência: mostra o consentimento da ficha; marca: só a página do herói (que o banco só entrega com consentimento) */
+  /** agência: mostra o consentimento da ficha; marca: só a página do Hero (que o banco só entrega com consentimento) */
   side: "agency" | "brand";
   className?: string;
 };
 
-// Cartão do herói da oportunidade de patrocínio (0095): foto, nome, nicho (pilares), chamada e o link da página pública.
-// A marca só recebe foto, nicho e endereço quando o herói deu consentimento; sem isso o cartão traz só o nome.
+// Cartão do Hero da oportunidade de patrocínio (0095): foto, nome, nicho (pilares), chamada e o link da página pública.
+// A marca só recebe foto, nicho e endereço quando o Hero deu consentimento; sem isso o cartão traz só o nome.
 export function HeroCard({ hero, side, className }: Props) {
   const t = useTranslations("sponsorship.hero");
   const tp = useTranslations("common.pillars");

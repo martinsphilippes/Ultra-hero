@@ -6,9 +6,9 @@ import { toZonedIso } from "@/lib/deals/schemas";
 import { zonedTime } from "@/lib/calendar/form";
 import { isHeroEventKind, type ChecklistItem, type HeroEventInput, type HeroEventKind } from "./vocab";
 
-// Agenda do herói independente (0094): lógica pura (testada em tests/unit/hero-work.test.ts).
-// Reaproveita a grade mensal e a lista do dia da agenda das agências (CalendarEvent): o tipo do herói vira um tipo
-// da agenda (gravação, reunião, entrega, outro; "evento" e "serviço" são só do herói) e o que ele precisa executar
+// Agenda do Hero independente (0094): lógica pura (testada em tests/unit/hero-work.test.ts).
+// Reaproveita a grade mensal e a lista do dia da agenda das agências (CalendarEvent): o tipo do Hero vira um tipo
+// da agenda (gravação, reunião, entrega, outro; "evento" e "serviço" são só do Hero) e o que ele precisa executar
 // (observações, contratante, checklist) vai junto em `hero`. Itens de serviço com data entram sozinhos, uma vez só.
 
 export type HeroEvent = {
@@ -30,7 +30,7 @@ export type HeroEvent = {
 /** Data de um serviço (sem valor): vem do financeiro (titular) ou de hero_service_dates (equipe). */
 export type ServiceDate = { id: string; title: string; client: string; serviceOn: string };
 
-/** Tipo da agenda para cada tipo do herói. */
+/** Tipo da agenda para cada tipo do Hero. */
 export const HERO_KIND_TO_EVENT_KIND: Record<HeroEventKind, EventKind> = {
   shoot: "recording",
   event: "hero_event",
@@ -39,9 +39,9 @@ export const HERO_KIND_TO_EVENT_KIND: Record<HeroEventKind, EventKind> = {
   other: "other",
 };
 
-/** Marca de item do herói dentro do evento da grade (o que a lista do dia mostra a mais). */
+/** Marca de item do Hero dentro do evento da grade (o que a lista do dia mostra a mais). */
 export type HeroAgendaExtra = {
-  /** compromisso do herói (editável pelo titular) ou data de serviço (só leitura, abre o financeiro). */
+  /** compromisso do Hero (editável pelo titular) ou data de serviço (só leitura, abre o financeiro). */
   source: "event" | "service";
   heroKind: HeroEventKind | null;
   client: string;
@@ -81,7 +81,7 @@ export function eventToCalendar(e: HeroEvent): HeroCalendarEvent {
   };
 }
 
-/** Data de serviço → item de dia inteiro, no fuso do herói (fim exclusivo, como os eventos de dia inteiro). */
+/** Data de serviço → item de dia inteiro, no fuso do Hero (fim exclusivo, como os eventos de dia inteiro). */
 export function serviceDateToCalendar(s: ServiceDate, timeZone: string): HeroCalendarEvent | null {
   const startsAt = toZonedIso(s.serviceOn, "00:00", timeZone);
   const endsAt = toZonedIso(plusDays(s.serviceOn, 1), "00:00", timeZone);

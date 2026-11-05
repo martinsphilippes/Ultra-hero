@@ -15,13 +15,13 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("metaTitle") };
 }
 
-// Heróis que sigo: lista com "Seguindo" (toque para deixar de seguir) e a escolha do Hero de
+// Heros que sigo: lista com "Seguindo" (toque para deixar de seguir) e a escolha do Hero de
 // comparação (0056). Sem hero_favorites no banco, aviso; sem a 0056, só a lista.
 export default async function FollowedHeroesPage() {
   const user = await requireUser("/profile/herois");
   const [t, tc, follow] = await Promise.all([getTranslations("follows.manage"), getTranslations("common"), getFollowContext()]);
   const supabase = await createClient();
-  // heróis bloqueados (0071): a RPC enxerga os bloqueados, que as políticas escondem desta conta
+  // Heros bloqueados (0071): a RPC enxerga os bloqueados, que as políticas escondem desta conta
   const [{ data: blocked }, tm] = await Promise.all([supabase.rpc("my_blocked_heroes"), getTranslations("moderation.blockedList")]);
   const [heroes, compareId] = await Promise.all([loadFollowedHeroes(supabase, user.id), loadCompareCreatorId(supabase, user.id)]);
 
@@ -52,7 +52,7 @@ export default async function FollowedHeroesPage() {
           </p>
           <FollowedHeroesManager
             heroes={heroes}
-            // escolha antiga de herói que saiu do ar não aparece marcada
+            // escolha antiga de Hero que saiu do ar não aparece marcada
             compareId={compareId && heroes.some((h) => h.id === compareId) ? compareId : null}
             compareAvailable={compareId !== undefined}
             pushReady={follow.pushReady}

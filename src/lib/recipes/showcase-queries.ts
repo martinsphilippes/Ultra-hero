@@ -100,7 +100,7 @@ export async function fetchShowcaseCommerce(supabase: Client, userId: string | n
 export type ShowcaseHero = ShowcasePerson & { id: string };
 
 /**
- * Herói da vitrine pedido pela URL (?vitrine=slug), só se a receita está mesmo na vitrine dele
+ * Hero da vitrine pedido pela URL (?vitrine=slug), só se a receita está mesmo na vitrine dele
  * (autor ou vínculo validado) e ele está ativo. Fora disso, null (vale o autor).
  */
 export async function resolveShowcaseHero(supabase: Client, slug: string | null, content: { id: string; creator_id: string | null }): Promise<ShowcaseHero | null> {

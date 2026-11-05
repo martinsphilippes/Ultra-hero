@@ -1,7 +1,7 @@
 import "server-only";
 import { getTranslations } from "next-intl/server";
 
-// Erros das telas do herói independente (heroWork.errors): o banco responde por código de erro do Postgres/PostgREST.
+// Erros das telas do Hero independente (heroWork.errors): o banco responde por código de erro do Postgres/PostgREST.
 export type HeroWorkErrorCode = "forbidden" | "not_found" | "invalid_input" | "unauthenticated" | "generic";
 
 export function heroWorkErrorCode(error: unknown): HeroWorkErrorCode {

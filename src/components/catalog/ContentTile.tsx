@@ -23,7 +23,7 @@ type Props = {
 };
 
 // Quadro da grade do Explorar (estilo Instagram): só a capa, o ícone do tipo e o aviso quando
-// indisponível. Título e herói ficam para a página do conteúdo; para leitores de tela vão no sr-only.
+// indisponível. Título e Hero ficam para a página do conteúdo; para leitores de tela vão no sr-only.
 export async function ContentTile({ content, priority, tagged, className }: Props) {
   const t = await getTranslations("catalog");
   const Icon = TYPE_ICON[content.type];

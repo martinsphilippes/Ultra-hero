@@ -7,7 +7,7 @@ import { ACTING_HERO_MAX_AGE } from "@/lib/acting-hero/constants";
 import type { ActionResult } from "@/components/editors/types";
 import { listMyHeroesAll } from "../_lib/creator";
 
-// Creator em mais de uma equipe de herói (0091/0092): escolhe por qual herói cria e edita conteúdo. O cookie só
+// Creator em mais de uma equipe de Hero (0091/0092): escolhe por qual Hero cria e edita conteúdo. O cookie só
 // lembra a escolha; a cada requisição o servidor confere a lista e o banco confere de novo (x-my-hero).
 export async function chooseMyHero(input: { heroId: string }): Promise<ActionResult> {
   const parsed = z.object({ heroId: z.uuid() }).safeParse(input);

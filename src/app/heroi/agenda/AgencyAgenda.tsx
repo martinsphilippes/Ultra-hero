@@ -18,8 +18,8 @@ import type { CalendarEvent } from "@/lib/calendar/queries";
 import { mergeWithGroscove } from "@/lib/platform-calendar/agenda";
 import { agendaFilterParams, type AgendaFilters } from "@/lib/platform-calendar/vocab";
 
-// Agenda da agência no Portal do Herói (web e app): campanhas confirmadas, prazos de resposta, entregas e gravações
-// que a agência marcou como visíveis para o herói, e os patrocínios dele. O feed .ics leva tudo ao celular.
+// Agenda da agência no Portal do Hero (web e app): campanhas confirmadas, prazos de resposta, entregas e gravações
+// que a agência marcou como visíveis para o Hero, e os patrocínios dele. O feed .ics leva tudo ao celular.
 export async function AgencyAgenda({ sp, groscove, filters }: { sp: { mes?: string; dia?: string }; groscove: CalendarEvent[]; filters: AgendaFilters }) {
   const ctx = await getTalentContext();
   if (ctx.state !== "ok") return null;
@@ -93,7 +93,7 @@ export async function AgencyAgenda({ sp, groscove, filters }: { sp: { mes?: stri
                       : tsp("closed")}
                 </span>
                 <PublicChips value={o.public} label={tsp("public")} />
-                {/* 0088: o que ficou combinado com cada marca (o que o herói vai fazer); nunca o valor da marca */}
+                {/* 0088: o que ficou combinado com cada marca (o que o Hero vai fazer); nunca o valor da marca */}
                 {o.agreements.map((a) => (
                   <div key={`${a.brand}-${a.tier}`} className="mt-1 flex flex-col gap-1 rounded-xl bg-accent-soft p-3" data-testid="office-sponsorship-agreement">
                     <span className="text-sm font-semibold text-fg">{tsp("agreement", { brand: a.brand, tier: a.tier })}</span>

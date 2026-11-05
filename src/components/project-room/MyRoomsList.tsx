@@ -7,7 +7,7 @@ import { formatDate } from "@/i18n/format";
 import type { MyRoom } from "@/lib/project-room/queries";
 import { roomHref, type RoomPortal } from "@/lib/project-room/vocab";
 
-// "Meus projetos" (staff externo) e as salas do herói: cada sala aberta com a próxima diária e o NDA pendente.
+// "Meus projetos" (staff externo) e as salas do Hero: cada sala aberta com a próxima diária e o NDA pendente.
 export async function MyRoomsList({ rooms, portal }: { rooms: MyRoom[]; portal: RoomPortal }) {
   const [t, locale] = await Promise.all([getTranslations("projectRoom.mine"), getLocale() as Promise<Locale>]);
   return (

@@ -25,7 +25,7 @@ import { UPLOAD_RIGHTS_REQUIRED } from "@/lib/partner-terms/version";
 
 // Ações do Portal do Chef (receitas estruturadas, 0027/0028). Toda regra de dono, situação e
 // checklist mora nas RPCs; aqui validamos a entrada (o mesmo Zod do editor), traduzimos o erro
-// para um código de recipes.errors.* e revalidamos as telas. O herói vem sempre da sessão.
+// para um código de recipes.errors.* e revalidamos as telas. O Hero vem sempre da sessão.
 
 export type RecipeFailure = { ok: false; error: string; detail?: string };
 type Ok<T = object> = { ok: true } & T;
@@ -67,7 +67,7 @@ type OwnRecipe = { id: string; slug: string; title: string; status: string; revi
 
 async function loadOwnRecipe(ctx: CreatorActionContext, id: string): Promise<OwnRecipe | RecipeFailure> {
   const { data } = await ctx.supabase.from("content").select("id, slug, title, status, review_status, published_at, creator_id, type, updated_at").eq("id", id).maybeSingle();
-  // a RLS já esconde receita de outro herói; a comparação é a defesa extra (sem revelar ids)
+  // a RLS já esconde receita de outro Hero; a comparação é a defesa extra (sem revelar ids)
   if (!data || data.creator_id !== ctx.creatorId) return { ok: false, error: "forbidden" };
   if (data.type !== "recipe") return { ok: false, error: "not_recipe" };
   return data as OwnRecipe;
@@ -339,7 +339,7 @@ export async function publishRecipe(input: { id: string; publishAt?: string | nu
   const slug = (data as { slug?: string } | null)?.slug ?? own.slug;
   revalidateRecipe(own.id);
   revalidatePublic(slug);
-  // no ar agora: avisa quem favoritou o herói; agendada sai no cron diário (0054)
+  // no ar agora: avisa quem favoritou o Hero; agendada sai no cron diário (0054)
   if (!schedule.value) schedulePushDispatch();
   return { ok: true, slug, scheduled: Boolean(schedule.value) };
 }
@@ -384,7 +384,7 @@ export async function unpublishRecipe(input: { id: string }): Promise<Ok | Recip
   return simpleRpc("creator_unpublish_content", input?.id);
 }
 
-/** Só o que o próprio herói arquivou (o que o admin arquivou é trava dele). */
+/** Só o que o próprio Hero arquivou (o que o admin arquivou é trava dele). */
 export async function restoreRecipe(input: { id: string }): Promise<Ok | RecipeFailure> {
   return simpleRpc("creator_restore_content", input?.id);
 }
@@ -428,8 +428,8 @@ export async function duplicateRecipe(input: { id: string }): Promise<Ok<{ id: s
 }
 
 /**
- * Exclui rascunho que nunca foi ao ar ou receita arquivada pelo próprio herói (0036). A RPC devolve
- * os caminhos das fotos (apagados aqui com a sessão do herói: sem linha em recipe_media a política de
+ * Exclui rascunho que nunca foi ao ar ou receita arquivada pelo próprio Hero (0036). A RPC devolve
+ * os caminhos das fotos (apagados aqui com a sessão do Hero: sem linha em recipe_media a política de
  * exclusão libera) e o uid do Stream. Banco sem a 0036 (PGRST202): cai na função antiga, que só
  * exclui rascunho nunca publicado; a arquivada recebe "ainda não disponível".
  */
