@@ -26,8 +26,9 @@ export function parseNativeApp(userAgent: string | null | undefined): NativeApp 
 // perfil público dos profissionais (/profissionais) seguem no app, sem "Contratar".
 // /agencia e /marca: portais de gestão (0064) só na web
 // /conheca: a página institucional (etapa 7) é para o visitante da web; dentro do app da loja não há página de
-// marketing (ela fala de portais e pagamentos que lá não existem)
-const BLOCKED_PREFIXES = ["/shop", "/cart", "/checkout", "/orders", "/profissional", "/agencia", "/marca", "/conheca"];
+// marketing (ela fala de portais e pagamentos que lá não existem). /sobre: a mesma apresentação completa (a antiga
+// /conheca), agora em rota própria; pelo mesmo motivo continua fora do app das lojas.
+const BLOCKED_PREFIXES = ["/shop", "/cart", "/checkout", "/orders", "/profissional", "/agencia", "/marca", "/conheca", "/sobre"];
 const BLOCKED_HERO_LIBRARY = /^\/personalities\/[^/]+\/produtos\/?$/;
 
 export function isBlockedInNativeApp(pathname: string, search?: URLSearchParams): boolean {

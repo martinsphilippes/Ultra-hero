@@ -64,7 +64,7 @@ describe("regra de host (pura)", () => {
     for (const p of ["/conheca", "/conheca/influenciador", "/legal/privacy", "/legal/terms", "/_next/static/x.js", "/manifest.webmanifest", "/favicon.ico"]) {
       expect(marketingDecision(p), p).toEqual({ action: "next" });
     }
-    for (const p of ["/login", "/personalities", "/agencia", "/marca/campanhas", "/heroi", "/admin", "/api/cron/agency", "/conheca/explorar", "/conhecaX", "/legalx"]) {
+    for (const p of ["/login", "/personalities", "/agencia", "/marca/campanhas", "/heroi", "/admin", "/api/cron/agency", "/conheca/explorar", "/conhecaX", "/legalx", "/sobre", "/sobre/x"]) {
       expect(marketingDecision(p), p).toEqual({ action: "redirect", pathname: "/" });
     }
   });
@@ -95,6 +95,17 @@ describe("middleware com MARKETING_HOSTS", () => {
       expect(res.status, p).toBe(307);
       expect(new URL(res.headers.get("location")!).pathname, p).toBe("/");
     }
+  });
+  it("a apresentação completa (/sobre) não existe no domínio do teaser: volta para \"/\" (o teaser)", async () => {
+    const res = await middleware(request("/sobre?x=1", "dominio.com"));
+    expect(res.status).toBe(307);
+    const loc = new URL(res.headers.get("location")!);
+    expect(loc.pathname).toBe("/");
+    expect(loc.search).toBe("");
+    expect(session.refreshed).toBe(0);
+    // fora do domínio de marketing, /sobre abre direto (pública, sem login)
+    const app = await middleware(request("/sobre", "app.dominio.com"));
+    expect(app.headers.get("location")).toBeNull();
   });
   it("teaser e páginas legais abrem normalmente", async () => {
     for (const p of ["/conheca", "/conheca/influenciador", "/legal/privacy"]) {

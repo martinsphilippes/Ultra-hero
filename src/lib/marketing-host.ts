@@ -6,6 +6,8 @@
 // (/_next/*, arquivos estáticos — o matcher do middleware já os deixa de fora). O formulário é server action
 // (POST na própria página), então não precisa de nenhuma /api.
 // Sem a variável (ou com host fora da lista), nada muda.
+// A apresentação completa (/sobre, a antiga /conheca) é do app, não do domínio do teaser: lá ela volta para "/"
+// como qualquer outra rota do app (de propósito fora de ALLOWED_PREFIXES; teste em tests/unit/marketing-host.test.ts).
 //
 // O teaser não tem mais link para o app (o "Já tenho acesso" saiu do rodapé a pedido do dono, 04/11), então a antiga
 // MARKETING_APP_URL deixou de existir: quem já tem conta entra pelo endereço do app.

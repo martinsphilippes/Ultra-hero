@@ -1,11 +1,13 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { EXPLORE_COOKIE, INSTITUTIONAL_PATH, rootDestination, rootNeedsSessionCheck } from "@/lib/institutional/root";
+import { CALENDAR_POINTS, FAQ_ITEMS, FEATURE_GROUPS, HOW_STEPS, SECTION_ANCHORS, WHAT_ITEMS } from "@/lib/about-classic/content";
+import { ABOUT_PATH, EXPLORE_COOKIE, INSTITUTIONAL_PATH, rootDestination, rootNeedsSessionCheck } from "@/lib/institutional/root";
 import { isBlockedInNativeApp } from "@/lib/native-app/surface";
 
-// Etapa 7 · página institucional (/conheca, hoje o teaser de lançamento) e o destino do "/".
+// Etapa 7 · página institucional (/conheca, hoje o teaser de lançamento), o destino do "/" e a apresentação
+// completa restaurada em /sobre (a antiga /conheca, branch ultra-classico).
 
 const session = vi.hoisted(() => ({ signedIn: false, checks: 0 }));
 
@@ -93,6 +95,16 @@ describe("middleware no \"/\"", () => {
     expect(location(native)?.pathname).toBe("/personalities");
     expect(isBlockedInNativeApp("/conheca")).toBe(true);
     expect(isBlockedInNativeApp("/conheca/explorar")).toBe(true);
+  });
+  it("/sobre (apresentação completa) é pública na web, sem checar sessão, e bloqueada no app das lojas", async () => {
+    expect(ABOUT_PATH).toBe("/sobre");
+    const web = await middleware(request("/sobre"));
+    expect(web.headers.get("location")).toBeNull();
+    expect(session.checks).toBe(0);
+    const native = await middleware(request("/sobre", { ua: NATIVE_UA }));
+    expect(location(native)?.pathname).toBe("/personalities");
+    expect(isBlockedInNativeApp("/sobre")).toBe(true);
+    expect(isBlockedInNativeApp("/sobremesa")).toBe(false);
   });
   it("rotas protegidas seguem exigindo sessão (autenticação inalterada)", async () => {
     const res = await middleware(request("/heroi"));
@@ -212,5 +224,78 @@ describe("textos do teaser de lançamento", () => {
     // metadados sem spoiler: nada de portal, marca/herói/agência
     const meta = [get(messages[locale], "meta.title"), get(messages[locale], "meta.description")].join(" ");
     expect(meta).not.toMatch(/portal|her[oó]i|hero|marca/i);
+  });
+});
+
+// ------------------------------------------------------------------ /sobre (apresentação clássica)
+const about = Object.fromEntries(
+  LOCALES.map((l) => [l, JSON.parse(readFileSync(path.join(process.cwd(), "messages", l, "aboutClassic.json"), "utf8")) as Tree]),
+) as Record<(typeof LOCALES)[number], Tree>;
+
+function aboutKeys(): string[] {
+  const keys = ["meta.title", "meta.description", "nav.signup", "nav.login", "nav.skip", "nav.openApp", "nav.sections", "nav.home", "hero.eyebrow", "hero.title", "hero.lead", "hero.signedIn", "what.title", "what.lead", "how.title", "how.lead", "how.note", "calendar.title", "calendar.lead", "faq.title", "final.title", "final.lead", "footer.rights", "switcher.label", "switcher.app", "switcher.seeAll", "app.cta"];
+  for (const k of WHAT_ITEMS) keys.push(`what.items.${k}.title`, `what.items.${k}.body`);
+  for (const k of HOW_STEPS) keys.push(`how.steps.${k}.title`, `how.steps.${k}.body`);
+  for (const g of FEATURE_GROUPS) {
+    keys.push(`${g.ns}.title`, `${g.ns}.lead`, `interlude.${g.ns}`);
+    for (const i of g.items) keys.push(`${g.ns}.items.${i.key}.title`, `${g.ns}.items.${i.key}.body`);
+  }
+  for (const k of CALENDAR_POINTS) keys.push(`calendar.points.${k}`);
+  for (const k of FAQ_ITEMS) keys.push(`faq.items.${k}.q`, `faq.items.${k}.a`);
+  for (const a of SECTION_ANCHORS) keys.push(a.labelKey);
+  return keys;
+}
+
+describe("/sobre · Conheça o Groscove Ultra (apresentação clássica)", () => {
+  const root = process.cwd();
+  it.each(LOCALES)("%s tem todos os textos usados pela página", (locale) => {
+    for (const key of aboutKeys()) expect(typeof get(about[locale], key), `${locale}: ${key}`).toBe("string");
+  });
+  it("pt-BR traz o título, a proposta de valor e as seções de antes", () => {
+    const pt = about["pt-BR"];
+    expect(get(pt, "meta.title")).toBe("Conheça o Groscove Ultra");
+    expect(get(pt, "hero.title")).toBe("A plataforma onde marca, herói e agência fecham negócio rápido.");
+    expect(get(pt, "what.title")).toBe("O que é o Ultra");
+    expect(get(pt, "calendar.title")).toBe("Calendário Groscove");
+    expect(get(pt, "agency.items.castBuilder.title")).toBe("Montador de elenco");
+  });
+  it.each(LOCALES)("%s não promete o que não existe: pagamentos ainda não ativados, sem demo", (locale) => {
+    for (const text of allStrings(about[locale])) expect(text).not.toMatch(/demonstra|\bdemo\b|simulad|simulat/i);
+    const notEnabled = { "pt-BR": /ainda não ativad/i, en: /not enabled yet/i, es: /aún no activad/i }[locale];
+    expect(String(get(about[locale], "brands.items.budget.body"))).toMatch(notEnabled);
+    expect(String(get(about[locale], "heroes.items.finance.body"))).toMatch(notEnabled);
+    expect(String(get(about[locale], "faq.items.data.a"))).toMatch(/<privacy>.+<\/privacy>/);
+  });
+  it("cada recurso citado aponta para uma rota que existe no app", () => {
+    const routes = new Set<string>();
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (entry.name === "page.tsx") {
+          const rel = path.relative(path.join(root, "src/app"), path.dirname(full));
+          routes.add("/" + rel.split(path.sep).filter((s) => s && !/^\(.*\)$/.test(s)).join("/"));
+        }
+      }
+    };
+    walk(path.join(root, "src/app"));
+    expect(routes.has(ABOUT_PATH)).toBe(true);
+    for (const g of FEATURE_GROUPS) for (const item of g.items) expect(routes.has(item.route), item.route).toBe(true);
+  });
+  it("página com metadados próprios, canônico /sobre, animações com prefixo próprio e sem tocar no teaser", () => {
+    const page = readFileSync(path.join(root, "src/app/sobre/page.tsx"), "utf8");
+    expect(page).toContain('getTranslations("aboutClassic.meta")');
+    expect(page).toContain("canonical: ABOUT_PATH");
+    expect(page).toContain('<SeasonalTheme area="institutional" />');
+    expect(page).not.toMatch(/<img\b|next\/image|LaunchTeaser|AppIntro/);
+    // sem colisão com a abertura do app (intro.css) e o teaser: tudo com uh-sb-
+    const css = readFileSync(path.join(root, "src/app/sobre/sobre.css"), "utf8");
+    for (const name of css.match(/@keyframes\s+([\w-]+)/g) ?? []) expect(name).toMatch(/@keyframes uh-sb-/);
+    expect(css).toMatch(/prefers-reduced-motion: reduce/);
+  });
+  it("links internos para a explicação do produto levam a /sobre (não ao teaser)", () => {
+    const settings = readFileSync(path.join(root, "src/app/(app)/configuracoes/page.tsx"), "utf8");
+    expect(settings).toContain("href={ABOUT_PATH}");
+    expect(settings).not.toMatch(/["'`]\/conheca/);
   });
 });

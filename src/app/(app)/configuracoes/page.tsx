@@ -28,6 +28,7 @@ import {
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { Button, PageHeader } from "@/components/ui";
 import { getProfile, getRoles, requireUser } from "@/lib/auth/session";
+import { ABOUT_PATH } from "@/lib/institutional/root";
 import { appliesOn } from "@/lib/routine/reminders";
 import { getTalentContext } from "@/lib/talent/server";
 import { parseNativeApp } from "@/lib/native-app/surface";
@@ -176,6 +177,22 @@ export default async function SettingsPage() {
                 </a>
               </li>
             ))}
+          {/* "Conheça o Groscove Ultra": a apresentação completa (/sobre). Fora do app das lojas, onde a rota é
+              bloqueada (fala de portais e pagamentos que lá não existem). */}
+          {native ? null : (
+            <li>
+              <Link href={ABOUT_PATH} data-testid="settings-about" className={rowClass}>
+                <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-accent-text">
+                  <Sparkles className="size-5" />
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="text-sm font-semibold text-fg">{tw("about")}</span>
+                  <span className="type-caption text-fg-muted">{tw("aboutHint")}</span>
+                </span>
+                <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
+              </Link>
+            </li>
+          )}
         </ul>
       </section>
 

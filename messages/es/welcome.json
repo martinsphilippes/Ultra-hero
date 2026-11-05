@@ -18,7 +18,9 @@
       "heroi": "Portal del Héroe",
       "marca": "Portal de la Marca",
       "agencia": "Portal de la Agencia"
-    }
+    },
+    "about": "Conoce Groscove Ultra",
+    "aboutHint": "Todo lo que hace Ultra, perfil por perfil."
   },
   "areas": {
     "app": {

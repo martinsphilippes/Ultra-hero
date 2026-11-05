@@ -1,0 +1,230 @@
+{
+  "meta": {
+    "title": "Conoce Groscove Ultra",
+    "description": "La plataforma donde marca, héroe y agencia cierran negocios rápido: oportunidades, agenda, términos y entregas en un solo lugar, y la app donde el público sigue a los héroes."
+  },
+  "nav": {
+    "signup": "Crear cuenta",
+    "login": "Entrar",
+    "openApp": "Abrir la app",
+    "skip": "Saltar y explorar",
+    "sections": "En esta página",
+    "home": "Groscove Ultra · Conoce"
+  },
+  "hero": {
+    "eyebrow": "Groscove Ultra",
+    "title": "La plataforma donde marca, héroe y agencia cierran negocios rápido.",
+    "lead": "Oportunidades, agenda, términos y entregas en un solo lugar. Y la app donde el público sigue a los héroes con contenidos, programas y recetas.",
+    "signedIn": "Ya iniciaste sesión."
+  },
+  "what": {
+    "title": "Qué es Ultra",
+    "lead": "Cuatro accesos, un mismo flujo. Cada perfil ve solo lo que necesita.",
+    "items": {
+      "brand": {
+        "title": "Marca",
+        "body": "Encuentra héroes, envía campañas y sigue cada entrega hasta el informe."
+      },
+      "hero": {
+        "title": "Héroe",
+        "body": "Recibe oportunidades claras, organiza la agenda y publica para su público."
+      },
+      "agency": {
+        "title": "Agencia",
+        "body": "Opera en el medio de todo: casting, negocios, plazos y la agenda central."
+      },
+      "app": {
+        "title": "App",
+        "body": "Donde el público sigue a los héroes: contenidos, programas, recetas y Hoy."
+      }
+    }
+  },
+  "how": {
+    "title": "Cómo funciona",
+    "lead": "De la elección del héroe al contenido aprobado, con la agencia en medio de cada conversación.",
+    "steps": {
+      "choose": {
+        "title": "La marca elige",
+        "body": "Recorre el catálogo de héroes, compara lado a lado y arma una preselección."
+      },
+      "request": {
+        "title": "Envía la campaña",
+        "body": "Describe la acción, el período y el presupuesto. La agencia recibe el pedido."
+      },
+      "consult": {
+        "title": "El héroe responde",
+        "body": "La agencia lleva la oportunidad al héroe, que acepta o rechaza."
+      },
+      "terms": {
+        "title": "Términos aceptados",
+        "body": "Los términos del negocio quedan registrados, con versión y aceptación."
+      },
+      "deliver": {
+        "title": "Creación y aprobación",
+        "body": "El héroe envía las entregas. Ajustes y aprobaciones quedan guardados por versión."
+      },
+      "report": {
+        "title": "Resultado",
+        "body": "La marca sigue cada entrega por etapa y abre el informe de la campaña."
+      }
+    },
+    "note": "La marca no habla directo con el héroe: la agencia está en el medio y responde por ambos lados."
+  },
+  "heroes": {
+    "title": "Para héroes",
+    "lead": "El trabajo con marcas y tu público en un solo portal: el Portal del Héroe.",
+    "items": {
+      "page": {
+        "title": "Página pública",
+        "body": "Tu página en la app, con portada, presentación y tus contenidos."
+      },
+      "content": {
+        "title": "Contenidos y recetas",
+        "body": "Publica posts, contenidos y recetas para quienes te siguen."
+      },
+      "portal": {
+        "title": "Portal del Héroe",
+        "body": "Un inicio con lo que te necesita hoy, tareas y avisos."
+      },
+      "opportunities": {
+        "title": "Oportunidades",
+        "body": "Propuestas de las marcas, traídas por la agencia, para aceptar o rechazar."
+      },
+      "agenda": {
+        "title": "Agenda",
+        "body": "Acciones, plazos y disponibilidad, con enlace al calendario del celular."
+      },
+      "finance": {
+        "title": "Finanzas",
+        "body": "Valores acordados y lo que hay por cobrar, por negocio. Pagos aún no activados."
+      }
+    }
+  },
+  "brands": {
+    "title": "Para marcas",
+    "lead": "Elige héroes, envía campañas y sigue el resultado sin planilla paralela.",
+    "items": {
+      "catalog": {
+        "title": "Catálogo de héroes",
+        "body": "Busca por segmento, compara lado a lado y guarda tu preselección."
+      },
+      "campaigns": {
+        "title": "Campañas",
+        "body": "Cada entrega por etapa, del pedido a la aprobación, en una sola pantalla."
+      },
+      "calls": {
+        "title": "Convocatorias",
+        "body": "Publica una necesidad, recibe propuestas de las agencias y compara antes de contratar."
+      },
+      "sponsorship": {
+        "title": "Patrocinio",
+        "body": "Ve eventos de los héroes abiertos a patrocinio y di si te interesa."
+      },
+      "budget": {
+        "title": "Presupuesto y pagos",
+        "body": "Presupuesto por campaña, cuotas y vencimientos. Pagos aún no activados: Ultra no cobra nada."
+      },
+      "reports": {
+        "title": "Informes",
+        "body": "Informe de la campaña y la biblioteca con los contenidos aprobados."
+      }
+    }
+  },
+  "agency": {
+    "title": "Para agencias",
+    "lead": "Toda la operación en un lugar: quién está disponible, qué está detenido y qué vence hoy.",
+    "items": {
+      "casting": {
+        "title": "Casting",
+        "body": "Perfiles de los héroes con media kit, redes, documentos, disponibilidad e historial."
+      },
+      "deals": {
+        "title": "Negocios",
+        "body": "Del pedido al cierre: términos, conversación, tareas y entregas de cada negocio."
+      },
+      "castBuilder": {
+        "title": "Armador de elenco",
+        "body": "Arma el elenco de una propuesta a partir del casting, héroe por héroe."
+      },
+      "agenda": {
+        "title": "Agenda central y Real-Time Culture",
+        "body": "Las acciones de todos los héroes en un calendario y lo que está pasando ahora."
+      }
+    }
+  },
+  "app": {
+    "title": "Para quien usa la app",
+    "lead": "El lado del público: seguir a los héroes y llevar lo que hacen a la propia rutina.",
+    "items": {
+      "content": {
+        "title": "Contenidos",
+        "body": "Videos, posts y artículos de los héroes, organizados por tema."
+      },
+      "programs": {
+        "title": "Programas",
+        "body": "Secuencias para seguir a tu ritmo, de principio a fin."
+      },
+      "recipes": {
+        "title": "Recetas",
+        "body": "Recetas de los héroes, con lista de compras y Modo cocina."
+      },
+      "today": {
+        "title": "Hoy",
+        "body": "Tu día en foco, medido por el reloj que conectes, cuando la conexión esté disponible."
+      }
+    },
+    "cta": "Explorar la app"
+  },
+  "calendar": {
+    "title": "Calendario Groscove",
+    "lead": "La agenda cultural del año para planear acciones en el momento justo.",
+    "points": {
+      "territories": "Fechas por territorio: fútbol, deporte, música, entretenimiento, moda, comercio, feriados y más.",
+      "interest": "Marcas, agencias y héroes marcan interés y vinculan propuestas a los eventos.",
+      "where": "Disponible en los portales de marca, agencia y héroe."
+    }
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "items": {
+      "cost": {
+        "q": "¿Ultra es pago?",
+        "a": "Usar la app es gratis. No hay plan ni suscripción."
+      },
+      "payments": {
+        "q": "¿Ultra cobra o hace pagos?",
+        "a": "Todavía no. Pagos y compras no están activados: los valores de negocios y pedidos se registran para control, sin cobro."
+      },
+      "access": {
+        "q": "¿Cómo entran marcas, agencias y héroes?",
+        "a": "Crea tu cuenta eligiendo tu perfil: Héroe, Marca, Agencia o solo usar la app. ¿Recibiste una invitación? Entra con el correo invitado."
+      },
+      "devices": {
+        "q": "¿Funciona en el celular?",
+        "a": "Sí. Funciona en el navegador del celular y de la computadora, y se puede agregar a la pantalla de inicio."
+      },
+      "data": {
+        "q": "¿Y mis datos?",
+        "a": "Qué se guarda, por cuánto tiempo y cómo eliminar la cuenta está en la <privacy>Política de Privacidad</privacy>."
+      }
+    }
+  },
+  "final": {
+    "title": "¿Listo para empezar?",
+    "lead": "Crea tu cuenta con nombre, correo y celular, o explora la app primero."
+  },
+  "footer": {
+    "rights": "© {year} Groscove Ultra"
+  },
+  "switcher": {
+    "label": "Soy",
+    "app": "Público",
+    "seeAll": "Ver todo para {name}"
+  },
+  "interlude": {
+    "heroes": "Héroes",
+    "brands": "Marcas",
+    "agency": "Agencias",
+    "app": "Público"
+  }
+}

@@ -1,0 +1,71 @@
+/* Animações da apresentação clássica (/sobre; prefixo uh-sb- para não colidir com intro.css e o teaser). Só apresentação: tudo visível sem JS e com "reduzir movimento". */
+
+/* Abertura: a logo surge grande no centro e se encaixa no lugar */
+@keyframes uh-sb-intro-mark {
+  0% { opacity: 0; transform: scale(2.6) rotate(-8deg); filter: blur(10px); }
+  45% { opacity: 1; transform: scale(0.82) rotate(0deg); filter: blur(0); }
+  70% { transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes uh-sb-intro-word {
+  from { opacity: 0; transform: translateY(0.6em); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes uh-sb-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+@keyframes uh-sb-glow {
+  0%, 100% { opacity: 0.35; transform: scale(0.9); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+@keyframes uh-sb-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+/* Entre um perfil e outro: a logo diminui, aumenta e fixa */
+@keyframes uh-sb-interlude {
+  0% { opacity: 0; transform: scale(2.2); filter: blur(8px); }
+  35% { opacity: 1; transform: scale(0.55); filter: blur(0); }
+  60% { transform: scale(1.25); }
+  80% { transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes uh-sb-line-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.uh-sb-intro-mark { animation: uh-sb-intro-mark 1.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.uh-sb-intro-word { display: inline-block; animation: uh-sb-intro-word 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+/* mesma entrada, sem mudar o display (blocos, listas, flex) */
+.uh-sb-pop { animation: uh-sb-intro-word 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.uh-sb-breathe { animation: uh-sb-breathe 4s ease-in-out infinite; }
+.uh-sb-glow { animation: uh-sb-glow 5s ease-in-out infinite; }
+.uh-sb-marquee-track { animation: uh-sb-marquee 38s linear infinite; }
+.uh-sb-marquee:hover .uh-sb-marquee-track { animation-play-state: paused; }
+
+/* Revelar ao rolar: começa invisível e surge (de baixo, da esquerda, da direita ou do desfoque) */
+.uh-sb-reveal[data-state="hidden"] { opacity: 0; filter: blur(8px); }
+.uh-sb-reveal[data-state="hidden"][data-from="up"] { transform: translateY(32px) scale(0.98); }
+.uh-sb-reveal[data-state="hidden"][data-from="left"] { transform: translateX(-56px); }
+.uh-sb-reveal[data-state="hidden"][data-from="right"] { transform: translateX(56px); }
+.uh-sb-reveal[data-state="hidden"][data-from="zoom"] { transform: scale(0.85); }
+.uh-sb-reveal {
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), filter 0.8s ease;
+  transition-delay: var(--uh-sb-delay, 0ms);
+}
+.uh-sb-interlude[data-state="shown"] .uh-sb-interlude-mark { animation: uh-sb-interlude 1.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.uh-sb-interlude[data-state="shown"] .uh-sb-interlude-line { animation: uh-sb-line-grow 1.2s 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.uh-sb-interlude[data-state="hidden"] .uh-sb-interlude-mark { opacity: 0; }
+.uh-sb-interlude-line { transform-origin: center; }
+
+/* Cartão com leve inclinação 3D ao passar o dedo/mouse */
+.uh-sb-tilt { transform: perspective(900px) rotateX(var(--uh-sb-rx, 0deg)) rotateY(var(--uh-sb-ry, 0deg)); transition: transform 0.25s ease-out, box-shadow 0.25s ease-out; will-change: transform; }
+
+@media (prefers-reduced-motion: reduce) {
+  .uh-sb-intro-mark, .uh-sb-intro-word, .uh-sb-pop, .uh-sb-breathe, .uh-sb-glow, .uh-sb-marquee-track,
+  .uh-sb-interlude[data-state="shown"] .uh-sb-interlude-mark, .uh-sb-interlude[data-state="shown"] .uh-sb-interlude-line { animation: none !important; }
+  .uh-sb-reveal, .uh-sb-reveal[data-state="hidden"], .uh-sb-interlude[data-state="hidden"] .uh-sb-interlude-mark { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
+  .uh-sb-tilt { transform: none !important; }
+}
