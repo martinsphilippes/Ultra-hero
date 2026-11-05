@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -16,6 +17,7 @@ import { INTRO_INIT_SCRIPT } from "@/lib/intro/script";
 import { getNativeApp } from "@/lib/native-app/server";
 import { resolveTheme, THEME_COOKIE, THEME_INIT_SCRIPT } from "@/lib/theme/constants";
 import { resolveTemplate, TEMPLATE_COOKIE, TEMPLATE_INIT_SCRIPT } from "@/lib/theme/template";
+import { NavigationProgress } from "@/components/layout/NavigationProgress";
 import "./globals.css";
 import "./templates.css";
 import "./intro.css";
@@ -105,6 +107,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <ServiceWorkerRegister />
         <AppearanceSync />
         <NavHistory />
+        <Suspense fallback={null}>
+          <NavigationProgress />
+        </Suspense>
       </body>
     </html>
   );

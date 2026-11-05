@@ -581,3 +581,48 @@
 .uh-brand-strip::-webkit-scrollbar {
   display: none;
 }
+
+/* Barra de carregamento ao trocar de tela (NavigationProgress): aparece no toque, avança rápido no começo e
+   termina quando a tela nova chega. Fica acima de tudo, inclusive da área segura do iPhone. */
+.uh-nav-progress {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 9999;
+  height: 3px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.uh-nav-progress > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--uh-accent);
+  box-shadow: 0 0 8px color-mix(in oklab, var(--uh-accent) 60%, transparent);
+}
+.uh-nav-progress[data-state="loading"] {
+  opacity: 1;
+}
+.uh-nav-progress[data-state="loading"] > span {
+  animation: uh-nav-progress 8s cubic-bezier(0.1, 0.7, 0.2, 1) forwards;
+}
+.uh-nav-progress[data-state="done"] {
+  opacity: 0;
+  transition-delay: 0.1s;
+}
+.uh-nav-progress[data-state="done"] > span {
+  width: 100%;
+  transition: width 0.15s ease-out;
+}
+@keyframes uh-nav-progress {
+  0% { width: 0; }
+  10% { width: 45%; }
+  100% { width: 90%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .uh-nav-progress[data-state="loading"] > span {
+    animation: none;
+    width: 60%;
+  }
+}
