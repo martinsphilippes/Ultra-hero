@@ -1,4 +1,4 @@
-// Contraste WCAG 2.1 (módulo puro, testado). O tema sazonal é validado contra as paletas dos 10 templates de Aparência
+// Contraste WCAG 2.1 (módulo puro, testado). O tema sazonal é validado contra as paletas dos 12 templates de Aparência
 // (claro e escuro), porque cada pessoa pode estar em qualquer um: o tema não pode estragar a leitura em nenhum.
 import type { ColorMode, ModeTokens, ThemeBackground } from "./vocab";
 import { isHexColor } from "./vocab";
@@ -20,6 +20,8 @@ export const TEMPLATE_PALETTES: Record<ColorMode, TemplatePalette[]> = {
     { template: "perspectivas-oliva", bg: "#f1efe3", surface: "#f9f8f0", fg: "#2f3226", fgMuted: "#55574a" },
     { template: "perspectivas-mostarda", bg: "#f8f1e1", surface: "#fcf8ef", fg: "#30363f", fgMuted: "#585448" },
     { template: "perspectivas-grafite", bg: "#ece6db", surface: "#f6f1e8", fg: "#30363f", fgMuted: "#505154" },
+    { template: "perspectivas-petroleo-terracota", bg: "#efe7d8", surface: "#f8f3ea", fg: "#1f3640", fgMuted: "#4d5659" },
+    { template: "perspectivas-petroleo-bruma", bg: "#edf1f0", surface: "#f7f9f8", fg: "#16303a", fgMuted: "#46595f" },
   ],
   dark: [
     { template: "original", bg: "#0b0b0b", surface: "#141414", fg: "#f2efea", fgMuted: "#a7a199" },
@@ -32,6 +34,8 @@ export const TEMPLATE_PALETTES: Record<ColorMode, TemplatePalette[]> = {
     { template: "perspectivas-oliva", bg: "#1c1d16", surface: "#25271e", fg: "#f3f0e2", fgMuted: "#c9c6b2" },
     { template: "perspectivas-mostarda", bg: "#221d15", surface: "#2c261c", fg: "#f8f1e1", fgMuted: "#d3c6aa" },
     { template: "perspectivas-grafite", bg: "#22262c", surface: "#262a31", fg: "#f6f1e8", fgMuted: "#dcd3c3" },
+    { template: "perspectivas-petroleo-terracota", bg: "#11222a", surface: "#172a32", fg: "#f6f1e8", fgMuted: "#cfc6b8" },
+    { template: "perspectivas-petroleo-bruma", bg: "#0c1a1f", surface: "#13242a", fg: "#eef3f2", fgMuted: "#bccbcc" },
   ],
 };
 
@@ -118,7 +122,7 @@ export function textBackgrounds(tokens: ModeTokens, mode: ColorMode): string[] {
   return [...out];
 }
 
-/** Valida as cores de um modo contra os 10 templates. Cores inválidas são ignoradas (o zod/banco já barram). */
+/** Valida as cores de um modo contra os 12 templates. Cores inválidas são ignoradas (o zod/banco já barram). */
 export function checkModeTokens(tokens: ModeTokens | undefined, mode: ColorMode): ModeReport {
   const t: ModeTokens = {};
   for (const [k, v] of Object.entries(tokens ?? {})) if (isHexColor(v)) t[k as keyof ModeTokens] = v;

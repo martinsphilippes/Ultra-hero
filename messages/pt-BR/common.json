@@ -117,6 +117,14 @@
       "perspectivas-grafite": {
         "name": "Ultra Perspectivas Grafite",
         "description": "Paleta Perspectivas com grafite no comando: fundo bege dourado; no escuro, grafite com bege dourado."
+      },
+      "perspectivas-petroleo-terracota": {
+        "name": "Ultra Perspectivas Petróleo e Terracota",
+        "description": "Petróleo no comando com terracota nos detalhes, sobre fundo areia; no escuro, petróleo profundo com terracota."
+      },
+      "perspectivas-petroleo-bruma": {
+        "name": "Ultra Perspectivas Petróleo Bruma",
+        "description": "Petróleo frio e claro: fundo cinza-azulado, botões petróleo; no escuro, petróleo quase preto com azul suave."
       }
     }
   },

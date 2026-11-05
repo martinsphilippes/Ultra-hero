@@ -902,7 +902,9 @@
 [data-template="perspectivas-petroleo"],
 [data-template="perspectivas-oliva"],
 [data-template="perspectivas-mostarda"],
-[data-template="perspectivas-grafite"] {
+[data-template="perspectivas-grafite"],
+[data-template="perspectivas-petroleo-terracota"],
+[data-template="perspectivas-petroleo-bruma"] {
   --uh-chrome-bg: var(--uh-bg);
   --uh-chrome-fg: var(--uh-fg);
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -1519,4 +1521,194 @@
   --uh-shadow-lg: 0 26px 60px -26px rgba(0, 0, 0, 0.7);
   --uh-shadow-glow: 0 0 0 1px rgba(205, 185, 143, 0.3), 0 14px 34px -16px rgba(205, 185, 143, 0.25);
   --uh-title-gradient: linear-gradient(100deg, #ddcba5 0%, #efb393 36%, #ccce9e 66%, #a3c8d4 100%);
+}
+
+/* 11–12 · variações do Petróleo: com terracota (fundo areia) e bruma (petróleo frio e claro) */
+[data-template="perspectivas-petroleo-terracota"][data-theme="light"] {
+  color-scheme: light;
+  --uh-shape-1: #2a4954;
+  --uh-shape-2: #a95935;
+  --uh-shape-3: #b4a17f;
+  --uh-inverse-accent: #e09068;
+  --uh-inverse-accent-hover: #eaa684;
+  --uh-inverse-accent-fg: #1d2127;
+  --uh-bg: #efe7d8;
+  --uh-surface: #f8f3ea;
+  --uh-surface-elevated: #fdfaf4;
+  --uh-surface-hover: #e6dcc9;
+  --uh-border: rgba(48, 54, 63, 0.11);
+  --uh-border-strong: rgba(48, 54, 63, 0.26);
+  --uh-fg: #1f3640;
+  --uh-fg-muted: #4d5659;
+  --uh-fg-subtle: #5a6164;
+  --uh-accent: #2a4954;
+  --uh-accent-hover: #213a43;
+  --uh-accent-fg: #ffffff;
+  --uh-accent-text: #8e4a2b;
+  --uh-accent-soft: rgba(42, 73, 84, 0.12);
+  --uh-success: #4f5a2c;
+  --uh-success-soft: rgba(123, 125, 87, 0.16);
+  --uh-warning: #7a561b;
+  --uh-warning-soft: rgba(186, 140, 65, 0.2);
+  --uh-danger: #a62a1f;
+  --uh-danger-fg: #ffffff;
+  --uh-danger-soft: rgba(166, 42, 31, 0.09);
+  --uh-info: #2a4954;
+  --uh-info-soft: rgba(42, 73, 84, 0.1);
+  --uh-focus: #a95935;
+  --uh-overlay: rgba(48, 54, 63, 0.45);
+  --uh-pillar-routine: #2a4954;
+  --uh-pillar-routine-soft: #dfe7e8;
+  --uh-pillar-training: #8e4a2b;
+  --uh-pillar-training-soft: #f3e3d9;
+  --uh-pillar-nutrition: #565834;
+  --uh-pillar-nutrition-soft: #e8e8da;
+  --uh-pillar-gastronomy: #7a561b;
+  --uh-pillar-gastronomy-soft: #f3e8d2;
+  --uh-shadow-sm: 0 1px 2px rgba(48, 54, 63, 0.06);
+  --uh-shadow-md: 0 14px 34px -18px rgba(48, 54, 63, 0.3);
+  --uh-shadow-lg: 0 26px 60px -26px rgba(48, 54, 63, 0.38);
+  --uh-shadow-glow: 0 0 0 1px rgba(42, 73, 84, 0.24), 0 14px 34px -16px rgba(42, 73, 84, 0.3);
+  --uh-title-gradient: linear-gradient(100deg, #2a4954 0%, #8e4a2b 45%, #7a561b 75%, #2a4954 100%);
+}
+[data-template="perspectivas-petroleo-terracota"][data-theme="dark"] {
+  color-scheme: dark;
+  --uh-shape-1: #2a4954;
+  --uh-shape-2: #a95935;
+  --uh-shape-3: #b4a17f;
+  --uh-inverse-accent: #e09068;
+  --uh-inverse-accent-hover: #eaa684;
+  --uh-inverse-accent-fg: #11222a;
+  --uh-bg: #11222a;
+  --uh-surface: #172a32;
+  --uh-surface-elevated: #1d323a;
+  --uh-surface-hover: #253c45;
+  --uh-border: rgba(246, 241, 232, 0.1);
+  --uh-border-strong: rgba(246, 241, 232, 0.24);
+  --uh-fg: #f6f1e8;
+  --uh-fg-muted: #cfc6b8;
+  --uh-fg-subtle: #b9b1a3;
+  --uh-accent: #e09068;
+  --uh-accent-hover: #eaa684;
+  --uh-accent-fg: #11222a;
+  --uh-accent-text: #eaa684;
+  --uh-accent-soft: rgba(224, 144, 104, 0.15);
+  --uh-success: #c2c592;
+  --uh-success-soft: rgba(194, 197, 146, 0.15);
+  --uh-warning: #ddb06a;
+  --uh-warning-soft: rgba(221, 176, 106, 0.15);
+  --uh-danger: #f09a8c;
+  --uh-danger-fg: #11222a;
+  --uh-danger-soft: rgba(240, 154, 140, 0.14);
+  --uh-info: #8fbccb;
+  --uh-info-soft: rgba(143, 188, 203, 0.14);
+  --uh-focus: #ddb06a;
+  --uh-overlay: rgba(10, 12, 15, 0.66);
+  --uh-pillar-routine: #8fbccb;
+  --uh-pillar-routine-soft: rgba(143, 188, 203, 0.15);
+  --uh-pillar-training: #eaa684;
+  --uh-pillar-training-soft: rgba(234, 166, 132, 0.15);
+  --uh-pillar-nutrition: #c2c592;
+  --uh-pillar-nutrition-soft: rgba(194, 197, 146, 0.15);
+  --uh-pillar-gastronomy: #ddb06a;
+  --uh-pillar-gastronomy-soft: rgba(221, 176, 106, 0.15);
+  --uh-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --uh-shadow-md: 0 14px 34px -18px rgba(0, 0, 0, 0.6);
+  --uh-shadow-lg: 0 26px 60px -26px rgba(0, 0, 0, 0.7);
+  --uh-shadow-glow: 0 0 0 1px rgba(224, 144, 104, 0.3), 0 14px 34px -16px rgba(224, 144, 104, 0.25);
+  --uh-title-gradient: linear-gradient(100deg, #8fbccb 0%, #eaa684 45%, #ddb06a 75%, #8fbccb 100%);
+}
+[data-template="perspectivas-petroleo-bruma"][data-theme="light"] {
+  color-scheme: light;
+  --uh-shape-1: #2a4954;
+  --uh-shape-2: #8fbccb;
+  --uh-shape-3: #7b7d57;
+  --uh-inverse-accent: #8fbccb;
+  --uh-inverse-accent-hover: #a6cbd7;
+  --uh-inverse-accent-fg: #0c1a1f;
+  --uh-bg: #edf1f0;
+  --uh-surface: #f7f9f8;
+  --uh-surface-elevated: #ffffff;
+  --uh-surface-hover: #e1e8e7;
+  --uh-border: rgba(22, 48, 58, 0.11);
+  --uh-border-strong: rgba(22, 48, 58, 0.26);
+  --uh-fg: #16303a;
+  --uh-fg-muted: #46595f;
+  --uh-fg-subtle: #526368;
+  --uh-accent: #1f3a44;
+  --uh-accent-hover: #162d35;
+  --uh-accent-fg: #ffffff;
+  --uh-accent-text: #2a4954;
+  --uh-accent-soft: rgba(31, 58, 68, 0.12);
+  --uh-success: #4a5528;
+  --uh-success-soft: rgba(123, 125, 87, 0.16);
+  --uh-warning: #77541a;
+  --uh-warning-soft: rgba(186, 140, 65, 0.2);
+  --uh-danger: #a62a1f;
+  --uh-danger-fg: #ffffff;
+  --uh-danger-soft: rgba(166, 42, 31, 0.09);
+  --uh-info: #2a4954;
+  --uh-info-soft: rgba(42, 73, 84, 0.1);
+  --uh-focus: #a95935;
+  --uh-overlay: rgba(22, 48, 58, 0.45);
+  --uh-pillar-routine: #2a4954;
+  --uh-pillar-routine-soft: #dfe7e8;
+  --uh-pillar-training: #8a4729;
+  --uh-pillar-training-soft: #f3e3d9;
+  --uh-pillar-nutrition: #525430;
+  --uh-pillar-nutrition-soft: #e8e8da;
+  --uh-pillar-gastronomy: #77541a;
+  --uh-pillar-gastronomy-soft: #f3e8d2;
+  --uh-shadow-sm: 0 1px 2px rgba(22, 48, 58, 0.06);
+  --uh-shadow-md: 0 14px 34px -18px rgba(22, 48, 58, 0.3);
+  --uh-shadow-lg: 0 26px 60px -26px rgba(22, 48, 58, 0.38);
+  --uh-shadow-glow: 0 0 0 1px rgba(31, 58, 68, 0.24), 0 14px 34px -16px rgba(31, 58, 68, 0.3);
+  --uh-title-gradient: linear-gradient(100deg, #16303a 0%, #2a4954 40%, #525430 75%, #2a4954 100%);
+}
+[data-template="perspectivas-petroleo-bruma"][data-theme="dark"] {
+  color-scheme: dark;
+  --uh-shape-1: #2a4954;
+  --uh-shape-2: #8fbccb;
+  --uh-shape-3: #7b7d57;
+  --uh-inverse-accent: #8fbccb;
+  --uh-inverse-accent-hover: #a6cbd7;
+  --uh-inverse-accent-fg: #0c1a1f;
+  --uh-bg: #0c1a1f;
+  --uh-surface: #13242a;
+  --uh-surface-elevated: #192d34;
+  --uh-surface-hover: #203840;
+  --uh-border: rgba(238, 243, 242, 0.1);
+  --uh-border-strong: rgba(238, 243, 242, 0.24);
+  --uh-fg: #eef3f2;
+  --uh-fg-muted: #bccbcc;
+  --uh-fg-subtle: #a2b3b5;
+  --uh-accent: #8fbccb;
+  --uh-accent-hover: #a6cbd7;
+  --uh-accent-fg: #0c1a1f;
+  --uh-accent-text: #a6cbd7;
+  --uh-accent-soft: rgba(143, 188, 203, 0.15);
+  --uh-success: #c2c592;
+  --uh-success-soft: rgba(194, 197, 146, 0.15);
+  --uh-warning: #ddb06a;
+  --uh-warning-soft: rgba(221, 176, 106, 0.15);
+  --uh-danger: #f09a8c;
+  --uh-danger-fg: #0c1a1f;
+  --uh-danger-soft: rgba(240, 154, 140, 0.14);
+  --uh-info: #a6cbd7;
+  --uh-info-soft: rgba(166, 203, 215, 0.14);
+  --uh-focus: #a6cbd7;
+  --uh-overlay: rgba(10, 12, 15, 0.66);
+  --uh-pillar-routine: #a6cbd7;
+  --uh-pillar-routine-soft: rgba(166, 203, 215, 0.15);
+  --uh-pillar-training: #e9a17e;
+  --uh-pillar-training-soft: rgba(233, 161, 126, 0.15);
+  --uh-pillar-nutrition: #c2c592;
+  --uh-pillar-nutrition-soft: rgba(194, 197, 146, 0.15);
+  --uh-pillar-gastronomy: #ddb06a;
+  --uh-pillar-gastronomy-soft: rgba(221, 176, 106, 0.15);
+  --uh-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --uh-shadow-md: 0 14px 34px -18px rgba(0, 0, 0, 0.6);
+  --uh-shadow-lg: 0 26px 60px -26px rgba(0, 0, 0, 0.7);
+  --uh-shadow-glow: 0 0 0 1px rgba(143, 188, 203, 0.3), 0 14px 34px -16px rgba(143, 188, 203, 0.25);
+  --uh-title-gradient: linear-gradient(100deg, #a6cbd7 0%, #eef3f2 45%, #c2c592 75%, #a6cbd7 100%);
 }

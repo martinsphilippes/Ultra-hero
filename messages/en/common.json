@@ -117,6 +117,14 @@
       "perspectivas-grafite": {
         "name": "Ultra Perspectivas Graphite",
         "description": "Perspectivas palette led by graphite: golden beige background; in dark mode, graphite with golden beige."
+      },
+      "perspectivas-petroleo-terracota": {
+        "name": "Ultra Perspectivas Petroleum & Terracotta",
+        "description": "Petroleum blue with terracotta details on a sand background; in dark mode, deep petroleum with terracotta."
+      },
+      "perspectivas-petroleo-bruma": {
+        "name": "Ultra Perspectivas Petroleum Mist",
+        "description": "Cool, light petroleum: bluish-grey background, petroleum buttons; in dark mode, near-black petroleum with soft blue."
       }
     }
   },
