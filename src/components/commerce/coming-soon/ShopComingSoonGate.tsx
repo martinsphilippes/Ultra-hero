@@ -9,7 +9,7 @@ import { Hourglass } from "./Hourglass";
 import { NotifyLaunchButton } from "./NotifyLaunchButton";
 import "./coming-soon.css";
 
-export type ComingSoonSection = "shop" | "collectibles" | "product" | "collectible" | "cart" | "checkout";
+export type ComingSoonSection = "shop" | "collectibles" | "product" | "collectible" | "cart" | "checkout" | "social" | "explore";
 
 type Props = {
   section: ComingSoonSection;
@@ -48,7 +48,7 @@ export async function ShopComingSoonGate({ section, nextPath, enabled = true, ch
       </div>
       <div className="uh-cs-layer">
         <section aria-labelledby="shop-coming-soon-title" className="uh-cs-card flex flex-col items-center gap-3.5 px-5 pb-5 pt-5 sm:gap-5 sm:px-7 sm:pb-6 sm:pt-6">
-          <p className="uh-cs-mono text-[0.6875rem] uppercase tracking-[0.22em] text-[var(--cs-orange-soft)]">{isCollectibles ? t("eyebrowCollectibles") : t("eyebrowShop")}</p>
+          <p className="uh-cs-mono text-[0.6875rem] uppercase tracking-[0.22em] text-[var(--cs-orange-soft)]">{section === "social" ? t("eyebrowSocial") : section === "explore" ? t("eyebrowExplore") : isCollectibles ? t("eyebrowCollectibles") : t("eyebrowShop")}</p>
           <Hourglass className="h-[4.5rem] w-12 sm:h-28 sm:w-[4.7rem]" />
           <h2 id="shop-coming-soon-title" className="uh-cs-title">
             {t("title")}
@@ -58,7 +58,7 @@ export async function ShopComingSoonGate({ section, nextPath, enabled = true, ch
           </h2>
           <ComingSoonCountdown opensAt={state.opensAt} serverNow={state.serverNow} />
           <div className="flex flex-col gap-2">
-            <p className="text-pretty text-[0.9375rem] leading-relaxed text-[var(--cs-sand)]">{t("body")}</p>
+            <p className="text-pretty text-[0.9375rem] leading-relaxed text-[var(--cs-sand)]">{section === "social" ? t("bodySocial") : section === "explore" ? t("bodyExplore") : t("body")}</p>
             {/* na lista a provocação já está na descrição do cabeçalho; no detalhe ela vem aqui */}
             {section === "collectible" ? <p className="text-pretty text-sm leading-relaxed text-[var(--cs-sand-muted)]">{t("collectiblesTease")}</p> : null}
           </div>

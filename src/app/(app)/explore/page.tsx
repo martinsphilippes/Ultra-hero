@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ShopComingSoonGate } from "@/components/commerce/coming-soon/ShopComingSoonGate";
 import { Bookmark, ChefHat, Layers, LibraryBig, ShoppingBag } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Suspense, type ReactNode } from "react";
@@ -59,7 +60,9 @@ export default async function ExplorePage({ searchParams }: Props) {
     { value: "listas", label: t("tabs.lists"), icon: <Bookmark /> },
   ];
 
+  // coming soon (mesma data e regra da aba Comprar): conteúdo desfocado por baixo, ampulheta e contagem por cima; admin vê normal
   return (
+    <ShopComingSoonGate section="explore" nextPath="/explore">
     <div className="flex flex-col gap-6">
       <PageHeader title={t("title")} description={recipes ? t("recipesDescription") : t("description")} eyebrow={t("eyebrow")}>
         {recipes ? <RecipeSearchForm params={recipes} base="/explore" fixed={RECIPES_FIXED} idPrefix="explore-recipes" /> : <SearchForm params={params} />}
@@ -97,5 +100,6 @@ export default async function ExplorePage({ searchParams }: Props) {
         )}
       </UrlTabs>
     </div>
+    </ShopComingSoonGate>
   );
 }

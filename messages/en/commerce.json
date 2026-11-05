@@ -361,6 +361,10 @@
     "notifyError": "Couldn't save right now. Please try again.",
     "loginHint": "Sign in or create your account to get the notice.",
     "backToShop": "Back to Shop",
-    "adminNotice": "“Coming soon” is live for the public until {date} (Brasília time). As an admin, you see and use the regular store to prepare products."
+    "adminNotice": "“Coming soon” is live for the public until {date} (Brasília time). As an admin, you see and use the regular store to prepare products.",
+    "eyebrowSocial": "Social",
+    "eyebrowExplore": "Explore",
+    "bodySocial": "Social, with the Heros’ posts and videos, arrives in 2027.",
+    "bodyExplore": "Explore, with search across content, recipes and programs, arrives in 2027."
   }
 }

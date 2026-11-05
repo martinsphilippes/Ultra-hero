@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ShopComingSoonGate } from "@/components/commerce/coming-soon/ShopComingSoonGate";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { LiveHighlight } from "@/components/collectibles/LiveHighlight";
@@ -24,7 +25,9 @@ export default async function HomePage({ searchParams }: Props) {
   const tab = resolveFeedTab({ param: parseFeedParam(params[FEED_PARAM]), followCount: follow.following.size, available: follow.available, signedIn: follow.signedIn });
   const showTabs = follow.available && follow.signedIn;
 
+  // coming soon (mesma data e regra da aba Comprar): conteúdo desfocado por baixo, ampulheta e contagem por cima; admin vê normal
   return (
+    <ShopComingSoonGate section="social" nextPath="/inicio">
     <div className="-mx-gutter flex flex-col gap-8 md:mx-auto md:w-full md:max-w-[470px]">
       <h1 className="sr-only">{th("title")}</h1>
       {/* Colecionáveis ao vivo (0057): destaque pequeno no topo; sem item ao vivo, nada */}
@@ -64,5 +67,6 @@ export default async function HomePage({ searchParams }: Props) {
       </Suspense>
       <p className="type-caption px-gutter text-fg-subtle md:px-0">{t("educationalNote")}</p>
     </div>
+    </ShopComingSoonGate>
   );
 }

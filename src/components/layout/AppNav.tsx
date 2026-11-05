@@ -26,6 +26,9 @@ const tabClass = (active: boolean) =>
   );
 
 // Barra inferior (mobile): até 6 abas (cabem em 360px: 60px cada, alvo ≥44px) com ícone + rótulo e aria-current.
+/** Abas com "Em breve" enquanto o coming soon vale para quem vê (mesma data da loja): Comprar, Social e Explorar. */
+const SOON_TABS = new Set(["shop", "home", "explore"]);
+
 export function BottomNav({ shopSoon = false, portalHref = null }: NavProps) {
   const t = useTranslations("nav");
   const ta = useTranslations("common.a11y");
@@ -39,7 +42,7 @@ export function BottomNav({ shopSoon = false, portalHref = null }: NavProps) {
       <ul className="mx-auto grid h-bottomnav max-w-content auto-cols-fr grid-flow-col">
         {NAV_ITEMS.map(({ key, href, icon: Icon, webOnly }) => {
           const active = isActivePath(pathname, href);
-          const soon = shopSoon && key === "shop";
+          const soon = shopSoon && SOON_TABS.has(key);
           return (
             <Fragment key={key}>
             {key === "profile" && portalHref ? <PortalTab href={portalHref} label={t("tabs.portal")} active={isPortalPath(pathname)} /> : null}
@@ -54,7 +57,7 @@ export function BottomNav({ shopSoon = false, portalHref = null }: NavProps) {
                 <span className="relative inline-flex">
                   <Icon className="size-[22px]" aria-hidden="true" strokeWidth={active ? 2.4 : 2} />
                   {soon ? (
-                    <span aria-hidden="true" data-testid="nav-shop-soon" className="uh-cs-navbadge absolute -top-1.5 left-1/2 ml-1">
+                    <span aria-hidden="true" data-testid={`nav-${key}-soon`} className="uh-cs-navbadge absolute -top-1.5 left-1/2 ml-1">
                       {t("soon")}
                     </span>
                   ) : null}
@@ -98,7 +101,7 @@ export function TopNavLinks({ shopSoon = false, portalHref = null }: NavProps) {
     <ul className="flex items-center gap-1">
       {NAV_ITEMS.map(({ key, href, webOnly }) => {
         const active = isActivePath(pathname, href);
-        const soon = shopSoon && key === "shop";
+        const soon = shopSoon && SOON_TABS.has(key);
         return (
           <Fragment key={key}>
           {key === "profile" && portalHref ? (

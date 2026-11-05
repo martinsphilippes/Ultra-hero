@@ -361,6 +361,10 @@
     "notifyError": "Não foi possível salvar agora. Tente de novo.",
     "loginHint": "Entre ou crie sua conta para receber o aviso.",
     "backToShop": "Voltar para Comprar",
-    "adminNotice": "“Coming soon” ativo para o público até {date} (horário de Brasília). Como admin, você vê e usa a loja normal para preparar os produtos."
+    "adminNotice": "“Coming soon” ativo para o público até {date} (horário de Brasília). Como admin, você vê e usa a loja normal para preparar os produtos.",
+    "eyebrowSocial": "Social",
+    "eyebrowExplore": "Explorar",
+    "bodySocial": "O Social, com os posts e vídeos dos Heros, chega em 2027.",
+    "bodyExplore": "Explorar, com a busca por conteúdos, receitas e programas, chega em 2027."
   }
 }
