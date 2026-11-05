@@ -67,7 +67,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
       <main
         id="main"
         tabIndex={-1}
-        className="mx-auto w-full max-w-content flex-1 px-gutter pb-[calc(var(--spacing-bottomnav)+env(safe-area-inset-bottom)+1.5rem)] pt-6 outline-none md:pb-12 print:max-w-none print:p-0"
+        className="uh-native-scroller mx-auto w-full max-w-content flex-1 px-gutter pb-[calc(var(--spacing-bottomnav)+env(safe-area-inset-bottom)+1.5rem)] pt-6 outline-none md:pb-12 print:max-w-none print:p-0"
       >
         {children}
         <footer className="mt-12 border-t border-border pt-4 print:hidden">

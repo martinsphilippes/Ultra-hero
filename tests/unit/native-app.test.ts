@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { hidesVideoPlayer, isBlockedInNativeApp, nativeAuthRedirect, parseNativeApp } from "@/lib/native-app/surface";
 
 const IOS_UA =
@@ -70,5 +70,20 @@ describe("nativeAuthRedirect", () => {
   it("next inseguro volta para a aba Hero", () => {
     const url = nativeAuthRedirect(new URLSearchParams({ code: "abc", next: "https://evil.example" }));
     expect(url).toBe("gchero://auth/callback?code=abc&next=%2Fpersonalities");
+  });
+});
+
+vi.mock("server-only", () => ({}));
+
+describe("origem dos redirecionamentos", () => {
+  const SITE = "https://site.example";
+  const req = (ua: string) => new Request("https://casca.example/auth/signout", { headers: { "user-agent": ua, host: "casca.example" } });
+
+  it("no app fica no domínio em que a casca abriu; na web segue o domínio oficial", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", SITE);
+    const { getOriginFromRequest } = await import("@/lib/auth/origin");
+    expect(getOriginFromRequest(req("Mozilla/5.0 Mobile GCHeroApp/1.0.0 (ios)"))).toBe("https://casca.example");
+    expect(getOriginFromRequest(req("Mozilla/5.0 Mobile Safari"))).toBe(SITE);
+    vi.unstubAllEnvs();
   });
 });
