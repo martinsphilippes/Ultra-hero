@@ -3,6 +3,7 @@ import { ChevronDown, Contact, Plus, Search } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { FilterAnchor } from "@/components/admin-ops/FilterAnchor";
+import { PaginationNav } from "@/components/admin-ops/PaginationNav";
 import { CastingCard } from "@/components/agency/CastingCard";
 import { Button, EmptyState, EntitySelect, Input, PageHeader, Select } from "@/components/ui";
 import { agencyCan } from "@/lib/agency/roles";
@@ -20,7 +21,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("casting") };
 }
 
-type Props = { searchParams: Promise<{ segmento?: string; disponibilidade?: string; situacao?: string; gestor?: string; q?: string; status?: string }> };
+type Props = { searchParams: Promise<{ segmento?: string; disponibilidade?: string; situacao?: string; gestor?: string; q?: string; status?: string; page?: string }> };
+
+/** Velocidade: 24 cartões por página (o casting tem centenas de Heros; antes ia tudo de uma vez, ~1,5 MB). */
+const PAGE_SIZE = 24;
 
 const pick = (value: string | undefined, allowed: readonly string[]) => (value && allowed.includes(value) ? value : undefined);
 
@@ -52,6 +56,11 @@ export default async function CastingPage({ searchParams }: Props) {
   const segmentName = new Map(segments.map((s) => [s.id, s.name]));
   const managerName = new Map(managers.map((m) => [m.userId, m.name]));
   const filtered = Boolean(filters.segment || filters.availability || filters.status || filters.manager || filters.q);
+  const total = list.items.length;
+  const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const page = Math.min(lastPage, Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1));
+  const pageItems = list.items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const pageParams = { segmento: sp.segmento, disponibilidade: sp.disponibilidade, situacao: sp.situacao, gestor: sp.gestor, q: sp.q, status: sp.status };
   const moreActive = [filters.segment, filters.availability, filters.status, filters.manager].filter(Boolean).length;
 
   if (!list.available) {
@@ -146,7 +155,7 @@ export default async function CastingPage({ searchParams }: Props) {
 
       {list.items.length > 0 ? (
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3" data-testid="casting-list">
-          {list.items.map((talent) => {
+          {pageItems.map((talent) => {
             const accessState = talent.archived ? null : resolveTalentAccess(access.get(talent.id), talent);
             const manager = talent.managerId ? managerName.get(talent.managerId) : null;
             const followers = talent.topFollowers !== null ? t("topFollowers", { count: formatCount(talent.topFollowers, locale) ?? "" }) : null;
@@ -181,7 +190,11 @@ export default async function CastingPage({ searchParams }: Props) {
             );
           })}
         </ul>
-      ) : (
+      ) : null}
+      {list.items.length > PAGE_SIZE ? (
+        <PaginationNav basePath="/agencia/casting" params={pageParams} page={page} hasNext={page < lastPage} total={total} />
+      ) : null}
+      {list.items.length > 0 ? null : (
         <div className="rounded-2xl border border-border bg-surface">
           <EmptyState
             icon={<Contact />}
