@@ -31,6 +31,21 @@
   }
 }
 
+/* Barra de ações presa embaixo (ex.: Salvar rascunho / Versões / Salvar e continuar do editor de receita): encosta
+   na barra inferior do app, sem vão. Na web fica logo acima da barra fixa; no app a área de rolagem já termina na
+   barra, mas tem 1,5rem de folga no fim (padding), que a barra presa não pode respeitar. */
+.uh-sticky-actions {
+  bottom: calc(var(--spacing-bottomnav) + env(safe-area-inset-bottom, 0px));
+}
+[data-native-app] .uh-sticky-actions {
+  bottom: -1.5rem;
+}
+@media (min-width: 48rem) {
+  .uh-sticky-actions {
+    bottom: 0;
+  }
+}
+
 [data-native-app] [data-kind="product"] {
   display: none;
 }

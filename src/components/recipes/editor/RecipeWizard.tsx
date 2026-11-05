@@ -571,7 +571,7 @@ export function RecipeWizard(props: Props) {
         </p>
       )}
 
-      <div className="sticky bottom-0 z-10 -mx-4 flex flex-col gap-2 border-t border-border bg-bg/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
+      <div className="uh-sticky-actions sticky z-10 -mx-4 flex flex-col gap-2 border-t border-border bg-bg/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
         <p className="type-caption text-fg-muted" aria-live="polite" data-testid="recipe-save-state">
           {saving ? t("saving") : dirty ? t("unsaved") : savedAt ? t("savedAt", { time: timeFormat.format(savedAt) }) : ""}
         </p>
