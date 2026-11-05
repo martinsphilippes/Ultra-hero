@@ -25,15 +25,13 @@ import {
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { cookies } from "next/headers";
 import Link from "next/link";
 import { LegalLinks } from "@/components/legal/LegalLinks";
 import { legalRichTags } from "@/components/legal/rich-tags";
-import { AppearanceMenu } from "@/components/layout/AppearanceMenu";
 import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { Logo, LogoMark } from "@/components/layout/Logo";
-import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
+import { FIXED_APPEARANCE_SCRIPT, FixedAppearance } from "@/components/about-classic/FixedAppearance";
 import { LogoInterlude } from "@/components/about-classic/LogoInterlude";
 import { ProfileSwitcher, type SwitcherProfile } from "@/components/about-classic/ProfileSwitcher";
 import { Reveal } from "@/components/about-classic/Reveal";
@@ -43,7 +41,6 @@ import { LOGIN_HOME } from "@/lib/auth/safe-next";
 import { getUser } from "@/lib/auth/session";
 import { CALENDAR_POINTS, FAQ_ITEMS, FEATURE_GROUPS, HOW_STEPS, SECTION_ANCHORS, WHAT_ITEMS } from "@/lib/about-classic/content";
 import { ABOUT_ENABLED, ABOUT_PATH, INSTITUTIONAL_EXPLORE_PATH, INSTITUTIONAL_LOGIN_HREF, INSTITUTIONAL_SIGNUP_HREF } from "@/lib/institutional/root";
-import { resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
 import "./sobre.css";
 
 // /sobre · "Conheça o Groscove Ultra": a apresentação completa (Herói, Marca, Agência e o app) para quem já está no
@@ -97,8 +94,7 @@ const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-
 
 export default async function AboutClassicPage() {
   if (!ABOUT_ENABLED) notFound();
-  const [t, cookieStore, user] = await Promise.all([getTranslations("aboutClassic"), cookies(), getUser()]);
-  const theme = resolveTheme(cookieStore.get(THEME_COOKIE)?.value);
+  const [t, user] = await Promise.all([getTranslations("aboutClassic"), getUser()]);
   const signedIn = user !== null;
   const year = new Date().getFullYear();
 
@@ -143,14 +139,15 @@ export default async function AboutClassicPage() {
 
   return (
     <div className="flex min-h-dvh flex-col overflow-x-clip">
+      {/* aparência fixa: Perspectivas Petróleo no claro (antes da pintura e também na navegação pelo app) */}
+      <script dangerouslySetInnerHTML={{ __html: FIXED_APPEARANCE_SCRIPT }} />
+      <FixedAppearance />
       <header className="sticky top-0 z-30 border-b border-border bg-bg/85 backdrop-blur-md safe-top">
         <div className="mx-auto flex h-topbar max-w-content items-center justify-between gap-3 px-gutter">
           <Link href={ABOUT_PATH} aria-label={t("nav.home")} className={`rounded-lg ${focusRing}`}>
             <Logo size="md" />
           </Link>
           <div className="flex items-center gap-0.5">
-            <AppearanceMenu />
-            <ThemeToggle initialTheme={theme} />
             <LocaleSwitcher />
             {signedIn ? null : (
               <Button asChild size="sm" variant="ghost" className="ml-1 hidden sm:inline-flex">

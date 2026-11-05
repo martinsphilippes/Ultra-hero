@@ -37,8 +37,9 @@ export async function GET(request: NextRequest) {
 
   await secureQuickSignupOnGoogle(supabase);
   // convites pendentes do e-mail (0077): o Google já provou que a pessoa é dona dele
+  // aceita os convites, mas a entrada é sempre a aba Hero (os portais ficam no menu)
   const home = await acceptMyInvitations(supabase);
-  const target = home && (next === LOGIN_HOME || next === "/invite" || next.startsWith("/invite?")) ? home : next;
+  const target = home && (next === "/invite" || next.startsWith("/invite?")) ? LOGIN_HOME : next;
   return NextResponse.redirect(`${origin}${target}`);
 }
 

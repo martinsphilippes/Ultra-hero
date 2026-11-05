@@ -11,10 +11,10 @@ import { BRAND_ORANGE, LOGO_A_PATH, MARK_VIEWBOX } from "@/components/layout/bra
 import { applyTemplate, currentTemplate, templates, type Template } from "@/lib/theme/template";
 import { cn } from "@/lib/utils";
 
-// Botão "Aparência" (aba Hero, /personalities, e apresentação /sobre; pedido do responsável) + painel com os 12 templates visuais. Trocar só muda o atributo
+// Botão "Aparência" (só na aba Hero, /personalities; pedido do responsável; o /sobre tem aparência fixa) + painel com os 12 templates visuais. Trocar só muda o atributo
 // data-template do <html>: nada recarrega nem remonta, então tela, formulários e rolagem ficam como estão.
 /** Telas onde o botão aparece. */
-const APPEARANCE_PATHS = ["/personalities", "/sobre"];
+const APPEARANCE_PATHS = ["/personalities"];
 
 export function AppearanceMenu() {
   const pathname = usePathname();

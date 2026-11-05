@@ -157,11 +157,11 @@ async function hasOpenOnboarding(supabase: Awaited<ReturnType<typeof createClien
   }
 }
 
-// Depois de aceitar convite(s), abre a área deles (agência, marca…) em vez da tela padrão. Vindo do link
-// do convite, a página do convite diria "já usado": também vai direto para a área.
+// Ao entrar, todo mundo cai na aba Hero (todos os heróis), mesmo depois de aceitar convite(s): pedido do
+// responsável. Os portais ficam no menu. Vindo do link do convite (que diria "já usado"), também vai para a Hero.
 function afterInvites(next: string, home: string | null): string {
   if (!home) return next;
-  return next === LOGIN_HOME || next === "/invite" || next.startsWith("/invite?") ? home : next;
+  return next === "/invite" || next.startsWith("/invite?") ? LOGIN_HOME : next;
 }
 
 /**
@@ -198,8 +198,8 @@ async function inviteFirstAccess(email: string, password: string): Promise<AuthA
   const supabase = await createClient();
   const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
   if (signInError) return { status: "error", error: mapAuthError(signInError) };
-  const home = await acceptMyInvitations(supabase);
-  redirect(home ?? LOGIN_HOME);
+  await acceptMyInvitations(supabase);
+  redirect(LOGIN_HOME);
 }
 
 // Cadastro rápido (tela inicial): nome completo e e-mail. O servidor gera a senha, cria a conta

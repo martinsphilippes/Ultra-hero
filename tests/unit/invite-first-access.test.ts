@@ -111,11 +111,11 @@ beforeEach(() => {
 });
 
 describe("primeiro acesso do convidado", () => {
-  it("convite válido e sem conta: cria a conta com a senha digitada, entra e abre a agência", async () => {
+  it("convite válido e sem conta: cria a conta com a senha digitada, entra e cai na aba Hero", async () => {
     state.signInErrors = [{ code: "invalid_credentials" }, null];
     state.accepted = [{ role: "agency", scope_type: "agency", scope_id: "ag-1" }];
     const out = await run(form("GrupoQuantso@gmail.com", "minhasenha123"));
-    expect(out.redirect).toBe("/agencia");
+    expect(out.redirect).toBe("/personalities");
     expect(state.createUserCalls).toEqual([{ email: "grupoquantso@gmail.com", password: "minhasenha123", email_confirm: true, app_metadata: { invite_first_access: true } }]);
     expect(state.signInCalls.map((c) => c.email)).toEqual(["grupoquantso@gmail.com", "grupoquantso@gmail.com"]);
     expect(state.rpcCalls).toContain("accept_my_invitations");
@@ -160,9 +160,9 @@ describe("primeiro acesso do convidado", () => {
     expect((await run(form("grupoquantso@gmail.com", "minhasenha123"))).state).toEqual({ status: "error", error: "invalidCredentials" });
   });
 
-  it("quem já tem conta e foi convidado: o login aceita e abre a área do convite", async () => {
+  it("quem já tem conta e foi convidado: o login aceita e cai na aba Hero (portais no menu)", async () => {
     state.accepted = [{ role: "brand", scope_type: "brand", scope_id: "b-1" }];
-    expect((await run(form("dono@marca.com", "senha-certa-1"))).redirect).toBe("/marca");
+    expect((await run(form("dono@marca.com", "senha-certa-1"))).redirect).toBe("/personalities");
     state.accepted = [];
     expect((await run(form("dono@marca.com", "senha-certa-1", "/explore"))).redirect).toBe("/explore");
   });
