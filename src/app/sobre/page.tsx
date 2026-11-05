@@ -29,6 +29,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { LegalLinks } from "@/components/legal/LegalLinks";
 import { legalRichTags } from "@/components/legal/rich-tags";
+import { AppearanceMenu } from "@/components/layout/AppearanceMenu";
 import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { Logo, LogoMark } from "@/components/layout/Logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
@@ -148,6 +149,7 @@ export default async function AboutClassicPage() {
             <Logo size="md" />
           </Link>
           <div className="flex items-center gap-0.5">
+            <AppearanceMenu />
             <ThemeToggle initialTheme={theme} />
             <LocaleSwitcher />
             {signedIn ? null : (
