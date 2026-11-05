@@ -87,7 +87,9 @@
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú",
     "settings": "Configuración",
-    "settingsOf": "Configuración de la cuenta de {name}"
+    "settingsOf": "Configuración de la cuenta de {name}",
+    "accountOf": "Cuenta de {name}: ver correo, función y configuración",
+    "accountRole": "Función"
   },
   "portalLabel": "Portal",
   "portalDescription": {

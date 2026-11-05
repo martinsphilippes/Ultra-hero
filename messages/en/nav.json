@@ -87,7 +87,9 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "settings": "Settings",
-    "settingsOf": "Account settings for {name}"
+    "settingsOf": "Account settings for {name}",
+    "accountOf": "{name}'s account: see email, role and settings",
+    "accountRole": "Role"
   },
   "portalLabel": "Portal",
   "portalDescription": {

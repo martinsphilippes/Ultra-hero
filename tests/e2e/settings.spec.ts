@@ -34,14 +34,21 @@ test.describe("Configurações", () => {
     await expect(main.getByRole("button", { name: "Sair da conta" })).toHaveCount(0);
     await expect(page.getByTestId("profile-portals")).toHaveCount(0);
 
-    // avatar: link de 44px com nome acessível que diz para onde vai
-    const avatar = page.getByTestId("header-settings-link");
-    await expect(avatar).toHaveAttribute("href", "/configuracoes");
-    await expect(avatar).toHaveAccessibleName(/^Configurações da conta de \S/);
+    // avatar: botão de 44px que abre o quadro da conta (nome, e-mail, função) com a engrenagem das Configurações
+    const avatar = page.getByTestId("header-account-button");
+    await expect(avatar).toHaveAccessibleName(/^Conta de \S/);
     const box = (await avatar.boundingBox())!;
     expect(box.height).toBeGreaterThanOrEqual(44);
     expect(box.width).toBeGreaterThanOrEqual(44);
+    await expect(page.getByTestId("header-account-panel")).toBeHidden();
     await avatar.click();
+    const panel = page.getByTestId("header-account-panel");
+    await expect(panel).toBeVisible();
+    await expect(panel.getByTestId("account-email")).toContainText("@");
+    await expect(panel.getByTestId("account-roles").locator("li")).not.toHaveCount(0);
+    const gear = panel.getByTestId("header-settings-link");
+    await expect(gear).toHaveAttribute("href", "/configuracoes");
+    await gear.click();
     await expect(page).toHaveURL(/\/configuracoes$/, { timeout: 15_000 });
 
     await expect(page.getByRole("heading", { level: 1, name: "Configurações" })).toBeVisible();
