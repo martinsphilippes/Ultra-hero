@@ -37,9 +37,11 @@
 }
 
 .uh-sb-intro-mark { animation: uh-sb-intro-mark 1.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.uh-sb-intro-word { display: inline-block; animation: uh-sb-intro-word 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+/* "backwards" e não "both": terminada a entrada, nenhum filtro fica preso. Um blur(0) preso recorta o que sai da caixa
+   (a perna do "g" e do "ç" com a entrelinha justa do título) */
+.uh-sb-intro-word { display: inline-block; animation: uh-sb-intro-word 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 /* mesma entrada, sem mudar o display (blocos, listas, flex) */
-.uh-sb-pop { animation: uh-sb-intro-word 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.uh-sb-pop { animation: uh-sb-intro-word 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 .uh-sb-breathe { animation: uh-sb-breathe 4s ease-in-out infinite; }
 .uh-sb-glow { animation: uh-sb-glow 5s ease-in-out infinite; }
 .uh-sb-marquee-track { animation: uh-sb-marquee 38s linear infinite; }
