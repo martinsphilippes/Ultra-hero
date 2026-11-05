@@ -71,6 +71,13 @@ Decisão do responsável (05/11/2026), vale para iOS e Android e substitui a ant
   reprovar por isso, a saída é reabrir a navegação sem conta no app (`isOpenToNativeVisitor` e o middleware).
 - **A loja continua fora do app** (tabela abaixo) até existir checkout real.
 
+## Aba Portal
+
+Decisão do responsável (05/11/2026), na web e no app: a barra de baixo ganha a aba Portal, à esquerda do Perfil, para quem
+tem portal (`getMyPortalItems`). Com um portal, abre direto nele; com mais de um, inclusive o admin geral, abre a escolha
+em `/portais`. A barra continua dentro dos portais no celular. Os atalhos saíram do Perfil e das Configurações. O portal
+do profissional segue fora do app (`isBlockedInNativeApp`).
+
 ## Gestos e domínio no app
 
 Pedidos do responsável (05/11/2026), só no app (`data-native-app`) e sem novo binário:

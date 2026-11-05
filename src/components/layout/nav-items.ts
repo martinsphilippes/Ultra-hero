@@ -24,6 +24,16 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: "profile", href: "/profile", icon: User },
 ];
 
+/** Aba Portal: a tela de escolha, para quem tem mais de um portal. */
+export const PORTAL_CHOOSER_PATH = "/portais";
+const PORTAL_PATHS = [PORTAL_CHOOSER_PATH, "/heroi", "/agencia", "/marca", "/admin", "/seller", "/profissional", "/projetos"];
+
+/** Destino da aba Portal: nenhum portal, sem aba; um, direto nele; mais de um, a escolha. */
+export function portalNavHref(portals: readonly string[]): string | null {
+  if (portals.length === 0) return null;
+  return portals.length === 1 ? portals[0] : PORTAL_CHOOSER_PATH;
+}
+
 /** Destino do item: no Coming soon da aba Comprar a entrada é Colecionáveis (a Loja segue em /shop). */
 export function navHref(key: NavKey, href: string, shopSoon: boolean): string {
   return key === "shop" && shopSoon ? "/shop/colecionaveis" : href;
@@ -31,6 +41,10 @@ export function navHref(key: NavKey, href: string, shopSoon: boolean): string {
 
 function underPath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export function isPortalPath(pathname: string): boolean {
+  return PORTAL_PATHS.some((path) => underPath(pathname, path));
 }
 
 export function isActivePath(pathname: string, href: string) {

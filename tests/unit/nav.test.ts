@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isActivePath, NAV_ITEMS } from "@/components/layout/nav-items";
+import { isActivePath, isPortalPath, NAV_ITEMS, portalNavHref } from "@/components/layout/nav-items";
 
 describe("navegação principal", () => {
   it("tem exatamente 5 abas na ordem Hero, Início, Explorar, Comprar, Perfil", () => {
@@ -33,5 +33,17 @@ describe("navegação principal", () => {
     expect(isActivePath("/explore", "/")).toBe(false);
     expect(isActivePath("/profiles", "/profile")).toBe(false);
     expect(isActivePath("/personalities/erick-jacquin/produtos", "/personalities")).toBe(true);
+  });
+});
+
+describe("aba Portal", () => {
+  it("nenhum portal: sem aba; um: direto nele; mais de um: a escolha", () => {
+    expect(portalNavHref([])).toBeNull();
+    expect(portalNavHref(["/agencia"])).toBe("/agencia");
+    expect(portalNavHref(["/agencia", "/marca", "/admin"])).toBe("/portais");
+  });
+  it("fica ativa nos portais e na escolha, não nas outras abas", () => {
+    for (const path of ["/portais", "/heroi", "/heroi/agenda", "/agencia", "/marca/pagamentos", "/admin/users"]) expect(isPortalPath(path)).toBe(true);
+    for (const path of ["/personalities", "/marcas", "/profile", "/explore"]) expect(isPortalPath(path)).toBe(false);
   });
 });
