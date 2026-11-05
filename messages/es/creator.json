@@ -137,6 +137,14 @@
       "change": "Cambiar foto",
       "changing": "Enviando…",
       "changed": "Foto cambiada."
+    },
+    "video": {
+      "title": "Video del post",
+      "description": "Cámbialo por otro de la galería o de la cámara (hasta 3 minutos). La portada acompaña el video.",
+      "change": "Cambiar video",
+      "sending": "Enviando… {pct}%",
+      "changed": "Video cambiado. Estará listo en un momento.",
+      "failed": "El envío del video falló. Inténtalo de nuevo."
     }
   },
   "post": {

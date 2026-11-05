@@ -9,6 +9,7 @@ import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { CreatorContentEditor } from "@/components/creator/content/CreatorContentEditor";
 import { CampaignBanner } from "@/components/hero-work/CampaignBanner";
 import { ReplacePostPhoto } from "@/components/creator/ReplacePostPhoto";
+import { ReplacePostVideo } from "@/components/creator/ReplacePostVideo";
 import { ArchiveContentButton, PublishButton, SubmitReviewButton, UnarchiveContentButton, UnpublishButton, WithdrawReviewButton } from "@/components/creator/PublishButtons";
 import { ReviewTimeline, type ReviewRow } from "@/components/creator/ReviewTimeline";
 import { contentChecklist } from "@/components/editors/content/schema";
@@ -235,6 +236,7 @@ export default async function EditContentPage({ params, searchParams }: Params) 
       {editable && bodyRow?.media_provider === "upload" && bodyRow.media_ref ? (
         <ReplacePostPhoto contentId={content.id} photoUrl={content.cover_url} />
       ) : null}
+      {editable && bodyRow?.media_provider === "cloudflare_stream" && bodyRow.media_ref ? <ReplacePostVideo contentId={content.id} /> : null}
 
       <CreatorContentEditor
         key={bodyRow?.media_ref ?? "sem-midia"}

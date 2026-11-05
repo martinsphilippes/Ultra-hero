@@ -258,3 +258,85 @@ export async function discardVideoPost(input: { contentId: string }): Promise<Di
   }
   return { ok: true, deleted: true };
 }
+
+type ReplaceVideoResult = { ok: true; uploadUrl: string } | ActionFailure;
+
+/**
+ * Trocar o vídeo de um post em rascunho (depois de despublicar ou desarquivar). Mesmo caminho do envio novo: ticket
+ * no Cloudflare, vínculo uid → Hero pelo service role (0026) e o corpo trocado com o cliente do usuário (o gatilho
+ * confere o vínculo). O vídeo antigo é descartado e apagado. Devolve o endereço para o navegador enviar o arquivo.
+ */
+export async function replaceVideoPost(input: { contentId: string; fileSize: number; fileName?: string; durationSec?: number | null }): Promise<ReplaceVideoResult> {
+  const id = idSchema.safeParse({ contentId: input?.contentId });
+  const parsed = startSchema.safeParse({ fileSize: input?.fileSize, fileName: input?.fileName, durationSec: input?.durationSec });
+  if (!id.success) return { ok: false, error: "invalid_input" };
+  if (!parsed.success) {
+    const tooBig = typeof input?.fileSize === "number" && input.fileSize > MAX_POST_BYTES;
+    return { ok: false, error: tooBig ? "file_too_large" : "invalid_input" };
+  }
+  const contentId = id.data.contentId;
+  const { fileSize, fileName, durationSec } = parsed.data;
+  if (durationSec !== null && durationSec > SERVER_MAX_POST_SECONDS) return { ok: false, error: "too_long" };
+
+  const ctx = await creatorActionContext("post");
+  if (!ctx.ok) return ctx;
+  const { supabase, creatorId, userId } = ctx;
+  if (!(await hasUploadRights(supabase, userId))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
+  if (!(await readVideoUploadConfigured(supabase))) return { ok: false, error: "video_not_configured" };
+
+  const [{ data: content }, { data: body }] = await Promise.all([
+    supabase.from("content").select("id, creator_id, status, review_status, cover_url").eq("id", contentId).maybeSingle(),
+    supabase.from("content_bodies").select("media_provider, media_ref").eq("content_id", contentId).maybeSingle(),
+  ]);
+  if (!content || content.creator_id !== creatorId) return { ok: false, error: "forbidden" };
+  if (content.status !== "draft" || content.review_status === "in_review") return { ok: false, error: "content_not_editable" };
+  if (!body || body.media_provider !== "cloudflare_stream") return { ok: false, error: "invalid_input" };
+
+  const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const { count, error: countError } = await supabase
+    .from("stream_uploads")
+    .select("uid", { count: "exact", head: true })
+    .eq("creator_id", creatorId)
+    .gte("created_at", since);
+  if (countError) return failFrom(countError);
+  if ((count ?? 0) >= UPLOADS_PER_HOUR) return { ok: false, error: "too_many_uploads" };
+
+  let ticket;
+  try {
+    ticket = await getStreamProvider().createUploadUrl({ creatorId, maxDurationSec: MAX_POST_SECONDS, premium: false, fileSize, fileName });
+  } catch (error) {
+    return providerFailure(error, "upload");
+  }
+  const uid = ticket.mediaRef.id;
+  const admin = createAdminClient();
+  const { error: linkError } = await admin.from("stream_uploads").insert({ uid, creator_id: creatorId, expires_at: ticket.expiresAt, content_id: contentId });
+  if (linkError) {
+    await deleteProviderVideo(null, uid);
+    const code = rpcErrorCode(linkError.message);
+    return { ok: false, error: code === "too_many_uploads" ? code : "upload_failed" };
+  }
+
+  const { error: bodyError } = await supabase.from("content_bodies").update({ media_ref: uid }).eq("content_id", contentId);
+  if (bodyError) {
+    await abandonUpload(admin, uid);
+    return failFrom(bodyError);
+  }
+  const oldUid = body.media_ref;
+  const oldThumb = oldUid ? thumbnailPath(oldUid) : null;
+  await supabase
+    .from("content")
+    .update({
+      duration_minutes: durationMinutes(durationSec),
+      // a capa acompanha o vídeo quando era a miniatura dele; capa escolhida à parte fica
+      ...(!content.cover_url || content.cover_url === oldThumb ? { cover_url: thumbnailPath(uid) } : {}),
+    })
+    .eq("id", contentId);
+  // vídeo antigo: descartado e apagado (o gatilho só descarta sozinho o que nunca foi ao ar)
+  if (oldUid && oldUid !== uid) {
+    await admin.from("stream_uploads").update({ discarded_at: new Date().toISOString() }).eq("uid", oldUid).is("discarded_at", null);
+    await deleteProviderVideo(admin, oldUid);
+  }
+  revalidatePost();
+  revalidatePath(`/heroi/conteudos/${contentId}/editar`);
+  return { ok: true, uploadUrl: ticket.uploadUrl };
+}

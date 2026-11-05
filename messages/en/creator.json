@@ -137,6 +137,14 @@
       "change": "Change photo",
       "changing": "Uploading…",
       "changed": "Photo changed."
+    },
+    "video": {
+      "title": "Post video",
+      "description": "Replace it with another from your gallery or camera (up to 3 minutes). The cover follows the video.",
+      "change": "Change video",
+      "sending": "Uploading… {pct}%",
+      "changed": "Video changed. It will be ready in a moment.",
+      "failed": "The video upload failed. Try again."
     }
   },
   "post": {

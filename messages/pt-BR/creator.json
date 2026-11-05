@@ -137,6 +137,14 @@
       "change": "Trocar foto",
       "changing": "Enviando…",
       "changed": "Foto trocada."
+    },
+    "video": {
+      "title": "Vídeo do post",
+      "description": "Troque por outro da galeria ou da câmera (até 3 minutos). A capa acompanha o vídeo.",
+      "change": "Trocar vídeo",
+      "sending": "Enviando… {pct}%",
+      "changed": "Vídeo trocado. Ele fica pronto em instantes.",
+      "failed": "O envio do vídeo falhou. Tente de novo."
     }
   },
   "post": {
