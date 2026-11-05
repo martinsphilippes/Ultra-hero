@@ -12,11 +12,12 @@ import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
 import { WelcomeTourMount } from "@/components/welcome/WelcomeTourMount";
 
 // Portal da agência (6.2, só web): papel no servidor (admin geral também passa), menu pelo nível
-// (Adm > Gestor > Colaborador) e o sino. Sem loading.tsx na raiz: os layouts de segmento restrito
-// redirecionam no servidor (6.1).
+// (Adm > Gestor > Colaborador) e o sino. Com loading.tsx na raiz (velocidade: o toque troca a tela na hora); os
+// layouts de segmento restrito continuam redirecionando no servidor (6.1).
 export default async function AgencyLayout({ children }: { children: ReactNode }) {
   const { user } = await requireRole("agency", "/agencia");
-  const [ctx, t] = await Promise.all([getAgencyContext(), getTranslations("agency")]);
+  // tudo em paralelo (o contador de avisos não depende do contexto): uma ida ao banco a menos em cada tela
+  const [ctx, t, unread] = await Promise.all([getAgencyContext(), getTranslations("agency"), unreadInboxCount()]);
   if (ctx.state !== "ok") {
     return (
       <PortalShell portal="agency" navKeys={["dashboard"]}>
@@ -24,7 +25,6 @@ export default async function AgencyLayout({ children }: { children: ReactNode }
       </PortalShell>
     );
   }
-  const unread = await unreadInboxCount();
   return (
     <PortalShell
       portal="agency"

@@ -69,21 +69,23 @@ export const getAgencyContext = cache(async (): Promise<AgencyContext> => {
   if (!user) return { state: "none", platformAdmin: false };
   try {
     const supabase = await createClient();
-    const [{ data: platformAdmin, error: adminError }, { data: demo }] = await Promise.all([
+    // velocidade: as três consultas saem juntas e a agência vem embutida no vínculo (uma ida ao banco, não três)
+    const [{ data: platformAdmin, error: adminError }, { data: demo }, { data: member, error: memberError }] = await Promise.all([
       supabase.rpc("is_platform_admin"),
       supabase.rpc("is_demo_account"),
+      supabase
+        .from("agency_members")
+        .select(`agency_id, role, display_name, job_title, agency:agencies!agency_members_agency_fk(${AGENCY_SELECT})`)
+        .eq("user_id", user.id)
+        .is("revoked_at", null)
+        .maybeSingle(),
     ]);
     if (adminError) return isMissingSchema(adminError) ? { state: "unavailable" } : { state: "none", platformAdmin: false };
-    const { data: member, error: memberError } = await supabase
-      .from("agency_members")
-      .select("agency_id, role, display_name, job_title")
-      .eq("user_id", user.id)
-      .is("revoked_at", null)
-      .maybeSingle();
     if (memberError && isMissingSchema(memberError)) return { state: "unavailable" };
 
     if (member && isAgencyRole(member.role)) {
-      const { data: agencyRow } = await supabase.from("agencies").select(AGENCY_SELECT).eq("id", member.agency_id).maybeSingle();
+      const embedded = (member as { agency?: AgencyRow | AgencyRow[] | null }).agency;
+      const agencyRow = Array.isArray(embedded) ? embedded[0] : embedded;
       if (!agencyRow) return { state: "none", platformAdmin: Boolean(platformAdmin) };
       const agency = toAgency(agencyRow as AgencyRow);
       return { state: "ok", agency, role: member.role, platformAdmin: Boolean(platformAdmin), agencies: [agency], memberName: member.display_name, memberTitle: member.job_title };

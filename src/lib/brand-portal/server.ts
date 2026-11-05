@@ -35,16 +35,17 @@ export const getBrandContext = cache(async (): Promise<BrandContext> => {
   if (!user) return { state: "none" };
   try {
     const supabase = await createClient();
-    const [{ data: platformAdmin, error: adminError }, { data: demo }] = await Promise.all([
+    // velocidade: as três consultas saem juntas (uma ida ao banco, não duas)
+    const [{ data: platformAdmin, error: adminError }, { data: demo }, { data: members, error }] = await Promise.all([
       supabase.rpc("is_platform_admin"),
       supabase.rpc("is_demo_account"),
+      supabase
+        .from("brand_members")
+        .select("brand_id, role, brand:brands!brand_members_brand_fk(id, slug, name, logo_url, site_url)")
+        .eq("user_id", user.id)
+        .is("revoked_at", null),
     ]);
     if (adminError) return isMissingSchema(adminError) ? { state: "unavailable" } : { state: "none" };
-    const { data: members, error } = await supabase
-      .from("brand_members")
-      .select("brand_id, role, brand:brands!brand_members_brand_fk(id, slug, name, logo_url, site_url)")
-      .eq("user_id", user.id)
-      .is("revoked_at", null);
     if (error && isMissingSchema(error)) return { state: "unavailable" };
     type MemberRow = { brand_id: string; role: string; brand: BrandRow | null };
     const mine = ((members ?? []) as unknown as MemberRow[]).filter((m) => m.brand && isBrandRole(m.role));

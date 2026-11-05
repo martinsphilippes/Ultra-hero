@@ -13,7 +13,8 @@ import { WelcomeTourMount } from "@/components/welcome/WelcomeTourMount";
 // Portal da marca (6.3, só web): papel no servidor (admin geral só lê), marca e agência que a atende.
 export default async function BrandLayout({ children }: { children: ReactNode }) {
   const { user } = await requireRole("brand", "/marca");
-  const [ctx, t] = await Promise.all([getBrandContext(), getTranslations("brandPortal")]);
+  // tudo em paralelo (o contador de avisos não depende do contexto)
+  const [ctx, t, unread] = await Promise.all([getBrandContext(), getTranslations("brandPortal"), unreadInboxCount()]);
   if (ctx.state !== "ok") {
     return (
       <PortalShell portal="brand" navKeys={["dashboard"]}>
@@ -21,7 +22,6 @@ export default async function BrandLayout({ children }: { children: ReactNode })
       </PortalShell>
     );
   }
-  const unread = await unreadInboxCount();
   return (
     <PortalShell
       portal="brand"
