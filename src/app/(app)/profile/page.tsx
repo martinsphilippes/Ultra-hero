@@ -14,6 +14,7 @@ import { HeroNewPost } from "@/components/creator/HeroNewPost";
 import { HeroWorkShortcuts } from "@/components/hero-work/HeroWorkShortcuts";
 import { loadHeroShortcutData } from "@/lib/hero-work/summary";
 import { HeroPendingNotice } from "@/components/creator/HeroPendingNotice";
+import { LegalLinks } from "@/components/legal/LegalLinks";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { TodaySection } from "@/components/me/today/TodaySection";
@@ -195,6 +196,11 @@ export default async function ProfilePage() {
       <TodaySection localDate={today} view={watchView} evolution={evolution} />
 
       {/* Configurações ficam no cabeçalho (avatar → /configuracoes): sem atalho duplicado aqui (pedido do responsável) */}
+
+      {/* Termos e Privacidade só aqui, não em todas as páginas (pedido do responsável) */}
+      <footer className="mt-4 border-t border-border pt-4 print:hidden">
+        <LegalLinks />
+      </footer>
     </div>
   );
 }

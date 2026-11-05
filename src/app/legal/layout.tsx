@@ -38,7 +38,7 @@ export default async function LegalLayout({ children }: { children: ReactNode })
 
       <footer className="border-t border-border safe-bottom">
         <div className="mx-auto flex w-full max-w-prose flex-col gap-2 px-gutter py-6">
-          <LegalLinks />
+          <LegalLinks withDeletion />
         </div>
       </footer>
     </div>

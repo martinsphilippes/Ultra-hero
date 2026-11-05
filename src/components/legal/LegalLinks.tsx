@@ -9,21 +9,21 @@ import { LEGAL_DELETION_HREF, LEGAL_PRIVACY_HREF, LEGAL_TERMS_HREF } from "./ric
 const LINKS = [
   { key: "terms", href: LEGAL_TERMS_HREF },
   { key: "privacy", href: LEGAL_PRIVACY_HREF },
-  // alcançável a partir de qualquer página: o Google Play confere a URL de exclusão (docs/lojas.md)
-  { key: "deletion", href: LEGAL_DELETION_HREF },
 ] as const;
+// só entre as páginas legais: quem tem conta exclui pelo Perfil, e o Google Play confere a URL de exclusão (docs/lojas.md)
+const DELETION_LINK = { key: "deletion", href: LEGAL_DELETION_HREF } as const;
 
-type LegalLinksProps = { className?: string; align?: "start" | "center" };
+type LegalLinksProps = { className?: string; align?: "start" | "center"; withDeletion?: boolean };
 
-// Links para Termos de Uso e Política de Privacidade (rodapés do app, do login e das próprias páginas legais).
-export function LegalLinks({ className, align = "start" }: LegalLinksProps) {
+// Links para Termos de Uso e Política de Privacidade (rodapés do Perfil, do login, do /sobre e das páginas legais).
+export function LegalLinks({ className, align = "start", withDeletion = false }: LegalLinksProps) {
   const t = useTranslations("legal.links");
   const pathname = usePathname();
 
   return (
     <nav aria-label={t("nav")} className={className}>
       <ul className={cn("flex flex-wrap items-center gap-x-5", align === "center" && "justify-center")}>
-        {LINKS.map(({ key, href }) => {
+        {(withDeletion ? [...LINKS, DELETION_LINK] : LINKS).map(({ key, href }) => {
           const current = pathname === href;
           return (
             <li key={key}>
