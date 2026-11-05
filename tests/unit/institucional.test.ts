@@ -52,7 +52,9 @@ beforeEach(() => {
 describe("destino do endereço principal (regra pura)", () => {
   it("logado → aba Hero; visitante → apresentação; app das lojas → aba Hero", () => {
     expect(rootDestination({ signedIn: true, nativeApp: false, explored: false })).toBe("/personalities");
-    expect(rootDestination({ signedIn: false, nativeApp: false, explored: false })).toBe(INSTITUTIONAL_PATH);
+    expect(rootDestination({ signedIn: false, nativeApp: false, explored: false })).toBe(
+      TEASER_ENABLED ? INSTITUTIONAL_PATH : ABOUT_ENABLED ? ABOUT_PATH : "/personalities",
+    );
     expect(rootDestination({ signedIn: false, nativeApp: true, explored: false })).toBe("/personalities");
     expect(rootDestination({ signedIn: false, nativeApp: false, explored: true })).toBe("/personalities");
   });
@@ -67,7 +69,7 @@ describe("middleware no \"/\"", () => {
   it("visitante sem sessão vê a apresentação (307, mantém a query)", async () => {
     const res = await middleware(request("/?utm_source=x"));
     expect(res.status).toBe(307);
-    expect(location(res)?.pathname).toBe("/conheca");
+    expect(location(res)?.pathname).toBe(TEASER_ENABLED ? "/conheca" : "/sobre");
     expect(location(res)?.search).toBe("?utm_source=x");
     expect(session.checks).toBe(1);
   });

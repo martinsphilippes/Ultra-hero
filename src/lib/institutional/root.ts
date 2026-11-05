@@ -39,7 +39,9 @@ export type RootVisitor = {
 /** Para onde "/" leva cada visitante. */
 export function rootDestination(visitor: RootVisitor): string {
   if (visitor.nativeApp || visitor.signedIn || visitor.explored) return LOGIN_HOME;
-  return INSTITUTIONAL_PATH;
+  if (TEASER_ENABLED) return INSTITUTIONAL_PATH;
+  // teaser oculto: o visitante vê a apresentação clássica (/sobre) ou, se ela também estiver fechada, o app
+  return ABOUT_ENABLED ? ABOUT_PATH : LOGIN_HOME;
 }
 
 /** Só a sessão decide entre app e apresentação; app nativo e "já explorou" dispensam a checagem da sessão. */
