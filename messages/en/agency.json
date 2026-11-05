@@ -413,7 +413,9 @@
       "manager": "Manager",
       "noManager": "No manager",
       "apply": "Filter",
-      "clear": "Clear"
+      "clear": "Clear",
+      "more": "More filters",
+      "moreActive": "More filters · {count}"
     },
     "unavailable": "Roster being updated",
     "unavailableHint": "The roster shows up as soon as the database is updated.",

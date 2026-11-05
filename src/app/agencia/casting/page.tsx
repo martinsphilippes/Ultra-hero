@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Contact, Plus, Search } from "lucide-react";
+import { ChevronDown, Contact, Plus, Search } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { FilterAnchor } from "@/components/admin-ops/FilterAnchor";
@@ -52,6 +52,7 @@ export default async function CastingPage({ searchParams }: Props) {
   const segmentName = new Map(segments.map((s) => [s.id, s.name]));
   const managerName = new Map(managers.map((m) => [m.userId, m.name]));
   const filtered = Boolean(filters.segment || filters.availability || filters.status || filters.manager || filters.q);
+  const moreActive = [filters.segment, filters.availability, filters.status, filters.manager].filter(Boolean).length;
 
   if (!list.available) {
     return (
@@ -78,12 +79,30 @@ export default async function CastingPage({ searchParams }: Props) {
         <FilterAnchor href="/agencia/casting" active={!archived} label={t("filterActive")} />
         <FilterAnchor href="/agencia/casting?status=arquivados" active={archived} label={t("filterArchived")} />
       </nav>
-      <form method="get" action="/agencia/casting" className="grid gap-3 rounded-2xl border border-border bg-surface p-3 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr_auto]" data-testid="casting-filters">
+      <form method="get" action="/agencia/casting" className="flex flex-col gap-2" data-testid="casting-filters">
         {archived ? <input type="hidden" name="status" value="arquivados" /> : null}
-        <label className="flex flex-col gap-1 text-xs font-medium text-fg-muted">
-          {t("filters.search")}
-          <Input name="q" defaultValue={filters.q ?? ""} maxLength={60} placeholder={t("filters.searchPlaceholder")} />
-        </label>
+        {/* uma linha: busca compacta + filtrar + "Mais filtros" (os demais filtros ficam recolhidos) */}
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="relative min-w-0 flex-1 basis-48">
+            <span className="sr-only">{t("filters.search")}</span>
+            <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-subtle" />
+            <Input name="q" defaultValue={filters.q ?? ""} maxLength={60} placeholder={t("filters.searchPlaceholder")} className="h-10 pl-9 text-sm" />
+          </label>
+          <Button type="submit" size="sm" variant="secondary">
+            {t("filters.apply")}
+          </Button>
+          {filtered ? (
+            <a href={archived ? "/agencia/casting?status=arquivados" : "/agencia/casting"} className="inline-flex min-h-9 items-center px-1 text-sm text-fg-muted underline-offset-2 hover:underline">
+              {t("filters.clear")}
+            </a>
+          ) : null}
+        </div>
+        <details className="group rounded-2xl border border-border bg-surface open:p-3" open={moreActive > 0}>
+          <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 px-3 text-sm font-medium text-fg-muted group-open:px-0 group-open:pb-2 [&::-webkit-details-marker]:hidden">
+            <span>{moreActive > 0 ? t("filters.moreActive", { count: moreActive }) : t("filters.more")}</span>
+            <ChevronDown aria-hidden="true" className="size-4 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <label className="flex flex-col gap-1 text-xs font-medium text-fg-muted">
           {t("filters.segment")}
           <Select name="segmento" defaultValue={filters.segment ?? ""}>
@@ -121,16 +140,8 @@ export default async function CastingPage({ searchParams }: Props) {
           {t("filters.manager")}
           <EntitySelect name="gestor" defaultValue={filters.manager ?? ""} emptyLabel={t("filters.all")} extraOptions={[{ value: "none", label: t("filters.noManager") }]} options={managers.map((m) => memberOption(tp, m))} />
         </label>
-        <div className="flex items-end gap-2">
-          <Button type="submit" size="sm" variant="secondary" leadingIcon={<Search />}>
-            {t("filters.apply")}
-          </Button>
-          {filtered ? (
-            <a href={archived ? "/agencia/casting?status=arquivados" : "/agencia/casting"} className="inline-flex min-h-9 items-center px-2 text-sm text-fg-muted underline-offset-2 hover:underline">
-              {t("filters.clear")}
-            </a>
-          ) : null}
-        </div>
+          </div>
+        </details>
       </form>
 
       {list.items.length > 0 ? (

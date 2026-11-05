@@ -413,7 +413,9 @@
       "manager": "Gestor",
       "noManager": "Sem gestor",
       "apply": "Filtrar",
-      "clear": "Limpar"
+      "clear": "Limpar",
+      "more": "Mais filtros",
+      "moreActive": "Mais filtros · {count}"
     },
     "unavailable": "Casting em atualização",
     "unavailableHint": "O casting aparece assim que o banco for atualizado.",

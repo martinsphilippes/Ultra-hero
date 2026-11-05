@@ -413,7 +413,9 @@
       "manager": "Gestor",
       "noManager": "Sin gestor",
       "apply": "Filtrar",
-      "clear": "Limpiar"
+      "clear": "Limpiar",
+      "more": "Más filtros",
+      "moreActive": "Más filtros · {count}"
     },
     "unavailable": "Casting en actualización",
     "unavailableHint": "El casting aparecerá cuando se actualice la base de datos.",
