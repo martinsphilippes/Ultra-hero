@@ -14,6 +14,9 @@ import { LOGIN_HOME } from "@/lib/auth/safe-next";
 export const INSTITUTIONAL_PATH = "/conheca";
 /** "Conheça o Groscove Ultra": a apresentação completa (a antiga /conheca), para quem já está no app. */
 export const ABOUT_PATH = "/sobre";
+/** A apresentação clássica (/sobre) está oculta por decisão do responsável: a rota responde 404 e nenhum link leva a ela.
+ *  Para reabrir, troque para true. */
+export const ABOUT_ENABLED = false;
 export const INSTITUTIONAL_EXPLORE_PATH = "/conheca/explorar";
 export const EXPLORE_COOKIE = "uh-explorar";
 /** 180 dias: tempo suficiente para não reaparecer a cada visita, sem ser permanente. */

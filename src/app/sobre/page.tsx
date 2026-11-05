@@ -23,6 +23,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -40,7 +41,7 @@ import { Button } from "@/components/ui";
 import { LOGIN_HOME } from "@/lib/auth/safe-next";
 import { getUser } from "@/lib/auth/session";
 import { CALENDAR_POINTS, FAQ_ITEMS, FEATURE_GROUPS, HOW_STEPS, SECTION_ANCHORS, WHAT_ITEMS } from "@/lib/about-classic/content";
-import { ABOUT_PATH, INSTITUTIONAL_EXPLORE_PATH, INSTITUTIONAL_LOGIN_HREF, INSTITUTIONAL_SIGNUP_HREF } from "@/lib/institutional/root";
+import { ABOUT_ENABLED, ABOUT_PATH, INSTITUTIONAL_EXPLORE_PATH, INSTITUTIONAL_LOGIN_HREF, INSTITUTIONAL_SIGNUP_HREF } from "@/lib/institutional/root";
 import { resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
 import "./sobre.css";
 
@@ -94,6 +95,7 @@ const FEATURE_ICONS: Record<string, LucideIcon> = {
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
 export default async function AboutClassicPage() {
+  if (!ABOUT_ENABLED) notFound();
   const [t, cookieStore, user] = await Promise.all([getTranslations("aboutClassic"), cookies(), getUser()]);
   const theme = resolveTheme(cookieStore.get(THEME_COOKIE)?.value);
   const signedIn = user !== null;
