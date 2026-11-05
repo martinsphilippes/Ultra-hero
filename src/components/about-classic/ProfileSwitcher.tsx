@@ -3,6 +3,7 @@
 import { ArrowRight, Briefcase, Megaphone, Smartphone, Trophy, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { LogoMark } from "@/components/layout/Logo";
+import { Shine } from "./Shine";
 import { cn } from "@/lib/utils";
 
 export type SwitcherProfile = { key: "brand" | "hero" | "agency" | "app"; label: string; title: string; lead: string; href: string; cta: string; highlights: { title: string; body: string }[] };
@@ -45,8 +46,12 @@ export function ProfileSwitcher({ label, profiles }: { label: string; profiles: 
       </div>
       {/* key troca o cartão inteiro: a animação de entrada roda de novo a cada perfil */}
       <div key={p.key} className="relative overflow-hidden rounded-2xl border border-border bg-surface p-5 shadow-md" aria-live="polite">
-        <span aria-hidden="true" className="pointer-events-none absolute -right-8 -top-8 opacity-10">
-          <LogoMark className="uh-sb-intro-mark h-36" />
+        <span aria-hidden="true" className="uh-sb-shine-faint pointer-events-none absolute -right-8 -top-8 isolate">
+          {/* opacidade num invólucro: a animação de entrada do triângulo termina em opacidade 1 */}
+          <span className="block opacity-10">
+            <LogoMark className="uh-sb-intro-mark block h-36" />
+          </span>
+          <Shine kind="mark" delay={5.2} />
         </span>
         <div className="relative flex flex-col gap-3">
           <span className="uh-sb-pop flex size-11 items-center justify-center rounded-xl bg-accent/15 text-accent-text">

@@ -71,3 +71,136 @@
   .uh-sb-reveal, .uh-sb-reveal[data-state="hidden"], .uh-sb-interlude[data-state="hidden"] .uh-sb-interlude-mark { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
   .uh-sb-tilt { transform: none !important; }
 }
+
+/* ---------------------------------------------------------------- luz nas logomarcas e nas linhas
+   Mesma ideia do brilho do teaser: duas cópias do logo (halo desfocado atrás e reflexo na frente) mascaradas pela
+   mesma faixa inclinada que anda por mask-position. Mais suave que no teaser, porque o /sobre é claro. Ciclo de 7,5 s
+   em todas as peças; cada uma entra com seu atraso (--sb-shine-delay), e a luz percorre a página. Nas linhas, um
+   ponto de luz corre de ponta a ponta no mesmo compasso. Sem animação (reduzir movimento, cores forçadas): nada. */
+.uh-sb-shine {
+  --sb-shine-pad: 0.75rem;
+  position: absolute;
+  inset: calc(-1 * var(--sb-shine-pad));
+  display: none;
+  padding: var(--sb-shine-pad);
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 300% 100%;
+  mask-size: 300% 100%;
+  -webkit-mask-position: 100% 0;
+  mask-position: 100% 0;
+}
+.uh-sb-shine-halo {
+  z-index: -1;
+  -webkit-mask-image: linear-gradient(105deg, transparent 42%, #000 50%, transparent 58%);
+  mask-image: linear-gradient(105deg, transparent 42%, #000 50%, transparent 58%);
+}
+.uh-sb-shine-gloss {
+  z-index: 1;
+  -webkit-mask-image: linear-gradient(105deg, transparent 46%, rgba(0, 0, 0, 0.85) 50%, transparent 54%);
+  mask-image: linear-gradient(105deg, transparent 46%, rgba(0, 0, 0, 0.85) 50%, transparent 54%);
+}
+.uh-sb-shine-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.uh-sb-shine-gloss .uh-sb-shine-svg {
+  filter: drop-shadow(0 0 1.5px rgba(255, 170, 120, 0.9));
+}
+.uh-sb-shine-halo .uh-sb-shine-svg {
+  opacity: 0.5;
+  filter: blur(6px);
+  will-change: transform;
+}
+/* logos apagados (marca d'água a 10%): a luz aparece, mas discreta */
+.uh-sb-shine-faint .uh-sb-shine-gloss {
+  opacity: 0.45;
+}
+.uh-sb-shine-faint .uh-sb-shine-halo {
+  opacity: 0.35;
+}
+
+/* luz nas linhas: um ponto quente que corre por cima da linha (borda de seção ou linha da pausa) */
+.uh-sb-shine-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  display: none;
+  overflow: hidden;
+  pointer-events: none;
+}
+.uh-sb-shine-line[data-edge="bottom"] {
+  bottom: -1px;
+}
+.uh-sb-shine-line[data-edge="top"] {
+  top: -1px;
+}
+.uh-sb-shine-run {
+  position: relative;
+  overflow: hidden;
+}
+.uh-sb-shine-line::after,
+.uh-sb-shine-run::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 28%;
+  background: linear-gradient(90deg, transparent, rgba(255, 138, 76, 0.9) 40%, #ffffff 50%, rgba(255, 138, 76, 0.9) 60%, transparent);
+  transform: translateX(-110%);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .uh-sb-shine {
+    display: block;
+    animation: uh-sb-shine 7.5s cubic-bezier(0.45, 0, 0.25, 1) var(--sb-shine-delay, 1.8s) infinite;
+  }
+  .uh-sb-shine-line {
+    display: block;
+  }
+  .uh-sb-shine-line::after,
+  .uh-sb-shine-run::after {
+    animation: uh-sb-shine-run 7.5s cubic-bezier(0.45, 0, 0.25, 1) var(--sb-shine-delay, 1.8s) infinite;
+  }
+}
+/* mask-position 100% → faixa fora, à esquerda; 0% → fora, à direita (máscara 3× a caixa) */
+@keyframes uh-sb-shine {
+  0% {
+    -webkit-mask-position: 100% 0;
+    mask-position: 100% 0;
+  }
+  38%,
+  100% {
+    -webkit-mask-position: 0% 0;
+    mask-position: 0% 0;
+  }
+}
+/* o ponto atravessa a linha inteira (a largura dele é 28% da linha: 100/28 ≈ 360%) no mesmo trecho do ciclo */
+@keyframes uh-sb-shine-run {
+  0% {
+    transform: translateX(-110%);
+    opacity: 1;
+  }
+  38% {
+    transform: translateX(360%);
+    opacity: 1;
+  }
+  38.1%,
+  100% {
+    transform: translateX(360%);
+    opacity: 0;
+  }
+}
+@media (forced-colors: active) {
+  .uh-sb-shine,
+  .uh-sb-shine-line,
+  .uh-sb-shine-run::after {
+    display: none !important;
+  }
+}

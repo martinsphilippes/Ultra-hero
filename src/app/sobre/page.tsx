@@ -33,6 +33,7 @@ import { Logo, LogoMark } from "@/components/layout/Logo";
 import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
 import { FIXED_APPEARANCE_SCRIPT, FixedAppearance } from "@/components/about-classic/FixedAppearance";
 import { LogoInterlude } from "@/components/about-classic/LogoInterlude";
+import { Shine, ShineLine } from "@/components/about-classic/Shine";
 import { ProfileSwitcher, type SwitcherProfile } from "@/components/about-classic/ProfileSwitcher";
 import { Reveal } from "@/components/about-classic/Reveal";
 import { TiltCard } from "@/components/about-classic/TiltCard";
@@ -143,9 +144,11 @@ export default async function AboutClassicPage() {
       <script dangerouslySetInnerHTML={{ __html: FIXED_APPEARANCE_SCRIPT }} />
       <FixedAppearance />
       <header className="sticky top-0 z-30 border-b border-border bg-bg/85 backdrop-blur-md safe-top">
+        <ShineLine edge="bottom" delay={2.3} />
         <div className="mx-auto flex h-topbar max-w-content items-center justify-between gap-3 px-gutter">
-          <Link href={ABOUT_PATH} aria-label={t("nav.home")} className={`rounded-lg ${focusRing}`}>
-            <Logo size="md" />
+          <Link href={ABOUT_PATH} aria-label={t("nav.home")} className={`relative isolate inline-flex rounded-lg ${focusRing}`}>
+            <Logo size="md" className="block" />
+            <Shine kind="logo" delay={1.8} />
           </Link>
           <div className="flex items-center gap-0.5">
             <LocaleSwitcher />
@@ -171,8 +174,9 @@ export default async function AboutClassicPage() {
             <div className="flex flex-1 flex-col gap-5">
               <div aria-hidden="true" className="relative flex size-24 items-center justify-center">
                 <span className="uh-sb-glow absolute inset-0 rounded-full bg-accent/30 blur-2xl" />
-                <span className="uh-sb-breathe relative">
-                  <LogoMark className="uh-sb-intro-mark h-16" />
+                <span className="uh-sb-breathe relative isolate">
+                  <LogoMark className="uh-sb-intro-mark block h-16" />
+                  <Shine kind="mark" delay={2.7} />
                 </span>
               </div>
               <p className="uh-sb-pop type-overline text-accent-text" style={{ animationDelay: "500ms" }}>
@@ -212,7 +216,9 @@ export default async function AboutClassicPage() {
         </section>
 
         {/* Faixa contínua de recursos passando de um lado ao outro (decorativa; pausa ao passar o mouse) */}
-        <div aria-hidden="true" className="uh-sb-marquee overflow-hidden border-y border-border bg-surface/60 py-3">
+        <div aria-hidden="true" className="uh-sb-marquee relative overflow-hidden border-y border-border bg-surface/60 py-3">
+          <ShineLine edge="top" delay={3.1} />
+          <ShineLine edge="bottom" delay={3.1} />
           <div className="uh-sb-marquee-track flex w-max gap-3">
             {[...marquee, ...marquee].map((m, i) => (
               <span key={`${m.id}-${i}`} className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-4 py-2 text-sm font-semibold text-fg">
@@ -224,7 +230,9 @@ export default async function AboutClassicPage() {
         </div>
 
         {/* Navegação interna (rolável no celular) */}
-        <nav aria-label={t("nav.sections")} className="border-y border-border bg-surface/60">
+        <nav aria-label={t("nav.sections")} className="relative border-y border-border bg-surface/60">
+          <ShineLine edge="top" delay={3.5} />
+          <ShineLine edge="bottom" delay={3.5} />
           <ul className="mx-auto flex max-w-content gap-2 overflow-x-auto px-gutter py-2 [scrollbar-width:none]">
             {SECTION_ANCHORS.map((a) => (
               <li key={a.id} className="shrink-0">
@@ -350,7 +358,10 @@ export default async function AboutClassicPage() {
 
           {/* Chamada final */}
           <section aria-labelledby="comecar-title" className="relative flex flex-col items-start gap-4 overflow-hidden rounded-2xl bg-accent/10 p-6 md:items-center md:p-12 md:text-center">
-            <LogoMark aria-hidden="true" className="uh-sb-breathe pointer-events-none absolute -bottom-10 -right-10 h-48 opacity-10" />
+            <span aria-hidden="true" className="uh-sb-breathe uh-sb-shine-faint pointer-events-none absolute -bottom-10 -right-10 isolate">
+              <LogoMark className="block h-48 opacity-10" />
+              <Shine kind="mark" delay={5.6} />
+            </span>
             <h2 id="comecar-title" className="type-h1 text-fg">
               {t("final.title")}
             </h2>
@@ -360,7 +371,8 @@ export default async function AboutClassicPage() {
         </div>
       </main>
 
-      <footer className="border-t border-border safe-bottom">
+      <footer className="relative border-t border-border safe-bottom">
+        <ShineLine edge="top" delay={6} />
         <div className="mx-auto flex max-w-content flex-col gap-3 px-gutter py-6 sm:flex-row sm:items-center sm:justify-between">
           <LegalLinks />
           <p className="type-caption text-fg-muted">{t("footer.rights", { year })}</p>
