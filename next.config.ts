@@ -29,6 +29,9 @@ const nextConfig: NextConfig = {
     // Foto de perfil (até 2 MiB), capa do herói (até 3 MiB) e foto do post (até 3,5 MiB) passam pela
     // server action, + multipart; o padrão do Next é 1 MB (a Vercel corta em ~4,5 MB).
     serverActions: { bodySizeLimit: "4mb" },
+    // Velocidade: o navegador reaproveita por 30 s as telas já abertas (voltar, trocar de aba e voltar é instantâneo).
+    // Salvar algo (server action com revalidatePath/router.refresh) limpa esse cache na hora.
+    staleTimes: { dynamic: 30, static: 300 },
   },
   // As mensagens são lidas com fs em tempo de request: garante que vão para o bundle serverless.
   // "/*" cobre a rota raiz "/", "/**/*" as demais (o matcher usa `contains`).

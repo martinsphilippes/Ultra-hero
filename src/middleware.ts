@@ -1,4 +1,3 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isLibraryKey, legacyLibraryTarget } from "@/lib/catalog/creator-libraries";
 import { legacyHeroPortalTarget } from "@/lib/hero-portal/routes";
@@ -77,28 +76,13 @@ function nativeAppResponse(request: NextRequest): NextResponse | null {
   return NextResponse.redirect(target, 307);
 }
 
-// Confere o JWT dos cookies (já renovados por updateSession).
-async function hasSession(request: NextRequest): Promise<boolean> {
-  const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll() {
-        // Já tratado em updateSession.
-      },
-    },
-  });
-  const { data } = await supabase.auth.getClaims();
-  return Boolean(data?.claims);
-}
 
 // Endereço principal "/" (etapa 7, antes um redirect fixo do next.config para /personalities): com sessão, app das
 // lojas ou "Pular e explorar" → aba Hero, como sempre; visitante sem sessão → apresentação (/conheca). 307 com a query.
-async function rootResponse(request: NextRequest): Promise<NextResponse> {
+async function rootResponse(request: NextRequest, hasSession: boolean): Promise<NextResponse> {
   const nativeApp = parseNativeApp(request.headers.get("user-agent")) !== null;
   const explored = request.cookies.get(EXPLORE_COOKIE)?.value === "1";
-  const signedIn = rootNeedsSessionCheck({ nativeApp, explored }) ? await hasSession(request) : false;
+  const signedIn = rootNeedsSessionCheck({ nativeApp, explored }) ? hasSession : false;
   const target = request.nextUrl.clone();
   target.pathname = rootDestination({ signedIn, nativeApp, explored });
   return NextResponse.redirect(target, 307);
@@ -124,7 +108,7 @@ export async function middleware(request: NextRequest) {
   if (marketing) return marketing;
 
   // Renova a sessão (cookies) em toda requisição.
-  const response = await updateSession(request);
+  const { response, signedIn } = await updateSession(request);
 
   const { pathname, search } = request.nextUrl;
   const early = legacyHeroPortalResponse(request) ?? nativeAppResponse(request) ?? heroHubResponse(request) ?? legacyEvolutionResponse(request);
@@ -134,14 +118,14 @@ export async function middleware(request: NextRequest) {
     return early;
   }
   if (pathname === "/") {
-    const root = await rootResponse(request);
+    const root = await rootResponse(request, signedIn);
     for (const cookie of response.cookies.getAll()) root.cookies.set(cookie);
     return root;
   }
   if (!isProtected(pathname)) return response;
 
   // Os cookies do request já foram atualizados por updateSession; valida o JWT.
-  if (await hasSession(request)) return response;
+  if (signedIn) return response;
 
   const loginUrl = request.nextUrl.clone();
   loginUrl.pathname = "/login";

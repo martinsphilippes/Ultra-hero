@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ConsentForm } from "@/components/me/devices/ConsentForm";
 import { Button, PageHeader } from "@/components/ui";
-import { requireUser } from "@/lib/auth/session";
+import { getFreshUser, requireUser } from "@/lib/auth/session";
 import { providerReady } from "@/lib/health/config";
 import { recentlyAuthenticated } from "@/lib/health/oauth";
 import { providerCategories } from "@/lib/health/providers";
@@ -29,7 +29,9 @@ export default async function ConnectProviderPage({ params }: { params: Promise<
   const { provider } = await params;
   if (!isHealthProvider(provider)) notFound();
   const path = `/profile/devices/connect/${provider}`;
-  const user = await requireUser(path);
+  await requireUser(path);
+  // último login (reautenticação recente) só vem do servidor de auth
+  const user = (await getFreshUser())!;
   if (!providerReady(provider)) notFound();
 
   const [t, locale] = await Promise.all([getTranslations("devices"), getLocale()]);

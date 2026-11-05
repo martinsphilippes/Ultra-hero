@@ -26,8 +26,30 @@ export type Profile = {
   onboarding_completed: boolean;
 };
 
-// Usuário autenticado (validado no servidor de auth), memoizado por request.
+// Usuário autenticado, memoizado por request. Velocidade: confere a assinatura do JWT localmente (getClaims, chave
+// pública ES256 do projeto, guardada em memória) em vez de ir ao servidor de auth a cada tela — é o mesmo token em que
+// o banco confia para o RLS. Traz id, e-mail, telefone e metadados (o que vem no token). Para dados que só o servidor
+// de auth tem (identidades/provedores, último login), use getFreshUser.
 export const getUser = cache(async (): Promise<User | null> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getClaims();
+  const c = data?.claims;
+  if (error || !c?.sub) return null;
+  return {
+    id: c.sub,
+    aud: typeof c.aud === "string" ? c.aud : "authenticated",
+    role: typeof c.role === "string" ? c.role : undefined,
+    email: typeof c.email === "string" ? c.email : undefined,
+    phone: typeof c.phone === "string" ? c.phone : undefined,
+    app_metadata: (c.app_metadata ?? {}) as User["app_metadata"],
+    user_metadata: (c.user_metadata ?? {}) as User["user_metadata"],
+    is_anonymous: Boolean(c.is_anonymous),
+    created_at: "",
+  } as User;
+});
+
+// Usuário completo, validado no servidor de auth (identidades, último login). Mais lento: só onde precisa.
+export const getFreshUser = cache(async (): Promise<User | null> => {
   const supabase = await createClient();
   const {
     data: { user },

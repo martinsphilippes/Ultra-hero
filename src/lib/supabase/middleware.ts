@@ -1,8 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Renova a sessão do usuário a cada requisição.
-export async function updateSession(request: NextRequest) {
+// Renova a sessão do usuário a cada requisição e diz se ela é válida. Velocidade: getClaims confere a assinatura do
+// JWT localmente (chave pública ES256 em memória) e só vai ao servidor de auth quando o token venceu e precisa ser
+// renovado — antes, getUser fazia essa ida em TODO clique.
+export async function updateSession(request: NextRequest): Promise<{ response: NextResponse; signedIn: boolean }> {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -24,6 +26,6 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  await supabase.auth.getUser();
-  return response;
+  const { data } = await supabase.auth.getClaims();
+  return { response, signedIn: Boolean(data?.claims?.sub) };
 }

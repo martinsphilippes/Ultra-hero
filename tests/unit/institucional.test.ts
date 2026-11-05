@@ -13,7 +13,8 @@ const session = vi.hoisted(() => ({ signedIn: false, checks: 0 }));
 
 vi.mock("@/lib/supabase/middleware", async () => {
   const { NextResponse } = await import("next/server");
-  return { updateSession: async (request: NextRequest) => NextResponse.next({ request }) };
+  // a sessão é conferida uma vez só, dentro do updateSession (getClaims local)
+  return { updateSession: async (request: NextRequest) => ({ response: NextResponse.next({ request }), signedIn: session.signedIn }) };
 });
 
 vi.mock("@supabase/ssr", () => ({
@@ -71,7 +72,7 @@ describe("middleware no \"/\"", () => {
     expect(res.status).toBe(307);
     expect(location(res)?.pathname).toBe(TEASER_ENABLED ? "/conheca" : "/sobre");
     expect(location(res)?.search).toBe("?utm_source=x");
-    expect(session.checks).toBe(1);
+    expect(session.checks).toBe(0);
   });
   it("logado continua indo direto à aba Hero", async () => {
     session.signedIn = true;

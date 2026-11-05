@@ -15,7 +15,10 @@ vi.mock("server-only", () => ({}));
 vi.mock("next/navigation", () => ({ redirect: () => undefined }));
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
-    auth: { getUser: async () => ({ data: { user: { id: "u1", email: "erick@example.com", user_metadata: {} } } }) },
+    auth: {
+      getUser: async () => ({ data: { user: { id: "u1", email: "erick@example.com", user_metadata: {} } } }),
+      getClaims: async () => ({ data: { claims: { sub: "u1", email: "erick@example.com", user_metadata: {} } }, error: null }),
+    },
     from: (table: string) => {
       const filters: string[] = [];
       const chain = {

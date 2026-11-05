@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { phoneOnlySchema } from "@/lib/auth/quick-signup";
 import { isMissingSchema, readGeneratedPassword, rotateGeneratedPassword } from "@/lib/auth/quick-signup-server";
 import { isPasswordVaultConfigured } from "@/lib/auth/password-crypto";
-import { getUser } from "@/lib/auth/session";
+import { getFreshUser } from "@/lib/auth/session";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -15,7 +15,7 @@ type Fail = { ok: false; error: "unauthenticated" | "unavailable" | "none" | "in
 
 
 export async function revealMyPassword(): Promise<{ ok: true; password: string } | Fail> {
-  const user = await getUser();
+  const user = await getFreshUser();
   if (!user) return { ok: false, error: "unauthenticated" };
   if (!hasAdminClient() || !isPasswordVaultConfigured()) return { ok: false, error: "unavailable" };
   const state = await readGeneratedPassword(createAdminClient(), user.id);
@@ -24,7 +24,7 @@ export async function revealMyPassword(): Promise<{ ok: true; password: string }
 }
 
 export async function regenerateMyPassword(): Promise<{ ok: true; password: string; stored: boolean } | Fail> {
-  const user = await getUser();
+  const user = await getFreshUser();
   if (!user) return { ok: false, error: "unauthenticated" };
   if (!hasAdminClient() || !isPasswordVaultConfigured()) return { ok: false, error: "unavailable" };
   const rotated = await rotateGeneratedPassword(createAdminClient(), user.id);
@@ -37,7 +37,7 @@ export async function regenerateMyPassword(): Promise<{ ok: true; password: stri
 }
 
 export async function updateMyPhone(input: { phone: string }): Promise<{ ok: true; phone: string | null } | Fail> {
-  const user = await getUser();
+  const user = await getFreshUser();
   if (!user) return { ok: false, error: "unauthenticated" };
   const raw = typeof input?.phone === "string" ? input.phone.trim() : "";
   let phone: string | null = null;

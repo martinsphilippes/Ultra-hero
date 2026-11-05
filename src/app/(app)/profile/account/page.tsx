@@ -10,7 +10,7 @@ import { PageHeader } from "@/components/ui";
 import { isPasswordVaultConfigured } from "@/lib/auth/password-crypto";
 import { formatE164ForDisplay } from "@/lib/auth/phone";
 import { hasGeneratedPassword } from "@/lib/auth/quick-signup-server";
-import { requireUser } from "@/lib/auth/session";
+import { getFreshUser, requireUser } from "@/lib/auth/session";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -25,7 +25,9 @@ const RETENTION = { analytics: 90, test_orders: 90, logs: 30, audit: 365 } as co
 
 // Conta e privacidade: resumo do que a POC guarda, prazos de retenção, natureza demonstrativa e exclusão.
 export default async function AccountPage() {
-  const user = await requireUser("/profile/account");
+  await requireUser("/profile/account");
+  // identidades (Google/Apple/senha) só vêm do servidor de auth
+  const user = (await getFreshUser())!;
   const [t, tc, tl, password, phone] = await Promise.all([
     getTranslations("me.account"),
     getTranslations("common"),

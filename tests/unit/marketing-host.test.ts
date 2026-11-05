@@ -18,7 +18,7 @@ vi.mock("@/lib/supabase/middleware", async () => {
   return {
     updateSession: async (request: NextRequest) => {
       session.refreshed += 1;
-      return NextResponse.next({ request });
+      return { response: NextResponse.next({ request }), signedIn: session.signedIn };
     },
   };
 });

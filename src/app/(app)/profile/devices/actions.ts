@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getUser } from "@/lib/auth/session";
+import { getFreshUser } from "@/lib/auth/session";
 import { safeNext } from "@/lib/auth/safe-next";
 import { providerReady } from "@/lib/health/config";
 import { hasHealthDb } from "@/lib/health/db";
@@ -61,7 +61,7 @@ export async function grantHealthConsent(input: unknown): Promise<Result<{ next:
   }
   const { provider, version, locale, categories } = parsed.data;
   if (!providerReady(provider)) return { ok: false, error: "unavailable" };
-  const user = await getUser();
+  const user = await getFreshUser();
   if (!user) return { ok: false, error: "reauth" };
   if (!recentlyAuthenticated(user.last_sign_in_at)) return { ok: false, error: "reauth" };
   const supabase = await createClient();
@@ -81,7 +81,7 @@ export async function reduceHealthConsent(input: unknown): Promise<Result> {
   const parsed = reduceSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "categories" };
   // sem checar a chave: retirar categorias nunca é bloqueado (banco sem a RPC → erro genérico)
-  const user = await getUser();
+  const user = await getFreshUser();
   if (!user) return { ok: false, error: "reauth" };
   const supabase = await createClient();
   const { error } = await supabase.rpc("health_consent_reduce", { p_categories: parsed.data.categories });
@@ -93,7 +93,7 @@ export async function reduceHealthConsent(input: unknown): Promise<Result> {
 
 /** Retirar o consentimento: desconecta tudo, apaga tudo, revoga nas marcas. Nunca é bloqueado (RF-09). */
 export async function revokeHealthConsent(): Promise<Result> {
-  const user = await getUser();
+  const user = await getFreshUser();
   if (!user) return { ok: false, error: "reauth" };
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("health_consent_revoke");
@@ -109,7 +109,7 @@ export async function revokeHealthConsent(): Promise<Result> {
 export async function disconnectWearable(input: unknown): Promise<Result> {
   const parsed = z.object({ connectionId: z.uuid() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "generic" };
-  const user = await getUser();
+  const user = await getFreshUser();
   if (!user) return { ok: false, error: "reauth" };
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("wearable_disconnect", { p_connection: parsed.data.connectionId });
