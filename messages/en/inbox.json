@@ -40,8 +40,8 @@
       "body": "You are now responsible for {deal}."
     },
     "campaign_status_changed": {
-      "title": "{status, select, room_opened {Project room opened} feedback_requested {Tell us how it went} feedback_received {New client rating} clipping_ready {Project clipping ready} other {Campaign updated}}",
-      "body": "{status, select, room_opened {The room for {deal} is open: conversation, rules and shoot day in one place.} feedback_requested {Rate {deal} from 0 to 10.} feedback_received {The client rated {deal} {step}.} clipping_ready {{deal} is complete: see the clipping and usage guide.} other {{deal} changed status.}}"
+      "title": "{status, select, room_opened {Project room opened} feedback_requested {Tell us how it went} feedback_received {New client rating} clipping_ready {Project clipping ready} shared {New campaign from the agency} other {Campaign updated}}",
+      "body": "{status, select, room_opened {The room for {deal} is open: conversation, rules and shoot day in one place.} feedback_requested {Rate {deal} from 0 to 10.} feedback_received {The client rated {deal} {step}.} clipping_ready {{deal} is complete: see the clipping and usage guide.} shared {The agency shared {deal} with you. Follow it here.} other {{deal} changed status.}}"
     },
     "proposal_received": {
       "title": "{status, select, accepted {Proposal accepted} countered {Agency counteroffer} other {Proposal received}}",

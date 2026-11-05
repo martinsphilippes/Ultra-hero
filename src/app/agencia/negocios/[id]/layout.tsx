@@ -1,11 +1,14 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { RouteTabs } from "@/components/agency/RouteTabs";
+import { BrandVisibility } from "@/components/deals/BrandVisibility";
 import { StageBadge } from "@/components/deals/StatusBadges";
 import { Badge, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
 import { dealClientLabel } from "@/lib/deals/client-label";
+import { getRequest } from "@/lib/deals/queries";
+import { stageIndex } from "@/lib/deals/stages";
 import { loadDeal } from "./_lib";
 
 type Props = { children: ReactNode; params: Promise<{ id: string }> };
@@ -15,15 +18,25 @@ type Props = { children: ReactNode; params: Promise<{ id: string }> };
 // que dependem da marca (heróis do elenco, termos, entregas e conversa com a marca).
 export default async function DealLayout({ children, params }: Props) {
   const { id } = await params;
-  const [{ deal }, t, locale] = await Promise.all([loadDeal(id), getTranslations("agency.deal"), getLocale() as Promise<Locale>]);
+  const [{ deal, canEdit }, t, locale] = await Promise.all([loadDeal(id), getTranslations("agency.deal"), getLocale() as Promise<Locale>]);
   const base = `/agencia/negocios/${deal.id}`;
   const hasBrand = deal.brand.id !== "";
+  // 0121: "Mostrar para a marca". Ocultar de novo só antes da confirmação e só em negócio aberto pela agência (a
+  // proposta que a própria marca mandou nunca se oculta); encerrado não mexe (canEdit já é falso).
+  const preConfirm = deal.stage !== "closed" && !deal.confirmedAt && stageIndex(deal.stage) < stageIndex("approved");
+  const request = hasBrand && deal.brandVisible && preConfirm && canEdit && deal.requestId ? await getRequest(deal.requestId) : null;
+  const canHide = preConfirm && request?.origin === "agency";
   return (
     <div className="flex flex-col gap-5" data-testid="deal-page">
       <PageHeader
         title={deal.title}
         backHref="/agencia/pipeline"
         backLabel={t("backToPipeline")}
+        actions={
+          hasBrand && deal.requestId && deal.stage !== "closed" ? (
+            <BrandVisibility dealId={deal.id} visible={deal.brandVisible} canEdit={canEdit} canHide={canHide} />
+          ) : null
+        }
         description={
           <span className="flex flex-wrap items-center gap-2">
             <StageBadge stage={deal.stage} outcome={deal.outcome} size="md" />

@@ -29,12 +29,13 @@ export type DealListItem = {
   /** 0107: serviço do catálogo e início do roteiro */
   service: { id: string; name: string } | null;
   roadmapStartedOn: string | null;
+  /** 0066/0121: a marca enxerga o negócio? (pipeline mostra "Interno" quando não) */
+  brandVisible: boolean;
 };
 
 export type DealDetail = DealListItem & {
   talentBrief: string;
   segmentIds: string[];
-  brandVisible: boolean;
   confirmedAt: string | null;
   closedAt: string | null;
   createdAt: string;
@@ -115,10 +116,11 @@ type DealRow = {
   client_talent: { id: string; display_name: string } | null;
   service: { id: string; name: string } | null;
   roadmap_started_on: string | null;
+  brand_visible: boolean;
 };
 
 const DEAL_SELECT =
-  "id, title, stage, outcome, stage_changed_at, owner_id, expected_start, expected_end, request_id, is_demo, roadmap_started_on, brand:brands!deals_brand_fk(id, name, logo_url), deal_talents(id, status), client_talent:talent_profiles!deals_client_talent_fk(id, display_name), service:agency_services!deals_service_fk(id, name)";
+  "id, title, stage, outcome, stage_changed_at, owner_id, expected_start, expected_end, request_id, is_demo, roadmap_started_on, brand_visible, brand:brands!deals_brand_fk(id, name, logo_url), deal_talents(id, status), client_talent:talent_profiles!deals_client_talent_fk(id, display_name), service:agency_services!deals_service_fk(id, name)";
 
 function toDeal(r: DealRow): DealListItem {
   return {
@@ -138,6 +140,7 @@ function toDeal(r: DealRow): DealListItem {
     clientLabel: [r.brand?.name, r.client_talent?.display_name].filter(Boolean).join(" · "),
     service: r.service ? { id: r.service.id, name: r.service.name } : null,
     roadmapStartedOn: r.roadmap_started_on ?? null,
+    brandVisible: r.brand_visible ?? false,
   };
 }
 
@@ -161,17 +164,16 @@ export async function getDeal(agencyId: string, id: string): Promise<DealDetail 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("deals")
-    .select(`${DEAL_SELECT}, talent_brief, segment_ids, brand_visible, confirmed_at, closed_at, created_at, deal_team(user_id)`)
+    .select(`${DEAL_SELECT}, talent_brief, segment_ids, confirmed_at, closed_at, created_at, deal_team(user_id)`)
     .eq("agency_id", agencyId)
     .eq("id", id)
     .maybeSingle();
   if (error || !data) return null;
-  const r = data as unknown as DealRow & { talent_brief: string; segment_ids: string[]; brand_visible: boolean; confirmed_at: string | null; closed_at: string | null; created_at: string; deal_team: { user_id: string }[] | null };
+  const r = data as unknown as DealRow & { talent_brief: string; segment_ids: string[]; confirmed_at: string | null; closed_at: string | null; created_at: string; deal_team: { user_id: string }[] | null };
   return {
     ...toDeal(r),
     talentBrief: r.talent_brief,
     segmentIds: r.segment_ids,
-    brandVisible: r.brand_visible,
     confirmedAt: r.confirmed_at,
     closedAt: r.closed_at,
     createdAt: r.created_at,

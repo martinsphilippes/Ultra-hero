@@ -1,5 +1,8 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // "Mostrar para a marca" (0121)
+  "brand_required",
+  "already_confirmed",
   // um e-mail, um perfil de negócio (0116): a mensagem leva o tipo que a conta já tem ({kind})
   "profile_conflict",
   // acesso do herói e da marca criados pela agência (0112)

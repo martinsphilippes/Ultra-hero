@@ -325,6 +325,27 @@ export async function removeDealTalentAction(input: { dealId: string; dealTalent
 }
 
 /** Confirmação dos termos (só o Adm): a campanha vira "aprovada" e a marca e os creators são avisados. */
+// 0121: "Mostrar para a marca" / "Ocultar" — gestor+ ou responsável/equipe do negócio (a RPC confere papel, marca e
+// etapa: depois de confirmado não oculta mais).
+const brandVisibleSchema = z.object({ dealId: uuid, visible: z.boolean() });
+
+export async function setBrandVisibleAction(input: z.input<typeof brandVisibleSchema>): Promise<DealResult> {
+  await requireAgency("staff");
+  const parsed = brandVisibleSchema.safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_input");
+  const d = parsed.data;
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("agency_deal_set_brand_visible", { p_deal: d.dealId, p_visible: d.visible });
+    if (error) return agencyFail(error);
+    revalidateDeal(d.dealId);
+    const t = await getTranslations("agency.deal.brandVisibility");
+    return { ok: true, message: t(d.visible ? "shownToast" : "hiddenToast") };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
+
 export async function confirmDealAction(input: z.input<typeof confirmSchema>): Promise<DealResult> {
   await requireAgency("admin");
   const parsed = confirmSchema.safeParse(input);

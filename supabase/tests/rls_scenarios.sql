@@ -18271,5 +18271,163 @@ select tests.ok('S122 RPC security definer com search_path fixo, sem execute par
   and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 delete from public.launch_leads where email like 's122-%';
 
+-- ================================================================ S123 · "Mostrar para a marca": a agência escolhe quando a marca vê o negócio (0121)
+-- agency_deal_set_brand_visible: gestor+ ou responsável/equipe do negócio; colaborador fora do negócio e outra agência
+-- recusados; exige marca; encerrado não muda; ocultar só antes da confirmação (depois fica sempre visível); proposta da
+-- própria marca não se oculta. Ao mostrar: atividade "brand_shown", auditoria e aviso campaign_status_changed para a
+-- marca. Visível antes da confirmação, a marca não lê nota interna, herói fora da proposta, conversa herói↔agência
+-- nem orçamento interno. S14 segue 18.
+\ir ../migrations/0121_mostrar_para_marca.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1230000-0000-4000-8000-000000000001', 's123-adm@test.local'),
+  ('a1230000-0000-4000-8000-000000000002', 's123-gestor@test.local'),
+  ('a1230000-0000-4000-8000-000000000003', 's123-colab@test.local'),
+  ('a1230000-0000-4000-8000-000000000004', 's123-fora@test.local'),
+  ('a1230000-0000-4000-8000-000000000005', 's123-dono@test.local'),
+  ('a1230000-0000-4000-8000-000000000006', 's123-outra@test.local'),
+  ('a1230000-0000-4000-8000-000000000007', 's123-equipe@test.local');
+insert into public.agencies (id, slug, name) values
+  ('a1230000-0000-4000-8000-0000000000a1', 's123-agencia', 'Agência S123'),
+  ('a1230000-0000-4000-8000-0000000000a2', 's123-outra', 'Outra Agência S123');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-000000000001', 'admin', 'Ana Adm S123'),
+  ('a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-000000000002', 'manager', 'Gil Gestor S123'),
+  ('a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-000000000003', 'staff', 'Caio Colab S123'),
+  ('a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-000000000004', 'staff', 'Fora S123'),
+  ('a1230000-0000-4000-8000-0000000000a2', 'a1230000-0000-4000-8000-000000000006', 'admin', 'Outra Adm S123');
+insert into public.brands (id, slug, name, site_url) values ('a1230000-0000-4000-8000-0000000000b1', 's123-marca', 'Marca S123', 'https://m.s123.test');
+insert into public.agency_brands (agency_id, brand_id) values ('a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-0000000000b1');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1230000-0000-4000-8000-0000000000b1', 'a1230000-0000-4000-8000-000000000005', 'owner', 'Dona S123'),
+  ('a1230000-0000-4000-8000-0000000000b1', 'a1230000-0000-4000-8000-000000000007', 'staff', 'Equipe S123');
+insert into public.talent_profiles (id, agency_id, display_name) values
+  ('a1230000-0000-4000-8000-0000000000c1', 'a1230000-0000-4000-8000-0000000000a1', 'Herói Recusou S123'),
+  ('a1230000-0000-4000-8000-0000000000c2', 'a1230000-0000-4000-8000-0000000000a1', 'Herói Interessado S123');
+insert into public.campaign_requests (id, agency_id, brand_id, origin, title, notes, status, submitted_at, deliverables, period_start, period_end) values
+  ('a1230000-0000-4000-8000-0000000000d1', 'a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-0000000000b1', 'agency', 'Campanha S123', 'Nota interna S123', 'converted', now() - interval '3 days',
+   '[{"kind": "reels", "quantity": 1, "network": "instagram"}]', current_date + 10, current_date + 20),
+  ('a1230000-0000-4000-8000-0000000000d2', 'a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-0000000000b1', 'agency', 'Campanha Confirmada S123', '', 'converted', now() - interval '3 days',
+   '[{"kind": "reels", "quantity": 1, "network": "instagram"}]', current_date + 10, current_date + 20),
+  ('a1230000-0000-4000-8000-0000000000d4', 'a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-0000000000b1', 'brand', 'Proposta da Marca S123', '', 'converted', now() - interval '3 days',
+   '[{"kind": "reels", "quantity": 1, "network": "instagram"}]', current_date + 10, current_date + 20);
+-- orçamento interno da agência num pedido de origem agência (a marca não lê)
+insert into public.campaign_request_budgets (agency_id, brand_id, request_id, budget_min_cents, budget_max_cents) values
+  ('a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-0000000000b1', 'a1230000-0000-4000-8000-0000000000d1', 500000, 900000);
+insert into public.deals (id, agency_id, brand_id, request_id, client_talent_id, title, stage, brand_visible, owner_id, confirmed_at) values
+  ('a1230000-0000-4000-8000-0000000000e1', 'a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-0000000000b1', 'a1230000-0000-4000-8000-0000000000d1', null, 'Negócio S123', 'shortlist', false, 'a1230000-0000-4000-8000-000000000003', null),
+  ('a1230000-0000-4000-8000-0000000000e2', 'a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-0000000000b1', 'a1230000-0000-4000-8000-0000000000d2', null, 'Negócio Confirmado S123', 'approved', true, null, now()),
+  ('a1230000-0000-4000-8000-0000000000e3', 'a1230000-0000-4000-8000-0000000000a1', null, null, 'a1230000-0000-4000-8000-0000000000c1', 'Só Herói S123', 'briefing_received', false, 'a1230000-0000-4000-8000-000000000002', null),
+  ('a1230000-0000-4000-8000-0000000000e4', 'a1230000-0000-4000-8000-0000000000a1', 'a1230000-0000-4000-8000-0000000000b1', 'a1230000-0000-4000-8000-0000000000d4', null, 'Negócio da Marca S123', 'qualification', true, null, null);
+insert into public.deal_talents (deal_id, talent_id, status, consulted_at) values
+  ('a1230000-0000-4000-8000-0000000000e1', 'a1230000-0000-4000-8000-0000000000c1', 'declined', now() - interval '1 day'),
+  ('a1230000-0000-4000-8000-0000000000e1', 'a1230000-0000-4000-8000-0000000000c2', 'interested', now() - interval '1 day');
+insert into public.deal_messages (deal_id, channel, author_side, author_label, body, talent_id) values
+  ('a1230000-0000-4000-8000-0000000000e1', 'talent_agency', 'agency', 'Agência S123', 'Conversa interna S123', 'a1230000-0000-4000-8000-0000000000c2');
+
+select tests.ok('S123 estrutura: security definer, search_path fixo, sem execute para o visitante; S14 segue 18',
+  (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') from pg_proc p
+   where p.oid = 'public.agency_deal_set_brand_visible(uuid, boolean)'::regprocedure)
+  and not has_function_privilege('anon', 'public.agency_deal_set_brand_visible(uuid, boolean)', 'execute')
+  and has_function_privilege('authenticated', 'public.agency_deal_set_brand_visible(uuid, boolean)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S123 visitante não executa', $q$select public.agency_deal_set_brand_visible('a1230000-0000-4000-8000-0000000000e1', true)$q$, 'permission denied');
+
+-- marca: ainda não vê
+select tests.login('a1230000-0000-4000-8000-000000000005', 's123-dono@test.local');
+select tests.ok('S123 marca não vê o negócio oculto',
+  not ('a1230000-0000-4000-8000-0000000000e1'::uuid = any (public.my_brand_deal_ids()))
+  and not ('a1230000-0000-4000-8000-0000000000d1'::uuid = any (public.my_brand_visible_request_ids()))
+  and not exists (select 1 from jsonb_array_elements(public.brand_campaigns('a1230000-0000-4000-8000-0000000000b1')) x where x ->> 'request_id' = 'a1230000-0000-4000-8000-0000000000d1'));
+select tests.expect_error('S123 marca não abre a campanha oculta', $q$select public.brand_campaign_detail('a1230000-0000-4000-8000-0000000000d1')$q$, 'not_found');
+select tests.expect_error('S123 marca não executa a RPC da agência', $q$select public.agency_deal_set_brand_visible('a1230000-0000-4000-8000-0000000000e1', true)$q$, 'not_found');
+
+-- colaborador fora do negócio e outra agência
+select tests.login('a1230000-0000-4000-8000-000000000004', 's123-fora@test.local');
+select tests.expect_error('S123 colaborador fora do negócio recusado', $q$select public.agency_deal_set_brand_visible('a1230000-0000-4000-8000-0000000000e1', true)$q$, 'forbidden');
+select tests.login('a1230000-0000-4000-8000-000000000006', 's123-outra@test.local');
+select tests.expect_error('S123 outra agência recusada', $q$select public.agency_deal_set_brand_visible('a1230000-0000-4000-8000-0000000000e1', true)$q$, 'not_found');
+
+-- gestor: negócio sem marca recusado
+select tests.login('a1230000-0000-4000-8000-000000000002', 's123-gestor@test.local');
+select tests.expect_error('S123 negócio sem marca recusado', $q$select public.agency_deal_set_brand_visible('a1230000-0000-4000-8000-0000000000e3', true)$q$, 'brand_required');
+select tests.expect_error('S123 proposta da própria marca não se oculta', $q$select public.agency_deal_set_brand_visible('a1230000-0000-4000-8000-0000000000e4', false)$q$, 'invalid_state');
+select tests.expect_error('S123 ocultar depois de confirmar recusado', $q$select public.agency_deal_set_brand_visible('a1230000-0000-4000-8000-0000000000e2', false)$q$, 'already_confirmed');
+select tests.ok('S123 pedir o estado atual não muda nada', public.agency_deal_set_brand_visible('a1230000-0000-4000-8000-0000000000e2', true));
+
+-- colaborador responsável mostra
+select tests.login('a1230000-0000-4000-8000-000000000003', 's123-colab@test.local');
+select tests.ok('S123 responsável mostra para a marca', public.agency_deal_set_brand_visible('a1230000-0000-4000-8000-0000000000e1', true));
+select tests.su();
+select tests.ok('S123 histórico, auditoria e aviso para a marca (dono e equipe)',
+  (select brand_visible from public.deals where id = 'a1230000-0000-4000-8000-0000000000e1')
+  and exists (select 1 from public.activities a where a.deal_id = 'a1230000-0000-4000-8000-0000000000e1' and a.kind = 'system' and a.body = 'brand_shown'
+              and a.author_id = 'a1230000-0000-4000-8000-000000000003')
+  and exists (select 1 from public.admin_audit x where x.action = 'deal.brand_visible' and x.resource_id = 'a1230000-0000-4000-8000-0000000000e1'
+              and (x.after_data ->> 'brand_visible')::boolean)
+  and (select count(*) from public.inbox_notifications n where n.kind = 'campaign_status_changed' and n.params ->> 'status' = 'shared'
+       and n.link = '/marca/campanhas/a1230000-0000-4000-8000-0000000000d1'
+       and n.user_id in ('a1230000-0000-4000-8000-000000000005', 'a1230000-0000-4000-8000-000000000007')) = 2);
+
+-- marca: agora vê (negócio e pedido), sem nada interno
+select tests.login('a1230000-0000-4000-8000-000000000005', 's123-dono@test.local');
+select tests.ok('S123 marca vê o negócio e o pedido',
+  'a1230000-0000-4000-8000-0000000000e1'::uuid = any (public.my_brand_deal_ids())
+  and 'a1230000-0000-4000-8000-0000000000d1'::uuid = any (public.my_brand_visible_request_ids())
+  and exists (select 1 from jsonb_array_elements(public.brand_campaigns('a1230000-0000-4000-8000-0000000000b1')) x
+              where x ->> 'request_id' = 'a1230000-0000-4000-8000-0000000000d1' and x ->> 'brand_status' = 'building'));
+select tests.ok('S123 marca abre a campanha sem nota interna, sem heróis fora da proposta',
+  (select (j -> 'deal' ->> 'id') = 'a1230000-0000-4000-8000-0000000000e1' and (j -> 'request' ->> 'notes') = ''
+     and jsonb_array_length(j -> 'talents') = 0 and j -> 'requested_talent' = 'null'::jsonb
+     and position('Nota interna' in j::text) = 0 and position('Herói' in j::text) = 0
+   from public.brand_campaign_detail('a1230000-0000-4000-8000-0000000000d1') j));
+select tests.ok('S123 marca não lê conversa herói↔agência, orçamento interno, cachês nem histórico',
+  not exists (select 1 from public.deal_messages where deal_id = 'a1230000-0000-4000-8000-0000000000e1')
+  and not exists (select 1 from public.campaign_request_budgets where request_id = 'a1230000-0000-4000-8000-0000000000d1')
+  and not exists (select 1 from public.deal_talents where deal_id = 'a1230000-0000-4000-8000-0000000000e1')
+  and not exists (select 1 from public.activities where deal_id = 'a1230000-0000-4000-8000-0000000000e1')
+  and not exists (select 1 from public.deals where id = 'a1230000-0000-4000-8000-0000000000e1'));
+select tests.ok('S123 painel da marca: campanha sem heróis',
+  (select exists (select 1 from jsonb_array_elements(j -> 'campaigns') x where x ->> 'request_id' = 'a1230000-0000-4000-8000-0000000000d1')
+     and not exists (select 1 from jsonb_array_elements(j -> 'talents') x where x ->> 'request_id' = 'a1230000-0000-4000-8000-0000000000d1')
+   from public.brand_workboard('a1230000-0000-4000-8000-0000000000b1') j));
+
+-- gestor oculta antes de confirmar; mostrar de novo não repete o aviso
+select tests.login('a1230000-0000-4000-8000-000000000002', 's123-gestor@test.local');
+select tests.ok('S123 ocultar antes de confirmar', not public.agency_deal_set_brand_visible('a1230000-0000-4000-8000-0000000000e1', false));
+select tests.login('a1230000-0000-4000-8000-000000000005', 's123-dono@test.local');
+select tests.expect_error('S123 marca deixa de ver depois de ocultar', $q$select public.brand_campaign_detail('a1230000-0000-4000-8000-0000000000d1')$q$, 'not_found');
+select tests.login('a1230000-0000-4000-8000-000000000001', 's123-adm@test.local');
+select tests.ok('S123 Adm mostra de novo', public.agency_deal_set_brand_visible('a1230000-0000-4000-8000-0000000000e1', true));
+select tests.su();
+select tests.ok('S123 histórico registra oculto e visível; aviso não repete',
+  exists (select 1 from public.activities a where a.deal_id = 'a1230000-0000-4000-8000-0000000000e1' and a.body = 'brand_hidden')
+  and (select count(*) from public.activities a where a.deal_id = 'a1230000-0000-4000-8000-0000000000e1' and a.body = 'brand_shown') = 2
+  and (select count(*) from public.inbox_notifications n where n.user_id = 'a1230000-0000-4000-8000-000000000005' and n.params ->> 'status' = 'shared') = 1);
+
+-- encerrado não muda
+update public.deals set stage = 'closed', outcome = 'lost', closed_at = now() where id = 'a1230000-0000-4000-8000-0000000000e1';
+select tests.login('a1230000-0000-4000-8000-000000000002', 's123-gestor@test.local');
+select tests.expect_error('S123 negócio encerrado não muda', $q$select public.agency_deal_set_brand_visible('a1230000-0000-4000-8000-0000000000e1', false)$q$, 'invalid_stage');
+
+select tests.su();
+delete from public.inbox_notifications where user_id::text like 'a1230000-%';
+delete from public.deal_messages where deal_id::text like 'a1230000-%';
+delete from public.activities where agency_id::text like 'a1230000-%';
+delete from public.deal_talents where deal_id::text like 'a1230000-%';
+delete from public.deals where agency_id = 'a1230000-0000-4000-8000-0000000000a1';
+delete from public.campaign_request_budgets where request_id::text like 'a1230000-%';
+delete from public.campaign_requests where agency_id = 'a1230000-0000-4000-8000-0000000000a1';
+delete from public.talent_profiles where agency_id = 'a1230000-0000-4000-8000-0000000000a1';
+delete from public.agency_brands where agency_id = 'a1230000-0000-4000-8000-0000000000a1';
+delete from public.brand_members where brand_id = 'a1230000-0000-4000-8000-0000000000b1';
+delete from public.brands where id = 'a1230000-0000-4000-8000-0000000000b1';
+delete from public.agency_members where agency_id::text like 'a1230000-%';
+delete from public.agencies where id::text like 'a1230000-%';
+delete from auth.users where id::text like 'a1230000-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

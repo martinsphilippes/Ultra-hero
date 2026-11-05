@@ -12305,6 +12305,7 @@ isOneToOne: false
       agency_services_restore: { Args: { p_agency: string }; Returns: number };
       agency_member_sectors_set: { Args: { p_agency: string; p_user: string; p_sectors: string[] }; Returns: string[] };
       agency_deal_open: { Args: { p_agency: string; p_data: Json }; Returns: string };
+      agency_deal_set_brand_visible: { Args: { p_deal: string; p_visible: boolean }; Returns: boolean };
       deal_roadmap_start: { Args: { p_deal: string; p_service: string; p_start?: string | null; p_replace?: boolean }; Returns: number };
       deal_client_set: { Args: { p_deal: string; p_talent: string | null }; Returns: undefined };
       roadmap_recalc: { Args: { p_deal: string }; Returns: number };

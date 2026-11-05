@@ -392,7 +392,9 @@
     "invalid_phone": "Check the mobile: area code + 9 digits, e.g. (11) 91234-5678.",
     "hero_email_taken": "This e-mail already belongs to another hero. Use a different e-mail.",
     "hero_email_mismatch": "This hero has a different access e-mail on file. Fix the e-mail on the record.",
-    "contact_missing": "Add the e-mail and mobile before sending the invitation."
+    "contact_missing": "Add the e-mail and mobile before sending the invitation.",
+    "brand_required": "This deal has no brand to show it to.",
+    "already_confirmed": "Once confirmed, the campaign always stays visible to the brand."
   },
   "casting": {
     "title": "Roster",
@@ -661,7 +663,9 @@
     "inStage": "in this stage {when}",
     "newTitle": "New deal",
     "newDescription": "For a briefing received outside the portal. The brand only sees the deal once the agency confirms.",
-    "noBrands": "Add a served brand before opening a deal."
+    "noBrands": "Add a served brand before opening a deal.",
+    "internal": "Internal",
+    "internalHint": "Hidden from the brand"
   },
   "deal": {
     "created": "Deal opened.",
@@ -718,7 +722,9 @@
       "offer_declined": "The brand declined the counteroffer.",
       "roadmap_started": "Delivery plan created: {param}.",
       "close_cancelled": "Closed with {param} pending deliverable(s) cancelled.",
-      "recurrence_cycle": "Recurring service cycle {param} generated."
+      "recurrence_cycle": "Recurring service cycle {param} generated.",
+      "brand_shown": "Visible to the brand.",
+      "brand_hidden": "Hidden from the brand."
     },
     "stageHint": "Moving stages is manual; going back needs a note. Proposal, confirmation and contract have their own action.",
     "form": {
@@ -954,7 +960,22 @@
     },
     "heroesSavedCreated": "{count, plural, one {Shortlist saved. Record created on your roster.} other {Shortlist saved. # records created on your roster.}}",
     "clientHero": "{name} (client)",
-    "castCount": "{count, plural, =0 {no heroes cast} one {# hero cast} other {# heroes cast}}"
+    "castCount": "{count, plural, =0 {no heroes cast} one {# hero cast} other {# heroes cast}}",
+    "brandVisibility": {
+      "visible": "Visible to the brand",
+      "hidden": "Hidden from the brand",
+      "show": "Show to the brand",
+      "hide": "Hide",
+      "dialogTitle": "Show to the brand?",
+      "dialogHint": "The brand will follow this deal in its portal.",
+      "sees": "They see: title, brief, period, status, the conversation with the agency and documents shared with them.",
+      "notSees": "They don’t see: fees, commission, rates, internal notes, consulted or declined heroes, or the conversation with heroes.",
+      "notify": "The brand gets a notification with the campaign link.",
+      "hideNote": "You can hide it again until the campaign is confirmed.",
+      "back": "Back",
+      "shownToast": "The brand can now see this deal.",
+      "hiddenToast": "Deal hidden from the brand."
+    }
   },
   "agenda": {
     "title": "Calendar",

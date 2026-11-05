@@ -392,7 +392,9 @@
     "invalid_phone": "Revisa el celular: código de área + 9 dígitos, ej.: (11) 91234-5678.",
     "hero_email_taken": "Este e-mail ya es de otro héroe. Usa otro e-mail.",
     "hero_email_mismatch": "Este héroe tiene otro e-mail de acceso registrado. Corrige el e-mail en la ficha.",
-    "contact_missing": "Registra el e-mail y el celular antes de enviar la invitación."
+    "contact_missing": "Registra el e-mail y el celular antes de enviar la invitación.",
+    "brand_required": "Este negocio no tiene marca a quien mostrarlo.",
+    "already_confirmed": "Una vez confirmada, la campaña queda siempre visible para la marca."
   },
   "casting": {
     "title": "Casting",
@@ -661,7 +663,9 @@
     "inStage": "en esta etapa {when}",
     "newTitle": "Nuevo negocio",
     "newDescription": "Para un briefing recibido fuera del portal. La marca solo ve el negocio cuando la agencia confirma.",
-    "noBrands": "Registra una marca atendida antes de abrir un negocio."
+    "noBrands": "Registra una marca atendida antes de abrir un negocio.",
+    "internal": "Interno",
+    "internalHint": "Oculto para la marca"
   },
   "deal": {
     "created": "Negocio abierto.",
@@ -718,7 +722,9 @@
       "offer_declined": "La marca rechazó la contrapropuesta.",
       "roadmap_started": "Plan generado: {param}.",
       "close_cancelled": "Cerrado con {param} entrega(s) pendiente(s) cancelada(s).",
-      "recurrence_cycle": "Ciclo {param} del servicio recurrente generado."
+      "recurrence_cycle": "Ciclo {param} del servicio recurrente generado.",
+      "brand_shown": "Visible para la marca.",
+      "brand_hidden": "Oculto para la marca."
     },
     "stageHint": "Mover de etapa es manual; volver pide una nota. Propuesta, confirmación y contrato tienen acción propia.",
     "form": {
@@ -954,7 +960,22 @@
     },
     "heroesSavedCreated": "{count, plural, one {Elenco guardado. Ficha creada en tu casting.} other {Elenco guardado. # fichas creadas en tu casting.}}",
     "clientHero": "{name} (cliente)",
-    "castCount": "{count, plural, =0 {sin héroes asignados} one {# héroe asignado} other {# héroes asignados}}"
+    "castCount": "{count, plural, =0 {sin héroes asignados} one {# héroe asignado} other {# héroes asignados}}",
+    "brandVisibility": {
+      "visible": "Visible para la marca",
+      "hidden": "Oculto para la marca",
+      "show": "Mostrar a la marca",
+      "hide": "Ocultar",
+      "dialogTitle": "¿Mostrar a la marca?",
+      "dialogHint": "La marca pasa a seguir este negocio en su portal.",
+      "sees": "Ve: título, briefing, período, situación, la conversación con la agencia y los documentos compartidos con ella.",
+      "notSees": "No ve: cachés, comisión, tasas, notas internas, héroes consultados o que rechazaron ni la conversación con los héroes.",
+      "notify": "La marca recibe un aviso con el enlace de la campaña.",
+      "hideNote": "Puedes ocultarlo de nuevo hasta confirmar la campaña.",
+      "back": "Volver",
+      "shownToast": "Ahora la marca ve este negocio.",
+      "hiddenToast": "Negocio oculto para la marca."
+    }
   },
   "agenda": {
     "title": "Agenda",

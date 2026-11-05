@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { KanbanSquare, Plus } from "lucide-react";
+import { EyeOff, KanbanSquare, Plus } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { FilterAnchor } from "@/components/admin-ops/FilterAnchor";
@@ -135,6 +135,17 @@ export default async function PipelinePage({ searchParams }: Props) {
                         <span className="type-caption text-fg-muted">{[dealClientLabel(td, deal.brand.name, deal.clientTalent?.name), deal.service?.name].filter(Boolean).join(" · ")}</span>
                         <span className="flex flex-wrap items-center gap-1.5 type-caption text-fg-muted">
                           {closed ? <StageBadge stage={deal.stage} outcome={deal.outcome} /> : null}
+                          {/* 0121: negócio com marca ainda oculto dela ("Mostrar para a marca" fica na ficha) */}
+                          {!closed && deal.brand.id && !deal.brandVisible ? (
+                            <>
+                              <span className="inline-flex items-center gap-1 text-fg-muted" title={t("internalHint")} data-testid="deal-card-internal">
+                                <EyeOff className="size-3.5" aria-hidden="true" />
+                                <span>{t("internal")}</span>
+                                <span className="sr-only">{t("internalHint")}</span>
+                              </span>
+                              <span aria-hidden="true">·</span>
+                            </>
+                          ) : null}
                           <span>{deal.ownerId ? (names.get(deal.ownerId) ?? t("ownerUnknown")) : t("noOwner")}</span>
                           <span aria-hidden="true">·</span>
                           <span>{t("talents", { count: deal.talentCount })}</span>

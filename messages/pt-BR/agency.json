@@ -392,7 +392,9 @@
     "invalid_phone": "Confira o celular: DDD + 9 dígitos, ex.: (11) 91234-5678.",
     "hero_email_taken": "Este e-mail já é de outro herói. Use outro e-mail.",
     "hero_email_mismatch": "Este herói tem outro e-mail de acesso cadastrado. Corrija o e-mail na ficha.",
-    "contact_missing": "Cadastre o e-mail e o celular antes de enviar o convite."
+    "contact_missing": "Cadastre o e-mail e o celular antes de enviar o convite.",
+    "brand_required": "Este negócio não tem marca para mostrar.",
+    "already_confirmed": "Depois de confirmada, a campanha fica sempre visível para a marca."
   },
   "casting": {
     "title": "Casting",
@@ -661,7 +663,9 @@
     "inStage": "nesta etapa {when}",
     "newTitle": "Novo negócio",
     "newDescription": "Para um briefing recebido fora do portal. A marca só vê o negócio quando a agência confirmar.",
-    "noBrands": "Cadastre uma marca atendida antes de abrir um negócio."
+    "noBrands": "Cadastre uma marca atendida antes de abrir um negócio.",
+    "internal": "Interno",
+    "internalHint": "Oculto da marca"
   },
   "deal": {
     "created": "Negócio aberto.",
@@ -718,7 +722,9 @@
       "offer_declined": "A marca recusou a contraproposta.",
       "roadmap_started": "Roteiro gerado: {param}.",
       "close_cancelled": "Encerrado com {param} entrega(s) pendente(s) cancelada(s).",
-      "recurrence_cycle": "Ciclo {param} do serviço recorrente gerado."
+      "recurrence_cycle": "Ciclo {param} do serviço recorrente gerado.",
+      "brand_shown": "Visível para a marca.",
+      "brand_hidden": "Oculto da marca."
     },
     "stageHint": "Mover de etapa é manual; voltar pede uma nota. Proposta, confirmação e contrato têm ação própria.",
     "form": {
@@ -954,7 +960,22 @@
     },
     "heroesSavedCreated": "{count, plural, one {Elenco salvo. Ficha criada no seu casting.} other {Elenco salvo. # fichas criadas no seu casting.}}",
     "clientHero": "{name} (cliente)",
-    "castCount": "{count, plural, =0 {sem heróis escalados} one {# herói escalado} other {# heróis escalados}}"
+    "castCount": "{count, plural, =0 {sem heróis escalados} one {# herói escalado} other {# heróis escalados}}",
+    "brandVisibility": {
+      "visible": "Visível para a marca",
+      "hidden": "Oculto da marca",
+      "show": "Mostrar para a marca",
+      "hide": "Ocultar",
+      "dialogTitle": "Mostrar para a marca?",
+      "dialogHint": "A marca passa a acompanhar este negócio no portal dela.",
+      "sees": "Ela vê: título, briefing, período, situação, a conversa com a agência e os documentos marcados para ela.",
+      "notSees": "Ela não vê: cachês, comissão, taxas, notas internas, heróis consultados ou que recusaram e a conversa com os heróis.",
+      "notify": "A marca recebe um aviso com o link da campanha.",
+      "hideNote": "Dá para ocultar de novo até confirmar a campanha.",
+      "back": "Voltar",
+      "shownToast": "Agora a marca vê este negócio.",
+      "hiddenToast": "Negócio oculto da marca."
+    }
   },
   "agenda": {
     "title": "Agenda",

@@ -40,8 +40,8 @@
       "body": "Você é responsável por {deal}."
     },
     "campaign_status_changed": {
-      "title": "{status, select, room_opened {Sala do projeto aberta} feedback_requested {Conte como foi} feedback_received {Nova avaliação do cliente} clipping_ready {Clipping do projeto pronto} other {Campanha atualizada}}",
-      "body": "{status, select, room_opened {A sala de {deal} está aberta: conversa, normas e diária num lugar só.} feedback_requested {Dê uma nota de 0 a 10 para {deal}.} feedback_received {O cliente deu nota {step} para {deal}.} clipping_ready {{deal} foi concluído: veja o clipping e o guia de uso.} other {{deal} mudou de situação.}}"
+      "title": "{status, select, room_opened {Sala do projeto aberta} feedback_requested {Conte como foi} feedback_received {Nova avaliação do cliente} clipping_ready {Clipping do projeto pronto} shared {Nova campanha da agência} other {Campanha atualizada}}",
+      "body": "{status, select, room_opened {A sala de {deal} está aberta: conversa, normas e diária num lugar só.} feedback_requested {Dê uma nota de 0 a 10 para {deal}.} feedback_received {O cliente deu nota {step} para {deal}.} clipping_ready {{deal} foi concluído: veja o clipping e o guia de uso.} shared {A agência compartilhou {deal} com você. Acompanhe por aqui.} other {{deal} mudou de situação.}}"
     },
     "proposal_received": {
       "title": "{status, select, accepted {Proposta aceita} countered {Contraproposta da agência} other {Proposta recebida}}",

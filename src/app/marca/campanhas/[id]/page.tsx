@@ -245,7 +245,8 @@ export default async function BrandCampaignPage({ params }: Props) {
                 </Link>
               ) : null}
               <CampaignTools requestId={request.id} title={request.title} canDuplicate={Boolean(ctx.agency)} />
-              {preConfirmation && detail.brandStatus !== "cancelled" ? <CancelCampaignButton requestId={request.id} /> : null}
+              {/* 0121: campanha aberta pela agência (mostrada antes da confirmação) não é cancelada pela marca: a RPC recusa */}
+              {preConfirmation && request.origin === "brand" && detail.brandStatus !== "cancelled" ? <CancelCampaignButton requestId={request.id} /> : null}
             </span>
           ) : null
         }
