@@ -17,8 +17,11 @@ export function ProfileSwitcher({ label, profiles }: { label: string; profiles: 
   const Icon = ICONS[p.key];
   return (
     <div className="flex flex-col gap-3" data-testid="institutional-switcher">
-      <div role="radiogroup" aria-label={label} className="flex flex-wrap items-center gap-2">
-        <span className="type-overline text-fg-muted">{label}</span>
+      {/* "Eu sou" em cima e as quatro opções sempre numa linha só (no celular sem ícone, para caber) */}
+      <span aria-hidden="true" className="type-overline text-fg-muted">
+        {label}
+      </span>
+      <div role="radiogroup" aria-label={label} className="flex flex-nowrap items-center gap-1.5 sm:gap-2">
         {profiles.map((x) => {
           const XIcon = ICONS[x.key];
           const on = x.key === active;
@@ -30,11 +33,11 @@ export function ProfileSwitcher({ label, profiles }: { label: string; profiles: 
               aria-checked={on}
               onClick={() => setActive(x.key)}
               className={cn(
-                "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm font-semibold transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-                on ? "scale-105 border-accent bg-accent text-accent-fg shadow-md" : "border-border bg-surface text-fg hover:bg-surface-hover",
+                "inline-flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-2 text-sm font-semibold transition-all duration-300 sm:flex-none sm:px-3.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+                on ? "border-accent sm:scale-105 bg-accent text-accent-fg shadow-md" : "border-border bg-surface text-fg hover:bg-surface-hover",
               )}
             >
-              <XIcon className="size-4" aria-hidden="true" />
+              <XIcon className="hidden size-4 shrink-0 sm:block" aria-hidden="true" />
               {x.label}
             </button>
           );
