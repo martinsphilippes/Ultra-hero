@@ -148,12 +148,12 @@ describe("cofre da senha (AES-256-GCM com versão de chave)", () => {
 });
 
 describe("validação do cadastro rápido", () => {
-  const ok = { fullName: "  Maria   da Silva ", email: " Maria@Exemplo.COM ", phone: "(11) 91234-5678" };
+  const ok = { fullName: "  Maria   da Silva ", email: " Maria@Exemplo.COM " };
 
-  it("normaliza nome, e-mail e celular", () => {
+  it("normaliza nome e e-mail", () => {
     const r = quickSignupSchema.safeParse(ok);
     expect(r.success).toBe(true);
-    expect(r.data).toEqual({ fullName: "Maria da Silva", email: "maria@exemplo.com", phone: "+5511912345678" });
+    expect(r.data).toEqual({ fullName: "Maria da Silva", email: "maria@exemplo.com" });
     expect(normalizeFullName("  Jose" + "\u0301" + "  Ávila ")).toBe("José Ávila");
   });
 
@@ -164,8 +164,8 @@ describe("validação do cadastro rápido", () => {
   };
 
   it("campos vazios: required", () => {
-    expect(errorsOf({ fullName: "", email: "", phone: "" })).toEqual({ fullName: "required", email: "required", phone: "required" });
-    expect(errorsOf({})).toEqual({ fullName: "required", email: "required", phone: "required" });
+    expect(errorsOf({ fullName: "", email: "" })).toEqual({ fullName: "required", email: "required" });
+    expect(errorsOf({})).toEqual({ fullName: "required", email: "required" });
   });
 
   it.each(["Maria", "M", "Maria 123", "<b>Maria</b> Silva", "https://spam.example Silva", "x".repeat(121) + " Silva"])("nome inválido: %s", (fullName) => {
@@ -176,9 +176,10 @@ describe("validação do cadastro rápido", () => {
     expect(errorsOf({ ...ok, fullName }).fullName).toBeUndefined();
   });
 
-  it("e-mail e celular inválidos", () => {
+  it("e-mail e celular (Perfil › Conta) inválidos; o cadastro ignora celular", () => {
+    expect(quickSignupSchema.safeParse({ ...ok, phone: "123" }).data).not.toHaveProperty("phone");
     expect(errorsOf({ ...ok, email: "maria@" }).email).toBe("invalidEmail");
-    expect(errorsOf({ ...ok, phone: "(11) 3123-4567" }).phone).toBe("phoneInvalid");
+    expect(phoneOnlySchema.safeParse({ phone: "(11) 3123-4567" }).error?.issues[0]?.message).toBe("phoneInvalid");
     expect(phoneOnlySchema.safeParse({ phone: "+55 21 99876-5432" }).data?.phone).toBe("+5521998765432");
   });
 

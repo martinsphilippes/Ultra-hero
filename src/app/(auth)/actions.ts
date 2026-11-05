@@ -34,7 +34,7 @@ const resetSchema = z
   .object({ password: passwordSchema, confirmPassword: z.string({ error: "required" }) })
   .refine((data) => data.password === data.confirmPassword, { error: "passwordsDontMatch", path: ["confirmPassword"] });
 
-const FIELDS: readonly AuthField[] = ["email", "password", "confirmPassword", "fullName", "phone"];
+const FIELDS: readonly AuthField[] = ["email", "password", "confirmPassword", "fullName"];
 
 function toFieldErrors(error: z.ZodError): AuthFieldErrors {
   const errors: AuthFieldErrors = {};
@@ -202,7 +202,7 @@ async function inviteFirstAccess(email: string, password: string): Promise<AuthA
   redirect(home ?? LOGIN_HOME);
 }
 
-// Cadastro rápido (tela inicial): nome completo, e-mail e celular. O servidor gera a senha, cria a conta
+// Cadastro rápido (tela inicial): nome completo e e-mail. O servidor gera a senha, cria a conta
 // já confirmada (service role), entra neste aparelho e devolve a senha UMA vez para a tela "Sua senha".
 // Cria SOMENTE consumidores (papéis vêm do gatilho no banco, que também aplica o kill switch).
 // E-mail já cadastrado: nunca entra sem a senha (seria tomar a conta de alguém digitando o e-mail dela).
@@ -211,9 +211,9 @@ export async function quickSignupAction(_prev: QuickSignupState, formData: FormD
   const honeypot = formData.get(HONEYPOT_FIELD);
   if (typeof honeypot === "string" && honeypot.trim() !== "") return { status: "error", error: "unknown" };
 
-  const parsed = quickSignupSchema.safeParse({ fullName: formData.get("fullName"), email: formData.get("email"), phone: formData.get("phone") });
+  const parsed = quickSignupSchema.safeParse({ fullName: formData.get("fullName"), email: formData.get("email") });
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error) };
-  const { fullName, email, phone } = parsed.data;
+  const { fullName, email } = parsed.data;
 
   if (!hasAdminClient()) return { status: "error", error: "signupUnavailable" };
   const admin = createAdminClient();
@@ -231,7 +231,7 @@ export async function quickSignupAction(_prev: QuickSignupState, formData: FormD
     // sem e-mail de confirmação nem etapa bloqueante (pedido do responsável); o e-mail fica marcado
     // como "não verificado pelo app" até a pessoa provar que é dona dele (Google ou recuperação)
     email_confirm: true,
-    user_metadata: { full_name: fullName, phone },
+    user_metadata: { full_name: fullName },
     app_metadata: { quick_signup: true, quick_signup_unverified: true },
   });
   if (createError || !created.user) {
@@ -252,9 +252,9 @@ export async function quickSignupAction(_prev: QuickSignupState, formData: FormD
   }
   const userId = created.user.id;
 
-  // nome completo e celular no perfil (o gatilho já criou a linha com o nome de exibição)
-  const { error: profileError } = await admin.from("profiles").update({ full_name: fullName, phone_e164: phone }).eq("id", userId);
-  if (profileError && !isMissingSchema(profileError)) console.warn("[quick-signup] perfil sem celular:", profileError.code ?? "erro");
+  // nome completo no perfil (o gatilho já criou a linha com o nome de exibição)
+  const { error: profileError } = await admin.from("profiles").update({ full_name: fullName }).eq("id", userId);
+  if (profileError && !isMissingSchema(profileError)) console.warn("[quick-signup] perfil sem nome completo:", profileError.code ?? "erro");
 
   const stored = await storeGeneratedPassword(admin, userId, password);
 
@@ -344,11 +344,10 @@ export async function profileSignupAction(_prev: AuthActionState, formData: Form
   const parsed = (passwordless ? quickSignupSchema : profileSignupSchema).safeParse({
     fullName: formData.get("fullName"),
     email: formData.get("email"),
-    phone: formData.get("phone"),
     password: formData.get("password"),
   });
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error) };
-  const { fullName, email, phone } = parsed.data;
+  const { fullName, email } = parsed.data;
   const password = "password" in parsed.data && typeof parsed.data.password === "string" ? parsed.data.password : generatePassword();
 
   if (!hasAdminClient()) return { status: "error", error: "signupUnavailable" };
@@ -363,7 +362,7 @@ export async function profileSignupAction(_prev: AuthActionState, formData: Form
     password,
     // como o cadastro rápido: sem etapa bloqueante de confirmação; o e-mail fica "não verificado pelo app"
     email_confirm: true,
-    user_metadata: { full_name: fullName, phone },
+    user_metadata: { full_name: fullName },
     app_metadata: { quick_signup: true, quick_signup_unverified: true, signup_profile: kind },
   });
   if (createError || !created.user) {
@@ -384,8 +383,8 @@ export async function profileSignupAction(_prev: AuthActionState, formData: Form
     if (createError?.status === 429) return { status: "error", error: "tooManyRequests" };
     return { status: "error", error: "unknown" };
   }
-  const { error: profileError } = await admin.from("profiles").update({ full_name: fullName, phone_e164: phone }).eq("id", created.user.id);
-  if (profileError && !isMissingSchema(profileError)) console.warn("[profile-signup] perfil sem celular:", profileError.code ?? "erro");
+  const { error: profileError } = await admin.from("profiles").update({ full_name: fullName }).eq("id", created.user.id);
+  if (profileError && !isMissingSchema(profileError)) console.warn("[profile-signup] perfil sem nome completo:", profileError.code ?? "erro");
   if (passwordless) await storeGeneratedPassword(admin, created.user.id, password);
 
   const supabase = await createClient();

@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // Tela inicial (0103): "Como você vai usar o Ultra?" — Herói, Marca, Agência ou só o app. Cada cartão abre o cadastro
-// do perfil (?perfil=…): o "app" é o cadastro rápido de sempre (nome, e-mail, celular → senha gerada); Herói, Marca e
+// do perfil (?perfil=…): o "app" é o cadastro rápido de sempre (nome, e-mail → senha gerada); Herói, Marca e
 // Agência criam a conta com senha e seguem ao passo a passo do perfil. "Já tenho conta" (Google e senha) fica embaixo
 // em todas as telas; com um perfil escolhido, entrar leva a /comecar/<perfil> (o mesmo fluxo de Configurações).
 export default async function LoginPage({ searchParams }: { searchParams: SearchParams }) {

@@ -15,7 +15,8 @@ test.describe("cadastro rápido na tela inicial", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Entre em segundos" })).toBeVisible();
     await expect(form(page).getByLabel("Nome completo")).toBeVisible();
     await expect(form(page).getByLabel("E-mail")).toBeVisible();
-    await expect(form(page).getByLabel("Celular")).toHaveAttribute("type", "tel");
+    // Apple (5.1.1): o cadastro não pede celular
+    await expect(form(page).locator('input[type="tel"]')).toHaveCount(0);
     await expect(form(page).getByRole("button", { name: "Entrar", exact: true })).toBeVisible();
     // sem campo de senha no cadastro
     await expect(form(page).locator('input[type="password"]')).toHaveCount(0);
@@ -44,32 +45,19 @@ test.describe("cadastro rápido na tela inicial", () => {
     expect(serious, JSON.stringify(serious.map((v) => ({ id: v.id, nodes: v.nodes.length })))).toEqual([]);
   });
 
-  test("validação: obrigatórios, nome e sobrenome, celular com DDD (sem criar conta)", async ({ page }) => {
+  test("validação: obrigatórios, nome e sobrenome (sem criar conta)", async ({ page }) => {
     await page.goto("/login?perfil=app");
     await form(page).getByRole("button", { name: "Entrar", exact: true }).click();
-    await expect(form(page).getByText("Campo obrigatório.")).toHaveCount(3);
+    await expect(form(page).getByText("Campo obrigatório.")).toHaveCount(2);
     await expect(form(page).getByLabel("Nome completo")).toHaveAttribute("aria-invalid", "true");
 
     await form(page).getByLabel("Nome completo").fill("Maria");
     await form(page).getByLabel("E-mail").fill("maria@");
-    await form(page).getByLabel("Celular").pressSequentially("1131234567");
-    await expect(form(page).getByLabel("Celular")).toHaveValue("(11) 31234-567");
     await form(page).getByRole("button", { name: "Entrar", exact: true }).click();
     await expect(form(page).getByText("Digite seu nome e sobrenome (só letras).")).toBeVisible();
     await expect(form(page).getByText("Informe um e-mail válido.")).toBeVisible();
-    await expect(form(page).getByText("Informe um celular com DDD, por exemplo (11) 91234-5678.")).toBeVisible();
     // ainda na tela inicial, nada criado
     await expect(page).toHaveURL(/\/login/);
-  });
-
-  test("máscara do celular aceita +55 e DDD", async ({ page }) => {
-    await page.goto("/login?perfil=app");
-    const phone = form(page).getByLabel("Celular");
-    await phone.pressSequentially("11912345678");
-    await expect(phone).toHaveValue("(11) 91234-5678");
-    await phone.fill("");
-    await phone.pressSequentially("+5521998765432");
-    await expect(phone).toHaveValue("+55 (21) 99876-5432");
   });
 
   test("/signup leva para o cadastro rápido, mantendo o destino", async ({ page }) => {
@@ -135,7 +123,6 @@ test.describe("cadastro rápido de verdade (E2E_QUICK_SIGNUP_REAL=1)", () => {
     test.skip((await page.getByTestId("quick-signup-unavailable").count()) > 0, "cadastro rápido indisponível neste ambiente");
     await form(page).getByLabel("Nome completo").fill("Pessoa Teste E2E");
     await form(page).getByLabel("E-mail").fill(email);
-    await form(page).getByLabel("Celular").pressSequentially("11912345678");
     await form(page).getByRole("button", { name: "Entrar", exact: true }).click();
 
     const panel = page.getByTestId("generated-password");
@@ -153,7 +140,8 @@ test.describe("cadastro rápido de verdade (E2E_QUICK_SIGNUP_REAL=1)", () => {
       await card.getByRole("button", { name: "Mostrar" }).click();
       await expect(page.getByTestId("account-password-value")).toHaveText(password);
     }
-    await expect(page.getByTestId("account-phone").getByRole("textbox")).toHaveValue("(11) 91234-5678");
+    // celular só aqui, opcional e vazio depois do cadastro
+    await expect(page.getByTestId("account-phone").getByRole("textbox")).toHaveValue("");
 
     // mesmo e-mail de novo, noutro navegador: não entra sem a senha
     const other = await browser.newContext();
@@ -161,7 +149,6 @@ test.describe("cadastro rápido de verdade (E2E_QUICK_SIGNUP_REAL=1)", () => {
     await otherPage.goto("/login?perfil=app");
     await form(otherPage).getByLabel("Nome completo").fill("Outra Pessoa");
     await form(otherPage).getByLabel("E-mail").fill(email);
-    await form(otherPage).getByLabel("Celular").pressSequentially("11912345678");
     await form(otherPage).getByRole("button", { name: "Entrar", exact: true }).click();
     await expect(otherPage.getByTestId("quick-signup-error")).toContainText("Este e-mail já tem conta");
     await expect(otherPage).toHaveURL(/\/login/);

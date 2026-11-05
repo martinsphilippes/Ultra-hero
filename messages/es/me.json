@@ -648,7 +648,7 @@
     },
     "store": {
       "title": "Qué guardamos",
-      "item1": "Nombre completo, celular, correo, nombre visible, avatar (foto que subiste, si la hay), idioma, tema y zona horaria. La contraseña generada en el registro rápido se guarda cifrada; solo tú la ves, aquí.",
+      "item1": "Nombre completo, celular (si lo informaste), correo, nombre visible, avatar (foto que subiste, si la hay), idioma, tema y zona horaria. La contraseña generada en el registro rápido se guarda cifrada; solo tú la ves, aquí.",
       "item2": "Intereses, favoritos, listas, progreso, contenidos completados, racha, recordatorios y sus marcas.",
       "item3": "Pedidos de prueba con destino ficticio.",
       "item4": "Eventos de uso sin datos personales y feedback opcional.",

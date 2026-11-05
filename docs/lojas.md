@@ -123,7 +123,7 @@ Roteiro mínimo, nas duas plataformas, contra o endereço de produção:
   "URL de exclusão de dados" = `https://<site>/legal/privacy`. Conferir com `curl -I` que as duas
   respondem 200 **depois** do deploy (no Quantso a URL deu 404 após o merge).
 - **Data Safety**: declarar o que a **web** coleta (a casca não coleta nada próprio), a partir de
-  `docs/privacy-and-retention.md`: nome, e-mail, celular (opcional), foto de perfil, conteúdo gerado
+  `docs/privacy-and-retention.md`: nome, e-mail, celular (opcional, só em Perfil › Conta; o cadastro não pede), foto de perfil, conteúdo gerado
   (posts, receitas, listas), atividade no app (progresso, favoritos, heróis favoritos),
   identificadores de conta e **IDs do dispositivo** (token de push, para "Funcionalidade do app").
   Operadores (Supabase, Vercel, Cloudflare Stream, Expo/FCM/APNs) não contam como "compartilhamento".

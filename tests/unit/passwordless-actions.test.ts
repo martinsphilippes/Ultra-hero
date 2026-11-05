@@ -211,12 +211,12 @@ describe("login só com e-mail", () => {
 });
 
 describe("cadastro sem senha", () => {
-  const profileForm = { profile: "hero", fullName: "Ana Souza", email: "ana@exemplo.com", phone: "(11) 91234-5678" };
+  const profileForm = { profile: "hero", fullName: "Ana Souza", email: "ana@exemplo.com" };
 
   it("perfil (Herói): sem campo senha, cria com senha gerada guardada no cofre, entra e abre o passo a passo", async () => {
     expect(await run(profileSignupAction(idle, form(profileForm)))).toEqual({ redirect: "/primeiro-acesso" });
     expect(state.createUserCalls).toEqual([
-      expect.objectContaining({ email: "ana@exemplo.com", email_confirm: true, user_metadata: { full_name: "Ana Souza", phone: "+5511912345678" } }),
+      expect.objectContaining({ email: "ana@exemplo.com", email_confirm: true, user_metadata: { full_name: "Ana Souza" } }),
     ]);
     expect(state.signInCalls).toHaveLength(1);
     expect(state.storedPasswords).toBe(1);
@@ -233,7 +233,7 @@ describe("cadastro sem senha", () => {
     state.createUserError = { code: "email_exists", status: 422, message: "already registered" };
     state.isAdmin = true;
     expect(await run(profileSignupAction(idle, form(profileForm)))).toEqual({ state: { status: "error", error: "passwordRequired" } });
-    expect(await run(quickSignupAction(idle, form({ fullName: "Ana Souza", email: "ana@exemplo.com", phone: "(11) 91234-5678" })))).toEqual({
+    expect(await run(quickSignupAction(idle, form({ fullName: "Ana Souza", email: "ana@exemplo.com" })))).toEqual({
       state: { status: "error", error: "passwordRequired" },
     });
     expect(state.verifyCalls).toEqual([]);
@@ -241,7 +241,7 @@ describe("cadastro sem senha", () => {
 
   it("cadastro rápido com e-mail já cadastrado: entra e segue ao destino", async () => {
     state.createUserError = { code: "email_exists", status: 422, message: "already registered" };
-    const r = await run(quickSignupAction(idle, form({ fullName: "Ana Souza", email: "ana@exemplo.com", phone: "(11) 91234-5678", next: "/personalities" })));
+    const r = await run(quickSignupAction(idle, form({ fullName: "Ana Souza", email: "ana@exemplo.com", next: "/personalities" })));
     expect(r).toEqual({ redirect: "/personalities" });
   });
 

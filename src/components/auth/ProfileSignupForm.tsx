@@ -2,14 +2,13 @@
 
 import { ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useActionState, useState, type ReactNode } from "react";
+import { useActionState, type ReactNode } from "react";
 import { profileSignupAction } from "@/app/(auth)/actions";
 import { legalRichTags } from "@/components/legal/rich-tags";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import type { BusinessProfile } from "@/lib/auth/profile-signup";
-import { formatBrPhoneInput } from "@/lib/auth/phone";
 import { HONEYPOT_FIELD } from "@/lib/auth/quick-signup";
 import { initialAuthState } from "@/lib/auth/types";
 import { AuthAlert } from "./AuthAlert";
@@ -23,12 +22,11 @@ type Props = {
   defaultEmail?: string;
 };
 
-// Cadastro por perfil (0103): nome, e-mail, celular e senha → a conta nasce, a pessoa entra e segue para o passo a
+// Cadastro por perfil (0103): nome, e-mail e senha → a conta nasce, a pessoa entra e segue para o passo a
 // passo do perfil (Herói, Marca ou Agência). Passo 1 de 2 (o 2 é o /primeiro-acesso).
 export function ProfileSignupForm({ profile, alternatives, passwordless = false, defaultEmail }: Props) {
   const t = useTranslations("auth");
   const [state, formAction, pending] = useActionState(profileSignupAction, initialAuthState);
-  const [phone, setPhone] = useState("");
 
   const fieldErrors = state.status === "error" ? (state.fieldErrors ?? {}) : {};
   const errorKey = state.status === "error" ? state.error : undefined;
@@ -61,19 +59,6 @@ export function ProfileSignupForm({ profile, alternatives, passwordless = false,
 
         <FormField label={t("fields.email")} required error={err(fieldErrors.email)}>
           <Input name="email" type="email" autoComplete="email" inputMode="email" placeholder={t("fields.emailPlaceholder")} maxLength={254} defaultValue={defaultEmail} />
-        </FormField>
-
-        <FormField label={t("quick.phone")} required hint={t("quick.phoneHint")} error={err(fieldErrors.phone)}>
-          <Input
-            name="phone"
-            type="tel"
-            autoComplete="tel-national"
-            inputMode="tel"
-            placeholder={t("quick.phonePlaceholder")}
-            maxLength={22}
-            value={phone}
-            onChange={(e) => setPhone(formatBrPhoneInput(e.target.value))}
-          />
         </FormField>
 
         {!passwordless && (
