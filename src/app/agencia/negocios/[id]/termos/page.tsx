@@ -48,7 +48,7 @@ export default async function DealTermsPage({ params }: Props) {
       {plan && plan.enabled && ["approved", "contracting", "production", "closed"].includes(deal.stage) ? (
         <DealPaymentPlanCard dealId={deal.id} view={plan} today={zonedDayKey(new Date(), ctx.agency.timezone || "America/Sao_Paulo")} />
       ) : null}
-      <TermsPanel portal="agency" dealId={deal.id} stage={deal.stage} terms={exec.data?.terms ?? []} canEdit={canEdit} isManager={isManager} talents={confirmed.map((x) => ({ dealTalentId: x.id, name: x.talent.name, hasLogin: x.talent.hasLogin }))} segments={segmentRows ?? []} />
+      <TermsPanel portal="agency" dealId={deal.id} stage={deal.stage} terms={exec.data?.terms ?? []} canEdit={canEdit} isManager={isManager} talents={confirmed.map((x) => ({ dealTalentId: x.id, name: x.talent.name, hasLogin: x.talent.hasLogin }))} segments={segmentRows ?? []} agencyId={ctx.agency.id} canStoreDocs={!ctx.agency.isDemo} />
     </div>
   );
 }

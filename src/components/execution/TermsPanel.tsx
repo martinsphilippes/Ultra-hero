@@ -14,6 +14,10 @@ import type { Terms } from "@/lib/execution/queries";
 import { EMPTY_RIGHTS, rightsIssue } from "@/lib/offer/rights";
 import { talentOption } from "@/lib/ui/entity";
 import { SignDialog } from "@/components/signature/SignDialog";
+import { TermsImport } from "@/components/execution/TermsImport";
+import { confirmDocumentAction, reserveDocumentAction } from "@/lib/documents/actions";
+import { applySuggestion, type TermsSuggestion } from "@/lib/deals/terms-import";
+import { createClient } from "@/lib/supabase/client";
 
 type Portal = "agency" | "brand" | "office";
 type Props = {
@@ -32,6 +36,9 @@ type Props = {
   canAccept?: boolean;
   /** Agência: segmentos do casting (exclusividade por segmento). */
   segments?: { id: string; name: string }[];
+  /** Agência: para guardar o documento importado nos documentos do negócio (sem isso, a opção não aparece). */
+  agencyId?: string | null;
+  canStoreDocs?: boolean;
 };
 
 const STATUS_VARIANT = { draft: "neutral", sent: "warning", accepted: "success", superseded: "neutral", withdrawn: "neutral" } as const;
@@ -39,7 +46,7 @@ const STATUS_VARIANT = { draft: "neutral", sent: "warning", accepted: "success",
 // Termos: resumo de condições por versão, envio, aceites por parte e contratação confirmada. 0084: a marca (dono) e o
 // influenciador aceitam por assinatura eletrônica simples (nome + CPF/CNPJ, hash do texto exato) com comprovante; a
 // agência ainda registra aceite recebido por fora (com nota).
-export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, terms, canEdit = false, isManager = false, talents = [], canAccept = false, segments = [] }: Props) {
+export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, terms, canEdit = false, isManager = false, talents = [], canAccept = false, segments = [], agencyId = null, canStoreDocs = false }: Props) {
   const t = useTranslations("commercial.terms");
   const tr = useTranslations("offer.rights");
   const ta = useTranslations("agency.terms");
@@ -165,7 +172,7 @@ export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, ter
       {portal === "agency" ? (
         <>
           {draft ? block(draft, t("draftLabel", { n: draft.version })) : null}
-          {canWrite ? <TermsForm dealId={dealId} initial={draft ?? live ?? null} draftId={draft?.id ?? null} segments={segments} /> : null}
+          {canWrite ? <TermsForm dealId={dealId} initial={draft ?? live ?? null} draftId={draft?.id ?? null} segments={segments} storeAgencyId={canStoreDocs ? agencyId : null} /> : null}
           {canWrite && isManager && draft ? (
             <div className="flex flex-wrap gap-2">
               <Button type="button" size="sm" leadingIcon={<Send />} onClick={() => send(draft.id)} loading={pending} data-testid="terms-send">
@@ -228,14 +235,38 @@ export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, ter
   );
 }
 
-function TermsForm({ dealId, initial, draftId, segments }: { dealId: string; initial: Terms | null; draftId: string | null; segments: { id: string; name: string }[] }) {
+function TermsForm({ dealId, initial, draftId, segments, storeAgencyId }: { dealId: string; initial: Terms | null; draftId: string | null; segments: { id: string; name: string }[]; storeAgencyId: string | null }) {
   const ta = useTranslations("agency.terms");
+  const ti = useTranslations("agency.terms.import");
   const te = useTranslations("offer.editor");
   const [rights, setRights] = useState(initial?.rights ?? EMPTY_RIGHTS);
   const { toast } = useToast();
   const [v, setV] = useState({ summary: initial?.summary ?? "", usageRights: initial?.usageRights ?? "", exclusivity: initial?.exclusivity ?? "", validUntil: initial?.validUntil ?? "" });
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  // documento importado (05/11): o PDF pode ir para os documentos do negócio quando o rascunho é salvo
+  const [imported, setImported] = useState<File | null>(null);
+  const [keepFile, setKeepFile] = useState(true);
+  // remonta o editor de direitos depois de importar (ele guarda o texto dos concorrentes em estado próprio)
+  const [rightsKey, setRightsKey] = useState(0);
+  function applyImport(summary: string, suggestion: TermsSuggestion, file: File) {
+    setV((cur) => ({ ...cur, summary }));
+    setRights((cur) => applySuggestion(cur, suggestion));
+    setRightsKey((k) => k + 1);
+    setImported(file);
+    setKeepFile(true);
+  }
+  /** Guarda o PDF importado nos documentos do negócio (só agência vê: sem compartilhar com marca/herói). */
+  async function storeImported(file: File): Promise<boolean> {
+    if (!storeAgencyId || file.type !== "application/pdf") return false;
+    const revalidate = `/agencia/negocios/${dealId}/documentos`;
+    const reserved = await reserveDocumentAction({ agencyId: storeAgencyId, scopeType: "deal", scopeId: dealId, kind: "other", title: file.name.slice(0, 120), mimeType: "application/pdf", sizeBytes: file.size, shareTalent: false, shareBrand: false, revalidate });
+    if (!reserved.ok || !reserved.id || !reserved.path) return false;
+    const { error: uploadError } = await createClient().storage.from("agency-docs").upload(reserved.path, file, { upsert: false, contentType: "application/pdf" });
+    if (uploadError) return false;
+    const confirmed = await confirmDocumentAction({ id: reserved.id, revalidate });
+    return confirmed.ok;
+  }
   function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
@@ -246,15 +277,28 @@ function TermsForm({ dealId, initial, draftId, segments }: { dealId: string; ini
       const result = await saveTermsAction({ dealId, ...v, rights: { ...rights, category: rights.category.trim() } });
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });
+      if (imported && keepFile && storeAgencyId && imported.type === "application/pdf") {
+        const stored = await storeImported(imported);
+        toast({ title: stored ? ti("fileStored") : ti("fileStoreFailed"), variant: stored ? "success" : "error" });
+        if (stored) setImported(null);
+      }
     });
   }
   return (
     <form onSubmit={submit} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4" noValidate data-testid="terms-form">
       <h3 className="text-sm font-semibold text-fg">{draftId ? ta("editDraft") : initial ? ta("newVersion") : ta("newTerms")}</h3>
+      <TermsImport
+        summary={v.summary}
+        segments={segments}
+        disabled={pending}
+        onApply={applyImport}
+        keepFile={storeAgencyId ? keepFile : null}
+        onKeepFileChange={setKeepFile}
+      />
       <FormField label={ta("summary")} hint={ta("summaryHint")} required>
         <Textarea value={v.summary} maxLength={4000} rows={5} onChange={(e) => setV({ ...v, summary: e.target.value })} disabled={pending} />
       </FormField>
-      <RightsEditor value={rights} onChange={setRights} segments={segments} disabled={pending} />
+      <RightsEditor key={rightsKey} value={rights} onChange={setRights} segments={segments} disabled={pending} />
       <div className="grid gap-3 sm:grid-cols-2">
         <FormField label={ta("usageRights")}>
           <Textarea value={v.usageRights} maxLength={1000} rows={2} onChange={(e) => setV({ ...v, usageRights: e.target.value })} disabled={pending} />
