@@ -648,7 +648,7 @@
     },
     "store": {
       "title": "O que guardamos",
-      "item1": "Nome completo, celular, e-mail, nome exibido, avatar (foto enviada por você, se houver), idioma, tema e fuso horário. A senha gerada no cadastro rápido fica cifrada; só você a vê, aqui.",
+      "item1": "Nome completo, celular (se informado), e-mail, nome exibido, avatar (foto enviada por você, se houver), idioma, tema e fuso horário. A senha gerada no cadastro rápido fica cifrada; só você a vê, aqui.",
       "item2": "Interesses, favoritos, listas, progresso, conclusões, sequência, lembretes e marcações.",
       "item3": "Pedidos de teste com destino fictício.",
       "item4": "Eventos de uso sem dados pessoais e feedback opcional.",

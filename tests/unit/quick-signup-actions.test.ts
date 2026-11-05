@@ -132,7 +132,7 @@ function form(values: Record<string, string>) {
   for (const [k, v] of Object.entries(values)) fd.set(k, v);
   return fd;
 }
-const valid = { fullName: "Maria da Silva", email: "Maria@Exemplo.com", phone: "(11) 91234-5678", next: "/personalities" };
+const valid = { fullName: "Maria da Silva", email: "Maria@Exemplo.com", next: "/personalities" };
 const idle = { status: "idle" } as const;
 
 let logs: string[] = [];
@@ -169,7 +169,7 @@ afterEach(() => {
 });
 
 describe("quickSignupAction", () => {
-  it("cria a conta confirmada, guarda nome/celular e a senha cifrada, entra e segura a tela da senha", async () => {
+  it("cria a conta confirmada, guarda o nome e a senha cifrada, entra e segura a tela da senha", async () => {
     const result = await quickSignupAction(idle, form(valid));
     expect(result.status).toBe("created");
     if (result.status !== "created") return;
@@ -181,11 +181,11 @@ describe("quickSignupAction", () => {
       email: "maria@exemplo.com",
       password: result.password,
       email_confirm: true,
-      user_metadata: { full_name: "Maria da Silva", phone: "+5511912345678" },
+      user_metadata: { full_name: "Maria da Silva" },
       app_metadata: { quick_signup: true, quick_signup_unverified: true },
     });
     const profile = state.ops.find((o) => o.table === "profiles" && o.op === "update");
-    expect(profile?.args[0]).toEqual({ full_name: "Maria da Silva", phone_e164: "+5511912345678" });
+    expect(profile?.args[0]).toEqual({ full_name: "Maria da Silva" });
     expect(profile?.filters).toContainEqual(["id", NEW_ID]);
 
     // senha guardada só cifrada, e abre com a chave para a própria pessoa
@@ -234,8 +234,8 @@ describe("quickSignupAction", () => {
   });
 
   it("validação antes de tudo", async () => {
-    const result = await quickSignupAction(idle, form({ fullName: "Maria", email: "x", phone: "123" }));
-    expect(result).toEqual({ status: "error", fieldErrors: { fullName: "fullNameInvalid", email: "invalidEmail", phone: "phoneInvalid" } });
+    const result = await quickSignupAction(idle, form({ fullName: "Maria", email: "x" }));
+    expect(result).toEqual({ status: "error", fieldErrors: { fullName: "fullNameInvalid", email: "invalidEmail" } });
     expect(state.ops).toEqual([]);
   });
 

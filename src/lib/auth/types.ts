@@ -1,5 +1,5 @@
 // Estado devolvido pelas server actions de autenticação (chaves de tradução, nunca texto).
-export type AuthField = "email" | "password" | "confirmPassword" | "fullName" | "phone";
+export type AuthField = "email" | "password" | "confirmPassword" | "fullName";
 
 export type AuthFieldErrors = Partial<Record<AuthField, string>>;
 

@@ -7,7 +7,7 @@
 | Dado | Onde | Finalidade | Base (a confirmar juridicamente) |
 |---|---|---|---|
 | E-mail, nome exibido, avatar (ilustração ou foto enviada), idioma, tema, fuso | `auth.users`, `profiles` | conta, personalização | execução do serviço |
-| Nome completo e celular (cadastro rápido, 0046; celular opcional para quem entra com Google) | `profiles.full_name`, `profiles.phone_e164` (E.164) e `auth.users.raw_user_meta_data` | conta, contato da conta | execução do serviço |
+| Nome completo (cadastro rápido, 0046) e celular (opcional, só se a pessoa informar em Perfil › Conta; o cadastro não pede) | `profiles.full_name`, `profiles.phone_e164` (E.164) e `auth.users.raw_user_meta_data` (nome; contas antigas podem ter o celular) | conta, contato da conta | execução do serviço |
 | Senha gerada no cadastro rápido | `user_generated_passwords` (0046): texto cifrado AES-256-GCM + versão da chave; chave `ACCOUNT_PASSWORD_KEY_V{n}` só na Vercel; RLS sem política e sem grant para anon/authenticated (só o service role); decifrada só para a própria pessoa em Perfil › Conta | a pessoa consultar e trocar a própria senha | execução do serviço |
 | Tentativas de cadastro rápido | `quick_signup_attempts` (0046): HMAC do IP e do e-mail, data | limitar abuso (10/h por IP, 3/h por e-mail) | legítimo interesse (a confirmar) |
 | Foto de perfil (opcional; 512×512 gerada no aparelho, sem EXIF/GPS) | bucket **público** `avatars` no Supabase Storage (`<user_id>/<uuid>.webp\|jpg`, não listável); URL em `profiles.avatar_url` e, se herói, `creator_profiles.avatar_url`; data/tamanho/tipo de cada envio em `avatar_uploads` (0031) | personalização; identificação pública do herói; cota de 20 envios/24 h | consentimento (a pessoa escolhe enviar; a confirmar) |

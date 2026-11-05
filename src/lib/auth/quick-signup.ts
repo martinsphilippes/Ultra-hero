@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { normalizeBrMobile } from "./phone";
 
-// Cadastro rápido (nome completo, e-mail, celular). Módulo puro: validação e regras de limite,
+// Cadastro rápido (nome completo, e-mail). Módulo puro: validação e regras de limite,
 // usados pela server action e pelos testes. Mensagens = CHAVES de auth.errors.*.
 
 /** Campo-isca: invisível para pessoas; robôs que preenchem tudo caem aqui. */
@@ -58,8 +58,8 @@ const phoneSchema = z
     return e164;
   });
 
-export const quickSignupSchema = z.object({ fullName: fullNameSchema, email: emailSchema, phone: phoneSchema });
+export const quickSignupSchema = z.object({ fullName: fullNameSchema, email: emailSchema });
 export type QuickSignupInput = z.infer<typeof quickSignupSchema>;
 
-/** Só o celular (Perfil › Conta). */
+/** Só o celular (Perfil › Conta, opcional; o cadastro não pede). */
 export const phoneOnlySchema = z.object({ phone: phoneSchema });

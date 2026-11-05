@@ -47,15 +47,15 @@ describe("perfis da tela de entrada", () => {
 });
 
 describe("formulário do cadastro por perfil", () => {
-  const ok = { fullName: "Maria  Souza", email: " Maria@Exemplo.com ", phone: "(11) 91234-5678", password: "senha-forte" };
+  const ok = { fullName: "Maria  Souza", email: " Maria@Exemplo.com ", password: "senha-forte" };
 
-  it("aceita e normaliza (nome, e-mail minúsculo, celular E.164)", () => {
+  it("aceita e normaliza (nome, e-mail minúsculo)", () => {
     const r = profileSignupSchema.safeParse(ok);
     expect(r.success).toBe(true);
-    if (r.success) expect(r.data).toEqual({ fullName: "Maria Souza", email: "maria@exemplo.com", phone: "+5511912345678", password: "senha-forte" });
+    if (r.success) expect(r.data).toEqual({ fullName: "Maria Souza", email: "maria@exemplo.com", password: "senha-forte" });
   });
 
-  it("recusa senha curta/longa, nome sem sobrenome, e-mail e celular inválidos (chaves de auth.errors)", () => {
+  it("recusa senha curta/longa, nome sem sobrenome, e-mail inválido (chaves de auth.errors)", () => {
     const issues = (input: object) => {
       const r = profileSignupSchema.safeParse({ ...ok, ...input });
       return r.success ? [] : r.error.issues.map((i) => i.message);
@@ -64,7 +64,6 @@ describe("formulário do cadastro por perfil", () => {
     expect(issues({ password: "x".repeat(73) })).toEqual(["passwordTooLong"]);
     expect(issues({ fullName: "Maria" })).toEqual(["fullNameInvalid"]);
     expect(issues({ email: "maria@" })).toEqual(["invalidEmail"]);
-    expect(issues({ phone: "1234" })).toEqual(["phoneInvalid"]);
     expect(issues({ password: undefined })).toEqual(["required"]);
   });
 
