@@ -898,7 +898,11 @@
    traço terracota sob os títulos e formas orgânicas discretas no canto do fundo.
    Paleta: oliva #7B7D57, petróleo #2A4954, bege dourado #B4A17F, mostarda #BA8C41, terracota #A95935,
    grafite azulado #30363F, creme #F6F1E8. Tons de texto escurecidos/clareados onde o AA exige. */
-[data-template="perspectivas"] {
+[data-template="perspectivas"],
+[data-template="perspectivas-petroleo"],
+[data-template="perspectivas-oliva"],
+[data-template="perspectivas-mostarda"],
+[data-template="perspectivas-grafite"] {
   --uh-chrome-bg: var(--uh-bg);
   --uh-chrome-fg: var(--uh-fg);
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -952,6 +956,12 @@
 }
 [data-template="perspectivas"][data-theme="light"] {
   color-scheme: light;
+  --uh-shape-1: #7b7d57;
+  --uh-shape-2: #a95935;
+  --uh-shape-3: #b4a17f;
+  --uh-inverse-accent: #ddb06a;
+  --uh-inverse-accent-hover: #e6c084;
+  --uh-inverse-accent-fg: #1d2127;
   --uh-bg: #f6f1e8;
   --uh-surface: #fbf8f2;
   --uh-surface-elevated: #ffffff;
@@ -993,6 +1003,12 @@
 }
 [data-template="perspectivas"][data-theme="dark"] {
   color-scheme: dark;
+  --uh-shape-1: #7b7d57;
+  --uh-shape-2: #a95935;
+  --uh-shape-3: #b4a17f;
+  --uh-inverse-accent: #ddb06a;
+  --uh-inverse-accent-hover: #e6c084;
+  --uh-inverse-accent-fg: #1d2127;
   --uh-bg: #1d2127;
   --uh-surface: #262b32;
   --uh-surface-elevated: #2d333b;
@@ -1033,40 +1049,40 @@
   --uh-title-gradient: linear-gradient(100deg, #c2c592 0%, #e9a17e 38%, #ddb06a 64%, #8fbccb 100%);
 }
 /* formas orgânicas no canto inferior esquerdo do fundo (como na referência), bem discretas e fixas */
-[data-template="perspectivas"] body {
+[data-template^="perspectivas"] body {
   background-image:
-    radial-gradient(38rem 30rem at -8% 108%, color-mix(in oklab, #7b7d57 16%, transparent) 0 55%, transparent 56%),
-    radial-gradient(30rem 24rem at 14% 112%, color-mix(in oklab, #a95935 14%, transparent) 0 55%, transparent 56%),
-    radial-gradient(26rem 20rem at 28% 116%, color-mix(in oklab, #b4a17f 16%, transparent) 0 55%, transparent 56%);
+    radial-gradient(38rem 30rem at -8% 108%, color-mix(in oklab, var(--uh-shape-1) 16%, transparent) 0 55%, transparent 56%),
+    radial-gradient(30rem 24rem at 14% 112%, color-mix(in oklab, var(--uh-shape-2) 14%, transparent) 0 55%, transparent 56%),
+    radial-gradient(26rem 20rem at 28% 116%, color-mix(in oklab, var(--uh-shape-3) 16%, transparent) 0 55%, transparent 56%);
   background-attachment: fixed;
   background-repeat: no-repeat;
 }
-[data-template="perspectivas"] .uh-header {
+[data-template^="perspectivas"] .uh-header {
   border-bottom-color: var(--uh-border);
   background-color: color-mix(in oklab, var(--uh-bg) 92%, transparent);
 }
-[data-template="perspectivas"] .uh-bottomnav [aria-current="page"] {
+[data-template^="perspectivas"] .uh-bottomnav [aria-current="page"] {
   color: var(--uh-accent-text);
 }
-[data-template="perspectivas"] .uh-nav-indicator {
+[data-template^="perspectivas"] .uh-nav-indicator {
   height: 2px;
   width: 1.75rem;
   border-radius: 0;
   background-color: var(--uh-accent);
 }
-[data-template="perspectivas"] .uh-card {
+[data-template^="perspectivas"] .uh-card {
   border-color: var(--uh-border);
   box-shadow: var(--uh-shadow-md);
 }
 /* título da página: serifa nas cores da paleta + traço terracota curto abaixo */
-[data-template="perspectivas"] .uh-page-title {
+[data-template^="perspectivas"] .uh-page-title {
   background-image: var(--uh-title-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: var(--uh-fg);
 }
-[data-template="perspectivas"] .uh-page-title::after {
+[data-template^="perspectivas"] .uh-page-title::after {
   content: "";
   display: block;
   width: 2.5rem;
@@ -1075,24 +1091,24 @@
   background-color: var(--uh-accent);
 }
 @media (forced-colors: active) {
-  [data-template="perspectivas"] .uh-page-title {
+  [data-template^="perspectivas"] .uh-page-title {
     background-image: none;
     -webkit-text-fill-color: currentColor;
   }
 }
-[data-template="perspectivas"] .uh-tab[aria-selected="true"]::after {
+[data-template^="perspectivas"] .uh-tab[aria-selected="true"]::after {
   height: 2px;
   border-radius: 0;
 }
-[data-template="perspectivas"] .uh-inverse {
-  --uh-accent: #ddb06a;
-  --uh-accent-hover: #e6c084;
-  --uh-accent-fg: #1d2127;
+[data-template^="perspectivas"] .uh-inverse {
+  --uh-accent: var(--uh-inverse-accent);
+  --uh-accent-hover: var(--uh-inverse-accent-hover);
+  --uh-accent-fg: var(--uh-inverse-accent-fg);
 }
-[data-template="perspectivas"] .uh-on-accent {
+[data-template^="perspectivas"] .uh-on-accent {
   color: var(--uh-accent-fg);
 }
-[data-template="perspectivas"] .uh-post-type {
+[data-template^="perspectivas"] .uh-post-type {
   font-family: var(--uh-font-label);
   text-transform: uppercase;
   letter-spacing: var(--uh-overline-tracking);
@@ -1100,23 +1116,407 @@
   font-weight: var(--uh-overline-weight);
   color: var(--uh-accent-text);
 }
-[data-template="perspectivas"] .uh-post-title {
+[data-template^="perspectivas"] .uh-post-title {
   font-family: var(--uh-font-heading);
   font-size: 1.375rem;
   line-height: 1.15;
   font-weight: 500;
 }
 @media (max-width: 767px) {
-  [data-template="perspectivas"] .uh-post-media {
+  [data-template^="perspectivas"] .uh-post-media {
     margin-inline: var(--spacing-gutter);
     border-radius: var(--radius-xl);
   }
 }
-[data-template="perspectivas"] .uh-tile-grid {
+[data-template^="perspectivas"] .uh-tile-grid {
   gap: 0.375rem;
   padding-inline: 0.375rem;
 }
-[data-template="perspectivas"] .uh-tile-grid > * {
+[data-template^="perspectivas"] .uh-tile-grid > * {
   overflow: hidden;
   border-radius: var(--radius-lg);
+}
+
+/* ===================================== 7–10 · Ultra Perspectivas: variações de cor ====
+   Mesma paleta Perspectivas e mesmo desenho do tema 6 (serifa, pílulas, formas no fundo); muda só a ordem das cores:
+   qual cor comanda botões, fundo, títulos e formas. Contraste AA conferido no claro e no escuro. */
+/* perspectivas-petroleo: Petróleo no comando: botões e destaques em petróleo; no escuro, fundo petróleo profundo com mostarda. */
+[data-template="perspectivas-petroleo"][data-theme="light"] {
+  color-scheme: light;
+  --uh-shape-1: #2a4954;
+  --uh-shape-2: #7b7d57;
+  --uh-shape-3: #ba8c41;
+  --uh-inverse-accent: #ddb06a;
+  --uh-inverse-accent-hover: #e6c084;
+  --uh-inverse-accent-fg: #12232a;
+  --uh-bg: #f3efe6;
+  --uh-surface: #faf7f1;
+  --uh-surface-elevated: #ffffff;
+  --uh-surface-hover: #e9e3d6;
+  --uh-border: rgba(48, 54, 63, 0.11);
+  --uh-border-strong: rgba(48, 54, 63, 0.26);
+  --uh-fg: #1f3640;
+  --uh-fg-muted: #4f5b60;
+  --uh-fg-subtle: #5d676a;
+  --uh-accent: #2a4954;
+  --uh-accent-hover: #213a43;
+  --uh-accent-fg: #ffffff;
+  --uh-accent-text: #2a4954;
+  --uh-accent-soft: rgba(42, 73, 84, 0.12);
+  --uh-success: #4f5a2c;
+  --uh-success-soft: rgba(123, 125, 87, 0.16);
+  --uh-warning: #7f5a1c;
+  --uh-warning-soft: rgba(186, 140, 65, 0.2);
+  --uh-danger: #a62a1f;
+  --uh-danger-fg: #ffffff;
+  --uh-danger-soft: rgba(166, 42, 31, 0.09);
+  --uh-info: #2a4954;
+  --uh-info-soft: rgba(42, 73, 84, 0.1);
+  --uh-focus: #a95935;
+  --uh-overlay: rgba(48, 54, 63, 0.45);
+  --uh-pillar-routine: #2a4954;
+  --uh-pillar-routine-soft: #dfe7e8;
+  --uh-pillar-training: #8e4a2b;
+  --uh-pillar-training-soft: #f3e3d9;
+  --uh-pillar-nutrition: #565834;
+  --uh-pillar-nutrition-soft: #e8e8da;
+  --uh-pillar-gastronomy: #7f5a1c;
+  --uh-pillar-gastronomy-soft: #f3e8d2;
+  --uh-shadow-sm: 0 1px 2px rgba(48, 54, 63, 0.06);
+  --uh-shadow-md: 0 14px 34px -18px rgba(48, 54, 63, 0.3);
+  --uh-shadow-lg: 0 26px 60px -26px rgba(48, 54, 63, 0.38);
+  --uh-shadow-glow: 0 0 0 1px rgba(42, 73, 84, 0.24), 0 14px 34px -16px rgba(42, 73, 84, 0.3);
+  --uh-title-gradient: linear-gradient(100deg, #2a4954 0%, #565834 36%, #7f5a1c 66%, #8e4a2b 100%);
+}
+[data-template="perspectivas-petroleo"][data-theme="dark"] {
+  color-scheme: dark;
+  --uh-shape-1: #2a4954;
+  --uh-shape-2: #7b7d57;
+  --uh-shape-3: #ba8c41;
+  --uh-inverse-accent: #ddb06a;
+  --uh-inverse-accent-hover: #e6c084;
+  --uh-inverse-accent-fg: #12232a;
+  --uh-bg: #12232a;
+  --uh-surface: #1a2e36;
+  --uh-surface-elevated: #20363f;
+  --uh-surface-hover: #284049;
+  --uh-border: rgba(246, 241, 232, 0.1);
+  --uh-border-strong: rgba(246, 241, 232, 0.24);
+  --uh-fg: #f6f1e8;
+  --uh-fg-muted: #c9c4b8;
+  --uh-fg-subtle: #b3ae9f;
+  --uh-accent: #ddb06a;
+  --uh-accent-hover: #e6c084;
+  --uh-accent-fg: #12232a;
+  --uh-accent-text: #e6c084;
+  --uh-accent-soft: rgba(221, 176, 106, 0.15);
+  --uh-success: #c2c592;
+  --uh-success-soft: rgba(194, 197, 146, 0.15);
+  --uh-warning: #ddb06a;
+  --uh-warning-soft: rgba(221, 176, 106, 0.15);
+  --uh-danger: #f09a8c;
+  --uh-danger-fg: #12232a;
+  --uh-danger-soft: rgba(240, 154, 140, 0.14);
+  --uh-info: #8fbccb;
+  --uh-info-soft: rgba(143, 188, 203, 0.14);
+  --uh-focus: #ddb06a;
+  --uh-overlay: rgba(10, 12, 15, 0.66);
+  --uh-pillar-routine: #8fbccb;
+  --uh-pillar-routine-soft: rgba(143, 188, 203, 0.15);
+  --uh-pillar-training: #e9a17e;
+  --uh-pillar-training-soft: rgba(233, 161, 126, 0.15);
+  --uh-pillar-nutrition: #c2c592;
+  --uh-pillar-nutrition-soft: rgba(194, 197, 146, 0.15);
+  --uh-pillar-gastronomy: #ddb06a;
+  --uh-pillar-gastronomy-soft: rgba(221, 176, 106, 0.15);
+  --uh-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --uh-shadow-md: 0 14px 34px -18px rgba(0, 0, 0, 0.6);
+  --uh-shadow-lg: 0 26px 60px -26px rgba(0, 0, 0, 0.7);
+  --uh-shadow-glow: 0 0 0 1px rgba(221, 176, 106, 0.3), 0 14px 34px -16px rgba(221, 176, 106, 0.25);
+  --uh-title-gradient: linear-gradient(100deg, #8fbccb 0%, #c2c592 36%, #ddb06a 66%, #e9a17e 100%);
+}
+/* perspectivas-oliva: Oliva no comando: fundo creme esverdeado, botões oliva e detalhes em petróleo e mostarda. */
+[data-template="perspectivas-oliva"][data-theme="light"] {
+  color-scheme: light;
+  --uh-shape-1: #7b7d57;
+  --uh-shape-2: #2a4954;
+  --uh-shape-3: #b4a17f;
+  --uh-inverse-accent: #c2c592;
+  --uh-inverse-accent-hover: #d0d3a6;
+  --uh-inverse-accent-fg: #1c1d16;
+  --uh-bg: #f1efe3;
+  --uh-surface: #f9f8f0;
+  --uh-surface-elevated: #ffffff;
+  --uh-surface-hover: #e7e4d3;
+  --uh-border: rgba(48, 54, 63, 0.11);
+  --uh-border-strong: rgba(48, 54, 63, 0.26);
+  --uh-fg: #2f3226;
+  --uh-fg-muted: #55574a;
+  --uh-fg-subtle: #606256;
+  --uh-accent: #5f6139;
+  --uh-accent-hover: #4d4f2d;
+  --uh-accent-fg: #ffffff;
+  --uh-accent-text: #565834;
+  --uh-accent-soft: rgba(95, 97, 57, 0.12);
+  --uh-success: #4f5a2c;
+  --uh-success-soft: rgba(123, 125, 87, 0.16);
+  --uh-warning: #7f5a1c;
+  --uh-warning-soft: rgba(186, 140, 65, 0.2);
+  --uh-danger: #a62a1f;
+  --uh-danger-fg: #ffffff;
+  --uh-danger-soft: rgba(166, 42, 31, 0.09);
+  --uh-info: #2a4954;
+  --uh-info-soft: rgba(42, 73, 84, 0.1);
+  --uh-focus: #2a4954;
+  --uh-overlay: rgba(48, 54, 63, 0.45);
+  --uh-pillar-routine: #2a4954;
+  --uh-pillar-routine-soft: #dfe7e8;
+  --uh-pillar-training: #8e4a2b;
+  --uh-pillar-training-soft: #f3e3d9;
+  --uh-pillar-nutrition: #565834;
+  --uh-pillar-nutrition-soft: #e8e8da;
+  --uh-pillar-gastronomy: #7f5a1c;
+  --uh-pillar-gastronomy-soft: #f3e8d2;
+  --uh-shadow-sm: 0 1px 2px rgba(48, 54, 63, 0.06);
+  --uh-shadow-md: 0 14px 34px -18px rgba(48, 54, 63, 0.3);
+  --uh-shadow-lg: 0 26px 60px -26px rgba(48, 54, 63, 0.38);
+  --uh-shadow-glow: 0 0 0 1px rgba(95, 97, 57, 0.24), 0 14px 34px -16px rgba(95, 97, 57, 0.3);
+  --uh-title-gradient: linear-gradient(100deg, #565834 0%, #2a4954 38%, #7f5a1c 68%, #8e4a2b 100%);
+}
+[data-template="perspectivas-oliva"][data-theme="dark"] {
+  color-scheme: dark;
+  --uh-shape-1: #7b7d57;
+  --uh-shape-2: #2a4954;
+  --uh-shape-3: #b4a17f;
+  --uh-inverse-accent: #c2c592;
+  --uh-inverse-accent-hover: #d0d3a6;
+  --uh-inverse-accent-fg: #1c1d16;
+  --uh-bg: #1c1d16;
+  --uh-surface: #25271e;
+  --uh-surface-elevated: #2c2e24;
+  --uh-surface-hover: #34372b;
+  --uh-border: rgba(243, 240, 226, 0.1);
+  --uh-border-strong: rgba(243, 240, 226, 0.24);
+  --uh-fg: #f3f0e2;
+  --uh-fg-muted: #c9c6b2;
+  --uh-fg-subtle: #aeab98;
+  --uh-accent: #c2c592;
+  --uh-accent-hover: #d0d3a6;
+  --uh-accent-fg: #1c1d16;
+  --uh-accent-text: #c9cc9b;
+  --uh-accent-soft: rgba(194, 197, 146, 0.15);
+  --uh-success: #c2c592;
+  --uh-success-soft: rgba(194, 197, 146, 0.15);
+  --uh-warning: #ddb06a;
+  --uh-warning-soft: rgba(221, 176, 106, 0.15);
+  --uh-danger: #f09a8c;
+  --uh-danger-fg: #1c1d16;
+  --uh-danger-soft: rgba(240, 154, 140, 0.14);
+  --uh-info: #8fbccb;
+  --uh-info-soft: rgba(143, 188, 203, 0.14);
+  --uh-focus: #ddb06a;
+  --uh-overlay: rgba(10, 12, 15, 0.66);
+  --uh-pillar-routine: #8fbccb;
+  --uh-pillar-routine-soft: rgba(143, 188, 203, 0.15);
+  --uh-pillar-training: #e9a17e;
+  --uh-pillar-training-soft: rgba(233, 161, 126, 0.15);
+  --uh-pillar-nutrition: #c2c592;
+  --uh-pillar-nutrition-soft: rgba(194, 197, 146, 0.15);
+  --uh-pillar-gastronomy: #ddb06a;
+  --uh-pillar-gastronomy-soft: rgba(221, 176, 106, 0.15);
+  --uh-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --uh-shadow-md: 0 14px 34px -18px rgba(0, 0, 0, 0.6);
+  --uh-shadow-lg: 0 26px 60px -26px rgba(0, 0, 0, 0.7);
+  --uh-shadow-glow: 0 0 0 1px rgba(194, 197, 146, 0.3), 0 14px 34px -16px rgba(194, 197, 146, 0.25);
+  --uh-title-gradient: linear-gradient(100deg, #c2c592 0%, #ddb06a 36%, #8fbccb 66%, #e9a17e 100%);
+}
+/* perspectivas-mostarda: Mostarda no comando: fundo creme dourado, botões mostarda e detalhes em terracota e petróleo. */
+[data-template="perspectivas-mostarda"][data-theme="light"] {
+  color-scheme: light;
+  --uh-shape-1: #ba8c41;
+  --uh-shape-2: #a95935;
+  --uh-shape-3: #2a4954;
+  --uh-inverse-accent: #ddb06a;
+  --uh-inverse-accent-hover: #e6c084;
+  --uh-inverse-accent-fg: #221d15;
+  --uh-bg: #f8f1e1;
+  --uh-surface: #fcf8ef;
+  --uh-surface-elevated: #ffffff;
+  --uh-surface-hover: #f0e5cd;
+  --uh-border: rgba(48, 54, 63, 0.11);
+  --uh-border-strong: rgba(48, 54, 63, 0.26);
+  --uh-fg: #30363f;
+  --uh-fg-muted: #585448;
+  --uh-fg-subtle: #645e4e;
+  --uh-accent: #ba8c41;
+  --uh-accent-hover: #a77a32;
+  --uh-accent-fg: #1f242a;
+  --uh-accent-text: #7a561b;
+  --uh-accent-soft: rgba(186, 140, 65, 0.12);
+  --uh-success: #4f5a2c;
+  --uh-success-soft: rgba(123, 125, 87, 0.16);
+  --uh-warning: #7a561b;
+  --uh-warning-soft: rgba(186, 140, 65, 0.2);
+  --uh-danger: #a62a1f;
+  --uh-danger-fg: #ffffff;
+  --uh-danger-soft: rgba(166, 42, 31, 0.09);
+  --uh-info: #2a4954;
+  --uh-info-soft: rgba(42, 73, 84, 0.1);
+  --uh-focus: #2a4954;
+  --uh-overlay: rgba(48, 54, 63, 0.45);
+  --uh-pillar-routine: #2a4954;
+  --uh-pillar-routine-soft: #dfe7e8;
+  --uh-pillar-training: #8e4a2b;
+  --uh-pillar-training-soft: #f3e3d9;
+  --uh-pillar-nutrition: #565834;
+  --uh-pillar-nutrition-soft: #e8e8da;
+  --uh-pillar-gastronomy: #7a561b;
+  --uh-pillar-gastronomy-soft: #f3e8d2;
+  --uh-shadow-sm: 0 1px 2px rgba(48, 54, 63, 0.06);
+  --uh-shadow-md: 0 14px 34px -18px rgba(48, 54, 63, 0.3);
+  --uh-shadow-lg: 0 26px 60px -26px rgba(48, 54, 63, 0.38);
+  --uh-shadow-glow: 0 0 0 1px rgba(186, 140, 65, 0.24), 0 14px 34px -16px rgba(186, 140, 65, 0.3);
+  --uh-title-gradient: linear-gradient(100deg, #7a561b 0%, #8e4a2b 36%, #2a4954 68%, #565834 100%);
+}
+[data-template="perspectivas-mostarda"][data-theme="dark"] {
+  color-scheme: dark;
+  --uh-shape-1: #ba8c41;
+  --uh-shape-2: #a95935;
+  --uh-shape-3: #2a4954;
+  --uh-inverse-accent: #ddb06a;
+  --uh-inverse-accent-hover: #e6c084;
+  --uh-inverse-accent-fg: #221d15;
+  --uh-bg: #221d15;
+  --uh-surface: #2c261c;
+  --uh-surface-elevated: #342d22;
+  --uh-surface-hover: #3d3528;
+  --uh-border: rgba(248, 241, 225, 0.1);
+  --uh-border-strong: rgba(248, 241, 225, 0.24);
+  --uh-fg: #f8f1e1;
+  --uh-fg-muted: #d3c6aa;
+  --uh-fg-subtle: #b6aa90;
+  --uh-accent: #ddb06a;
+  --uh-accent-hover: #e6c084;
+  --uh-accent-fg: #221d15;
+  --uh-accent-text: #e6c084;
+  --uh-accent-soft: rgba(221, 176, 106, 0.15);
+  --uh-success: #c2c592;
+  --uh-success-soft: rgba(194, 197, 146, 0.15);
+  --uh-warning: #ddb06a;
+  --uh-warning-soft: rgba(221, 176, 106, 0.15);
+  --uh-danger: #f09a8c;
+  --uh-danger-fg: #221d15;
+  --uh-danger-soft: rgba(240, 154, 140, 0.14);
+  --uh-info: #8fbccb;
+  --uh-info-soft: rgba(143, 188, 203, 0.14);
+  --uh-focus: #8fbccb;
+  --uh-overlay: rgba(10, 12, 15, 0.66);
+  --uh-pillar-routine: #8fbccb;
+  --uh-pillar-routine-soft: rgba(143, 188, 203, 0.15);
+  --uh-pillar-training: #e9a17e;
+  --uh-pillar-training-soft: rgba(233, 161, 126, 0.15);
+  --uh-pillar-nutrition: #c2c592;
+  --uh-pillar-nutrition-soft: rgba(194, 197, 146, 0.15);
+  --uh-pillar-gastronomy: #ddb06a;
+  --uh-pillar-gastronomy-soft: rgba(221, 176, 106, 0.15);
+  --uh-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --uh-shadow-md: 0 14px 34px -18px rgba(0, 0, 0, 0.6);
+  --uh-shadow-lg: 0 26px 60px -26px rgba(0, 0, 0, 0.7);
+  --uh-shadow-glow: 0 0 0 1px rgba(221, 176, 106, 0.3), 0 14px 34px -16px rgba(221, 176, 106, 0.25);
+  --uh-title-gradient: linear-gradient(100deg, #ddb06a 0%, #e9a17e 36%, #c2c592 66%, #8fbccb 100%);
+}
+/* perspectivas-grafite: Grafite no comando: fundo bege dourado, botões grafite e detalhes em terracota; no escuro, fundo grafite com bege dourado. */
+[data-template="perspectivas-grafite"][data-theme="light"] {
+  color-scheme: light;
+  --uh-shape-1: #30363f;
+  --uh-shape-2: #b4a17f;
+  --uh-shape-3: #a95935;
+  --uh-inverse-accent: #cdb98f;
+  --uh-inverse-accent-hover: #ddcba5;
+  --uh-inverse-accent-fg: #30363f;
+  --uh-bg: #ece6db;
+  --uh-surface: #f6f1e8;
+  --uh-surface-elevated: #fbf8f2;
+  --uh-surface-hover: #e2dacb;
+  --uh-border: rgba(48, 54, 63, 0.11);
+  --uh-border-strong: rgba(48, 54, 63, 0.26);
+  --uh-fg: #30363f;
+  --uh-fg-muted: #505154;
+  --uh-fg-subtle: #5a5955;
+  --uh-accent: #30363f;
+  --uh-accent-hover: #22272e;
+  --uh-accent-fg: #f6f1e8;
+  --uh-accent-text: #8a4729;
+  --uh-accent-soft: rgba(48, 54, 63, 0.12);
+  --uh-success: #4b562a;
+  --uh-success-soft: rgba(123, 125, 87, 0.16);
+  --uh-warning: #77541a;
+  --uh-warning-soft: rgba(186, 140, 65, 0.2);
+  --uh-danger: #9e281d;
+  --uh-danger-fg: #ffffff;
+  --uh-danger-soft: rgba(166, 42, 31, 0.09);
+  --uh-info: #2a4954;
+  --uh-info-soft: rgba(42, 73, 84, 0.1);
+  --uh-focus: #a95935;
+  --uh-overlay: rgba(48, 54, 63, 0.45);
+  --uh-pillar-routine: #2a4954;
+  --uh-pillar-routine-soft: #dfe7e8;
+  --uh-pillar-training: #8a4729;
+  --uh-pillar-training-soft: #f3e3d9;
+  --uh-pillar-nutrition: #525430;
+  --uh-pillar-nutrition-soft: #e8e8da;
+  --uh-pillar-gastronomy: #77541a;
+  --uh-pillar-gastronomy-soft: #f3e8d2;
+  --uh-shadow-sm: 0 1px 2px rgba(48, 54, 63, 0.06);
+  --uh-shadow-md: 0 14px 34px -18px rgba(48, 54, 63, 0.3);
+  --uh-shadow-lg: 0 26px 60px -26px rgba(48, 54, 63, 0.38);
+  --uh-shadow-glow: 0 0 0 1px rgba(48, 54, 63, 0.24), 0 14px 34px -16px rgba(48, 54, 63, 0.3);
+  --uh-title-gradient: linear-gradient(100deg, #30363f 0%, #2a4954 34%, #525430 66%, #8a4729 100%);
+}
+[data-template="perspectivas-grafite"][data-theme="dark"] {
+  color-scheme: dark;
+  --uh-shape-1: #30363f;
+  --uh-shape-2: #b4a17f;
+  --uh-shape-3: #a95935;
+  --uh-inverse-accent: #cdb98f;
+  --uh-inverse-accent-hover: #ddcba5;
+  --uh-inverse-accent-fg: #22262c;
+  --uh-bg: #22262c;
+  --uh-surface: #262a31;
+  --uh-surface-elevated: #2e333a;
+  --uh-surface-hover: #363c44;
+  --uh-border: rgba(246, 241, 232, 0.1);
+  --uh-border-strong: rgba(246, 241, 232, 0.24);
+  --uh-fg: #f6f1e8;
+  --uh-fg-muted: #dcd3c3;
+  --uh-fg-subtle: #c9bfae;
+  --uh-accent: #cdb98f;
+  --uh-accent-hover: #ddcba5;
+  --uh-accent-fg: #22262c;
+  --uh-accent-text: #ddcba5;
+  --uh-accent-soft: rgba(205, 185, 143, 0.15);
+  --uh-success: #ccce9e;
+  --uh-success-soft: rgba(204, 206, 158, 0.15);
+  --uh-warning: #e6c084;
+  --uh-warning-soft: rgba(230, 192, 132, 0.15);
+  --uh-danger: #f5aa9e;
+  --uh-danger-fg: #22262c;
+  --uh-danger-soft: rgba(245, 170, 158, 0.14);
+  --uh-info: #a3c8d4;
+  --uh-info-soft: rgba(163, 200, 212, 0.14);
+  --uh-focus: #cdb98f;
+  --uh-overlay: rgba(10, 12, 15, 0.66);
+  --uh-pillar-routine: #a3c8d4;
+  --uh-pillar-routine-soft: rgba(163, 200, 212, 0.15);
+  --uh-pillar-training: #efb393;
+  --uh-pillar-training-soft: rgba(239, 179, 147, 0.15);
+  --uh-pillar-nutrition: #ccce9e;
+  --uh-pillar-nutrition-soft: rgba(204, 206, 158, 0.15);
+  --uh-pillar-gastronomy: #e6c084;
+  --uh-pillar-gastronomy-soft: rgba(230, 192, 132, 0.15);
+  --uh-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --uh-shadow-md: 0 14px 34px -18px rgba(0, 0, 0, 0.6);
+  --uh-shadow-lg: 0 26px 60px -26px rgba(0, 0, 0, 0.7);
+  --uh-shadow-glow: 0 0 0 1px rgba(205, 185, 143, 0.3), 0 14px 34px -16px rgba(205, 185, 143, 0.25);
+  --uh-title-gradient: linear-gradient(100deg, #ddcba5 0%, #efb393 36%, #ccce9e 66%, #a3c8d4 100%);
 }

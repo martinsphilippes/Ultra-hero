@@ -4,7 +4,7 @@ export const TEMPLATE_COOKIE = "uh-template";
 /** Validade do cookie do template (1 ano), igual à do tema. */
 export const TEMPLATE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
-export const templates = ["original", "impact", "essential", "performance", "urban", "perspectivas"] as const;
+export const templates = ["original", "impact", "essential", "performance", "urban", "perspectivas", "perspectivas-petroleo", "perspectivas-oliva", "perspectivas-mostarda", "perspectivas-grafite"] as const;
 export type Template = (typeof templates)[number];
 export const DEFAULT_TEMPLATE: Template = "original";
 

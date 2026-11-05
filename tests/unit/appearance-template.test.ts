@@ -49,8 +49,8 @@ function runInitScript(env: ReturnType<typeof fakeEnv>) {
 }
 
 describe("preferência de template (Aparência)", () => {
-  it("aceita só os 5 templates", () => {
-    expect(templates).toEqual(["original", "impact", "essential", "performance", "urban", "perspectivas"]);
+  it("aceita só os 10 templates", () => {
+    expect(templates).toEqual(["original", "impact", "essential", "performance", "urban", "perspectivas", "perspectivas-petroleo", "perspectivas-oliva", "perspectivas-mostarda", "perspectivas-grafite"]);
     for (const t of templates) expect(isTemplate(t)).toBe(true);
     for (const bad of ["", "Impact", "dark", "nike", null, undefined, 3, {}]) expect(isTemplate(bad)).toBe(false);
   });

@@ -1,4 +1,4 @@
-// Contraste WCAG 2.1 (módulo puro, testado). O tema sazonal é validado contra as paletas dos 6 templates de Aparência
+// Contraste WCAG 2.1 (módulo puro, testado). O tema sazonal é validado contra as paletas dos 10 templates de Aparência
 // (claro e escuro), porque cada pessoa pode estar em qualquer um: o tema não pode estragar a leitura em nenhum.
 import type { ColorMode, ModeTokens, ThemeBackground } from "./vocab";
 import { isHexColor } from "./vocab";
@@ -16,6 +16,10 @@ export const TEMPLATE_PALETTES: Record<ColorMode, TemplatePalette[]> = {
     { template: "performance", bg: "#eef0f3", surface: "#ffffff", fg: "#0f141a", fgMuted: "#4b5563" },
     { template: "urban", bg: "#ededed", surface: "#ffffff", fg: "#0a0a0a", fgMuted: "#474747" },
     { template: "perspectivas", bg: "#f6f1e8", surface: "#fbf8f2", fg: "#30363f", fgMuted: "#57585a" },
+    { template: "perspectivas-petroleo", bg: "#f3efe6", surface: "#faf7f1", fg: "#1f3640", fgMuted: "#4f5b60" },
+    { template: "perspectivas-oliva", bg: "#f1efe3", surface: "#f9f8f0", fg: "#2f3226", fgMuted: "#55574a" },
+    { template: "perspectivas-mostarda", bg: "#f8f1e1", surface: "#fcf8ef", fg: "#30363f", fgMuted: "#585448" },
+    { template: "perspectivas-grafite", bg: "#ece6db", surface: "#f6f1e8", fg: "#30363f", fgMuted: "#505154" },
   ],
   dark: [
     { template: "original", bg: "#0b0b0b", surface: "#141414", fg: "#f2efea", fgMuted: "#a7a199" },
@@ -24,6 +28,10 @@ export const TEMPLATE_PALETTES: Record<ColorMode, TemplatePalette[]> = {
     { template: "performance", bg: "#0b0e12", surface: "#12161c", fg: "#eef2f6", fgMuted: "#a6b0bd" },
     { template: "urban", bg: "#000000", surface: "#131313", fg: "#f5f5f5", fgMuted: "#b5b5b5" },
     { template: "perspectivas", bg: "#1d2127", surface: "#262b32", fg: "#f6f1e8", fgMuted: "#cdc3b2" },
+    { template: "perspectivas-petroleo", bg: "#12232a", surface: "#1a2e36", fg: "#f6f1e8", fgMuted: "#c9c4b8" },
+    { template: "perspectivas-oliva", bg: "#1c1d16", surface: "#25271e", fg: "#f3f0e2", fgMuted: "#c9c6b2" },
+    { template: "perspectivas-mostarda", bg: "#221d15", surface: "#2c261c", fg: "#f8f1e1", fgMuted: "#d3c6aa" },
+    { template: "perspectivas-grafite", bg: "#22262c", surface: "#262a31", fg: "#f6f1e8", fgMuted: "#dcd3c3" },
   ],
 };
 
@@ -110,7 +118,7 @@ export function textBackgrounds(tokens: ModeTokens, mode: ColorMode): string[] {
   return [...out];
 }
 
-/** Valida as cores de um modo contra os 6 templates. Cores inválidas são ignoradas (o zod/banco já barram). */
+/** Valida as cores de um modo contra os 10 templates. Cores inválidas são ignoradas (o zod/banco já barram). */
 export function checkModeTokens(tokens: ModeTokens | undefined, mode: ColorMode): ModeReport {
   const t: ModeTokens = {};
   for (const [k, v] of Object.entries(tokens ?? {})) if (isHexColor(v)) t[k as keyof ModeTokens] = v;

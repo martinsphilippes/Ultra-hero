@@ -101,6 +101,22 @@
       "perspectivas": {
         "name": "Ultra Perspectivas",
         "description": "Editorial and earthy: cream, olive, petrol blue and terracotta, classic serif headings."
+      },
+      "perspectivas-petroleo": {
+        "name": "Ultra Perspectivas Petroleum",
+        "description": "Perspectivas palette led by petroleum blue; in dark mode, deep petroleum with mustard."
+      },
+      "perspectivas-oliva": {
+        "name": "Ultra Perspectivas Olive",
+        "description": "Perspectivas palette led by olive: greenish cream with petroleum and mustard details."
+      },
+      "perspectivas-mostarda": {
+        "name": "Ultra Perspectivas Mustard",
+        "description": "Perspectivas palette led by mustard: golden cream with terracotta and petroleum details."
+      },
+      "perspectivas-grafite": {
+        "name": "Ultra Perspectivas Graphite",
+        "description": "Perspectivas palette led by graphite: golden beige background; in dark mode, graphite with golden beige."
       }
     }
   },

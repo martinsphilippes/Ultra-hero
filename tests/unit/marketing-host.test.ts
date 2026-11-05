@@ -7,6 +7,7 @@ import {
   parseMarketingHosts,
   requestHost,
 } from "@/lib/marketing-host";
+import { rootDestination } from "@/lib/institutional/root";
 
 // Domínio próprio do teaser (MARKETING_HOSTS): regra pura e o middleware.
 
@@ -117,7 +118,7 @@ describe("middleware com MARKETING_HOSTS", () => {
   it("outro host (app.dominio.com) segue o comportamento de sempre", async () => {
     const res = await middleware(request("/", "app.dominio.com"));
     expect(res.status).toBe(307);
-    expect(new URL(res.headers.get("location")!).pathname).toBe("/conheca");
+    expect(new URL(res.headers.get("location")!).pathname).toBe(rootDestination({ signedIn: false, nativeApp: false, explored: false }));
     const login = await middleware(request("/heroi", "app.dominio.com"));
     expect(new URL(login.headers.get("location")!).pathname).toBe("/login");
     expect(session.refreshed).toBe(2);

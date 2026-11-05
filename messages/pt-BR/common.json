@@ -101,6 +101,22 @@
       "perspectivas": {
         "name": "Ultra Perspectivas",
         "description": "Editorial e terroso: creme, oliva, petróleo e terracota, títulos em serifa clássica."
+      },
+      "perspectivas-petroleo": {
+        "name": "Ultra Perspectivas Petróleo",
+        "description": "Paleta Perspectivas com petróleo no comando; no escuro, fundo petróleo profundo com mostarda."
+      },
+      "perspectivas-oliva": {
+        "name": "Ultra Perspectivas Oliva",
+        "description": "Paleta Perspectivas com oliva no comando: creme esverdeado, detalhes em petróleo e mostarda."
+      },
+      "perspectivas-mostarda": {
+        "name": "Ultra Perspectivas Mostarda",
+        "description": "Paleta Perspectivas com mostarda no comando: creme dourado, detalhes em terracota e petróleo."
+      },
+      "perspectivas-grafite": {
+        "name": "Ultra Perspectivas Grafite",
+        "description": "Paleta Perspectivas com grafite no comando: fundo bege dourado; no escuro, grafite com bege dourado."
       }
     }
   },

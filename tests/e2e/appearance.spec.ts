@@ -2,9 +2,9 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { loginAs } from "./helpers/login";
 
-// Aparência: 6 templates visuais escolhidos na Início. Só visual: a troca muda o atributo data-template do
+// Aparência: 10 templates visuais escolhidos na Início. Só visual: a troca muda o atributo data-template do
 // <html> na hora, sem recarregar, e fica salva no aparelho (cookie + localStorage). Nada aqui grava no banco.
-const TEMPLATES = ["original", "impact", "essential", "performance", "urban", "perspectivas"] as const;
+const TEMPLATES = ["original", "impact", "essential", "performance", "urban", "perspectivas", "perspectivas-petroleo", "perspectivas-oliva", "perspectivas-mostarda", "perspectivas-grafite"] as const;
 // Fundo da página no claro de cada template (confirma que o visual mudou de fato).
 const LIGHT_BG: Record<(typeof TEMPLATES)[number], string> = {
   original: "rgb(247, 244, 239)",
@@ -13,6 +13,10 @@ const LIGHT_BG: Record<(typeof TEMPLATES)[number], string> = {
   performance: "rgb(238, 240, 243)",
   urban: "rgb(237, 237, 237)",
   perspectivas: "rgb(246, 241, 232)",
+  "perspectivas-petroleo": "rgb(243, 239, 230)",
+  "perspectivas-oliva": "rgb(241, 239, 227)",
+  "perspectivas-mostarda": "rgb(248, 241, 225)",
+  "perspectivas-grafite": "rgb(236, 230, 219)",
 };
 
 const html = (page: Page) => page.locator("html");

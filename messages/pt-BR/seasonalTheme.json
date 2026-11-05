@@ -5,7 +5,11 @@
     "essential": "Ultra Essential",
     "performance": "Ultra Performance",
     "urban": "Ultra Urban",
-    "perspectivas": "Ultra Perspectivas"
+    "perspectivas": "Ultra Perspectivas",
+    "perspectivas-petroleo": "Ultra Perspectivas Petróleo",
+    "perspectivas-oliva": "Ultra Perspectivas Oliva",
+    "perspectivas-mostarda": "Ultra Perspectivas Mostarda",
+    "perspectivas-grafite": "Ultra Perspectivas Grafite"
   },
   "layer": {
     "bannerLink": "Saiba mais",
