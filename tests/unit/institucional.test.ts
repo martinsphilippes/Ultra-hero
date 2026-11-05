@@ -3,7 +3,7 @@ import path from "node:path";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CALENDAR_POINTS, FAQ_ITEMS, FEATURE_GROUPS, HOW_STEPS, SECTION_ANCHORS, WHAT_ITEMS } from "@/lib/about-classic/content";
-import { ABOUT_ENABLED, ABOUT_PATH, EXPLORE_COOKIE, INSTITUTIONAL_PATH, rootDestination, rootNeedsSessionCheck } from "@/lib/institutional/root";
+import { ABOUT_ENABLED, ABOUT_PATH, EXPLORE_COOKIE, TEASER_ENABLED, INSTITUTIONAL_PATH, rootDestination, rootNeedsSessionCheck } from "@/lib/institutional/root";
 import { isBlockedInNativeApp } from "@/lib/native-app/surface";
 
 // Etapa 7 · página institucional (/conheca, hoje o teaser de lançamento), o destino do "/" e a apresentação
@@ -293,12 +293,12 @@ describe("/sobre · Conheça o Groscove Ultra (apresentação clássica)", () =>
     for (const name of css.match(/@keyframes\s+([\w-]+)/g) ?? []) expect(name).toMatch(/@keyframes uh-sb-/);
     expect(css).toMatch(/prefers-reduced-motion: reduce/);
   });
-  it("/sobre está oculta: a página responde 404 e o atalho das Configurações some", () => {
-    expect(ABOUT_ENABLED).toBe(false);
-    const page = readFileSync(path.join(root, "src/app/sobre/page.tsx"), "utf8");
-    expect(page).toContain("if (!ABOUT_ENABLED) notFound();");
-    const settings = readFileSync(path.join(root, "src/app/(app)/configuracoes/page.tsx"), "utf8");
-    expect(settings).toContain("!ABOUT_ENABLED");
+  it("/sobre no ar e teaser (/conheca, /conheca/influenciador) oculto com 404", () => {
+    expect(ABOUT_ENABLED).toBe(true);
+    expect(TEASER_ENABLED).toBe(false);
+    for (const f of ["src/app/conheca/page.tsx", "src/app/conheca/influenciador/page.tsx"]) {
+      expect(readFileSync(path.join(root, f), "utf8")).toContain("if (!TEASER_ENABLED) notFound();");
+    }
   });
   it("links internos para a explicação do produto levam a /sobre (não ao teaser)", () => {
     const settings = readFileSync(path.join(root, "src/app/(app)/configuracoes/page.tsx"), "utf8");

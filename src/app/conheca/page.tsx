@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { LaunchTeaser } from "@/components/launch/LaunchTeaser";
 import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
-import { INSTITUTIONAL_PATH } from "@/lib/institutional/root";
+import { INSTITUTIONAL_PATH, TEASER_ENABLED } from "@/lib/institutional/root";
 import { launchTagsFrom } from "@/lib/launch-leads";
 
 // /conheca: teaser oficial de lançamento (pedido do dono, 04/11; substitui a apresentação que explicava Herói, Marca e
@@ -24,6 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 export default async function LaunchTeaserPage({ searchParams }: Props) {
+  if (!TEASER_ENABLED) notFound();
   const tags = launchTagsFrom(await searchParams, "conheca");
   return <LaunchTeaser kind="publico" tags={tags} seasonal={<SeasonalTheme area="institutional" />} />;
 }

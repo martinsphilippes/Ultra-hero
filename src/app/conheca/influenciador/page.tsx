@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { TEASER_ENABLED } from "@/lib/institutional/root";
 import { getTranslations } from "next-intl/server";
 import { INFLUENCER_TEASER_PATH, LaunchTeaser } from "@/components/launch/LaunchTeaser";
 import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
@@ -22,6 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 export default async function InfluencerTeaserPage({ searchParams }: Props) {
+  if (!TEASER_ENABLED) notFound();
   const tags = launchTagsFrom(await searchParams, "conheca-influenciador");
   return <LaunchTeaser kind="influenciador" tags={tags} seasonal={<SeasonalTheme area="institutional" />} />;
 }
