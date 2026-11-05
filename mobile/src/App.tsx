@@ -19,7 +19,7 @@ import { stringsFor } from "./strings";
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
-const WEB_URL: string = Constants.expoConfig?.extra?.webUrl ?? "https://ultra-hero.vercel.app";
+const WEB_URL: string = Constants.expoConfig?.extra?.webUrl ?? "https://groscoveultra.com";
 const ORIGIN = new URL(WEB_URL).origin;
 const START_URL = `${ORIGIN}/personalities`;
 const AUTH_RETURN = "gchero://auth/callback";

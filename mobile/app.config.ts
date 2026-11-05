@@ -9,7 +9,7 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 // Irreversível depois do primeiro envio a qualquer loja (Apple e Google não deixam trocar).
 const APP_ID = "com.groscove.ultra";
 // Endereço da web que a casca abre; muda com o domínio definitivo (EAS env por perfil).
-const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL ?? "https://ultra-hero.vercel.app";
+const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL ?? "https://groscoveultra.com";
 // Organização Expo "groscove" (decisão do responsável, 31/10/2026); o projectId vem do `eas init` (não são segredo; ficam no código porque o
 // EAS resolve esta config na máquina de quem roda `eas build`, antes de ler as variáveis da nuvem).
 // (o `eas init` não escreve em app.config.ts dinâmico: o id é colado aqui à mão)

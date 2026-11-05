@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { decideNavigation, webUrlFromDeepLink, webUrlFromPath } from "../src/navigation";
 
-const ORIGIN = "https://ultra-hero.vercel.app";
+const ORIGIN = "https://groscoveultra.com";
 
 describe("decideNavigation", () => {
   it("o próprio site carrega na WebView", () => {
@@ -11,7 +11,7 @@ describe("decideNavigation", () => {
 
   it("outro site no quadro principal abre no navegador do app, nunca dentro da casca", () => {
     expect(decideNavigation("https://www.instagram.com/neymarjr", ORIGIN, true)).toBe("browser");
-    expect(decideNavigation("https://ultra-hero.vercel.app.evil.com/x", ORIGIN, true)).toBe("browser");
+    expect(decideNavigation("https://groscoveultra.com.evil.com/x", ORIGIN, true)).toBe("browser");
   });
 
   it("iframe de outro domínio (player de vídeo) carrega", () => {
@@ -23,7 +23,7 @@ describe("decideNavigation", () => {
     expect(decideNavigation("tel:+5511999999999", ORIGIN, true)).toBe("system");
     expect(decideNavigation("intent://x#Intent;end", ORIGIN, true)).toBe("block");
     expect(decideNavigation("javascript:alert(1)", ORIGIN, true)).toBe("block");
-    expect(decideNavigation("http://ultra-hero.vercel.app/x", ORIGIN, true)).toBe("browser");
+    expect(decideNavigation("http://groscoveultra.com/x", ORIGIN, true)).toBe("browser");
   });
 });
 
