@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { ArrowRight, Briefcase, FilePlus2, FileText, SquarePlus, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { TurnCard } from "@/components/deals/TurnCard";
 import { HeroWorkShortcuts } from "@/components/hero-work/HeroWorkShortcuts";
 import { EmptyState, PageHeader } from "@/components/ui";
 import { getRoles, hasRole } from "@/lib/auth/session";
 import { hasHeroRole } from "@/lib/auth/talent-scope";
 import { heroSelectable } from "@/lib/creator-content/rules";
+import { heroTurns } from "@/lib/deals/turn-queries";
 import { loadHeroShortcutData } from "@/lib/hero-work/summary";
 import { getTalentContext } from "@/lib/talent/server";
 import { chosenHeroId, getMyCreator, listMyHeroesAll } from "./_lib/creator";
@@ -56,6 +58,9 @@ export default async function HeroPortalHome() {
     if (inUse && !casting) work = await loadHeroShortcutData(inUse, null);
   }
 
+  // 05/11: "Sua vez" no topo — o próximo passo de cada oportunidade que é ação do herói (leitura em lote)
+  const turns = casting ? await heroTurns() : null;
+
   const quick = [
     { key: "post", href: "/heroi/post/novo", icon: SquarePlus },
     { key: "newContent", href: "/heroi/conteudos/novo", icon: FilePlus2 },
@@ -66,6 +71,7 @@ export default async function HeroPortalHome() {
   return (
     <div className="flex flex-col gap-5" data-testid="hero-portal-home">
       {casting ? <AgencyHeader talent={talent.talent} /> : <PageHeader eyebrow={t("eyebrow")} title={heroName ?? t("title")} description={t("intro")} />}
+      {turns?.available ? <TurnCard party="hero" items={turns.items} /> : null}
       {hero && !hasHeroPage ? (
         // sem herói ainda (ex.: convite aceito sem herói): o herói nasce na Equipe do portal, pendente de aprovação
         <Link href="/heroi/equipe" className={QUICK} data-testid="hero-portal-create">

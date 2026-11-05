@@ -216,5 +216,24 @@
     "declined": {
       "title": "No participas en esta campaña"
     }
+  },
+  "turn": {
+    "title": "Tu turno",
+    "count": "{count, plural, one {# pendiente} other {# pendientes}}",
+    "listLabel": "Pendientes que te esperan, del más urgente al menos",
+    "empty": "Nada te espera ahora.",
+    "seeAll": "Ver todos ({count})",
+    "seeLess": "Mostrar menos",
+    "back": "Volver",
+    "confirm": {
+      "confirmContract": {
+        "title": "¿Confirmar la contratación de “{deal}”?",
+        "hint": "Todos aceptaron los términos. Los héroes pueden empezar a producir las entregas."
+      },
+      "finishDeal": {
+        "title": "¿Cerrar “{deal}” como ganada?",
+        "hint": "Todas las entregas están concluidas. La campaña sale del pipeline abierto."
+      }
+    }
   }
 }

@@ -22,6 +22,8 @@ import { getAgencyContext } from "@/lib/agency/server";
 import { getUser } from "@/lib/auth/session";
 import { upcomingCount } from "@/lib/calendar/queries";
 import { dealCounts } from "@/lib/deals/queries";
+import { agencyTurns } from "@/lib/deals/turn-queries";
+import { TurnCard } from "@/components/deals/TurnCard";
 import { taskCounts } from "@/lib/execution/queries";
 import { getFeedbackIndicator } from "@/lib/project-room/queries";
 import { getAgencyInsights, getGrowthIndicators } from "@/lib/roadmap/phase3-queries";
@@ -48,7 +50,7 @@ export default async function AgencyDashboardPage({ searchParams }: Props) {
   const isManager = agencyCan(ctx.role, "manager", ctx.platformAdmin);
   const [user, sp] = await Promise.all([getUser(), searchParams]);
   const asked = isTodayScope(sp.setor) ? sp.setor : null;
-  const [t, data, casting, deals, upcoming, tasks, panel, firstToday, indicators, satisfaction, growth, insights] = await Promise.all([
+  const [t, data, casting, deals, upcoming, tasks, panel, firstToday, indicators, satisfaction, growth, insights, turns] = await Promise.all([
     getTranslations("agency.dashboard"),
     agencyDashboard(ctx.agency.id, isAdmin),
     castingCounts(ctx.agency.id),
@@ -63,6 +65,8 @@ export default async function AgencyDashboardPage({ searchParams }: Props) {
     // 0111: nova venda (próximo negócio depois do fechamento) e insights do publipost pendentes
     isManager ? getGrowthIndicators(ctx.agency.id) : Promise.resolve(null),
     getAgencyInsights(ctx.agency.id),
+    // 05/11: "Sua vez" no topo — o próximo passo de cada negócio aberto que é ação de quem lê (leitura em lote)
+    agencyTurns({ agencyId: ctx.agency.id, role: ctx.role, platformAdmin: ctx.platformAdmin, userId: user?.id ?? null, timeZone: ctx.agency.timezone }),
   ]);
   // sem setor e sem filtro escolhido: o gestor vê todos os setores; o colaborador, as etapas dele
   const sectorToday =
@@ -82,6 +86,7 @@ export default async function AgencyDashboardPage({ searchParams }: Props) {
         description={ctx.memberName ? t("greeting", { name: ctx.memberName }) : t("adminView")}
         actions={ctx.role ? <RoleBadge role={ctx.role} /> : null}
       />
+      {turns.available ? <TurnCard party="agency" items={turns.items} /> : null}
       {ctx.platformAdmin && ctx.agencies.length > 1 ? (
         <AgencySwitcher agencies={ctx.agencies.map((a) => ({ id: a.id, name: a.name, isDemo: a.isDemo }))} currentId={ctx.agency.id} />
       ) : null}

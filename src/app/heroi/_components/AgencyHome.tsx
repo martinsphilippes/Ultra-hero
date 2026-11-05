@@ -10,7 +10,7 @@ import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { DeliverableStatusBadge } from "@/components/deals/StatusBadges";
 import { officeSummaryData } from "@/lib/agency/dashboards";
-import { listOpportunities } from "@/lib/deals/queries";
+import { listMyOpportunitiesOnce } from "@/lib/deals/turn-queries";
 import { formatCents } from "@/lib/deals/schemas";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { listTasks } from "@/lib/execution/queries";
@@ -39,7 +39,7 @@ export async function AgencyHome() {
     getKit(talent.id),
     listSocial(talent.id),
     listInbox({ limit: 5 }),
-    listOpportunities(),
+    listMyOpportunitiesOnce(),
   ]);
   const [tasks, summary, payouts, tc, todayData, te, projects, tr] = await Promise.all([
     listTasks({ talentOnly: true, open: true }),

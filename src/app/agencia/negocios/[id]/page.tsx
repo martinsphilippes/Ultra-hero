@@ -43,8 +43,10 @@ export default async function DealOverviewPage({ params }: Props) {
   const tz = ctx.agency.timezone || "America/Sao_Paulo";
   const [t, tc, tb, locale, team, request, budget, activities, talents, events, changes, tpay, offer] = await Promise.all([
     getTranslations("agency.deal"),
-    getTranslations("brief"),
+    // tc = textos do núcleo comercial (tipos de contato); tb = briefing estruturado (0080). Estavam trocados e a tela
+    // mostrava a chave crua "commercial.title" no card do briefing e "brief.activityKinds.*" na linha do tempo.
     getTranslations("commercial"),
+    getTranslations("brief"),
     getLocale() as Promise<Locale>,
     listTeam(ctx.agency.id),
     deal.requestId ? getRequest(deal.requestId) : Promise.resolve(null),

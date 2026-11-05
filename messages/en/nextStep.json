@@ -216,5 +216,24 @@
     "declined": {
       "title": "You're not part of this campaign"
     }
+  },
+  "turn": {
+    "title": "Your turn",
+    "count": "{count, plural, one {# pending} other {# pending}}",
+    "listLabel": "Items waiting for you, most urgent first",
+    "empty": "Nothing waiting for you right now.",
+    "seeAll": "See all ({count})",
+    "seeLess": "Show less",
+    "back": "Back",
+    "confirm": {
+      "confirmContract": {
+        "title": "Confirm the contract for “{deal}”?",
+        "hint": "Everyone accepted the terms. Heroes can start producing the deliverables."
+      },
+      "finishDeal": {
+        "title": "Close “{deal}” as won?",
+        "hint": "All deliverables are done. The campaign leaves the open pipeline."
+      }
+    }
   }
 }

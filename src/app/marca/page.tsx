@@ -16,7 +16,8 @@ import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { brandDashboardData } from "@/lib/agency/dashboards";
 import { listBrandMembers } from "@/lib/agency/queries";
 import { getBrandContext } from "@/lib/brand-portal/server";
-import { listBrandCampaigns } from "@/lib/deals/queries";
+import { brandTurns, listBrandCampaignsOnce } from "@/lib/deals/turn-queries";
+import { TurnCard } from "@/components/deals/TurnCard";
 import { listTasks } from "@/lib/execution/queries";
 import { brandBudgetOverview } from "@/lib/finance/queries";
 import { unreadInboxCount } from "@/lib/inbox/queries";
@@ -37,19 +38,21 @@ export default async function BrandDashboardPage() {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
   const tnoag = await getTranslations("invites.brand.noAgency");
-  const [t, tc, tb, locale, members, unread, campaigns, approvals, panel, workboard, budgets, sponsorships] = await Promise.all([
+  const [t, tc, tb, locale, members, unread, campaigns, approvals, panel, workboard, budgets, sponsorships, turns] = await Promise.all([
     getTranslations("brandPortal.dashboard"),
     getTranslations("commercial"),
     getTranslations("today.board"),
     getLocale() as Promise<Locale>,
     listBrandMembers(ctx.brand.id),
     unreadInboxCount(),
-    listBrandCampaigns(ctx.brand.id),
+    listBrandCampaignsOnce(ctx.brand.id),
     listTasks({ open: true }),
     brandDashboardData(ctx.brand.id),
     getBrandWorkboard(ctx.brand.id),
     brandBudgetOverview(ctx.brand.id),
     listBrandSponsorships(ctx.brand.id),
+    // 05/11: "Sua vez" no topo — o próximo passo de cada campanha que é ação da marca (leitura em lote)
+    brandTurns({ brandId: ctx.brand.id, role: ctx.role }),
   ]);
   // "Depende de mim hoje" e o resumo do painel por etapa (0078): a mesma leitura fechada alimenta os dois
   const wb = workboard.available ? workboard.data : null;
@@ -80,6 +83,7 @@ export default async function BrandDashboardPage() {
         description={ctx.agency ? t("servedBy", { agency: ctx.agency.name }) : undefined}
         actions={ctx.role ? <RoleBadge role={ctx.role === "owner" ? "owner" : "brandStaff"} /> : null}
       />
+      {turns.available ? <TurnCard party="brand" items={turns.items} /> : null}
       {!ctx.agency && ctx.role ? (
         // 0091: marca sem agência funciona; a chamada aberta a todas as agências não precisa de vínculo
         <section className="flex flex-col gap-3 rounded-2xl border border-dashed border-border-strong bg-surface p-4" data-testid="brand-no-agency">

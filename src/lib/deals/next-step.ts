@@ -158,7 +158,8 @@ export function flowStep(x: FlowInput): FlowStep {
   if (x.stage === "closed") return "done";
   if (preConfirmation(x)) return "proposal";
   if (!inProduction(x)) {
-    const pending = x.terms.status !== "sent" || x.terms.brandAccepted === false || x.heroes.some((h) => ROSTER.has(h.status) && h.termsAccepted === false);
+    // termos aceitos por todos (status 'accepted') também já são "contratação" (antes a barra ficava em "Termos")
+    const pending = (x.terms.status !== "sent" && x.terms.status !== "accepted") || x.terms.brandAccepted === false || x.heroes.some((h) => ROSTER.has(h.status) && h.termsAccepted === false);
     return pending ? "terms" : "contracting";
   }
   const open = x.deliverables.filter(isOpenDeliverable);

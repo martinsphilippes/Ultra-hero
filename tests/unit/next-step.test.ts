@@ -97,6 +97,8 @@ describe("termos e contratação", () => {
     expect(nextStep(x, owner)).toMatchObject({ code: "waitContract" });
     expect(nextStep(x, me())).toMatchObject({ code: "waitContract" });
     expect(flowStep(x)).toBe("contracting");
+    // versão aceita por todos (status 'accepted'): a barra também fica em "Contratação"
+    expect(flowStep(input({ ...base, heroes: [hero({ termsAccepted: true })], terms: { status: "accepted", brandAccepted: true, validUntil: null } }))).toBe("contracting");
   });
 });
 
