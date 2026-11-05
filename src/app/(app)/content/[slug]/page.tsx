@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
-import { BookOpen, ChefHat, Clock, Copyright, Dumbbell, FileText, ImageIcon, Play } from "lucide-react";
+import { BookOpen, ChefHat, Clock, Copyright, Dumbbell, FileText, ImageIcon, Pencil, Play } from "lucide-react";
 import { isScheduled } from "@/components/admin-content/lib/publish-at";
 import { BrandStrip } from "@/components/brands/BrandStrip";
 import { RecommendedProducts } from "@/components/brands/RecommendedProducts";
@@ -48,7 +48,10 @@ import { RelatedRecipes } from "@/components/recipes/view/RelatedRecipes";
 import { loadRecipeView } from "@/components/recipes/view/load-recipe-view";
 import { loadRecipeLd, loadRatingState } from "@/components/recipes/view/recipe-page-data";
 import { AddToListButton, CompleteButton, FavoriteButton, NotInterestedButton } from "@/components/library";
-import { Avatar, Badge, PillarBadge, Section } from "@/components/ui";
+import { Avatar, Badge, Button, PillarBadge, Section } from "@/components/ui";
+import { ArchiveContentButton } from "@/components/creator/PublishButtons";
+import { listMyHeroesAll } from "@/app/heroi/_lib/creator";
+import { creatorContentHref } from "@/lib/creator-content/rules";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { getProfile, getUser } from "@/lib/auth/session";
@@ -157,6 +160,9 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
 
   const supabase = await createClient();
   const path = `/content/${content.slug}`;
+  // Dono do post (titular ou membro da equipe do Hero): ganha Editar; o titular também Arquivar (o banco confere de novo)
+  const myRoleOnHero =
+    user && content.creator_id ? ((await listMyHeroesAll()).find((h) => h.id === content.creator_id)?.role ?? null) : null;
   const uiLocale = locale as Locale;
   const wantsLocalization = content.source_locale !== uiLocale;
 
@@ -445,6 +451,16 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
                   <FavoriteButton kind="content" id={content.id} initial={isFavorite} path={path} />
                   <AddToListButton kind="content" id={content.id} />
                   <NotInterestedButton contentId={content.id} initial={notInterested} />
+                  {myRoleOnHero ? (
+                    <>
+                      <Button asChild variant="secondary" size="sm" leadingIcon={<Pencil />}>
+                        <Link href={creatorContentHref(content)} data-testid="owner-edit-post">
+                          {tc("actions.edit")}
+                        </Link>
+                      </Button>
+                      {myRoleOnHero === "owner" ? <ArchiveContentButton contentId={content.id} afterHref="/heroi/conteudos" /> : null}
+                    </>
+                  ) : null}
                 </>
               ) : null}
               {isRecipe ? <RecipeShareButtons title={title} path={path} canPrint={Boolean(recipeOpen && structured)} /> : null}

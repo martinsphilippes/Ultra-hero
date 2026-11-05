@@ -163,10 +163,12 @@ type ConfirmProps = {
   variant?: "primary" | "secondary" | "ghost";
   danger?: boolean;
   testId: string;
+  /** Depois de dar certo, vai para este endereço em vez de recarregar a tela (ex.: arquivar na tela pública do post). */
+  afterHref?: string;
 };
 
 // Ação com confirmação (0092): enviar para revisão, retirar da revisão e arquivar.
-function ConfirmContentAction({ keys, run, contentId, icon, variant = "secondary", danger = false, testId }: ConfirmProps) {
+function ConfirmContentAction({ keys, run, contentId, icon, variant = "secondary", danger = false, testId, afterHref }: ConfirmProps) {
   const t = useTranslations("creator.publish");
   const tc = useTranslations("common.actions");
   const errorText = useErrorText();
@@ -183,7 +185,8 @@ function ConfirmContentAction({ keys, run, contentId, icon, variant = "secondary
       if (result.ok) {
         toast({ title: t(keys.success), variant: "success" });
         setOpen(false);
-        router.refresh();
+        if (afterHref) router.push(afterHref);
+        else router.refresh();
       } else {
         setError(errorText(result.error));
       }
@@ -252,10 +255,11 @@ export function WithdrawReviewButton({ contentId }: { contentId: string }) {
 }
 
 // "Arquivar": o que já esteve no ar só o titular (o banco responde owner_only ao membro).
-export function ArchiveContentButton({ contentId }: { contentId: string }) {
+export function ArchiveContentButton({ contentId, afterHref }: { contentId: string; afterHref?: string }) {
   return (
     <ConfirmContentAction
       contentId={contentId}
+      afterHref={afterHref}
       run={archiveContent}
       icon={<Archive />}
       variant="ghost"
