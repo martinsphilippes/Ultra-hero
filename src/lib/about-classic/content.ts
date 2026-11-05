@@ -1,6 +1,6 @@
 // Estrutura da apresentação clássica (/sobre): só chaves de tradução (messages/<locale>/aboutClassic.json) e o
 // endereço real de cada recurso no sistema. Cada item descreve uma funcionalidade que EXISTE hoje (rota citada ao lado);
-// pagamentos e compras aparecem como "ainda não ativados". Textos/claims finais dependem de aprovação do responsável.
+// o texto diz que o Ultra não faz cobranças nem pagamentos. Textos/claims finais dependem de aprovação do responsável.
 
 export const WHAT_ITEMS = ["brand", "hero", "agency", "app"] as const;
 

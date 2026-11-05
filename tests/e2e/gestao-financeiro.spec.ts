@@ -16,7 +16,7 @@ async function axe(page: Page) {
 }
 
 test.describe("financeiro simulado, painéis e alertas", () => {
-  test("Adm: Financeiro com selo simulado, filtros e lançamentos; Histórico; taxa nas configurações", async ({ page }) => {
+  test("Adm: Financeiro com aviso de registro, filtros e lançamentos; Histórico; taxa nas configurações", async ({ page }) => {
     await loginAs(page, "agency", { home: null });
     await page.goto("/agencia/financeiro");
     test.skip((await page.getByTestId("module-unavailable").count()) > 0, "0069 ainda não aplicada");

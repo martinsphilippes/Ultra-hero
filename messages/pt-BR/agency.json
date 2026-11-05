@@ -121,7 +121,7 @@
     "seeCasting": "Ver casting",
     "seePipeline": "Ver pipeline",
     "seeTasks": "Minhas tarefas",
-    "financeTitle": "Financeiro (simulado)",
+    "financeTitle": "Financeiro",
     "seeFinance": "Ver financeiro",
     "shortcuts": {
       "label": "Atalhos da agência",
@@ -1218,7 +1218,6 @@
     "description": "A receber da marca, comissão da agência e repasses aos Heros de cada negócio contratado.",
     "unavailable": "Financeiro em atualização",
     "unavailableHint": "O financeiro aparece assim que o banco for atualizado.",
-    "simulatedTag": "Simulado",
     "disclaimer": "Registro interno, sem cobrança real: nenhum valor é cobrado, pago ou transferido por aqui.",
     "filtersLabel": "Filtros do financeiro",
     "filters": {

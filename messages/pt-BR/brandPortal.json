@@ -264,7 +264,7 @@
   },
   "budget": {
     "title": "Verba",
-    "hint": "O que a marca reservou, o que já está comprometido com os contratados e o que já foi pago. Valores simulados.",
+    "hint": "O que a marca reservou, o que já está comprometido com os contratados e o que já foi pago.",
     "reserved": "Reservado",
     "committed": "Comprometido",
     "paid": "Pago",

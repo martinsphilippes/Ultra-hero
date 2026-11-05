@@ -149,10 +149,10 @@ describe("erros, menus e travas", () => {
     expect(isDocumentsRevalidatePath("/")).toBe(false);
   });
 
-  it("oportunidades e disponibilidade existem no app das lojas; pipeline e campanhas da marca não", () => {
+  it("oportunidades, disponibilidade, pipeline e campanhas da marca existem no app das lojas", () => {
     expect(isBlockedInNativeApp("/heroi/oportunidades")).toBe(false);
     expect(isBlockedInNativeApp("/heroi/disponibilidade")).toBe(false);
-    expect(isBlockedInNativeApp("/agencia/pipeline")).toBe(true);
-    expect(isBlockedInNativeApp("/marca/campanhas/nova")).toBe(true);
+    expect(isBlockedInNativeApp("/agencia/pipeline")).toBe(false);
+    expect(isBlockedInNativeApp("/marca/campanhas/nova")).toBe(false);
   });
 });

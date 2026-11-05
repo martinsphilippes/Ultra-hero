@@ -264,7 +264,7 @@
   },
   "budget": {
     "title": "Presupuesto",
-    "hint": "Lo que la marca reservó, lo comprometido con los contratados y lo que ya se pagó. Valores simulados.",
+    "hint": "Lo que la marca reservó, lo comprometido con los contratados y lo que ya se pagó.",
     "reserved": "Reservado",
     "committed": "Comprometido",
     "paid": "Pagado",

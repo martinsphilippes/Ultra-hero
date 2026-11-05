@@ -52,7 +52,7 @@ import "./sobre.css";
 // lojas é a porta de entrada de quem não entrou; lá não há "Pular e explorar", porque o app só entra com login.
 // Textos em messages/<locale>/aboutClassic.json (namespace próprio: institutional.json é do teaser); classes e
 // animações com prefixo uh-sb- (sobre.css) para não colidir com a abertura do app (intro.css) nem com o teaser.
-// Só funcionalidades que existem (src/lib/about-classic/content.ts); pagamentos e compras: "ainda não ativados".
+// Só funcionalidades que existem (src/lib/about-classic/content.ts); o Ultra não faz cobranças nem pagamentos.
 // Animações: logo de abertura que surge e se encaixa, cartões que surgem ao rolar, recursos entrando de um lado e
 // do outro, faixa contínua, logomarca entre um perfil e outro e o seletor "Eu sou…". "Reduzir movimento" desliga tudo.
 

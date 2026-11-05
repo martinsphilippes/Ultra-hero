@@ -121,7 +121,7 @@
     "seeCasting": "Ver casting",
     "seePipeline": "Ver pipeline",
     "seeTasks": "Mis tareas",
-    "financeTitle": "Finanzas (simuladas)",
+    "financeTitle": "Finanzas",
     "seeFinance": "Ver finanzas",
     "shortcuts": {
       "label": "Atajos de la agencia",
@@ -1218,7 +1218,6 @@
     "description": "Por cobrar a la marca, comisión de la agencia y pagos a los Heros de cada negocio contratado.",
     "unavailable": "Finanzas en actualización",
     "unavailableHint": "Las finanzas aparecen en cuanto se actualice la base de datos.",
-    "simulatedTag": "Simulado",
     "disclaimer": "Registro interno, sin cobro real: aquí no se cobra, paga ni transfiere nada.",
     "filtersLabel": "Filtros de finanzas",
     "filters": {

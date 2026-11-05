@@ -117,7 +117,7 @@ Na conversa: *"a gente não tem certeza, porque não trabalha com isso, mas quan
 
 ## 7. Os módulos do sistema
 
-### 7.1 Portal da Marca (`/marca`, só na web)
+### 7.1 Portal da Marca (`/marca`, na web e no app)
 - **Início:** campanhas, ofertas enviadas, propostas recebidas e avisos.
 - **Buscar heróis:** catálogo só com quem autorizou e foi liberado pela agência, com filtros (segmento, região, público). Cada sugestão explica o critério; sem dados suficientes, a tela diz "dados insuficientes".
 - **Agenda e disponibilidade** do herói (ver a seção 9, ponto B).
@@ -127,7 +127,7 @@ Na conversa: *"a gente não tem certeza, porque não trabalha com isso, mas quan
 - **Equipe da marca:** dono e colaboradores.
 - **Isolamento:** a marca A nunca vê nada da marca B.
 
-### 7.2 Portal da Agência (`/agencia`, só na web)
+### 7.2 Portal da Agência (`/agencia`, na web e no app)
 - **Início executivo:** negócios por etapa, contratos ativos, comissão, entregas atrasadas, heróis sem contato.
 - **Casting:** ficha de cada herói ou talento, com segmentos, redes, media kit, documentos e histórico.
 - **Marcas:** carteira de clientes.
@@ -186,7 +186,7 @@ O módulo de Gestão foi dividido em seis etapas (A a F), e cada uma é publicad
 | D | Contrato agora é só "concordo"; assinatura depois | Aceite "registrado no app"; assinatura eletrônica é integração futura | ✅ bate |
 | E | Herói cria conteúdo; marca aprova ou reprova | Roteiro e entregáveis aprovados pela marca (Etapa D) | ✅ bate |
 | F | **O herói também aprova** | Não previsto (o herói é quem envia) | ⚠️ ajustar se outra pessoa produz por ele |
-| G | Talvez não seja bom no celular | Marca e agência só na web; escritório do herói no app | ✅ bate |
+| G | Talvez não seja bom no celular | Marca e agência na web e no app (decisão de 05/11/2026); escritório do herói no app | ✅ bate |
 | H | "Segundo aplicativo" | Não previsto | ❓ precisa de decisão (seção 15) |
 | I | Agência como meio de campo | Agência é intermediária obrigatória: a marca não negocia valor direto com o herói | ✅ bate, mas tensiona com C |
 

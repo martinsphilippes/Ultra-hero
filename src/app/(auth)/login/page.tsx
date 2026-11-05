@@ -16,7 +16,7 @@ import { legalRichTags } from "@/components/legal/rich-tags";
 import { Divider } from "@/components/ui/divider";
 import { readExperimentOpen } from "@/lib/auth/experiment";
 import { isPasswordlessActive, passwordlessLastDayLabel } from "@/lib/auth/passwordless";
-import { isBusinessProfile, parseSignupProfile, profilesForSurface, startPathFor } from "@/lib/auth/profile-signup";
+import { isBusinessProfile, parseSignupProfile, SIGNUP_PROFILES, startPathFor } from "@/lib/auth/profile-signup";
 import { QUICK_SIGNUP_PENDING_COOKIE } from "@/lib/auth/quick-signup";
 import { quickSignupAvailability } from "@/lib/auth/quick-signup-server";
 import { LOGIN_HOME, safeNext } from "@/lib/auth/safe-next";
@@ -58,9 +58,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
   // Veio do link do convite: abre direto (o convidado cria a senha ali no primeiro acesso).
   const passwordOpen = mode === "password" || queryError === "sessionRequired" || fromInvitation || (passwordless && !perfil);
   // Perfil escolhido; convite (já emitido) e a tela "Sua senha" recarregada seguem no cadastro rápido de sempre.
-  const surfaceProfiles = profilesForSurface(nativeApp !== null);
   const parsedProfile = parseSignupProfile(perfil);
-  const profile = (user && pendingSignup) || fromInvitation ? "consumer" : parsedProfile && surfaceProfiles.includes(parsedProfile) ? parsedProfile : null;
+  const profile = (user && pendingSignup) || fromInvitation ? "consumer" : parsedProfile;
   // com perfil de negócio, entrar com a conta existente continua no passo a passo dele
   const afterLogin = profile && isBusinessProfile(profile) ? startPathFor(profile) : next;
   const chooseParams = new URLSearchParams();
@@ -120,7 +119,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
         <AuthCard title={t("choose.title")} subtitle={t("choose.subtitle")}>
           <div className="flex flex-col gap-5">
             {alerts}
-            <ProfileChooser profiles={surfaceProfiles} next={rawNext ? next : null} email={prefillEmail} />
+            <ProfileChooser profiles={SIGNUP_PROFILES} next={rawNext ? next : null} email={prefillEmail} />
             {alternatives}
           </div>
         </AuthCard>

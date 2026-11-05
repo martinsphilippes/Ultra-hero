@@ -36,8 +36,8 @@ const NOT_IN_APP = [
   "consume.content.lockNote", "consume.content.creatorFictional", "consume.player.demoBadge",
   "discover.explore.products.", "discover.personalities.profile.fictional",
   "discover.personalities.profile.products", "shopping.", "recipes.showcase.ready.", "collectibles.admin.",
-  // portais de gestão (0064): só na web, bloqueados no app das lojas
-  "agency.", "brandPortal.", "adminAgency.",
+  // administração das agências: só o admin da plataforma. Aviso da agência de exemplo: o acesso rápido a ela não existe no app
+  "adminAgency.", "agency.demoBanner.",
   // escritório do creator (0065): o aviso da agência de demonstração é só da web
   "talent.values.",
 ];

@@ -6,7 +6,7 @@ import {
   loginPathFor,
   parseSignupProfile,
   PROFILE_HOME,
-  profilesForSurface,
+  SIGNUP_PROFILES,
   profileSignupSchema,
   selfOnboardingError,
   startPathFor,
@@ -18,9 +18,8 @@ import { isOnboardingKind, isWizardKind } from "@/lib/invitations/rules";
 // 0103: cadastro por perfil (Hero, Marca, Agência ou só o app) e convites pausados.
 
 describe("perfis da tela de entrada", () => {
-  it("quatro cartões na ordem; no app das lojas só Hero e app (marca e agência são só web)", () => {
-    expect(profilesForSurface(false)).toEqual(["hero", "brand", "agency", "consumer"]);
-    expect(profilesForSurface(true)).toEqual(["hero", "consumer"]);
+  it("quatro cartões na ordem, na web e no app das lojas", () => {
+    expect(SIGNUP_PROFILES).toEqual(["hero", "brand", "agency", "consumer"]);
   });
 
   it("?perfil= aceita o slug em português e o nome interno; o resto mostra os cartões", () => {

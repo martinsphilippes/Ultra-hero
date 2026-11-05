@@ -52,10 +52,6 @@ export function destinationAfterSignup(profile: SignupProfile, next: string): st
   return profile === "consumer" ? next : PROFILE_ONBOARDING_PATH;
 }
 
-/** Cartões que aparecem: no app das lojas os portais de marca e agência não existem (só web). */
-export function profilesForSurface(native: boolean): SignupProfile[] {
-  return native ? SIGNUP_PROFILES.filter((p) => p !== "brand" && p !== "agency") : [...SIGNUP_PROFILES];
-}
 
 const passwordSchema = z.string({ error: "required" }).min(8, { error: "passwordTooShort" }).max(72, { error: "passwordTooLong" });
 
