@@ -7628,6 +7628,7 @@ export type Database = {
           availability: string;
           availability_note: string;
           catalog_visible: boolean;
+          category_label: string | null;
           city: string | null;
           commercial_status: string;
           consent_at: string | null;
@@ -7645,7 +7646,9 @@ export type Database = {
           is_demo: boolean;
           last_contact_at: string | null;
           manager_id: string | null;
+          photo_url: string | null;
           state: string | null;
+          topics: string[];
           updated_at: string;
           user_id: string | null;
         };
@@ -7656,6 +7659,7 @@ export type Database = {
           availability?: string;
           availability_note?: string;
           catalog_visible?: boolean;
+          category_label?: string | null;
           city?: string | null;
           commercial_status?: string;
           consent_at?: string | null;
@@ -7673,6 +7677,8 @@ export type Database = {
           is_demo?: boolean;
           last_contact_at?: string | null;
           manager_id?: string | null;
+          photo_url?: string | null;
+          topics?: string[];
           state?: string | null;
           updated_at?: string;
           user_id?: string | null;
@@ -7683,6 +7689,7 @@ export type Database = {
           availability?: string;
           availability_note?: string;
           catalog_visible?: boolean;
+          category_label?: string | null;
           city?: string | null;
           commercial_status?: string;
           consent_at?: string | null;
@@ -7700,6 +7707,8 @@ export type Database = {
           is_demo?: boolean;
           last_contact_at?: string | null;
           manager_id?: string | null;
+          photo_url?: string | null;
+          topics?: string[];
           state?: string | null;
           updated_at?: string;
           user_id?: string | null;
@@ -11800,6 +11809,8 @@ isOneToOne: false
       [_ in never]: never;
     };
     Functions: {
+      casting_groscove_2027_import: { Args: { p_admin_email?: string }; Returns: Json };
+      casting_groscove_2027_data: { Args: Record<PropertyKey, never>; Returns: Json };
       brand_call_save: { Args: { p_brand: string; p_id: string | null; p_data: Json }; Returns: string };
       brand_call_submit: { Args: { p_id: string; p_note: string }; Returns: string };
       brand_call_review: { Args: { p_id: string; p_decision: string; p_note: string }; Returns: string };

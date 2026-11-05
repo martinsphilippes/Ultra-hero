@@ -1,6 +1,6 @@
 import { AtSign, CalendarCheck, CalendarX, MapPin } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
+import { CastingCard } from "@/components/agency/CastingCard";
 import { AudienceBars } from "@/components/talent/AudienceBars";
 import { MetricSource } from "@/components/talent/MetricSource";
 import { Avatar, Badge } from "@/components/ui";
@@ -17,40 +17,33 @@ export function TalentCardCompact({ card, href }: { card: TalentCard; href: stri
   const tn = useTranslations("mediaKit.networks");
   const locale = useLocale() as Locale;
   const top = (card.networks ?? []).find((n) => typeof n.followers === "number");
+  const instagram = (card.networks ?? []).find((n) => n.network === "instagram") ?? null;
+  const flags = [
+    card.insufficientData ? t("insufficientData") : null,
+    card.consentMissing ? t("consentMissing") : null,
+    ...(card.matched ?? []).map((m) => t(`matched.${m}`)),
+  ].filter(Boolean);
+  // 0122: mesmo cartão do casting da agência (formato do documento), com o que o kit libera para a marca
   return (
-    <Link href={href} className="flex h-full flex-col gap-3 rounded-2xl border border-border bg-surface p-4 transition-colors hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" data-testid="catalog-card">
-      <span className="flex items-center gap-3">
-        <Avatar src={card.photoUrl ?? null} name={card.name} size="md" alt="" />
-        <span className="flex min-w-0 flex-col">
-          <span className="truncate text-sm font-semibold text-fg">{card.name}</span>
-          <span className="truncate type-caption text-fg-muted">{card.headline || [card.city, card.state].filter(Boolean).join(" · ") || t("noHeadline")}</span>
-        </span>
-      </span>
-      <span className="flex flex-wrap gap-1.5">
-        <Badge size="sm" variant={card.availability === "available" ? "success" : "warning"}>
-          {t(`availability.${card.availability}`)}
-        </Badge>
-        {card.insufficientData ? (
-          <Badge size="sm" variant="neutral">
-            {t("insufficientData")}
-          </Badge>
-        ) : null}
-        {card.consentMissing ? (
-          <Badge size="sm" variant="warning">
-            {t("consentMissing")}
-          </Badge>
-        ) : null}
-        {(card.matched ?? []).map((m) => (
-          <Badge key={m} size="sm" variant="info">
-            {t(`matched.${m}`)}
-          </Badge>
-        ))}
-      </span>
-      <span className="flex flex-wrap gap-x-3 gap-y-1 type-caption text-fg-muted">
-        <span>{(card.segments ?? []).map((s) => s.name).join(", ") || t("noSegments")}</span>
-        {top ? <span>{t("followers", { network: tn(top.network), count: formatCount(top.followers, locale) ?? "" })}</span> : <span>{t("noMetrics")}</span>}
-      </span>
-    </Link>
+    <CastingCard
+      href={href}
+      name={card.name}
+      photoUrl={card.photoUrl ?? null}
+      category={card.category ?? null}
+      topics={card.topics && card.topics.length > 0 ? card.topics : (card.segments ?? []).map((s) => s.name)}
+      instagram={instagram ? { handle: instagram.handle, url: instagram.url ?? null } : null}
+      testId="catalog-card"
+      meta={
+        <>
+          <span className="block">{[t(`availability.${card.availability}`), ...flags].join(" · ")}</span>
+          <span className="block truncate">
+            {[card.headline || [card.city, card.state].filter(Boolean).join(" · ") || null, top ? t("followers", { network: tn(top.network), count: formatCount(top.followers, locale) ?? "" }) : t("noMetrics")]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+        </>
+      }
+    />
   );
 }
 

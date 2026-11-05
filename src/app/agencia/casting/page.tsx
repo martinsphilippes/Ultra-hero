@@ -3,9 +3,8 @@ import { Contact, Plus, Search } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { FilterAnchor } from "@/components/admin-ops/FilterAnchor";
-import { TalentAccessBadge } from "@/components/agency/TalentAccessBadge";
-import { TalentStatusBadges } from "@/components/agency/TalentStatusBadges";
-import { Avatar, Button, EmptyState, EntitySelect, Input, PageHeader, Select } from "@/components/ui";
+import { CastingCard } from "@/components/agency/CastingCard";
+import { Button, EmptyState, EntitySelect, Input, PageHeader, Select } from "@/components/ui";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
 import { resolveTalentAccess } from "@/lib/talent/access";
@@ -51,6 +50,7 @@ export default async function CastingPage({ searchParams }: Props) {
   ]);
   const canEdit = agencyCan(ctx.role, "manager", ctx.platformAdmin);
   const segmentName = new Map(segments.map((s) => [s.id, s.name]));
+  const managerName = new Map(managers.map((m) => [m.userId, m.name]));
   const filtered = Boolean(filters.segment || filters.availability || filters.status || filters.manager || filters.q);
 
   if (!list.available) {
@@ -134,35 +134,41 @@ export default async function CastingPage({ searchParams }: Props) {
       </form>
 
       {list.items.length > 0 ? (
-        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" data-testid="casting-list">
-          {list.items.map((talent) => (
-            <li key={talent.id}>
-              <Link
-                href={`/agencia/casting/${talent.id}`}
-                className="flex h-full flex-col gap-3 rounded-2xl border border-border bg-surface p-4 transition-colors hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-              >
-                <span className="flex items-center gap-3">
-                  <Avatar src={talent.hero?.avatarUrl ?? null} name={talent.name} size="md" alt="" />
-                  <span className="flex min-w-0 flex-col">
-                    <span className="truncate text-sm font-semibold text-fg">{talent.name}</span>
-                    <span className="truncate type-caption text-fg-muted">
-                      {[talent.city, talent.state].filter(Boolean).join(" · ") || t("noLocation")}
-                      {" · "}
-                      {talent.hero ? t("withPage") : t("withoutPage")}
-                    </span>
-                  </span>
-                </span>
-                <span className="flex flex-wrap gap-1.5">
-                  <TalentStatusBadges status={talent.commercialStatus} availability={talent.availability} consent={talent.consent} catalogVisible={talent.catalogVisible} archived={talent.archived} />
-                  {!talent.archived ? <TalentAccessBadge access={resolveTalentAccess(access.get(talent.id), talent)} /> : null}
-                </span>
-                <span className="flex flex-wrap gap-x-3 gap-y-1 type-caption text-fg-muted">
-                  <span>{talent.segmentIds.map((id) => segmentName.get(id)).filter(Boolean).join(", ") || t("noSegments")}</span>
-                  <span>{talent.topFollowers !== null ? t("topFollowers", { count: formatCount(talent.topFollowers, locale) ?? "" }) : t("noMetrics")}</span>
-                </span>
-              </Link>
-            </li>
-          ))}
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3" data-testid="casting-list">
+          {list.items.map((talent) => {
+            const accessState = talent.archived ? null : resolveTalentAccess(access.get(talent.id), talent);
+            const manager = talent.managerId ? managerName.get(talent.managerId) : null;
+            const followers = talent.topFollowers !== null ? t("topFollowers", { count: formatCount(talent.topFollowers, locale) ?? "" }) : null;
+            return (
+              <li key={talent.id}>
+                <CastingCard
+                  href={`/agencia/casting/${talent.id}`}
+                  name={talent.name}
+                  photoUrl={talent.hero?.avatarUrl ?? talent.photoUrl}
+                  category={talent.category}
+                  topics={talent.topics.length > 0 ? talent.topics : talent.segmentIds.map((id) => segmentName.get(id)).filter((n): n is string => Boolean(n))}
+                  instagram={talent.instagram}
+                  testId="casting-card"
+                  meta={
+                    <>
+                      <span className="block">
+                        {[
+                          talent.archived ? t("archivedTag") : null,
+                          t(`status.${talent.commercialStatus}`),
+                          t(`availability.${talent.availability}`),
+                          accessState ? t(`access.${accessState}`) : null,
+                          talent.catalogVisible ? t("inCatalog") : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </span>
+                      <span className="block truncate">{[manager ? t("card.manager", { name: manager }) : t("card.noManager"), followers].filter(Boolean).join(" · ")}</span>
+                    </>
+                  }
+                />
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <div className="rounded-2xl border border-border bg-surface">

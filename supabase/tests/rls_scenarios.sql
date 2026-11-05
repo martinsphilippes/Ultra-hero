@@ -18429,5 +18429,142 @@ delete from public.agency_members where agency_id::text like 'a1230000-%';
 delete from public.agencies where id::text like 'a1230000-%';
 delete from auth.users where id::text like 'a1230000-%';
 
+-- ================================================================ S124 · Importação do Casting Groscove 2027 (0122)
+-- A agência do admin agencia@gmail.com recebe os 260 nomes do documento (MC Kevin, "Em memória", fica fora) como o
+-- "Novo herói": talento + segmento + Instagram + contato (celular provisório) + convite agency_hero. E-mail já de outro
+-- tipo de conta (0116) é pulado; conta de consumidor com o e-mail é ligada na hora. Rodar de novo não duplica. Marca não
+-- lê ficha, e-mail nem celular; cartão da marca mostra foto/categoria/temas só pelo kit. S14 segue 18.
+\ir ../migrations/0122_casting_groscove_2027.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1240000-0000-4000-8000-000000000001', 'agencia@gmail.com'),
+  ('a1240000-0000-4000-8000-000000000002', 'anitta@gmail.com'),
+  ('a1240000-0000-4000-8000-000000000003', 'alok@gmail.com'),
+  ('a1240000-0000-4000-8000-000000000004', 's124-marca@test.local'),
+  ('a1240000-0000-4000-8000-000000000005', 's124-colab@test.local');
+insert into public.agencies (id, slug, name) values ('a1240000-0000-4000-8000-0000000000a1', 's124-groscove', 'Groscove S124');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1240000-0000-4000-8000-0000000000a1', 'a1240000-0000-4000-8000-000000000001', 'admin', 'Adm S124'),
+  ('a1240000-0000-4000-8000-0000000000a1', 'a1240000-0000-4000-8000-000000000005', 'staff', 'Colab S124');
+insert into public.brands (id, slug, name, site_url) values ('a1240000-0000-4000-8000-0000000000b1', 's124-marca', 'Marca S124', 'https://m.s124.test');
+insert into public.agency_brands (agency_id, brand_id) values ('a1240000-0000-4000-8000-0000000000a1', 'a1240000-0000-4000-8000-0000000000b1');
+-- alok@gmail.com já é Dono de marca (outro tipo: 0116 pula); s124-marca é a equipe que vai tentar ler o casting
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1240000-0000-4000-8000-0000000000b1', 'a1240000-0000-4000-8000-000000000003', 'owner', 'Alok Dono S124'),
+  ('a1240000-0000-4000-8000-0000000000b1', 'a1240000-0000-4000-8000-000000000004', 'staff', 'Equipe S124');
+create table tests.s124 (k text primary key, v jsonb);
+grant all on tests.s124 to anon, authenticated;
+
+select tests.ok('S124 estrutura: colunas novas, funções internas (nem authenticated nem anon), search_path fixo; S14 segue 18',
+  (select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'talent_profiles'
+     and column_name in ('photo_url', 'category_label', 'topics')) = 3
+  and not has_function_privilege('authenticated', 'public.casting_groscove_2027_import(text)', 'execute')
+  and not has_function_privilege('anon', 'public.casting_groscove_2027_import(text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.casting_groscove_2027_data()', 'execute')
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proconfig is null
+                  and p.proname in ('casting_groscove_2027_import', 'casting_groscove_2027_data', 'talent_public_card'))
+  and jsonb_array_length(public.casting_groscove_2027_data()) = 260
+  and not exists (select 1 from jsonb_array_elements(public.casting_groscove_2027_data()) x where x ->> 'name' ilike 'MC Kevin')
+  and (select count(distinct x ->> 'email') from jsonb_array_elements(public.casting_groscove_2027_data()) x) = 260
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+select tests.ok('S124 sem a agência do e-mail não faz nada', public.casting_groscove_2027_import('ninguem.s124@test.local') ->> 'agency' is null);
+
+insert into tests.s124 values ('r1', public.casting_groscove_2027_import('agencia@gmail.com'));
+-- ligados = contas que já existem com algum e-mail do lote (Anitta aqui; outros cenários podem ter criado mais), menos o Alok
+select tests.ok('S124 1ª rodada: 259 criados, convite para quem não tem conta, liga quem tem (Anitta), Alok pulado por ser marca',
+  (select (v ->> 'created')::int = 259 and (v ->> 'existing')::int = 0
+          and (v ->> 'linked')::int = (select count(*) from auth.users u where lower(u.email::text) <> 'alok@gmail.com'
+                 and lower(u.email::text) in (select x ->> 'email' from jsonb_array_elements(public.casting_groscove_2027_data()) x))
+          and (v ->> 'linked')::int >= 1 and (v ->> 'invited')::int + (v ->> 'linked')::int = 259
+          and jsonb_array_length(v -> 'skipped') = 1 and v -> 'skipped' -> 0 ->> 'email' = 'alok@gmail.com'
+          and v -> 'skipped' -> 0 ->> 'reason' = 'profile_conflict:brand'
+   from tests.s124 where k = 'r1'));
+select tests.ok('S124 ficha: prospect, disponível, foto, categoria, temas, nota "celular a confirmar", sem contato na ficha, fora do catálogo',
+  (select count(*) = 259 and bool_and(t.commercial_status = 'prospect' and t.availability = 'available' and t.photo_url like '/casting/%.webp'
+          and t.category_label is not null and cardinality(t.topics) between 0 and 3 and t.internal_notes like '%Celular a confirmar%'
+          and t.contact_email is null and t.contact_phone is null and not t.catalog_visible and t.creator_id is null)
+   from public.talent_profiles t where t.agency_id = 'a1240000-0000-4000-8000-0000000000a1')
+  and (select t.category_label = 'Businessman' and t.photo_url = '/casting/jonathas-groscove.webp'
+       from public.talent_profiles t where t.agency_id = 'a1240000-0000-4000-8000-0000000000a1' and t.display_name = 'Jonathas Groscove')
+  and (select t.topics = array['Música', 'Pop', 'Moda'] and t.category_label = 'Musical artist'
+       from public.talent_profiles t where t.agency_id = 'a1240000-0000-4000-8000-0000000000a1' and t.display_name = 'Anitta'));
+select tests.ok('S124 Instagram declarado pela agência (sem @, URL do QR; seguidores só do Jonathas), segmento por seção, sem página pública',
+  (select count(*) = 259 and count(followers) = 1 and bool_and(a.declared_side = 'agency' and a.source = 'declared' and a.url like 'https://www.instagram.com/%' and a.handle !~ '^@')
+   from public.talent_social_accounts a where a.agency_id = 'a1240000-0000-4000-8000-0000000000a1' and a.network = 'instagram')
+  and (select a.followers = 3700000 from public.talent_social_accounts a where a.agency_id = 'a1240000-0000-4000-8000-0000000000a1' and a.handle = 'jonathasgroscove')
+  and (select count(*) = 259 from public.talent_segment_links l where l.agency_id = 'a1240000-0000-4000-8000-0000000000a1')
+  and (select count(*) = 10 from public.talent_segments s where s.agency_id = 'a1240000-0000-4000-8000-0000000000a1')
+  and exists (select 1 from public.talent_segment_links l join public.talent_segments s on s.id = l.segment_id join public.talent_profiles t on t.id = l.talent_id
+              where t.display_name = 'Neymar' and t.agency_id = 'a1240000-0000-4000-8000-0000000000a1' and s.slug = 'esportes'));
+select tests.ok('S124 contato e convite: e-mail do padrão, celular provisório E.164 único, convite agency_hero pendente de 14 dias',
+  (select count(*) = 259 and count(distinct c.phone_e164) = 259 and bool_and(c.phone_e164 ~ '^\+55119[0-9]{8}$')
+   from public.access_contacts c join public.talent_profiles t on t.id = c.talent_id where t.agency_id = 'a1240000-0000-4000-8000-0000000000a1')
+  and (select c.email = 'denisonl@gmail.com' from public.access_contacts c join public.talent_profiles t on t.id = c.talent_id
+       where t.agency_id = 'a1240000-0000-4000-8000-0000000000a1' and t.display_name = 'Denison Luz')
+  and (select count(*) = (select (v ->> 'invited')::int from tests.s124 where k = 'r1') and bool_and(i.kind = 'agency_hero' and i.role::text = 'creator' and i.expires_at > now() + interval '13 days')
+       from public.invitations i where i.agency_id = 'a1240000-0000-4000-8000-0000000000a1' and i.status = 'pending')
+  and (select t.user_id = 'a1240000-0000-4000-8000-000000000002' from public.talent_profiles t
+       where t.agency_id = 'a1240000-0000-4000-8000-0000000000a1' and t.display_name = 'Anitta'));
+
+insert into tests.s124 values ('r2', public.casting_groscove_2027_import('agencia@gmail.com'));
+select tests.ok('S124 2ª rodada não duplica: nada criado, nenhum convite novo',
+  (select (v ->> 'created')::int = 0 and (v ->> 'existing')::int = 259 and (v ->> 'invited')::int = 0 from tests.s124 where k = 'r2')
+  and (select count(*) = 259 from public.talent_profiles t where t.agency_id = 'a1240000-0000-4000-8000-0000000000a1')
+  and (select count(*) = (select (v ->> 'invited')::int from tests.s124 where k = 'r1') from public.invitations i where i.agency_id = 'a1240000-0000-4000-8000-0000000000a1')
+  and (select count(*) = 259 from public.talent_social_accounts a where a.agency_id = 'a1240000-0000-4000-8000-0000000000a1'));
+
+-- reivindicação pelo mesmo e-mail (cadastro depois da importação com denisonl@gmail.com)
+insert into auth.users (id, email) values ('a1240000-0000-4000-8000-000000000006', 'denisonl@gmail.com');
+select tests.login('a1240000-0000-4000-8000-000000000006', 'denisonl@gmail.com');
+select tests.ok('S124 quem entra com o e-mail do convite vira o login do herói', jsonb_array_length(public.accept_my_invitations()) = 1);
+select tests.su();
+select tests.ok('S124 herói reivindicado', (select t.user_id = 'a1240000-0000-4000-8000-000000000006' from public.talent_profiles t
+  where t.agency_id = 'a1240000-0000-4000-8000-0000000000a1' and t.display_name = 'Denison Luz'));
+
+-- quem lê o quê
+insert into tests.s124 select 'neymar', jsonb_build_object('id', t.id) from public.talent_profiles t
+where t.display_name = 'Neymar' and t.agency_id = 'a1240000-0000-4000-8000-0000000000a1';
+select tests.login('a1240000-0000-4000-8000-000000000001', 'agencia@gmail.com');
+select tests.ok('S124 admin da agência lê ficha (foto/temas) e contato com celular',
+  (select count(*) = 259 from public.talent_profiles where agency_id = 'a1240000-0000-4000-8000-0000000000a1' and photo_url is not null)
+  and (select count(*) = 259 from public.access_contacts c join public.talent_profiles t on t.id = c.talent_id where t.agency_id = 'a1240000-0000-4000-8000-0000000000a1'));
+select tests.login('a1240000-0000-4000-8000-000000000005', 's124-colab@test.local');
+select tests.ok('S124 colaborador lê a ficha mas não o contato',
+  (select count(*) = 259 from public.talent_profiles where agency_id = 'a1240000-0000-4000-8000-0000000000a1')
+  and (select count(*) = 0 from public.access_contacts));
+select tests.login('a1240000-0000-4000-8000-000000000004', 's124-marca@test.local');
+select tests.ok('S124 marca não lê ficha, e-mail, celular, redes nem convites; talento sem consentimento não aparece no detalhe',
+  (select count(*) = 0 from public.talent_profiles where agency_id = 'a1240000-0000-4000-8000-0000000000a1')
+  and (select count(*) = 0 from public.access_contacts)
+  and (select count(*) = 0 from public.talent_social_accounts where agency_id = 'a1240000-0000-4000-8000-0000000000a1')
+  and (select count(*) = 0 from public.invitations where agency_id = 'a1240000-0000-4000-8000-0000000000a1')
+  and public.brand_talent_detail('a1240000-0000-4000-8000-0000000000b1',
+        (select (v ->> 'id')::uuid from tests.s124 where k = 'neymar')) is null);
+select tests.anon();
+select tests.expect_error('S124 visitante não lê a ficha', $q$select count(*) from public.talent_profiles$q$, 'permission denied');
+select tests.expect_error('S124 visitante não lê o contato', $q$select count(*) from public.access_contacts$q$, 'permission denied');
+select tests.expect_error('S124 visitante não roda a importação', $q$select public.casting_groscove_2027_import('agencia@gmail.com')$q$, 'permission denied');
+select tests.su();
+-- cartão da marca: com o kit mostrando foto e segmentos, sai a foto do casting, a categoria e os temas (nunca e-mail/celular)
+insert into public.media_kits (agency_id, talent_id, visible_fields)
+select t.agency_id, t.id, '{photo,segments,networks}' from public.talent_profiles t where t.agency_id = 'a1240000-0000-4000-8000-0000000000a1' and t.display_name = 'Anitta';
+select tests.ok('S124 cartão da marca: foto, categoria e temas pelo kit; sem contato',
+  (select c ->> 'photo_url' = '/casting/anitta.webp' and c ->> 'category' = 'Musical artist' and c -> 'topics' = '["Música","Pop","Moda"]'::jsonb
+          and not (c::text like '%anitta@gmail.com%') and not (c::text like '%+55119%')
+   from (select public.talent_public_card(t.id) as c from public.talent_profiles t where t.agency_id = 'a1240000-0000-4000-8000-0000000000a1' and t.display_name = 'Anitta') x));
+
+delete from public.invitations where agency_id = 'a1240000-0000-4000-8000-0000000000a1';
+delete from public.role_assignments where user_id::text like 'a1240000-%';
+delete from public.inbox_notifications where user_id::text like 'a1240000-%';
+delete from public.talent_profiles where agency_id = 'a1240000-0000-4000-8000-0000000000a1';
+delete from public.agency_brands where agency_id = 'a1240000-0000-4000-8000-0000000000a1';
+delete from public.brand_members where brand_id = 'a1240000-0000-4000-8000-0000000000b1';
+delete from public.brands where id = 'a1240000-0000-4000-8000-0000000000b1';
+delete from public.agency_members where agency_id = 'a1240000-0000-4000-8000-0000000000a1';
+delete from public.agencies where id = 'a1240000-0000-4000-8000-0000000000a1';
+delete from auth.users where id::text like 'a1240000-%';
+drop table tests.s124;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

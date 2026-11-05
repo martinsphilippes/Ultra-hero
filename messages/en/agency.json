@@ -597,6 +597,13 @@
       "createPageHint": "The page goes live already linked to this record. Change photo and cover later in Heroes.",
       "cancel": "Cancel",
       "pageCreated": "Public page created and linked to the record."
+    },
+    "card": {
+      "verified": "Verified",
+      "defaultCategory": "Hero",
+      "instagram": "Open Instagram @{handle} in a new tab",
+      "manager": "Manager: {name}",
+      "noManager": "No manager"
     }
   },
   "documents": {

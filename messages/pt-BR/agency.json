@@ -597,6 +597,13 @@
       "createPageHint": "A página nasce no ar e já ligada a esta ficha. Foto e capa você troca depois em Heróis.",
       "cancel": "Cancelar",
       "pageCreated": "Página pública criada e ligada à ficha."
+    },
+    "card": {
+      "verified": "Verificado",
+      "defaultCategory": "Herói",
+      "instagram": "Abrir o Instagram @{handle} em nova aba",
+      "manager": "Gestor: {name}",
+      "noManager": "Sem gestor"
     }
   },
   "documents": {

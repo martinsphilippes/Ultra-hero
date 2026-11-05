@@ -22,7 +22,7 @@ export function CatalogGrid({ cards, ratings }: Props) {
 
   return (
     <>
-      <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" data-testid="catalog-list">
+      <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3" data-testid="catalog-list">
         {cards.map((card) => {
           const r = ratings[card.id];
           const on = ids.includes(card.id);

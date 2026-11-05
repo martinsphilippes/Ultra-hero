@@ -440,6 +440,9 @@ export type TalentCard = {
   name: string;
   availability: string;
   photoUrl?: string | null;
+  /** Texto do selo e temas do herói (0122), quando o kit mostra os segmentos. */
+  category?: string | null;
+  topics?: string[];
   headline?: string;
   about?: string;
   city?: string | null;
@@ -467,6 +470,8 @@ export function toCard(raw: Record<string, unknown>): TalentCard {
     name: String(raw.name ?? ""),
     availability: String(raw.availability ?? "available"),
     photoUrl: (raw.photo_url as string | null | undefined) ?? null,
+    category: typeof raw.category === "string" ? raw.category : null,
+    topics: Array.isArray(raw.topics) ? (raw.topics as unknown[]).filter((x): x is string => typeof x === "string") : [],
     headline: raw.headline as string | undefined,
     about: raw.about as string | undefined,
     city: raw.city as string | null | undefined,

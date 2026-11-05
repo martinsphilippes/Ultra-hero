@@ -20,6 +20,13 @@ export type TalentListItem = {
   consent: "active" | "revoked" | "none";
   catalogVisible: boolean;
   hero: { name: string; slug: string; avatarUrl: string | null } | null;
+  /** Foto do casting (0122): a da página do herói tem prioridade na tela. */
+  photoUrl: string | null;
+  /** Texto do selo (ex.: "Musical artist") e temas do herói (0122). */
+  category: string | null;
+  topics: string[];
+  /** Instagram declarado (o de mais seguidores, ou o primeiro). */
+  instagram: { handle: string; url: string | null } | null;
   hasLogin: boolean;
   managerId: string | null;
   segmentIds: string[];
@@ -57,7 +64,7 @@ export type MediaKitRow = {
 export type TalentFilters = { segment?: string; availability?: string; status?: string; manager?: string; q?: string; archived?: boolean };
 
 const LIST_SELECT =
-  "id, display_name, city, state, commercial_status, availability, consent_at, consent_revoked_at, catalog_visible, creator_id, user_id, manager_id, archived_at, availability_note, contact_email, contact_phone, internal_notes, last_contact_at, consent_version, created_at, updated_at, creator:creator_profiles(name, slug, avatar_url), talent_segment_links(segment_id), talent_social_accounts(followers)";
+  "id, display_name, city, state, commercial_status, availability, consent_at, consent_revoked_at, catalog_visible, creator_id, user_id, manager_id, archived_at, availability_note, contact_email, contact_phone, internal_notes, last_contact_at, consent_version, created_at, updated_at, photo_url, category_label, topics, creator:creator_profiles(name, slug, avatar_url), talent_segment_links(segment_id), talent_social_accounts(network, handle, url, followers)";
 
 type TalentRow = {
   id: string;
@@ -81,13 +88,17 @@ type TalentRow = {
   last_contact_at: string | null;
   created_at: string;
   updated_at: string;
+  photo_url: string | null;
+  category_label: string | null;
+  topics: string[] | null;
   creator: { name: string; slug: string; avatar_url: string | null } | null;
   talent_segment_links: { segment_id: string }[] | null;
-  talent_social_accounts: { followers: number | null }[] | null;
+  talent_social_accounts: { network: string; handle: string; url: string | null; followers: number | null }[] | null;
 };
 
 function toDetail(r: TalentRow): TalentDetail {
   const followers = (r.talent_social_accounts ?? []).map((a) => a.followers).filter((f): f is number => f !== null);
+  const instagram = (r.talent_social_accounts ?? []).filter((a) => a.network === "instagram").sort((a, b) => (b.followers ?? -1) - (a.followers ?? -1))[0] ?? null;
   return {
     id: r.id,
     name: r.display_name,
@@ -98,6 +109,10 @@ function toDetail(r: TalentRow): TalentDetail {
     consent: r.consent_at && !r.consent_revoked_at ? "active" : r.consent_revoked_at ? "revoked" : "none",
     catalogVisible: r.catalog_visible,
     hero: r.creator ? { name: r.creator.name, slug: r.creator.slug, avatarUrl: r.creator.avatar_url } : null,
+    photoUrl: r.photo_url,
+    category: r.category_label,
+    topics: r.topics ?? [],
+    instagram: instagram ? { handle: instagram.handle, url: instagram.url } : null,
     hasLogin: Boolean(r.user_id) || Boolean(r.creator_id),
     managerId: r.manager_id,
     segmentIds: (r.talent_segment_links ?? []).map((l) => l.segment_id),

@@ -597,6 +597,13 @@
       "createPageHint": "La página sale al aire ya vinculada a esta ficha. Cambia foto y portada después en Héroes.",
       "cancel": "Cancelar",
       "pageCreated": "Página pública creada y vinculada a la ficha."
+    },
+    "card": {
+      "verified": "Verificado",
+      "defaultCategory": "Héroe",
+      "instagram": "Abrir el Instagram @{handle} en una pestaña nueva",
+      "manager": "Gestor: {name}",
+      "noManager": "Sin gestor"
     }
   },
   "documents": {
