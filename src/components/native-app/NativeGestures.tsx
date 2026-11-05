@@ -2,11 +2,9 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useTransition } from "react";
-import { NAV_ITEMS } from "@/components/layout/nav-items";
 import { Spinner } from "@/components/ui/spinner";
 import { adjacentTab, isTabSwipe, PULL_REST, PULL_TRIGGER, pullDistance, SWIPE_EDGE } from "@/lib/native-app/gestures";
 
-const TABS = NAV_ITEMS.filter((item) => !item.webOnly).map((item) => item.href);
 const NO_GESTURE = "dialog, [role='dialog'], [role='slider'], [data-no-gesture], input, textarea, select, video, iframe";
 const SCROLLER = ".uh-native-scroller";
 
@@ -84,7 +82,8 @@ export function NativeGestures() {
       if (e.touches.length !== 1 || !(e.target instanceof Element) || e.target.closest(NO_GESTURE)) return;
       const touch = e.touches[0];
       const scroller = document.querySelector(SCROLLER);
-      const top = scroller ? scroller.scrollTop : window.scrollY;
+      // os dois: num tablet, os portais rolam no documento mesmo com o contêiner (md:static)
+      const top = Math.max(scroller?.scrollTop ?? 0, window.scrollY);
       gesture = { x: touch.clientX, y: touch.clientY, target: e.target, atTop: top <= 0 && !scrolledAncestor(e.target, scroller, "y"), mode: null, pull: 0 };
     };
 
@@ -122,7 +121,11 @@ export function NativeGestures() {
       const touch = e.changedTouches[0];
       if (done.mode !== "swipe" || !touch || done.x < SWIPE_EDGE || done.x > window.innerWidth - SWIPE_EDGE) return;
       if (!isTabSwipe(touch.clientX - done.x, touch.clientY - done.y) || scrolledAncestor(done.target, null, "x")) return;
-      const href = adjacentTab(path.current, touch.clientX - done.x, TABS);
+      // as abas que a barra mostra a esta pessoa (a aba Portal depende do papel)
+      const tabs = Array.from(document.querySelectorAll<HTMLAnchorElement>(".uh-bottomnav a"))
+        .filter((link) => link.offsetParent !== null)
+        .map((link) => link.pathname);
+      const href = adjacentTab(path.current, touch.clientX - done.x, tabs);
       if (href) router.push(href);
     };
 

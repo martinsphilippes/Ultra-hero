@@ -82,7 +82,8 @@ export default async function SettingsPage() {
   const native = parseNativeApp((await headers()).get("user-agent")) !== null;
   const sections = buildSettingsSections(Array.from(new Set(roles.map((r) => r.role))), undefined, { hasTalent: talent?.state === "ok", platformAdmin: true })
     .map((section) => ({ ...section, items: forSurface(section.items, native) }))
-    .filter((section) => section.items.length > 0);
+    // os portais agora têm a aba Portal (web e app)
+    .filter((section) => section.key !== "portals" && section.items.length > 0);
   // Sem "Novo perfil" (decisão do dono, 0116): uma conta tem um só perfil de negócio (Hero, Marca OU Agência); o perfil
   // se escolhe no cadastro. Portais vêm no topo (buildSettingsSections os põe primeiro).
 

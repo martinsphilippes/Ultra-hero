@@ -8,9 +8,11 @@ import { PushRegistrar } from "@/components/push/PushRegistrar";
 import { IconButton } from "@/components/ui/icon-button";
 import { getSessionSummary } from "@/lib/auth/session";
 import { getNativeApp } from "@/lib/native-app/server";
+import { getMyPortalItems } from "@/lib/portals/server";
 import { isShopComingSoon, shopLockedFor } from "@/lib/shop/coming-soon";
 import { resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
 import { BottomNav, TopNavLinks } from "./AppNav";
+import { portalNavHref } from "./nav-items";
 import { AppearanceMenu } from "./AppearanceMenu";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { Logo } from "./Logo";
@@ -19,17 +21,19 @@ import { UserMenu } from "./UserMenu";
 
 // Casca do consumidor: barra superior (md+), conteúdo com links legais no fim e barra inferior (mobile).
 export async function AppShell({ children }: { children: ReactNode }) {
-  const [session, cookieStore, t, ta, nativeApp] = await Promise.all([
+  const [session, cookieStore, t, ta, nativeApp, portals] = await Promise.all([
     getSessionSummary(),
     cookies(),
     getTranslations("nav"),
     getTranslations("common.a11y"),
     getNativeApp(),
+    getMyPortalItems(),
   ]);
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
   const theme = resolveTheme(themeCookie);
   // Coming soon da aba Comprar: selo "Em breve" e Colecionáveis como entrada (admin vê a loja normal)
   const shopSoon = shopLockedFor({ comingSoon: isShopComingSoon(), isAdmin: session?.roles.includes("admin") ?? false });
+  const portalHref = portalNavHref(portals.map((portal) => portal.href));
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -49,7 +53,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
 
           {/* Navegação principal só no desktop; no mobile fica na barra inferior */}
           <nav aria-label={ta("mainNavigation")} className="hidden md:block">
-            <TopNavLinks shopSoon={shopSoon} />
+            <TopNavLinks shopSoon={shopSoon} portalHref={portalHref} />
           </nav>
 
           <div className="flex items-center gap-0.5">
@@ -76,7 +80,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
       </main>
 
       <div className="print:hidden">
-        <BottomNav shopSoon={shopSoon} />
+        <BottomNav shopSoon={shopSoon} portalHref={portalHref} />
       </div>
       {/* app das lojas, logado: mantém o token de push deste aparelho na conta */}
       {session && nativeApp ? <PushRegistrar /> : null}

@@ -12,18 +12,14 @@ const ICONS: Record<SettingsPortalRole, LucideIcon> = {
   admin: ShieldCheck,
 };
 
-// Portais no topo do Perfil (pedido do responsável: a entrada no painel fica "bem em cima", sem
-// precisar abrir Configurações). Mesmas linhas da seção Portais; no app das lojas, os portais só da
-// web já chegam filtrados do servidor (forSurface) e o middleware barra a rota.
+// Escolha de portal (/portais), para quem tem mais de um; no app das lojas, os portais só da web já chegam filtrados do
+// servidor (forSurface) e o middleware barra a rota.
 export async function PortalShortcuts({ items }: { items: SettingsItem[] }) {
   const portals = items.filter((i): i is Extract<SettingsItem, { kind: "portal" }> => i.kind === "portal");
   if (portals.length === 0) return null;
   const t = await getTranslations("me.profile.portals");
   return (
-    <nav aria-labelledby="profile-portals-title" data-testid="profile-portals" className="flex flex-col gap-2">
-      <h2 id="profile-portals-title" className="type-overline px-1 text-fg-muted">
-        {t("title")}
-      </h2>
+    <nav aria-label={t("title")} data-testid="profile-portals" className="flex flex-col gap-2">
       <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
         {portals.map((item) => {
           const Icon = ICONS[item.key];

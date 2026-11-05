@@ -4,12 +4,16 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { getSessionSummary } from "@/lib/auth/session";
+import { getMyPortalItems } from "@/lib/portals/server";
+import { isShopComingSoon, shopLockedFor } from "@/lib/shop/coming-soon";
 import { resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
+import { BottomNav } from "./AppNav";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { Logo } from "./Logo";
 import { PortalMobileMenu, PortalNavList } from "./PortalSidebar";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
+import { portalNavHref } from "./nav-items";
 import { PORTAL_ROOT, type Portal } from "./portal-nav";
 
 type PortalShellProps = {
@@ -27,12 +31,14 @@ type PortalShellProps = {
 // no celular, ação à direita (o sino) e "Voltar ao app" no menu. O Portal do Hero (0097) também tem menu: ele juntou
 // a área do Hero e o escritório do casting. O gate de papel acontece no layout que chama este componente.
 export async function PortalShell({ portal, children, navKeys, headerAction, badge }: PortalShellProps) {
-  const [session, cookieStore, t, ta] = await Promise.all([
+  const [session, cookieStore, t, ta, portals] = await Promise.all([
     getSessionSummary(),
     cookies(),
     getTranslations("nav"),
     getTranslations("common"),
+    getMyPortalItems(),
   ]);
+  const shopSoon = shopLockedFor({ comingSoon: isShopComingSoon(), isAdmin: session?.roles.includes("admin") ?? false });
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
   const theme = resolveTheme(themeCookie);
 
@@ -71,9 +77,17 @@ export async function PortalShell({ portal, children, navKeys, headerAction, bad
           </div>
         </header>
 
-        <main id="main" tabIndex={-1} className="mx-auto w-full max-w-content flex-1 px-gutter py-6 outline-none">
+                {/* no celular, a barra das abas segue aqui: a pessoa volta ao app sem procurar o caminho */}
+        <main
+          id="main"
+          tabIndex={-1}
+          className="uh-native-scroller mx-auto w-full max-w-content flex-1 px-gutter pb-[calc(var(--spacing-bottomnav)+env(safe-area-inset-bottom)+1.5rem)] pt-6 outline-none md:static! md:pb-6 print:p-0 print:static!"
+        >
           {children}
         </main>
+      </div>
+      <div className="print:hidden">
+        <BottomNav shopSoon={shopSoon} portalHref={portalNavHref(portals.map((item) => item.href))} />
       </div>
     </div>
   );

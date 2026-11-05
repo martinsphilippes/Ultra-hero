@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { heroPickerHref } from "@/lib/acting-hero/constants";
 import { createClient } from "@/lib/supabase/server";
@@ -18,7 +17,6 @@ import { HeroPendingNotice } from "@/components/creator/HeroPendingNotice";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { TodaySection } from "@/components/me/today/TodaySection";
-import { PortalShortcuts } from "@/components/me/PortalShortcuts";
 import { Avatar, Badge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProfile, getRoles, isTalentOnly, requireUser } from "@/lib/auth/session";
@@ -27,8 +25,6 @@ import { getTalentContext } from "@/lib/talent/server";
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
 import { getHeroCoverState } from "@/lib/hero-cover/availability";
 import { loadEvolutionSummary } from "@/lib/routine/evolution-summary";
-import { buildPortalItems, forSurface } from "@/lib/settings/sections";
-import { parseNativeApp } from "@/lib/native-app/surface";
 import { resolveTheme } from "@/lib/theme/constants";
 import { resolveTodayView } from "@/lib/health/view";
 
@@ -130,10 +126,6 @@ export default async function ProfilePage() {
     </div>
   );
 
-  // portais no topo (pedido do responsável): agência, marca, admin, profissional e o Portal do Hero (0097)
-  const native = parseNativeApp((await headers()).get("user-agent")) !== null;
-  const portalItems = forSurface(buildPortalItems(roleSet, undefined, { hasTalent: talentCtx?.state === "ok", platformAdmin: true }), native);
-
   return (
     <div className="flex flex-col gap-8">
       <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} />
@@ -144,7 +136,6 @@ export default async function ProfilePage() {
           <span aria-hidden="true">→</span>
         </Link>
       ) : null}
-      <PortalShortcuts items={portalItems} />
 
       {heroProfile ? (
         // topo do Hero: cabeçalho público → Novo post e Novo conteúdo → Editar perfil
