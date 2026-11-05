@@ -1,10 +1,10 @@
 "use client";
 
-import { Archive, CircleCheck, CircleX, EyeOff, Send, Undo2 } from "lucide-react";
+import { Archive, ArchiveRestore, CircleCheck, CircleX, EyeOff, Send, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { archiveContent, publishContent, submitContentForReview, unpublishContent, withdrawContentReview } from "@/app/heroi/conteudos/actions";
+import { archiveContent, publishContent, restoreContent, submitContentForReview, unpublishContent, withdrawContentReview } from "@/app/heroi/conteudos/actions";
 import type { ChecklistItem } from "@/components/editors/content/schema";
 import { Button, Dialog, useToast } from "@/components/ui";
 
@@ -266,6 +266,20 @@ export function ArchiveContentButton({ contentId, afterHref }: { contentId: stri
       danger
       testId="archive-content"
       keys={{ button: "archive", title: "archiveTitle", description: "archiveDescription", confirm: "archiveConfirm", success: "archived" }}
+    />
+  );
+}
+
+// "Desarquivar": o que o próprio Hero arquivou volta a rascunho, com tudo editável de novo.
+export function UnarchiveContentButton({ contentId }: { contentId: string }) {
+  return (
+    <ConfirmContentAction
+      contentId={contentId}
+      run={restoreContent}
+      icon={<ArchiveRestore />}
+      variant="primary"
+      testId="unarchive-content"
+      keys={{ button: "unarchive", title: "unarchiveTitle", description: "unarchiveDescription", confirm: "unarchiveConfirm", success: "unarchived" }}
     />
   );
 }

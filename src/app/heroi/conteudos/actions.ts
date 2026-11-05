@@ -130,6 +130,19 @@ export async function withdrawContentReview(input: { id: string }): Promise<Acti
   return { ok: true };
 }
 
+// Desarquivar: o que o próprio Hero arquivou volta a rascunho editável (creator_restore_content); o que a
+// administração arquivou fica travado (archived_by_admin).
+export async function restoreContent(input: { id: string }): Promise<ActionResult> {
+  const parsed = idInput.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const ctx = await creatorActionContext("content");
+  if (!ctx.ok) return ctx;
+  const { error } = await ctx.supabase.rpc("creator_restore_content", { p_content: parsed.data.id });
+  if (error) return failFrom(error);
+  revalidateContent(parsed.data.id);
+  return { ok: true };
+}
+
 // Arquivar: rascunho que nunca foi ao ar qualquer um da equipe; o que já esteve no ar só o titular (owner_only).
 export async function archiveContent(input: { id: string }): Promise<ActionResult> {
   const parsed = idInput.safeParse(input);

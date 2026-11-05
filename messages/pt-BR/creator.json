@@ -76,7 +76,7 @@
       },
       "archived": {
         "title": "Arquivado",
-        "description": "Arquivado. Fica somente leitura e não volta ao ar por aqui."
+        "description": "Arquivado: fora do ar. Toque em Desarquivar para voltar a editar e publicar de novo."
       },
       "draftReview": {
         "title": "Rascunho",
@@ -125,7 +125,19 @@
     "archiveTitle": "Arquivar este conteúdo?",
     "archiveDescription": "Ele sai da lista ativa e não aparece no app. O que já esteve no ar só o titular do Hero arquiva.",
     "archiveConfirm": "Arquivar",
-    "archived": "Arquivado"
+    "archived": "Arquivado",
+    "unarchive": "Desarquivar",
+    "unarchiveTitle": "Desarquivar este conteúdo?",
+    "unarchiveDescription": "Ele volta como rascunho, com tudo editável (texto, foto, capa e blocos). Para aparecer no app, publique de novo.",
+    "unarchiveConfirm": "Desarquivar",
+    "unarchived": "Desarquivado: voltou para rascunho.",
+    "photo": {
+      "title": "Foto do post",
+      "description": "Troque por outra da galeria ou da câmera. A capa acompanha a foto.",
+      "change": "Trocar foto",
+      "changing": "Enviando…",
+      "changed": "Foto trocada."
+    }
   },
   "post": {
     "cta": "Novo post",

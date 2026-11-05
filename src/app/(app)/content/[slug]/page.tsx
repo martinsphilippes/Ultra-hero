@@ -157,6 +157,8 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
     getTranslations("catalog"),
   ]);
   if (!content) notFound();
+  // arquivado está fora do ar para todos, inclusive o dono (ele vê e desarquiva em Meus conteúdos)
+  if (content.status === "archived") notFound();
 
   const supabase = await createClient();
   const path = `/content/${content.slug}`;

@@ -210,3 +210,66 @@ export async function discardPhotoPost(input: { contentId: string }): Promise<Di
   }
   return { ok: true, deleted: true };
 }
+
+type ReplaceResult = { ok: true } | ActionFailure;
+
+/**
+ * Trocar a foto de um post em rascunho (depois de despublicar ou desarquivar): mesma conferência do envio novo
+ * (tipo, tamanho, direitos de uso, reserva no banco), grava o objeto e troca a foto do corpo e a capa. A foto antiga
+ * fica sem uso e a limpeza diária apaga (post_photo_orphan_uploads). Só rascunho fora de revisão: o banco recusa o resto.
+ */
+export async function replacePostPhoto(formData: FormData): Promise<ReplaceResult> {
+  const id = idSchema.safeParse({ contentId: formData.get("contentId") });
+  if (!id.success) return { ok: false, error: "invalid_input" };
+  const contentId = id.data.contentId;
+  const ctx = await creatorActionContext("post");
+  if (!ctx.ok) return ctx;
+  const { supabase, creatorId, userId } = ctx;
+  if (!(await hasUploadRights(supabase, userId))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
+  const base = supabaseBaseUrl();
+  if (!hasAdminClient() || !base) return { ok: false, error: "photo_not_configured" };
+
+  const [{ data: content }, { data: body }] = await Promise.all([
+    supabase.from("content").select("id, creator_id, status, review_status, cover_url").eq("id", contentId).maybeSingle(),
+    supabase.from("content_bodies").select("media_provider, media_ref").eq("content_id", contentId).maybeSingle(),
+  ]);
+  if (!content || content.creator_id !== creatorId) return { ok: false, error: "not_found" };
+  if (content.status !== "draft" || content.review_status === "in_review") return { ok: false, error: "content_not_editable" };
+  if (!body || body.media_provider !== "upload") return { ok: false, error: "invalid_input" };
+
+  const parsed = fileSchema.safeParse(formData.get("file"));
+  if (!parsed.success) {
+    const code = parsed.error.issues[0]?.message;
+    return { ok: false, error: code === "empty_file" || code === "file_too_large" ? code : "not_image" };
+  }
+  const bytes = new Uint8Array(await parsed.data.arrayBuffer());
+  const check = validatePostPhotoBytes(bytes);
+  if (!check.ok) return { ok: false, error: check.error };
+
+  const { data: path, error: claimError } = await supabase.rpc("post_photo_upload_claim", { p_bytes: bytes.length, p_mime: check.image.mime });
+  if (claimError || typeof path !== "string") return rpcFailure(claimError);
+  if (!path.startsWith(`${userId}/`) || !isPostPhotoPath(path)) return { ok: false, error: "generic" };
+
+  const admin = createAdminClient();
+  try {
+    await storePostPhoto(admin, { path, bytes, mime: check.image.mime });
+  } catch (error) {
+    console.warn("[post-photo] envio ao Storage falhou:", error instanceof Error ? error.message : error);
+    return { ok: false, error: "upload_failed" };
+  }
+
+  // corpo com o cliente do usuário: o gatilho da 0043 confere que a foto nova é do próprio Hero
+  const { error: bodyError } = await supabase.from("content_bodies").update({ media_ref: path }).eq("content_id", contentId);
+  if (bodyError) {
+    await removePostPhoto(admin, path);
+    return failFrom(bodyError);
+  }
+  // a capa acompanha a foto quando era ela (post rápido); capa escolhida à parte fica como está
+  const oldUrl = body.media_ref ? publicPostPhotoUrl(base, body.media_ref) : null;
+  if (!content.cover_url || content.cover_url === oldUrl) {
+    await supabase.from("content").update({ cover_url: publicPostPhotoUrl(base, path) }).eq("id", contentId);
+  }
+  revalidatePost();
+  revalidatePath(`/heroi/conteudos/${contentId}/editar`);
+  return { ok: true };
+}

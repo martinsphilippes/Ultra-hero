@@ -8,7 +8,8 @@ import { ContentStatusBadges } from "@/components/creator/ContentStatusBadges";
 import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { CreatorContentEditor } from "@/components/creator/content/CreatorContentEditor";
 import { CampaignBanner } from "@/components/hero-work/CampaignBanner";
-import { ArchiveContentButton, PublishButton, SubmitReviewButton, UnpublishButton, WithdrawReviewButton } from "@/components/creator/PublishButtons";
+import { ReplacePostPhoto } from "@/components/creator/ReplacePostPhoto";
+import { ArchiveContentButton, PublishButton, SubmitReviewButton, UnarchiveContentButton, UnpublishButton, WithdrawReviewButton } from "@/components/creator/PublishButtons";
 import { ReviewTimeline, type ReviewRow } from "@/components/creator/ReviewTimeline";
 import { contentChecklist } from "@/components/editors/content/schema";
 import type { ContentFormValues } from "@/components/editors/types";
@@ -27,7 +28,7 @@ import { getContentWorkspace, getManagedCreator } from "../../../_lib/creator";
 type Params = { params: Promise<{ id: string }>; searchParams: Promise<{ campanha?: string }> };
 
 const CONTENT_SELECT =
-  "id, slug, title, summary, cover_url, pillar, type, source_locale, duration_minutes, difficulty, tags, has_captions, disclaimer_kind, status, review_status, published_at, creator_id, media_license_kind";
+  "id, slug, title, summary, cover_url, pillar, type, source_locale, duration_minutes, difficulty, tags, has_captions, disclaimer_kind, status, review_status, published_at, creator_id, media_license_kind, archived_by";
 
 type ContentRow = {
   id: string;
@@ -46,6 +47,7 @@ type ContentRow = {
   status: Enums<"content_status">;
   review_status: Enums<"review_status">;
   published_at: string | null;
+  archived_by: string | null;
   creator_id: string | null;
   media_license_kind: ContentFormValues["media_license_kind"];
 };
@@ -171,6 +173,11 @@ export default async function EditContentPage({ params, searchParams }: Params) 
     <div className="flex flex-col gap-6">
       <PageHeader title={content.title} eyebrow={ctx.profile?.name ?? tn("creator.content")} backHref="/heroi/conteudos" backLabel={tn("creator.content")}>
         {/* ações abaixo do título: no celular não espremem o cabeçalho */}
+        {step === "archived" && content.archived_by === "creator" && (
+          <div className="flex flex-wrap items-center gap-2" data-testid="creator-content-actions">
+            <UnarchiveContentButton contentId={content.id} />
+          </div>
+        )}
         {step !== "archived" && (
           <div className="flex flex-wrap items-center gap-2" data-testid="creator-content-actions">
             {step === "publish" && heroPending && (
@@ -224,7 +231,13 @@ export default async function EditContentPage({ params, searchParams }: Params) 
         </p>
       ) : null}
 
+      {/* foto do post rápido: no rascunho dá para trocar (depois de despublicar ou desarquivar) */}
+      {editable && bodyRow?.media_provider === "upload" && bodyRow.media_ref ? (
+        <ReplacePostPhoto contentId={content.id} photoUrl={content.cover_url} />
+      ) : null}
+
       <CreatorContentEditor
+        key={bodyRow?.media_ref ?? "sem-midia"}
         mode="edit"
         initial={initial}
         readOnly={!editable}

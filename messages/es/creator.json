@@ -76,7 +76,7 @@
       },
       "archived": {
         "title": "Archivado",
-        "description": "Archivado. Queda en solo lectura y no vuelve a publicarse desde aquí."
+        "description": "Archivado: fuera del aire. Toca Desarchivar para editar y publicar de nuevo."
       },
       "draftReview": {
         "title": "Borrador",
@@ -125,7 +125,19 @@
     "archiveTitle": "¿Archivar este contenido?",
     "archiveDescription": "Sale de la lista activa y no aparece en la app. Lo que ya estuvo publicado solo lo archiva el titular del Hero.",
     "archiveConfirm": "Archivar",
-    "archived": "Archivado"
+    "archived": "Archivado",
+    "unarchive": "Desarchivar",
+    "unarchiveTitle": "¿Desarchivar este contenido?",
+    "unarchiveDescription": "Vuelve como borrador, con todo editable (texto, foto, portada y bloques). Para que aparezca en la app, publícalo de nuevo.",
+    "unarchiveConfirm": "Desarchivar",
+    "unarchived": "Desarchivado: volvió a borrador.",
+    "photo": {
+      "title": "Foto del post",
+      "description": "Cámbiala por otra de la galería o de la cámara. La portada acompaña la foto.",
+      "change": "Cambiar foto",
+      "changing": "Enviando…",
+      "changed": "Foto cambiada."
+    }
   },
   "post": {
     "cta": "Nueva publicación",

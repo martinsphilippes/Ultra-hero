@@ -76,7 +76,7 @@
       },
       "archived": {
         "title": "Archived",
-        "description": "Archived. It is read-only and does not go back online from here."
+        "description": "Archived: offline. Tap Unarchive to edit and publish it again."
       },
       "draftReview": {
         "title": "Draft",
@@ -125,7 +125,19 @@
     "archiveTitle": "Archive this content?",
     "archiveDescription": "It leaves the active list and does not show in the app. Only the hero owner archives what has been published.",
     "archiveConfirm": "Archive",
-    "archived": "Archived"
+    "archived": "Archived",
+    "unarchive": "Unarchive",
+    "unarchiveTitle": "Unarchive this content?",
+    "unarchiveDescription": "It returns as a draft with everything editable (text, photo, cover and blocks). Publish it again to show it in the app.",
+    "unarchiveConfirm": "Unarchive",
+    "unarchived": "Unarchived: back to draft.",
+    "photo": {
+      "title": "Post photo",
+      "description": "Replace it with another from your gallery or camera. The cover follows the photo.",
+      "change": "Change photo",
+      "changing": "Uploading…",
+      "changed": "Photo changed."
+    }
   },
   "post": {
     "cta": "New post",
