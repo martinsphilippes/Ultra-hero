@@ -154,7 +154,8 @@ Roteiro mínimo, nas duas plataformas, contra o endereço de produção:
 ## 8. Nota ao revisor (modelo, em inglês)
 
 > Groscove Ultra is a fitness, nutrition and cooking companion featuring content from real athletes and
-> chefs, used under license (agreements attached). Sign in with the demo account below, or create
+> chefs, used under license (agreements attached). The app requires an account: it opens on a presentation
+> page, with buttons to sign up or log in. Sign in with the demo account below, or create
 > an account with Sign in with Apple / Google. There are no purchases in the app: all content shown
 > is included. Account deletion: Profile › Account & privacy › Delete my account (please use an
 > account you created, so the demo account stays available).

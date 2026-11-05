@@ -55,6 +55,22 @@ mobile/ (Expo SDK 54, EAS)                 web (Next.js na Vercel, sem mudança 
 - **A ponte só aceita mensagens do próprio site** (no Android ela ouve qualquer quadro, inclusive
   iframes de terceiros) e o pedido de OAuth só abre `/auth/v1/authorize`.
 
+## Entrada: igual à web e só com login
+
+Decisão do responsável (05/11/2026), vale para iOS e Android e substitui a antiga abertura direta na aba Hero:
+
+- **Sem sessão, o app abre a apresentação `/sobre`**, como a web, e os botões dela levam ao `/login`. Não há "Pular e
+  explorar" no app (nem `/conheca/explorar`); o cookie antigo dessa escolha é ignorado lá.
+- **O app só entra com login.** Sem sessão ficam abertos só `/sobre`, as telas de entrada e recuperação, `/legal/*`
+  (as lojas exigem acesso a privacidade e exclusão de conta) e o que não é tela (`/auth`, `/api`, `/r`, `/offline`):
+  lista em `isOpenToNativeVisitor`. O resto pede o login e volta ao endereço pedido (`next`).
+- **Na web nada muda**: as páginas públicas seguem abertas sem conta.
+- **Não exige novo binário**: a regra está no middleware. A casca publicada abre em `/personalities`, e sem sessão esse
+  endereço leva a `/sobre`.
+- **Risco aceito**: a guideline 5.1.1(v) da Apple pede acesso sem login ao que não depende de conta. Se a Apple
+  reprovar por isso, a saída é reabrir a navegação sem conta no app (`isOpenToNativeVisitor` e o middleware).
+- **A loja continua fora do app** (tabela abaixo) até existir checkout real.
+
 ## O que o app das lojas não mostra (e por quê)
 
 | Superfície | No app | Motivo |

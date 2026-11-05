@@ -25,20 +25,20 @@ export function parseNativeApp(userAgent: string | null | undefined): NativeApp 
 // /profissional: caixa de pedidos de serviços contratados com pagamento simulado (0058). A lista e o
 // perfil público dos profissionais (/profissionais) seguem no app, sem "Contratar".
 // /agencia e /marca: portais de gestão (0064) só na web
-// /conheca: a página institucional (etapa 7) é para o visitante da web; dentro do app da loja não há página de
-// marketing (ela fala de portais e pagamentos que lá não existem). /sobre: a mesma apresentação completa (a antiga
-// /conheca), agora em rota própria; pelo mesmo motivo continua fora do app das lojas.
-const BLOCKED_PREFIXES = ["/shop", "/cart", "/checkout", "/orders", "/profissional", "/agencia", "/marca", "/conheca", "/sobre"];
+// /conheca: o teaser (etapa 7) é só da web, e "Pular e explorar" (/conheca/explorar) não existe no app, que só entra
+// com login. /sobre abre no app, como na web (decisão do responsável, 05/11/2026).
+const BLOCKED_PREFIXES = ["/shop", "/cart", "/checkout", "/orders", "/profissional", "/agencia", "/marca", "/conheca"];
 const BLOCKED_HERO_LIBRARY = /^\/personalities\/[^/]+\/produtos\/?$/;
 
-/** Android (Play Store): a apresentação /sobre abre no app (pedido do responsável, 05/11/2026), com o "Pular e
- *  explorar" (/conheca/explorar) que leva à aba Hero. O iOS segue sem ela (análise da App Store em andamento). */
-export function androidAllowsAbout(pathname: string): boolean {
-  return pathname === "/sobre" || pathname.startsWith("/sobre/") || pathname === "/conheca/explorar";
+// O app das lojas só entra com login (decisão do responsável, 05/11/2026). Sem sessão, ficam abertas só a apresentação,
+// as telas de entrada e recuperação, os textos legais (a loja exige acesso) e o que não é tela (/api, /auth, /r).
+const NATIVE_VISITOR_PREFIXES = ["/sobre", "/login", "/signup", "/forgot-password", "/reset-password", "/legal", "/offline", "/auth", "/api", "/r"];
+
+export function isOpenToNativeVisitor(pathname: string): boolean {
+  return NATIVE_VISITOR_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
-export function isBlockedInNativeApp(pathname: string, search?: URLSearchParams, platform?: NativePlatform): boolean {
-  if (platform === "android" && androidAllowsAbout(pathname)) return false;
+export function isBlockedInNativeApp(pathname: string, search?: URLSearchParams): boolean {
   if (BLOCKED_HERO_LIBRARY.test(pathname)) return true;
   // aba Produtos do Explorar (as páginas fazem streaming: redirect lá dentro chegaria com 200)
   if (pathname === "/explore" && search?.get("tab") === "produtos") return true;

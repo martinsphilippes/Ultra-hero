@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { loginAs } from "./helpers/login";
 
 // Página do programa em até 5 cards (Conceito, Prepare-se, Conteúdo, Nutricional, Apoio), logo depois
 // do cabeçalho. Os cards são abas: o conteúdo do escolhido aparece logo abaixo, sem trocar de tela
@@ -114,9 +115,11 @@ test.describe("cards do programa", () => {
     await expect(panel(page).getByTestId("program-concept-idea")).toContainText("rigid sleep rules");
   });
 
-  test("app das lojas: Nutricional sem produtos (compra simulada não existe lá), só conteúdos", async ({ browser }) => {
+  test("app das lojas: Nutricional sem produtos (compra simulada não existe lá), só conteúdos", async ({ browser, page: web }) => {
     const baseURL = test.info().project.use.baseURL;
-    const context = await browser.newContext({ baseURL, userAgent: "Mozilla/5.0 (Linux; Android 14) GCHeroApp/1.0.0 (android)", locale: "pt-BR" });
+    // o app só entra com login, e o painel de contas demo não aparece nele: a sessão vem do navegador
+    await loginAs(web, "premium", { home: null });
+    const context = await browser.newContext({ baseURL, userAgent: "Mozilla/5.0 (Linux; Android 14) GCHeroApp/1.0.0 (android)", locale: "pt-BR", storageState: await web.context().storageState() });
     await context.addCookies([{ name: "uh-e2e", value: "1", url: baseURL! }]);
     const page = await context.newPage();
     await page.goto(NUTRITION);
@@ -182,9 +185,11 @@ test.describe("cards do programa", () => {
     expect(overflow).toBeLessThanOrEqual(1);
   });
 
-  test("app das lojas: Próximos passos sem compra nem contratação (só o perfil do profissional)", async ({ browser }) => {
+  test("app das lojas: Próximos passos sem compra nem contratação (só o perfil do profissional)", async ({ browser, page: web }) => {
     const baseURL = test.info().project.use.baseURL;
-    const context = await browser.newContext({ baseURL, userAgent: "Mozilla/5.0 (Linux; Android 14) GCHeroApp/1.0.0 (android)", locale: "pt-BR" });
+    // o app só entra com login, e o painel de contas demo não aparece nele: a sessão vem do navegador
+    await loginAs(web, "premium", { home: null });
+    const context = await browser.newContext({ baseURL, userAgent: "Mozilla/5.0 (Linux; Android 14) GCHeroApp/1.0.0 (android)", locale: "pt-BR", storageState: await web.context().storageState() });
     await context.addCookies([{ name: "uh-e2e", value: "1", url: baseURL! }]);
     const page = await context.newPage();
     await page.goto(SUPPORT);

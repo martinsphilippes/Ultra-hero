@@ -42,13 +42,14 @@ import { LOGIN_HOME } from "@/lib/auth/safe-next";
 import { getUser } from "@/lib/auth/session";
 import { CALENDAR_POINTS, FAQ_ITEMS, FEATURE_GROUPS, HOW_STEPS, SECTION_ANCHORS, WHAT_ITEMS } from "@/lib/about-classic/content";
 import { ABOUT_ENABLED, ABOUT_PATH, INSTITUTIONAL_EXPLORE_PATH, INSTITUTIONAL_LOGIN_HREF, INSTITUTIONAL_SIGNUP_HREF } from "@/lib/institutional/root";
+import { getNativeApp } from "@/lib/native-app/server";
 import "./sobre.css";
 
 // /sobre · "Conheça o Groscove Ultra": a apresentação completa (Hero, Marca, Agência e o app) para quem já está no
 // app. É a antiga página institucional da /conheca (branch ultra-classico), restaurada com o mesmo conteúdo e as
 // mesmas animações quando a /conheca virou o teaser de lançamento (pedido do dono, 05/11: os dois em lugares
-// diferentes). Pública (sem login); no domínio de marketing (MARKETING_HOSTS) não existe (volta ao teaser) e no app
-// das lojas fica bloqueada como a /conheca antiga (fala de portais e pagamentos que lá não existem).
+// diferentes). Pública (sem login); no domínio de marketing (MARKETING_HOSTS) não existe (volta ao teaser). No app das
+// lojas é a porta de entrada de quem não entrou; lá não há "Pular e explorar", porque o app só entra com login.
 // Textos em messages/<locale>/aboutClassic.json (namespace próprio: institutional.json é do teaser); classes e
 // animações com prefixo uh-sb- (sobre.css) para não colidir com a abertura do app (intro.css) nem com o teaser.
 // Só funcionalidades que existem (src/lib/about-classic/content.ts); pagamentos e compras: "ainda não ativados".
@@ -95,8 +96,9 @@ const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-
 
 export default async function AboutClassicPage() {
   if (!ABOUT_ENABLED) notFound();
-  const [t, user] = await Promise.all([getTranslations("aboutClassic"), getUser()]);
+  const [t, user, nativeApp] = await Promise.all([getTranslations("aboutClassic"), getUser(), getNativeApp()]);
   const signedIn = user !== null;
+  const canExplore = !signedIn && nativeApp === null;
   const year = new Date().getFullYear();
 
   // Logado que abriu /sobre: um só botão para o app (não muda nada da autenticação).
@@ -197,7 +199,7 @@ export default async function AboutClassicPage() {
               <div className="uh-sb-pop flex flex-col gap-3 sm:flex-row sm:flex-wrap" style={{ animationDelay: `${850 + titleWords.length * 70}ms` }}>
                 {ctas}
               </div>
-              {signedIn ? null : (
+              {canExplore ? (
                 // <a> comum (sem prefetch): o handler grava a escolha só quando a pessoa clica
                 <a
                   href={INSTITUTIONAL_EXPLORE_PATH}
@@ -207,7 +209,7 @@ export default async function AboutClassicPage() {
                   {t("nav.skip")}
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </a>
-              )}
+              ) : null}
             </div>
             <Reveal from="right" delay={250} className="w-full md:max-w-md md:flex-1">
               <ProfileSwitcher label={t("switcher.label")} profiles={profiles} />
@@ -309,7 +311,7 @@ export default async function AboutClassicPage() {
                   );
                 })}
               </ul>
-              {group.ns === "app" ? (
+              {group.ns === "app" && nativeApp === null ? (
                 <a href={INSTITUTIONAL_EXPLORE_PATH} className={`inline-flex min-h-11 w-fit items-center gap-1 rounded-md text-sm font-semibold text-accent-text underline-offset-4 hover:underline ${focusRing}`}>
                   {t("app.cta")}
                   <ArrowRight className="size-4" aria-hidden="true" />

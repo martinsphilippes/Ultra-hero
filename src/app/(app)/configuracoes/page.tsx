@@ -177,8 +177,8 @@ export default async function SettingsPage() {
                 </a>
               </li>
             ))}
-          {/* "Conheça o Groscove Ultra": a apresentação completa (/sobre). Fora do app das lojas, onde a rota é
-              bloqueada (fala de portais e pagamentos que lá não existem). */}
+          {/* "Conheça o Groscove Ultra": a apresentação completa (/sobre). Fora do app das lojas, onde ela é só a porta de
+              entrada de quem ainda não entrou (fala de portais que lá não existem). */}
           {native || !ABOUT_ENABLED ? null : (
             <li>
               <Link href={ABOUT_PATH} data-testid="settings-about" className={rowClass}>

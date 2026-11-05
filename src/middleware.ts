@@ -1,9 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isLibraryKey, legacyLibraryTarget } from "@/lib/catalog/creator-libraries";
 import { legacyHeroPortalTarget } from "@/lib/hero-portal/routes";
-import { ABOUT_PATH, EXPLORE_COOKIE, rootDestination, rootNeedsSessionCheck } from "@/lib/institutional/root";
+import { LOGIN_HOME } from "@/lib/auth/safe-next";
+import { EXPLORE_COOKIE, NATIVE_VISITOR_ENTRY, rootDestination } from "@/lib/institutional/root";
 import { isMarketingHost, marketingDecision, parseMarketingHosts, requestHost } from "@/lib/marketing-host";
-import { isBlockedInNativeApp, NATIVE_BLOCKED_FALLBACK, parseNativeApp } from "@/lib/native-app/surface";
+import { isBlockedInNativeApp, isOpenToNativeVisitor, NATIVE_BLOCKED_FALLBACK, parseNativeApp } from "@/lib/native-app/surface";
 import { updateSession } from "@/lib/supabase/middleware";
 
 // Rotas que exigem sessão. Papéis NÃO são checados aqui (os layouts fazem isso no servidor).
@@ -70,25 +71,18 @@ function legacyHeroPortalResponse(request: NextRequest): NextResponse | null {
 function nativeAppResponse(request: NextRequest): NextResponse | null {
   const app = parseNativeApp(request.headers.get("user-agent"));
   if (!app) return null;
-  if (!isBlockedInNativeApp(request.nextUrl.pathname, request.nextUrl.searchParams, app.platform)) return null;
+  if (!isBlockedInNativeApp(request.nextUrl.pathname, request.nextUrl.searchParams)) return null;
   const target = request.nextUrl.clone();
   target.pathname = NATIVE_BLOCKED_FALLBACK;
   target.search = "";
   return NextResponse.redirect(target, 307);
 }
 
-
-/** Carregamento da página inteira (não a troca de tela do roteador do Next nem o pré-carregamento). */
-function isDocumentRequest(request: NextRequest): boolean {
-  return request.headers.get("rsc") === null && request.headers.get("next-router-prefetch") === null;
-}
-
-// Endereço principal "/" (etapa 7, antes um redirect fixo do next.config para /personalities): com sessão, app das
-// lojas ou "Pular e explorar" → aba Hero, como sempre; visitante sem sessão → apresentação (/conheca). 307 com a query.
-async function rootResponse(request: NextRequest, hasSession: boolean): Promise<NextResponse> {
+// Endereço principal "/" (etapa 7, antes um redirect fixo do next.config para /personalities): com sessão ou "Pular e
+// explorar" (só na web) → aba Hero; visitante sem sessão → apresentação. 307 com a query.
+async function rootResponse(request: NextRequest, signedIn: boolean): Promise<NextResponse> {
   const nativeApp = parseNativeApp(request.headers.get("user-agent")) !== null;
   const explored = request.cookies.get(EXPLORE_COOKIE)?.value === "1";
-  const signedIn = rootNeedsSessionCheck({ nativeApp, explored }) ? hasSession : false;
   const target = request.nextUrl.clone();
   target.pathname = rootDestination({ signedIn, nativeApp, explored });
   return NextResponse.redirect(target, 307);
@@ -128,23 +122,21 @@ export async function middleware(request: NextRequest) {
     for (const cookie of response.cookies.getAll()) root.cookies.set(cookie);
     return root;
   }
-  // App Android (Play Store) aberto sem login: a casca abre direto em /personalities; quem ainda não entrou nem
-  // escolheu "Pular e explorar" vê primeiro a apresentação (/sobre). Só no carregamento da página (não nas trocas
-  // de tela dentro do app), para não prender ninguém.
-  if (pathname === "/personalities" && !signedIn && request.cookies.get(EXPLORE_COOKIE)?.value !== "1" && isDocumentRequest(request)) {
-    if (parseNativeApp(request.headers.get("user-agent"))?.platform === "android") {
-      const about = request.nextUrl.clone();
-      about.pathname = ABOUT_PATH;
-      about.search = "";
-      const redirect = NextResponse.redirect(about, 307);
-      for (const cookie of response.cookies.getAll()) redirect.cookies.set(cookie);
-      return redirect;
-    }
-  }
-  if (!isProtected(pathname)) return response;
-
   // Os cookies do request já foram atualizados por updateSession; valida o JWT.
   if (signedIn) return response;
+
+  // App das lojas: só entra com login. A casca publicada abre em /personalities: sem sessão, isso é a abertura do app
+  // e leva à apresentação; o resto do que não é aberto (surface.ts) pede o login, como as rotas protegidas.
+  const nativeApp = parseNativeApp(request.headers.get("user-agent")) !== null;
+  if (nativeApp && pathname === LOGIN_HOME) {
+    const entry = request.nextUrl.clone();
+    entry.pathname = NATIVE_VISITOR_ENTRY;
+    entry.search = "";
+    const redirect = NextResponse.redirect(entry, 307);
+    for (const cookie of response.cookies.getAll()) redirect.cookies.set(cookie);
+    return redirect;
+  }
+  if (!isProtected(pathname) && !(nativeApp && !isOpenToNativeVisitor(pathname))) return response;
 
   const loginUrl = request.nextUrl.clone();
   loginUrl.pathname = "/login";
