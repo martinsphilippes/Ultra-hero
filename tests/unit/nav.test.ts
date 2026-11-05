@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { isActivePath, isPortalPath, NAV_ITEMS, portalNavHref } from "@/components/layout/nav-items";
 
@@ -45,5 +47,14 @@ describe("aba Portal", () => {
   it("fica ativa nos portais e na escolha, não nas outras abas", () => {
     for (const path of ["/portais", "/heroi", "/heroi/agenda", "/agencia", "/marca/pagamentos", "/admin/users"]) expect(isPortalPath(path)).toBe(true);
     for (const path of ["/personalities", "/marcas", "/profile", "/explore"]) expect(isPortalPath(path)).toBe(false);
+  });
+});
+
+describe("links legais", () => {
+  const read = (file: string) => readFileSync(path.join(process.cwd(), file), "utf8");
+  it("Termos e Privacidade ficam no Perfil, não em todas as abas; a exclusão só entre as páginas legais", () => {
+    expect(read("src/components/layout/AppShell.tsx")).not.toContain("LegalLinks");
+    expect(read("src/app/(app)/profile/page.tsx")).toContain("<LegalLinks />");
+    expect(read("src/app/legal/layout.tsx")).toContain("<LegalLinks withDeletion />");
   });
 });

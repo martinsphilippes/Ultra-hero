@@ -3,7 +3,6 @@ import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { LegalLinks } from "@/components/legal/LegalLinks";
 import { PushRegistrar } from "@/components/push/PushRegistrar";
 import { IconButton } from "@/components/ui/icon-button";
 import { getSessionSummary } from "@/lib/auth/session";
@@ -19,7 +18,7 @@ import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
 
-// Casca do consumidor: barra superior (md+), conteúdo com links legais no fim e barra inferior (mobile).
+// Casca do consumidor: barra superior (md+), conteúdo e barra inferior (mobile).
 export async function AppShell({ children }: { children: ReactNode }) {
   const [session, cookieStore, t, ta, nativeApp, portals] = await Promise.all([
     getSessionSummary(),
@@ -74,9 +73,6 @@ export async function AppShell({ children }: { children: ReactNode }) {
         className="uh-native-scroller mx-auto w-full max-w-content flex-1 px-gutter pb-[calc(var(--spacing-bottomnav)+env(safe-area-inset-bottom)+1.5rem)] pt-6 outline-none md:pb-12 print:max-w-none print:p-0"
       >
         {children}
-        <footer className="mt-12 border-t border-border pt-4 print:hidden">
-          <LegalLinks />
-        </footer>
       </main>
 
       <div className="print:hidden">
