@@ -13,7 +13,10 @@ import {
   categoriesByCreator,
   creatorsForCategory,
   HERO_CATEGORY_PARAM,
+  HERO_PAGE_PARAM,
+  heroPageSlice,
   parseCategoryParam,
+  parsePageParam,
   personalitiesHref,
   resolveCategory,
   visibleCategories,
@@ -32,6 +35,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // Heróis ativos (ordem editorial sort_order), com filtro por categoria do herói na URL
 // (?categoria=slug, 0049). Sem a 0049 no banco: só "Todos" e cards sem selo. Chips com navegação de
 // documento: no roteador do Next, trocar só a query na mesma rota abortava o payload (tela parada).
+// Com o Casting Groscove (0123, ~260 heróis) a grade mostra blocos de 48 e um "Ver mais heróis" (?pagina=N, também
+// navegação de documento), que leva direto ao primeiro card novo (âncora #heroi-N).
 export default async function PersonalitiesPage({ searchParams }: Props) {
   const supabase = await createClient();
   const [raw, locale, t, { data, error }, categoryData, follow] = await Promise.all([
@@ -51,6 +56,8 @@ export default async function PersonalitiesPage({ searchParams }: Props) {
   const selected = resolveCategory(parseCategoryParam(raw[HERO_CATEGORY_PARAM]), chips);
   const creators = creatorsForCategory(allCreators, categoryData.links, selected?.id ?? null);
   const badges = categoriesByCreator(categoryData.links, categoryData.categories);
+  const page = parsePageParam(raw[HERO_PAGE_PARAM]);
+  const { shown, nextPage } = heroPageSlice(creators, page);
 
   return (
     <div className="flex flex-col gap-6">
@@ -96,9 +103,9 @@ export default async function PersonalitiesPage({ searchParams }: Props) {
             {t("count", { count: creators.length })}
           </p>
           <ul className={CARD_GRID}>
-            {creators.map((creator, index) => (
+            {shown.map((creator, index) => (
               // botão Seguir fora do link do card (botão dentro de link não é válido), sobre a capa
-              <li key={creator.id} className="relative">
+              <li key={creator.id} id={`heroi-${index}`} className="relative scroll-mt-24">
                 <CreatorCard
                   creator={creator}
                   categories={(badges.get(creator.id) ?? []).map((c) => ({ id: c.id, label: localizedLabel(c.name, locale) }))}
@@ -122,6 +129,17 @@ export default async function PersonalitiesPage({ searchParams }: Props) {
               </li>
             ))}
           </ul>
+          {nextPage !== null ? (
+            <div className="flex flex-col items-center gap-2">
+              <p className="type-caption text-fg-muted">{t("showing", { shown: shown.length, total: creators.length })}</p>
+              <Button asChild variant="secondary" size="lg" className="w-full sm:w-auto">
+                {/* navegação de documento, como os chips; a âncora leva ao primeiro card do bloco novo */}
+                <a href={`${personalitiesHref(selected?.slug ?? null, nextPage)}#heroi-${shown.length}`} data-testid="heroes-load-more">
+                  {t("loadMore")}
+                </a>
+              </Button>
+            </div>
+          ) : null}
         </>
       )}
     </div>

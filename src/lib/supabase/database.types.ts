@@ -11811,6 +11811,9 @@ isOneToOne: false
     Functions: {
       casting_groscove_2027_import: { Args: { p_admin_email?: string }; Returns: Json };
       casting_groscove_2027_data: { Args: Record<PropertyKey, never>; Returns: Json };
+      casting_groscove_2027_publish: { Args: { p_admin_email?: string }; Returns: Json };
+      casting_category_headline: { Args: { p_category: string }; Returns: string };
+      casting_pillars: { Args: { p_segment: string; p_topics: string[] }; Returns: string[] };
       brand_call_save: { Args: { p_brand: string; p_id: string | null; p_data: Json }; Returns: string };
       brand_call_submit: { Args: { p_id: string; p_note: string }; Returns: string };
       brand_call_review: { Args: { p_id: string; p_decision: string; p_note: string }; Returns: string };

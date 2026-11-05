@@ -3,7 +3,11 @@ import {
   categoriesByCreator,
   creatorsForCategory,
   HERO_CATEGORY_MAX,
+  HERO_PAGE_MAX,
+  HERO_PAGE_SIZE,
+  heroPageSlice,
   parseCategoryParam,
+  parsePageParam,
   personalitiesHref,
   resolveCategory,
   validateCategorySelection,
@@ -115,6 +119,55 @@ describe("personalitiesHref", () => {
   it("Todos é a aba sem parâmetro; categoria vai em ?categoria=", () => {
     expect(personalitiesHref(null)).toBe("/personalities");
     expect(personalitiesHref("esporte")).toBe("/personalities?categoria=esporte");
+  });
+
+  it("página > 1 vai em ?pagina= (com a categoria); 1 e lixo ficam fora; teto de páginas", () => {
+    expect(personalitiesHref(null, 1)).toBe("/personalities");
+    expect(personalitiesHref(null, 2)).toBe("/personalities?pagina=2");
+    expect(personalitiesHref("musica", 3)).toBe("/personalities?categoria=musica&pagina=3");
+    expect(personalitiesHref(null, 0)).toBe("/personalities");
+    expect(personalitiesHref(null, 1.5)).toBe("/personalities");
+    expect(personalitiesHref(null, 999)).toBe(`/personalities?pagina=${HERO_PAGE_MAX}`);
+  });
+});
+
+describe("parsePageParam", () => {
+  it("inteiro de 1 ao teto; lixo vira 1", () => {
+    expect(parsePageParam(undefined)).toBe(1);
+    expect(parsePageParam(null)).toBe(1);
+    expect(parsePageParam("")).toBe(1);
+    expect(parsePageParam("2")).toBe(2);
+    expect(parsePageParam([" 3 ", "9"])).toBe(3);
+    expect(parsePageParam("0")).toBe(1);
+    expect(parsePageParam("-2")).toBe(1);
+    expect(parsePageParam("2.5")).toBe(1);
+    expect(parsePageParam("abc")).toBe(1);
+    expect(parsePageParam("9999")).toBe(HERO_PAGE_MAX);
+    expect(parsePageParam("1e9")).toBe(1);
+  });
+});
+
+describe("heroPageSlice (Ver mais da aba Hero)", () => {
+  const heroes = Array.from({ length: 261 }, (_, i) => i);
+
+  it("mostra blocos de HERO_PAGE_SIZE e aponta a próxima página até mostrar todos", () => {
+    expect(HERO_PAGE_SIZE).toBe(48);
+    expect(heroPageSlice(heroes, 1)).toEqual({ shown: heroes.slice(0, 48), nextPage: 2 });
+    expect(heroPageSlice(heroes, 5).shown).toHaveLength(240);
+    expect(heroPageSlice(heroes, 5).nextPage).toBe(6);
+    expect(heroPageSlice(heroes, 6)).toEqual({ shown: heroes, nextPage: null });
+    expect(heroPageSlice(heroes, 50)).toEqual({ shown: heroes, nextPage: null });
+  });
+
+  it("lista curta: tudo de uma vez, sem Ver mais; página inválida conta como 1", () => {
+    expect(heroPageSlice([1, 2, 3], 1)).toEqual({ shown: [1, 2, 3], nextPage: null });
+    expect(heroPageSlice([], 1)).toEqual({ shown: [], nextPage: null });
+    expect(heroPageSlice(heroes, 0)).toEqual({ shown: heroes.slice(0, 48), nextPage: 2 });
+  });
+
+  it("no teto de páginas não oferece mais", () => {
+    const many = Array.from({ length: HERO_PAGE_SIZE * HERO_PAGE_MAX + 5 }, (_, i) => i);
+    expect(heroPageSlice(many, HERO_PAGE_MAX).nextPage).toBeNull();
   });
 });
 

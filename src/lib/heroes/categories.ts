@@ -79,8 +79,38 @@ export function categoriesByCreator<C extends { id: string }>(links: readonly He
 }
 
 /** Link do chip: "Todos" é a aba sem parâmetro. */
-export function personalitiesHref(slug: string | null): string {
-  return slug ? `/personalities?${HERO_CATEGORY_PARAM}=${encodeURIComponent(slug)}` : "/personalities";
+export function personalitiesHref(slug: string | null, page = 1): string {
+  const params = new URLSearchParams();
+  if (slug) params.set(HERO_CATEGORY_PARAM, slug);
+  if (Number.isInteger(page) && page > 1) params.set(HERO_PAGE_PARAM, String(Math.min(page, HERO_PAGE_MAX)));
+  const query = params.toString();
+  return query ? `/personalities?${query}` : "/personalities";
+}
+
+// "Ver mais" da aba Hero (0123: o Casting Groscove publica ~260 heróis): a lista cresce de HERO_PAGE_SIZE em
+// HERO_PAGE_SIZE pela URL (?pagina=2 mostra os 2 primeiros blocos), sem JavaScript e sem perder a categoria.
+
+/** Parâmetro da URL com quantos blocos de heróis mostrar (/personalities?pagina=2). Sem ele: o 1º bloco. */
+export const HERO_PAGE_PARAM = "pagina";
+
+/** Heróis por bloco (múltiplo de 1, 2 e 3 colunas da grade). */
+export const HERO_PAGE_SIZE = 48;
+
+/** Teto de blocos (48 × 50 = 2.400 heróis): URL forjada não faz o servidor montar uma lista sem fim. */
+export const HERO_PAGE_MAX = 50;
+
+/** Lê ?pagina= da URL: inteiro de 1 a HERO_PAGE_MAX; lixo vira 1. */
+export function parsePageParam(raw: string | string[] | null | undefined): number {
+  const value = ((Array.isArray(raw) ? raw[0] : raw) ?? "").trim();
+  if (!/^\d{1,4}$/.test(value)) return 1;
+  const n = Number(value);
+  return n < 1 ? 1 : Math.min(n, HERO_PAGE_MAX);
+}
+
+/** Recorte mostrado: os primeiros page × HERO_PAGE_SIZE e a próxima página (null quando já mostra todos). */
+export function heroPageSlice<T>(items: readonly T[], page: number, size = HERO_PAGE_SIZE): { shown: T[]; nextPage: number | null } {
+  const shown = items.slice(0, Math.max(1, page) * size);
+  return { shown, nextPage: shown.length < items.length && page < HERO_PAGE_MAX ? Math.max(1, page) + 1 : null };
 }
 
 /** Valida a escolha do admin: sem repetição, no máximo 2, na ordem dada. */

@@ -133,6 +133,8 @@
     "filterLabel": "Filtrar por categoría",
     "all": "Todos",
     "count": "{count, plural, =1 {1 héroe} other {# héroes}}",
+    "showing": "Mostrando {shown} de {total}",
+    "loadMore": "Ver más héroes",
     "emptyTitle": "Ningún héroe en esta categoría",
     "emptyDescription": "Prueba otra categoría o mira todos.",
     "profile": {

@@ -18566,5 +18566,137 @@ delete from public.agencies where id = 'a1240000-0000-4000-8000-0000000000a1';
 delete from auth.users where id::text like 'a1240000-%';
 drop table tests.s124;
 
+-- ================================================================ S125 · Páginas públicas do Casting Groscove 2027 (0123)
+-- Os talentos importados pela 0122 (agência do admin agencia@gmail.com, foto /casting/…) ganham a página pública já
+-- ligada ao talento: foto do casting, headline da categoria em pt-BR, bio dos temas, pilares pelo segmento, real com
+-- direitos pendentes e ativa (anon vê). Slug de outra pessoa → -2; mesma pessoa com página editorial → liga, sem
+-- duplicar. Rodar de novo não cria nada; o convite pendente, quando aceito, faz da conta a titular da página. S14 segue 18.
+\ir ../migrations/0123_casting_groscove_paginas.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1250000-0000-4000-8000-000000000001', 'agencia@gmail.com'),
+  ('a1250000-0000-4000-8000-000000000002', 's125-outra@test.local');
+insert into public.agencies (id, slug, name) values
+  ('a1250000-0000-4000-8000-0000000000a1', 's125-groscove', 'Groscove S125'),
+  ('a1250000-0000-4000-8000-0000000000a2', 's125-outra', 'Outra S125');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1250000-0000-4000-8000-0000000000a1', 'a1250000-0000-4000-8000-000000000001', 'admin', 'Adm S125'),
+  ('a1250000-0000-4000-8000-0000000000a2', 'a1250000-0000-4000-8000-000000000002', 'admin', 'Adm Outra S125');
+insert into public.talent_segments (id, agency_id, slug, name, sort_order) values
+  ('a1250000-0000-4000-8000-0000000000e1', 'a1250000-0000-4000-8000-0000000000a1', 'musica', 'Música', 110),
+  ('a1250000-0000-4000-8000-0000000000e2', 'a1250000-0000-4000-8000-0000000000a1', 'esportes', 'Esporte', 30);
+-- páginas que já existem: s125-joao é de OUTRA pessoa (colisão → -2); s125-ana-paula é da mesma pessoa (liga)
+insert into public.creator_profiles (id, slug, name, headline, pillars, is_fictional, rights_status, rights_holder, status, avatar_url, sort_order) values
+  ('a1250000-0000-4000-8000-0000000000c1', 's125-joao', 'João Editorial S125', 'Outro herói', '{training}', false, 'authorized', 'Titular S125', 'active', null, 15),
+  ('a1250000-0000-4000-8000-0000000000c2', 's125-ana-paula', 'Ana Paula S125', 'Atleta', '{training}', false, 'authorized', 'Titular S125', 'active', '/heroes/s125-ana.webp', 16);
+-- talentos no formato da 0122 (foto, categoria, temas, nota com a página do documento)
+insert into public.talent_profiles (id, agency_id, display_name, country, commercial_status, availability, internal_notes, photo_url, category_label, topics) values
+  ('a1250000-0000-4000-8000-000000000011', 'a1250000-0000-4000-8000-0000000000a1', 'Musa S125', 'BR', 'prospect', 'available',
+   'Importado do Casting Groscove 2027 (p. 8, Músicos). Celular a confirmar.', '/casting/s125-musa.webp', 'Musical artist', '{MPB,"Música autoral","Turnês internacionais"}'),
+  ('a1250000-0000-4000-8000-000000000012', 'a1250000-0000-4000-8000-0000000000a1', 'Atleta S125', 'BR', 'prospect', 'available',
+   'Importado do Casting Groscove 2027 (p. 9, Atletas). Celular a confirmar.', '/casting/s125-atleta.webp', 'Football player', '{Futebol,Gastronomia}'),
+  ('a1250000-0000-4000-8000-000000000013', 'a1250000-0000-4000-8000-0000000000a1', 'Joana S125', 'BR', 'prospect', 'available',
+   'Importado do Casting Groscove 2027 (p. 10, Músicos). Celular a confirmar.', '/casting/s125-joao.webp', 'Singer', '{}'),
+  ('a1250000-0000-4000-8000-000000000014', 'a1250000-0000-4000-8000-0000000000a1', 'Ana Paula S125', 'BR', 'prospect', 'available',
+   'Importado do Casting Groscove 2027 (p. 11, Atletas). Celular a confirmar.', '/casting/s125-ana-paula.webp', 'Surfer', '{Surfe}'),
+  -- fora do lote: sem foto do casting; e foto do casting em outra agência
+  ('a1250000-0000-4000-8000-000000000015', 'a1250000-0000-4000-8000-0000000000a1', 'Sem Foto S125', 'BR', 'prospect', 'available', '', null, 'Actor', '{}'),
+  ('a1250000-0000-4000-8000-000000000016', 'a1250000-0000-4000-8000-0000000000a2', 'Outra Agência S125', 'BR', 'prospect', 'available', '', '/casting/s125-outra.webp', 'Actor', '{}');
+insert into public.talent_segment_links (agency_id, talent_id, segment_id) values
+  ('a1250000-0000-4000-8000-0000000000a1', 'a1250000-0000-4000-8000-000000000011', 'a1250000-0000-4000-8000-0000000000e1'),
+  ('a1250000-0000-4000-8000-0000000000a1', 'a1250000-0000-4000-8000-000000000012', 'a1250000-0000-4000-8000-0000000000e2'),
+  ('a1250000-0000-4000-8000-0000000000a1', 'a1250000-0000-4000-8000-000000000013', 'a1250000-0000-4000-8000-0000000000e1'),
+  ('a1250000-0000-4000-8000-0000000000a1', 'a1250000-0000-4000-8000-000000000014', 'a1250000-0000-4000-8000-0000000000e2');
+-- contato + convite agency_hero pendente da Musa (como a 0122 deixou), ANTES da página existir
+insert into public.access_contacts (talent_id, email, phone_e164) values ('a1250000-0000-4000-8000-000000000011', 'musas125@gmail.com', '+5511900001251');
+create table tests.s125 (k text primary key, v jsonb);
+grant all on tests.s125 to anon, authenticated;
+insert into tests.s125 values ('inv', public.access_provision('talent', 'a1250000-0000-4000-8000-000000000011', 'a1250000-0000-4000-8000-0000000000a1', 'musas125@gmail.com'));
+
+select tests.ok('S125 estrutura: funções internas (nem authenticated nem anon), search_path fixo, mapas; S14 segue 18',
+  not has_function_privilege('authenticated', 'public.casting_groscove_2027_publish(text)', 'execute')
+  and not has_function_privilege('anon', 'public.casting_groscove_2027_publish(text)', 'execute')
+  and not has_function_privilege('anon', 'public.casting_pillars(text, text[])', 'execute')
+  and not has_function_privilege('authenticated', 'public.casting_category_headline(text)', 'execute')
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proconfig is null
+                  and p.proname in ('casting_groscove_2027_publish', 'casting_pillars', 'casting_category_headline'))
+  and public.casting_category_headline('Musical artist') = 'Artista musical' and public.casting_category_headline('Actress') = 'Atriz'
+  and public.casting_category_headline('Algo novo') = 'Algo novo'
+  and public.casting_pillars('esportes', '{}') = '{training}' and public.casting_pillars('humor', '{Humor}') = '{routine}'
+  and public.casting_pillars('apresentacao', '{Gastronomia,"Alimentação saudável"}') = '{routine,nutrition,gastronomy}'
+  and (select inv ->> 'account' = 'invited' from (select v as inv from tests.s125 where k = 'inv') x)
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+select tests.ok('S125 sem a agência do e-mail não faz nada', public.casting_groscove_2027_publish('ninguem.s125@test.local') ->> 'agency' is null);
+
+insert into tests.s125 values ('r1', public.casting_groscove_2027_publish('agencia@gmail.com'));
+select tests.ok('S125 1ª rodada: 3 páginas novas, 1 ligada à página da mesma pessoa, 1 slug com sufixo, nada pulado',
+  (select (v ->> 'created')::int = 3 and (v ->> 'linked_existing')::int = 1 and (v ->> 'slug_suffixed')::int = 1
+          and jsonb_array_length(v -> 'skipped') = 0 and v ->> 'agency' = 'a1250000-0000-4000-8000-0000000000a1'
+   from tests.s125 where k = 'r1'));
+select tests.ok('S125 página: slug da foto, foto do casting, sem capa, headline pt-BR, bio dos temas, pilar do segmento, real e pendente, ativa, ligada',
+  (select c.slug = 's125-musa' and c.name = 'Musa S125' and c.avatar_url = '/casting/s125-musa.webp' and c.cover_url is null
+          and c.headline = 'Artista musical' and c.bio = 'MPB · Música autoral · Turnês internacionais' and c.pillars = '{routine}'
+          and not c.is_fictional and c.rights_status = 'pending' and c.rights_holder is null and c.status = 'active'
+          and c.sort_order = 1008 and c.user_id is null
+   from public.talent_profiles t join public.creator_profiles c on c.id = t.creator_id where t.id = 'a1250000-0000-4000-8000-000000000011')
+  and (select c.headline = 'Jogador de futebol' and c.pillars = '{training,gastronomy}' and c.bio = 'Futebol · Gastronomia'
+       from public.talent_profiles t join public.creator_profiles c on c.id = t.creator_id where t.id = 'a1250000-0000-4000-8000-000000000012')
+  and (select c.slug = 's125-joao-2' and c.headline = 'Cantor(a)' and c.bio is null and c.avatar_url = '/casting/s125-joao.webp'
+       from public.talent_profiles t join public.creator_profiles c on c.id = t.creator_id where t.id = 'a1250000-0000-4000-8000-000000000013')
+  and (select c.name = 'João Editorial S125' and c.avatar_url is null and c.rights_status = 'authorized' from public.creator_profiles c where c.slug = 's125-joao'));
+select tests.ok('S125 mesma pessoa com página editorial: liga, sem segunda página e sem mexer na página existente',
+  (select t.creator_id = 'a1250000-0000-4000-8000-0000000000c2' from public.talent_profiles t where t.id = 'a1250000-0000-4000-8000-000000000014')
+  and (select count(*) = 0 from public.creator_profiles where slug like 's125-ana-paula-%')
+  and (select c.avatar_url = '/heroes/s125-ana.webp' and c.rights_status = 'authorized' and c.headline = 'Atleta' and c.sort_order = 16
+       from public.creator_profiles c where c.id = 'a1250000-0000-4000-8000-0000000000c2'));
+select tests.ok('S125 fora do lote: sem foto do casting e outra agência não ganham página',
+  (select count(*) = 2 and bool_and(t.creator_id is null) from public.talent_profiles t
+   where t.id in ('a1250000-0000-4000-8000-000000000015', 'a1250000-0000-4000-8000-000000000016')));
+select tests.ok('S125 auditoria: resumo casting.publish e agency.hero.create por página',
+  exists (select 1 from public.admin_audit a where a.action = 'casting.publish' and a.resource_id = 'a1250000-0000-4000-8000-0000000000a1')
+  and (select count(*) = 3 from public.admin_audit a where a.action = 'agency.hero.create'
+       and a.after_data ->> 'talent_id' in ('a1250000-0000-4000-8000-000000000011', 'a1250000-0000-4000-8000-000000000012', 'a1250000-0000-4000-8000-000000000013')));
+
+-- visitante vê as páginas na listagem pública (creator_profiles ativo); a agência vê como "Heróis da agência"
+select tests.anon();
+select tests.ok('S125 visitante vê as páginas novas na aba Heróis',
+  (select count(*) = 4 from public.creator_profiles where status = 'active' and slug in ('s125-musa', 's125-atleta', 's125-joao-2', 's125-ana-paula')));
+select tests.expect_error('S125 visitante não roda a publicação', $q$select public.casting_groscove_2027_publish('agencia@gmail.com')$q$, 'permission denied');
+select tests.login('a1250000-0000-4000-8000-000000000001', 'agencia@gmail.com');
+select tests.ok('S125 admin da agência tem as 4 páginas como heróis da agência',
+  (select count(*) = 4 from unnest(public.agency_hero_ids()) h
+   where h in (select creator_id from public.talent_profiles where agency_id = 'a1250000-0000-4000-8000-0000000000a1' and creator_id is not null)));
+select tests.expect_error('S125 admin da agência não roda a publicação pela API', $q$select public.casting_groscove_2027_publish('agencia@gmail.com')$q$, 'permission denied');
+select tests.su();
+
+insert into tests.s125 values ('r2', public.casting_groscove_2027_publish('agencia@gmail.com'));
+select tests.ok('S125 2ª rodada não duplica: nada criado nem ligado',
+  (select (v ->> 'created')::int = 0 and (v ->> 'linked_existing')::int = 0 and jsonb_array_length(v -> 'skipped') = 0 from tests.s125 where k = 'r2')
+  and (select count(*) = 5 from public.creator_profiles where slug like 's125-%'));
+
+-- reivindicação depois: o convite emitido ANTES da página leva a conta para a página
+insert into auth.users (id, email) values ('a1250000-0000-4000-8000-000000000003', 'musas125@gmail.com');
+select tests.login('a1250000-0000-4000-8000-000000000003', 'musas125@gmail.com');
+select tests.ok('S125 quem entra com o e-mail do convite aceita', jsonb_array_length(public.accept_my_invitations()) = 1);
+select tests.su();
+select tests.ok('S125 conta vira titular da página (não o login do talento)',
+  (select c.user_id = 'a1250000-0000-4000-8000-000000000003' and t.user_id is null and c.slug = 's125-musa'
+   from public.talent_profiles t join public.creator_profiles c on c.id = t.creator_id where t.id = 'a1250000-0000-4000-8000-000000000011')
+  and exists (select 1 from public.role_assignments ra join public.talent_profiles t on t.creator_id = ra.scope_id
+              where ra.user_id = 'a1250000-0000-4000-8000-000000000003' and ra.role = 'creator' and ra.scope_type = 'creator'
+                and ra.revoked_at is null and t.id = 'a1250000-0000-4000-8000-000000000011'));
+
+delete from public.invitations where agency_id::text like 'a1250000-%';
+delete from public.role_assignments where user_id::text like 'a1250000-%';
+delete from public.inbox_notifications where user_id::text like 'a1250000-%';
+delete from public.talent_profiles where agency_id::text like 'a1250000-%';
+delete from public.creator_profiles where slug like 's125-%';
+delete from public.talent_segments where agency_id::text like 'a1250000-%';
+delete from public.agency_members where agency_id::text like 'a1250000-%';
+delete from public.agencies where id::text like 'a1250000-%';
+delete from auth.users where id::text like 'a1250000-%';
+drop table tests.s125;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

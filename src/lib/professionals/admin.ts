@@ -83,7 +83,7 @@ export type SuggestionOptions = Record<SuggestionTarget, { id: string; label: st
 export async function suggestionOptions(): Promise<SuggestionOptions> {
   const supabase = await createClient();
   const [heroes, recipes, programs] = await Promise.all([
-    supabase.from("creator_profiles").select("id, name").eq("status", "active").order("sort_order").limit(200),
+    supabase.from("creator_profiles").select("id, name").eq("status", "active").order("sort_order").limit(1000),
     supabase.from("content").select("id, title").eq("type", "recipe").eq("status", "published").order("title").limit(500),
     supabase.from("programs").select("id, slug").eq("status", "published").order("slug").limit(200),
   ]);
