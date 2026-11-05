@@ -89,8 +89,10 @@ test.describe("portal e app das lojas", () => {
     await expect(page).toHaveURL(/\/login\?next=%2Fprofissional/);
   });
 
-  test("app das lojas: /profissional não abre; o perfil aparece sem 'Contratar'", async ({ browser, baseURL }) => {
-    const context = await browser.newContext({ userAgent: NATIVE_UA, baseURL });
+  test("app das lojas: /profissional não abre; o perfil aparece sem 'Contratar'", async ({ browser, baseURL, page: web }) => {
+    // o app só entra com login, e o painel de contas demo não aparece nele: a sessão vem do navegador
+    await loginAs(web, "premium", { home: null });
+    const context = await browser.newContext({ userAgent: NATIVE_UA, baseURL, storageState: await web.context().storageState() });
     await context.addCookies([{ name: "uh-e2e", value: "1", url: baseURL! }]);
     const page = await context.newPage();
     const blocked = await page.request.get("/profissional", { maxRedirects: 0 });

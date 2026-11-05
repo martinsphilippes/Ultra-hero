@@ -3,7 +3,7 @@ import path from "node:path";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CALENDAR_POINTS, FAQ_ITEMS, FEATURE_GROUPS, HOW_STEPS, SECTION_ANCHORS, WHAT_ITEMS } from "@/lib/about-classic/content";
-import { ABOUT_ENABLED, ABOUT_PATH, EXPLORE_COOKIE, TEASER_ENABLED, INSTITUTIONAL_PATH, rootDestination, rootNeedsSessionCheck } from "@/lib/institutional/root";
+import { ABOUT_ENABLED, ABOUT_PATH, EXPLORE_COOKIE, TEASER_ENABLED, INSTITUTIONAL_PATH, NATIVE_VISITOR_ENTRY, rootDestination } from "@/lib/institutional/root";
 import { isBlockedInNativeApp } from "@/lib/native-app/surface";
 
 // Etapa 7 · página institucional (/conheca, hoje o teaser de lançamento), o destino do "/" e a apresentação
@@ -52,18 +52,15 @@ beforeEach(() => {
 });
 
 describe("destino do endereço principal (regra pura)", () => {
-  it("logado → aba Hero; visitante → apresentação; app das lojas → aba Hero", () => {
+  it("logado → aba Hero; visitante → apresentação; app das lojas sem sessão → apresentação, mesmo com \"Pular e explorar\"", () => {
     expect(rootDestination({ signedIn: true, nativeApp: false, explored: false })).toBe("/personalities");
+    expect(rootDestination({ signedIn: true, nativeApp: true, explored: false })).toBe("/personalities");
     expect(rootDestination({ signedIn: false, nativeApp: false, explored: false })).toBe(
       TEASER_ENABLED ? INSTITUTIONAL_PATH : ABOUT_ENABLED ? ABOUT_PATH : "/personalities",
     );
-    expect(rootDestination({ signedIn: false, nativeApp: true, explored: false })).toBe("/personalities");
+    expect(rootDestination({ signedIn: false, nativeApp: true, explored: false })).toBe(NATIVE_VISITOR_ENTRY);
+    expect(rootDestination({ signedIn: false, nativeApp: true, explored: true })).toBe(NATIVE_VISITOR_ENTRY);
     expect(rootDestination({ signedIn: false, nativeApp: false, explored: true })).toBe("/personalities");
-  });
-  it("só confere a sessão quando ela decide", () => {
-    expect(rootNeedsSessionCheck({ nativeApp: false, explored: false })).toBe(true);
-    expect(rootNeedsSessionCheck({ nativeApp: true, explored: false })).toBe(false);
-    expect(rootNeedsSessionCheck({ nativeApp: false, explored: true })).toBe(false);
   });
 });
 
@@ -81,11 +78,6 @@ describe("middleware no \"/\"", () => {
     expect(res.status).toBe(307);
     expect(location(res)?.pathname).toBe("/personalities");
   });
-  it("app das lojas vai direto ao app, sem página de marketing (nem confere a sessão)", async () => {
-    const res = await middleware(request("/", { ua: NATIVE_UA }));
-    expect(location(res)?.pathname).toBe("/personalities");
-    expect(session.checks).toBe(0);
-  });
   it("quem escolheu \"Pular e explorar\" volta ao app pelo logo", async () => {
     const res = await middleware(request("/", { cookie: `${EXPLORE_COOKIE}=1` }));
     expect(location(res)?.pathname).toBe("/personalities");
@@ -100,15 +92,14 @@ describe("middleware no \"/\"", () => {
     expect(isBlockedInNativeApp("/conheca")).toBe(true);
     expect(isBlockedInNativeApp("/conheca/explorar")).toBe(true);
   });
-  it("/sobre (apresentação completa) é pública na web, sem checar sessão, e bloqueada no app das lojas", async () => {
+  it("/sobre (apresentação completa) é pública, sem checar sessão, na web e no app das lojas", async () => {
     expect(ABOUT_PATH).toBe("/sobre");
-    const web = await middleware(request("/sobre"));
-    expect(web.headers.get("location")).toBeNull();
+    for (const ua of [BROWSER_UA, NATIVE_UA]) {
+      const res = await middleware(request("/sobre", { ua }));
+      expect(res.headers.get("location")).toBeNull();
+    }
     expect(session.checks).toBe(0);
-    const native = await middleware(request("/sobre", { ua: NATIVE_UA }));
-    expect(location(native)?.pathname).toBe("/personalities");
-    expect(isBlockedInNativeApp("/sobre")).toBe(true);
-    expect(isBlockedInNativeApp("/sobremesa")).toBe(false);
+    expect(isBlockedInNativeApp("/sobre")).toBe(false);
   });
   it("rotas protegidas seguem exigindo sessão (autenticação inalterada)", async () => {
     const res = await middleware(request("/heroi"));
@@ -311,29 +302,57 @@ describe("/sobre · Conheça o Groscove Ultra (apresentação clássica)", () =>
   });
 });
 
-describe("app Android (Play Store) abre a apresentação /sobre", () => {
-  it("sem login nem \"Pular e explorar\": a abertura do app (/personalities) vai para /sobre", async () => {
-    const res = await middleware(request("/personalities", { ua: ANDROID_UA }));
-    expect(res.status).toBe(307);
-    expect(location(res)?.pathname).toBe("/sobre");
+describe.each([
+  ["iOS", NATIVE_UA],
+  ["Android", ANDROID_UA],
+])("app das lojas (%s): mesma entrada da web e só com login", (_platform, ua) => {
+  it("sem login, a abertura do app (/ e /personalities) vai para /sobre, mesmo com o cookie antigo de \"Pular e explorar\"", async () => {
+    for (const cookie of [undefined, `${EXPLORE_COOKIE}=1`]) {
+      for (const url of ["/", "/personalities"]) {
+        const res = await middleware(request(url, { ua, cookie }));
+        expect(res.status).toBe(307);
+        expect(location(res)?.pathname).toBe("/sobre");
+      }
+    }
   });
-  it("/sobre e o \"Pular e explorar\" ficam liberados no Android", async () => {
-    expect((await middleware(request("/sobre", { ua: ANDROID_UA }))).headers.get("location")).toBeNull();
-    expect(isBlockedInNativeApp("/sobre", undefined, "android")).toBe(false);
-    expect(isBlockedInNativeApp("/conheca/explorar", undefined, "android")).toBe(false);
-    expect(isBlockedInNativeApp("/conheca", undefined, "android")).toBe(true);
+  it("sem login, a troca de tela para a aba Hero também não abre", async () => {
+    const rsc = new NextRequest(new URL("/personalities", "https://ultra.example"), { headers: new Headers({ "user-agent": ua, rsc: "1" }) });
+    expect(location(await middleware(rsc))?.pathname).toBe("/sobre");
   });
-  it("logado, depois de \"Pular e explorar\" ou trocando de tela dentro do app: segue na aba Hero", async () => {
+  it.each(["/explore", "/personalities/alguem", "/profissionais", "/content/x", "/programs/x", "/verify/abc", "/invite?token=t"])("sem login, %s pede o login e volta para lá depois", async (url) => {
+    const res = await middleware(request(url, { ua }));
+    expect(location(res)?.pathname).toBe("/login");
+    expect(location(res)?.searchParams.get("next")).toBe(url);
+  });
+  it.each(["/sobre", "/login", "/signup", "/forgot-password", "/reset-password", "/legal/terms", "/legal/privacy", "/legal/account-deletion", "/offline", "/auth/callback", "/auth/native", "/api/agenda", "/r/abc"])("sem login, %s continua aberta", async (url) => {
+    expect((await middleware(request(url, { ua }))).headers.get("location")).toBeNull();
+  });
+  it("logado: / vai à aba Hero e o app abre normalmente, /sobre inclusive", async () => {
     session.signedIn = true;
-    expect((await middleware(request("/personalities", { ua: ANDROID_UA }))).headers.get("location")).toBeNull();
-    session.signedIn = false;
-    expect((await middleware(request("/personalities", { ua: ANDROID_UA, cookie: `${EXPLORE_COOKIE}=1` }))).headers.get("location")).toBeNull();
-    const rsc = new NextRequest(new URL("/personalities", "https://ultra.example"), { headers: new Headers({ "user-agent": ANDROID_UA, rsc: "1" }) });
-    expect((await middleware(rsc)).headers.get("location")).toBeNull();
+    expect(location(await middleware(request("/", { ua })))?.pathname).toBe("/personalities");
+    for (const url of ["/personalities", "/explore", "/sobre"]) {
+      expect((await middleware(request(url, { ua }))).headers.get("location")).toBeNull();
+    }
   });
-  it("iOS e navegador não mudam: iOS abre a aba Hero e não vê /sobre", async () => {
-    expect((await middleware(request("/personalities", { ua: NATIVE_UA }))).headers.get("location")).toBeNull();
-    expect(location(await middleware(request("/sobre", { ua: NATIVE_UA })))?.pathname).toBe("/personalities");
-    expect((await middleware(request("/personalities"))).headers.get("location")).toBeNull();
+  it("a loja e os portais seguem fora do app, com ou sem login; \"Pular e explorar\" não existe", async () => {
+    for (const signedIn of [false, true]) {
+      session.signedIn = signedIn;
+      for (const url of ["/shop", "/cart", "/checkout", "/orders", "/agencia", "/marca", "/conheca/explorar"]) {
+        expect(location(await middleware(request(url, { ua })))?.pathname).toBe("/personalities");
+      }
+    }
+  });
+});
+
+describe("navegador não muda", () => {
+  it("a aba Hero e as páginas públicas seguem abertas sem login", async () => {
+    for (const url of ["/personalities", "/explore", "/profissionais", "/conheca/explorar"]) {
+      expect((await middleware(request(url))).headers.get("location")).toBeNull();
+    }
+  });
+  it("a página só tira o \"Pular e explorar\" no app", () => {
+    const page = readFileSync(path.join(process.cwd(), "src/app/sobre/page.tsx"), "utf8");
+    expect(page).toContain("const canExplore = !signedIn && nativeApp === null;");
+    expect(page).toContain('group.ns === "app" && nativeApp === null');
   });
 });

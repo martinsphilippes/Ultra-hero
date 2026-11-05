@@ -4,8 +4,8 @@
 // Decisões (etapa 7, D10 da auditoria da agenda):
 // - "/" deixou de ser um redirect fixo do next.config: quem tem sessão continua indo direto à aba Hero
 //   (/personalities, como sempre); visitante sem sessão vê a apresentação (/conheca).
-// - App das lojas (casca nativa): sempre direto ao app, sem página de marketing dentro do app da loja (a casca já
-//   abre em /personalities; e a página fala de portais e pagamentos que lá não existem). /conheca fica bloqueada lá.
+// - App das lojas (casca nativa): sem sessão abre a apresentação (/sobre), como na web, e só entra com login; não há
+//   "Pular e explorar" (decisão do responsável, 05/11/2026). /conheca fica bloqueada lá.
 // - "Pular e explorar" grava um cookie (EXPLORE_COOKIE): depois disso, o logo/"Início" ("/") leva ao app em vez
 //   de devolver o visitante à apresentação a cada clique. Não é dado pessoal nem rastreio; só uma preferência.
 // - O fluxo de autenticação não muda: os botões levam ao /login (cadastro rápido) e ao /login?mode=password.
@@ -36,15 +36,15 @@ export type RootVisitor = {
   explored: boolean;
 };
 
+/** Porta de entrada do app das lojas para quem não entrou: o app só funciona com login. */
+export const NATIVE_VISITOR_ENTRY = ABOUT_ENABLED ? ABOUT_PATH : "/login";
+
 /** Para onde "/" leva cada visitante. */
 export function rootDestination(visitor: RootVisitor): string {
-  if (visitor.nativeApp || visitor.signedIn || visitor.explored) return LOGIN_HOME;
+  if (visitor.signedIn) return LOGIN_HOME;
+  if (visitor.nativeApp) return NATIVE_VISITOR_ENTRY;
+  if (visitor.explored) return LOGIN_HOME;
   if (TEASER_ENABLED) return INSTITUTIONAL_PATH;
   // teaser oculto: o visitante vê a apresentação clássica (/sobre) ou, se ela também estiver fechada, o app
   return ABOUT_ENABLED ? ABOUT_PATH : LOGIN_HOME;
-}
-
-/** Só a sessão decide entre app e apresentação; app nativo e "já explorou" dispensam a checagem da sessão. */
-export function rootNeedsSessionCheck(visitor: Pick<RootVisitor, "nativeApp" | "explored">): boolean {
-  return !visitor.nativeApp && !visitor.explored;
 }
