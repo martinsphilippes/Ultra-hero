@@ -71,6 +71,16 @@ Decisão do responsável (05/11/2026), vale para iOS e Android e substitui a ant
   reprovar por isso, a saída é reabrir a navegação sem conta no app (`isOpenToNativeVisitor` e o middleware).
 - **A loja continua fora do app** (tabela abaixo) até existir checkout real.
 
+## Portais de marca e agência no app
+
+Decisão do responsável (05/11/2026), desfaz a anterior ("portais comerciais só na web"): `/marca` e `/agencia` abrem no
+app com a mesma experiência da web, valores inclusive, e os dois perfis aparecem no cadastro.
+
+- **Sem transação**: os financeiros são acordos registrados; o pagamento acontece fora do app, sem checkout nem link de
+  cobrança. O que levar a uma transação no app entra em `isBlockedInNativeApp`.
+- **Sem "simulado"**: as etiquetas saíram da web e do app. Os avisos de que é só registro e controle continuam.
+- **Hero**: os valores no escritório do Hero seguem ocultos no app (regra da 0072); a decisão vale só para os portais.
+
 ## O que o app das lojas não mostra (e por quê)
 
 | Superfície | No app | Motivo |

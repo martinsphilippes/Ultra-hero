@@ -9,6 +9,7 @@ import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { formatCents, parseBrlToCents } from "@/lib/deals/schemas";
 import { createCounterofferAction, withdrawCounterofferAction } from "@/lib/offer/actions";
 import { lastDecided, openCounteroffer, type Counteroffer, type CounterStatus } from "@/lib/offer/counteroffer";
+import { cn } from "@/lib/utils";
 
 export type CounterDeliverable = { id: string; label: string; refDate: string | null };
 
@@ -105,7 +106,7 @@ export function CounterofferPanel({ dealTalentId, counteroffers, canFee, canDate
 }
 
 /** Uma contraproposta em uma linha: tipo, de → para, situação, data e justificativa. */
-export function CounterLine({ c, locale, feeHidden }: { c: Counteroffer; locale: Locale; feeHidden?: string }) {
+export function CounterLine({ c, locale, feeHidden, feeInApp = false }: { c: Counteroffer; locale: Locale; feeHidden?: string; feeInApp?: boolean }) {
   const t = useTranslations("offer.counter");
   const change =
     c.kind === "fee"
@@ -124,7 +125,7 @@ export function CounterLine({ c, locale, feeHidden }: { c: Counteroffer; locale:
       <span className="flex flex-wrap items-center gap-2 text-sm text-fg">
         <span className="font-medium">{t(`kind.${c.kind}`)}</span>
         {c.deliverableTitle ? <span className="text-fg-muted">· {c.deliverableTitle}</span> : null}
-        <span className={c.kind === "fee" ? "font-mono native:hidden" : undefined}>{change}</span>
+        <span className={c.kind === "fee" ? cn("font-mono", !feeInApp && "native:hidden") : undefined}>{change}</span>
         <Badge size="sm" variant={STATUS_VARIANT[c.status]}>
           {t(`status.${c.status}`)}
         </Badge>

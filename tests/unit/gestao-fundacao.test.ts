@@ -150,18 +150,20 @@ describe("push do escritório", () => {
 });
 
 describe("integração com o app", () => {
-  it("portais de gestão só na web", () => {
-    expect(isBlockedInNativeApp("/agencia")).toBe(true);
-    expect(isBlockedInNativeApp("/agencia/equipe")).toBe(true);
-    expect(isBlockedInNativeApp("/marca")).toBe(true);
+  it("portais de gestão abrem também no app das lojas", () => {
+    expect(isBlockedInNativeApp("/agencia")).toBe(false);
+    expect(isBlockedInNativeApp("/agencia/equipe")).toBe(false);
+    expect(isBlockedInNativeApp("/agencia/financeiro")).toBe(false);
+    expect(isBlockedInNativeApp("/marca")).toBe(false);
+    expect(isBlockedInNativeApp("/marca/pagamentos")).toBe(false);
     expect(isBlockedInNativeApp("/marcas")).toBe(false);
     expect(isBlockedInNativeApp("/heroi/post/novo")).toBe(false);
   });
 
-  it("Configurações mostram os portais de agência e marca (escondidos no app)", () => {
+  it("Configurações mostram os portais de agência e marca, também no app", () => {
     const portals = buildSettingsSections(["consumer", "agency", "brand"]).find((s) => s.key === "portals");
     expect(portals?.items.map((i) => i.key)).toEqual(["agency", "brand"]);
-    expect(portals?.items.every((i) => i.nativeHidden)).toBe(true);
+    expect(portals?.items.some((i) => i.nativeHidden)).toBe(false);
   });
 
   it("migração ausente vira 'indisponível' (sem erro 500)", () => {

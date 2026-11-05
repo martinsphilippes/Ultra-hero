@@ -19,10 +19,10 @@ describe("etapa B: casting no menu e travas", () => {
     }
   });
 
-  it("escritório e /kit existem no app das lojas; o portal da agência não", () => {
+  it("escritório, /kit e o portal da agência existem no app das lojas", () => {
     expect(isBlockedInNativeApp("/heroi")).toBe(false);
     expect(isBlockedInNativeApp("/kit/abc")).toBe(false);
-    expect(isBlockedInNativeApp("/agencia/casting")).toBe(true);
+    expect(isBlockedInNativeApp("/agencia/casting")).toBe(false);
   });
 });
 
@@ -47,8 +47,8 @@ describe("portais no topo do Perfil", () => {
     expect(buildPortalItems(["consumer", "creator"], undefined, { hasTalent: true }).map((p) => p.key)).toEqual(["creator"]);
     const admin = buildPortalItems(["consumer", "admin"], undefined, { platformAdmin: true });
     expect(admin.map((p) => [p.key, p.href, p.nativeHidden])).toEqual([
-      ["agency", "/agencia", true],
-      ["brand", "/marca", true],
+      ["agency", "/agencia", false],
+      ["brand", "/marca", false],
       ["admin", "/admin", false],
     ]);
     const portals = buildSettingsSections(["consumer", "admin"], undefined, { platformAdmin: true }).find((s) => s.key === "portals")?.items;
@@ -57,11 +57,11 @@ describe("portais no topo do Perfil", () => {
     expect(buildPortalItems(["consumer", "admin"]).map((p) => p.key)).toEqual(["admin"]);
   });
 
-  it("app das lojas: as linhas só da web saem da lista no servidor; o Portal do Hero e a Administração ficam", () => {
+  it("app das lojas: mesma lista da web, com os portais de agência e marca", () => {
     const items = buildPortalItems(["consumer", "admin", "agency"], undefined, { hasTalent: true, platformAdmin: true });
-    expect(forSurface(items, true).map((p) => p.key)).toEqual(["creator", "admin"]);
+    expect(forSurface(items, true).map((p) => p.key)).toEqual(["creator", "agency", "brand", "admin"]);
     expect(forSurface(items, false).map((p) => p.key)).toEqual(["creator", "agency", "brand", "admin"]);
-    expect(forSurface(buildPortalItems(["consumer", "agency"]), true)).toEqual([]);
+    expect(forSurface(buildPortalItems(["consumer", "agency"]), true).map((p) => p.key)).toEqual(["agency"]);
   });
 });
 

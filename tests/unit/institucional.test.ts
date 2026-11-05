@@ -254,11 +254,12 @@ describe("/sobre · Conheça o Groscove Ultra (apresentação clássica)", () =>
     expect(get(pt, "calendar.title")).toBe("Calendário Groscove");
     expect(get(pt, "agency.items.castBuilder.title")).toBe("Montador de elenco");
   });
-  it.each(LOCALES)("%s não promete o que não existe: pagamentos ainda não ativados, sem demo", (locale) => {
+  it.each(LOCALES)("%s não promete o que não existe: texto definitivo de que o Ultra não faz pagamentos, sem demo", (locale) => {
     for (const text of allStrings(about[locale])) expect(text).not.toMatch(/demonstra|\bdemo\b|simulad|simulat/i);
-    const notEnabled = { "pt-BR": /ainda não ativad/i, en: /not enabled yet/i, es: /aún no activad/i }[locale];
-    expect(String(get(about[locale], "brands.items.budget.body"))).toMatch(notEnabled);
-    expect(String(get(about[locale], "heroes.items.finance.body"))).toMatch(notEnabled);
+    const definitive = { "pt-BR": /não faz .*pagamentos/i, en: /does not .*process payments/i, es: /no .*procesa pagos/i }[locale];
+    expect(String(get(about[locale], "brands.items.budget.body"))).toMatch(definitive);
+    expect(String(get(about[locale], "heroes.items.finance.body"))).toMatch(definitive);
+    for (const text of allStrings(about[locale])) expect(text).not.toMatch(/ainda não|não ativad|not yet|not enabled|aún no|todavía no/i);
     expect(String(get(about[locale], "faq.items.data.a"))).toMatch(/<privacy>.+<\/privacy>/);
   });
   it("cada recurso citado aponta para uma rota que existe no app", () => {
@@ -334,10 +335,10 @@ describe.each([
       expect((await middleware(request(url, { ua }))).headers.get("location")).toBeNull();
     }
   });
-  it("a loja e os portais seguem fora do app, com ou sem login; \"Pular e explorar\" não existe", async () => {
+  it("a loja segue fora do app, com ou sem login; \"Pular e explorar\" não existe", async () => {
     for (const signedIn of [false, true]) {
       session.signedIn = signedIn;
-      for (const url of ["/shop", "/cart", "/checkout", "/orders", "/agencia", "/marca", "/conheca/explorar"]) {
+      for (const url of ["/shop", "/cart", "/checkout", "/orders", "/conheca/explorar"]) {
         expect(location(await middleware(request(url, { ua })))?.pathname).toBe("/personalities");
       }
     }

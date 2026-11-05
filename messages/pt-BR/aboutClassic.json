@@ -96,7 +96,7 @@
       },
       "finance": {
         "title": "Financeiro",
-        "body": "Valores acordados e o que há a receber, por negócio. Pagamentos ainda não ativados."
+        "body": "Valores acordados e o que há a receber, por negócio, para controle. O Ultra não faz pagamentos."
       }
     }
   },
@@ -122,7 +122,7 @@
       },
       "budget": {
         "title": "Verba e pagamentos",
-        "body": "Verba por campanha, parcelas e vencimentos. Pagamentos ainda não ativados: nada é cobrado pelo Ultra."
+        "body": "Verba por campanha, parcelas e vencimentos, para controle. O Ultra não faz cobranças nem pagamentos."
       },
       "reports": {
         "title": "Relatórios",
@@ -193,7 +193,7 @@
       },
       "payments": {
         "q": "O Ultra faz cobranças ou pagamentos?",
-        "a": "Ainda não. Pagamentos e compras não estão ativados: valores de negócios e pedidos são registrados para controle, sem cobrança."
+        "a": "Não. O Ultra registra valores de negócios e pedidos para controle, sem cobrar nem movimentar dinheiro."
       },
       "access": {
         "q": "Como marcas, agências e Heros entram?",

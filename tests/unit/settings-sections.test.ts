@@ -48,10 +48,10 @@ describe("buildSettingsSections", () => {
     expect(withSeller.items.map((i) => i.href)).toEqual(["/seller"]);
   });
 
-  it("app das lojas: compras simuladas e portais do profissional, da agência e da marca somem; o resto fica", () => {
+  it("app das lojas: compras simuladas e portal do profissional somem; o resto fica", () => {
     const items = buildSettingsSections(["admin", "professional"], undefined, { platformAdmin: true }).flatMap((s) => s.items);
     const hidden = items.filter((i) => i.nativeHidden).map((i) => i.href);
-    expect(hidden.sort()).toEqual(["/agencia", "/marca", "/orders", "/profissional"]);
+    expect(hidden.sort()).toEqual(["/orders", "/profissional"]);
   });
 
   it("Excluir conta aponta para a seção da página da conta", () => {

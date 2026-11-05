@@ -35,13 +35,14 @@ test.describe("portais de gestão", () => {
     await expect(page.getByTestId("module-unavailable").or(page.getByTestId("admin-agency-demo-forbidden"))).toBeVisible();
   });
 
-  test("app das lojas: /agencia e /marca não abrem", async ({ browser, baseURL }) => {
-    const context = await browser.newContext({ baseURL, userAgent: NATIVE_UA, locale: "pt-BR" });
+  test("app das lojas: /agencia abre como na web, com o Financeiro sem etiqueta de simulado", async ({ browser, baseURL, page: web }) => {
+    // o painel de contas demo não aparece no app: entra pelo navegador e leva a sessão para o app
+    await loginAs(web, "agency", { home: null });
+    const context = await browser.newContext({ baseURL, userAgent: NATIVE_UA, locale: "pt-BR", storageState: await web.context().storageState() });
     const page = await context.newPage();
-    for (const path of ["/agencia", "/marca"]) {
-      await page.goto(path);
-      await expect(page).not.toHaveURL(new RegExp(`${path}$`));
-    }
+    await page.goto("/agencia");
+    await expect(page).toHaveURL(/\/agencia$/);
+    await expect(page.getByText(/simulad/i)).toHaveCount(0);
     await context.close();
   });
 

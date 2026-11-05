@@ -96,7 +96,7 @@
       },
       "finance": {
         "title": "Finances",
-        "body": "Agreed amounts and what's receivable, per deal. Payments not enabled yet."
+        "body": "Agreed amounts and what's receivable, per deal, for tracking. Ultra does not process payments."
       }
     }
   },
@@ -122,7 +122,7 @@
       },
       "budget": {
         "title": "Budget and payments",
-        "body": "Budget per campaign, installments and due dates. Payments not enabled yet: Ultra charges nothing."
+        "body": "Budget per campaign, installments and due dates, for tracking. Ultra does not charge or process payments."
       },
       "reports": {
         "title": "Reports",
@@ -193,7 +193,7 @@
       },
       "payments": {
         "q": "Does Ultra charge or make payments?",
-        "a": "Not yet. Payments and purchases are not enabled: deal amounts and orders are recorded for tracking, with no charge."
+        "a": "No. Ultra records deal amounts and orders for tracking, without charging or moving money."
       },
       "access": {
         "q": "How do brands, agencies and heroes get in?",

@@ -24,10 +24,11 @@ export function parseNativeApp(userAgent: string | null | undefined): NativeApp 
 // O app é gratuito (0069): não há plano nem assinatura; /profile/plan só redireciona ao Perfil.
 // /profissional: caixa de pedidos de serviços contratados com pagamento simulado (0058). A lista e o
 // perfil público dos profissionais (/profissionais) seguem no app, sem "Contratar".
-// /agencia e /marca: portais de gestão (0064) só na web
+// /agencia e /marca abrem no app como na web (decisão do responsável, 05/11/2026): acordos financeiros só registrados,
+// sem transação nem checkout. O que levar a uma transação no app entra nesta lista.
 // /conheca: o teaser (etapa 7) é só da web, e "Pular e explorar" (/conheca/explorar) não existe no app, que só entra
 // com login. /sobre abre no app, como na web (decisão do responsável, 05/11/2026).
-const BLOCKED_PREFIXES = ["/shop", "/cart", "/checkout", "/orders", "/profissional", "/agencia", "/marca", "/conheca"];
+const BLOCKED_PREFIXES = ["/shop", "/cart", "/checkout", "/orders", "/profissional", "/conheca"];
 const BLOCKED_HERO_LIBRARY = /^\/personalities\/[^/]+\/produtos\/?$/;
 
 // O app das lojas só entra com login (decisão do responsável, 05/11/2026). Sem sessão, ficam abertas só a apresentação,

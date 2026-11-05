@@ -96,7 +96,7 @@
       },
       "finance": {
         "title": "Finanzas",
-        "body": "Valores acordados y lo que hay por cobrar, por negocio. Pagos aún no activados."
+        "body": "Valores acordados y lo que hay por cobrar, por negocio, para control. Ultra no procesa pagos."
       }
     }
   },
@@ -122,7 +122,7 @@
       },
       "budget": {
         "title": "Presupuesto y pagos",
-        "body": "Presupuesto por campaña, cuotas y vencimientos. Pagos aún no activados: Ultra no cobra nada."
+        "body": "Presupuesto por campaña, cuotas y vencimientos, para control. Ultra no cobra ni procesa pagos."
       },
       "reports": {
         "title": "Informes",
@@ -193,7 +193,7 @@
       },
       "payments": {
         "q": "¿Ultra cobra o hace pagos?",
-        "a": "Todavía no. Pagos y compras no están activados: los valores de negocios y pedidos se registran para control, sin cobro."
+        "a": "No. Ultra registra los valores de negocios y pedidos para control, sin cobrar ni mover dinero."
       },
       "access": {
         "q": "¿Cómo entran marcas, agencias y Heros?",

@@ -264,7 +264,7 @@
   },
   "budget": {
     "title": "Budget",
-    "hint": "What the brand reserved, what is committed to hired heroes and what was paid. Simulated amounts.",
+    "hint": "What the brand reserved, what is committed to hired heroes and what was paid.",
     "reserved": "Reserved",
     "committed": "Committed",
     "paid": "Paid",

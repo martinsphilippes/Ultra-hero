@@ -121,7 +121,7 @@
     "seeCasting": "See roster",
     "seePipeline": "See pipeline",
     "seeTasks": "My tasks",
-    "financeTitle": "Finance (simulated)",
+    "financeTitle": "Finance",
     "seeFinance": "See finance",
     "shortcuts": {
       "label": "Agency shortcuts",
@@ -1218,7 +1218,6 @@
     "description": "Receivable from the brand, agency commission and hero payouts for each contracted deal.",
     "unavailable": "Finance being updated",
     "unavailableHint": "Finance appears as soon as the database is updated.",
-    "simulatedTag": "Simulated",
     "disclaimer": "Internal record, no real billing: nothing is charged, paid or transferred here.",
     "filtersLabel": "Finance filters",
     "filters": {

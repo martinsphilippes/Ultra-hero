@@ -160,7 +160,7 @@ export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit,
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   {isAdmin ? (
-                    <span className="font-mono text-sm font-semibold text-fg native:hidden" data-testid="deal-fee">
+                    <span className="font-mono text-sm font-semibold text-fg" data-testid="deal-fee">
                       {fee !== undefined ? formatCents(fee, locale) : <span className="font-sans font-normal text-warning">{t("feeMissing")}</span>}
                     </span>
                   ) : row.termsReady ? (
@@ -177,7 +177,7 @@ export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit,
               {canEdit && row.status !== "removed" ? (
                 <div className="flex flex-wrap gap-2">
                   {isAdmin && open ? (
-                    <Button type="button" size="sm" variant="secondary" leadingIcon={<Wallet />} onClick={() => setFeeFor(row)} disabled={pending} className="native:hidden">
+                    <Button type="button" size="sm" variant="secondary" leadingIcon={<Wallet />} onClick={() => setFeeFor(row)} disabled={pending}>
                       {t("setFee")}
                     </Button>
                   ) : null}

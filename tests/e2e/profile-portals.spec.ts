@@ -49,14 +49,14 @@ test.describe("portais no topo do Perfil e nas Configurações", () => {
     await expect(page.locator("main a").first()).toHaveAttribute("data-testid", "profile-portal-admin");
   });
 
-  test("app das lojas: quem só tem portais da web não vê o bloco", async ({ page, browser, baseURL }) => {
+  test("app das lojas: a agência vê o bloco, como na web", async ({ page, browser, baseURL }) => {
     // o painel de contas demo não aparece no app: entra pelo navegador e leva a sessão para o app
     await loginAs(page, "agency", { home: null });
     const context = await browser.newContext({ baseURL, userAgent: NATIVE_UA, locale: "pt-BR", storageState: await page.context().storageState() });
     const app = await context.newPage();
     await app.goto("/profile");
     await expect(app.getByTestId("today-section")).toBeVisible();
-    await expect(app.getByTestId("profile-portals")).toHaveCount(0);
+    await expect(app.getByTestId("profile-portals")).toBeVisible();
     await context.close();
   });
 

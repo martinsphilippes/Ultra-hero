@@ -162,7 +162,6 @@ export default async function SettingsPage() {
         </h2>
         <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
           {welcomeAreasFor({ roles: roles.map((r) => r.role), hasTalent: talent?.state === "ok" })
-            .filter((area) => !native || area === "app" || area === "heroi")
             .map((area) => (
               <li key={area}>
                 <a href={welcomeHref(area)} data-testid={`settings-welcome-${area}`} className={rowClass}>
@@ -178,7 +177,7 @@ export default async function SettingsPage() {
               </li>
             ))}
           {/* "Conheça o Groscove Ultra": a apresentação completa (/sobre). Fora do app das lojas, onde ela é só a porta de
-              entrada de quem ainda não entrou (fala de portais que lá não existem). */}
+              entrada de quem ainda não entrou (no app a conta já está dentro). */}
           {native || !ABOUT_ENABLED ? null : (
             <li>
               <Link href={ABOUT_PATH} data-testid="settings-about" className={rowClass}>

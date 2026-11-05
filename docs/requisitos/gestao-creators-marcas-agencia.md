@@ -44,7 +44,7 @@ Legenda usada no documento:
 1. **Embeds ambíguos no PostgREST (PGRST201).** Já derrubou produção uma vez (0051). As tabelas novas usarão PK `id` substituta e FKs nomeadas, com o guarda S65 na suíte.
 2. **Navegação por parâmetro de URL na mesma página.** Há um bug conhecido; usar `<a>` simples nas abas.
 3. **Contagem de funções SECURITY DEFINER acessíveis ao anônimo (S14 = 17).** O link público do media kit vai mexer nisso, e o teste precisa ser atualizado de propósito.
-4. **App das lojas.** Portais comerciais (marca e agência) ficam só na web.
+4. **App das lojas.** Portais de marca e agência abrem também no app (decisão do responsável, 05/11/2026; antes eram só web): sem transação nem checkout. Ver `docs/decisions/app-nas-lojas.md`.
 5. **Dois colaboradores enviando código para a master.** Toda etapa faz merge antes do push.
 
 ---
@@ -118,7 +118,7 @@ Legenda usada no documento:
 - **Contratos e entregas:** somente leitura dos documentos que a agência compartilhou com ele.
 - **Gratuito:** nenhuma cobrança ao creator.
 
-### Portal 2: Marca (`/marca`, novo, só na web)
+### Portal 2: Marca (`/marca`, novo, na web e no app)
 - **Início:** campanhas ativas e concluídas, solicitações, propostas recebidas, creators sugeridos pela agência, calendário de oportunidades e avisos.
 - **Nova campanha:** briefing em etapas curtas, com rascunho salvo automaticamente e anexos.
 - **Busca de creators:** catálogo com filtros. Mostra apenas o que o creator autorizou e o que a agência liberou. Cada recomendação diz o critério ("mesmo segmento", "região", "audiência 18–34 declarada"). Sem dados suficientes, a tela diz "dados insuficientes" e não mostra nota.
@@ -126,7 +126,7 @@ Legenda usada no documento:
 - **Calendário comercial:** datas cadastradas pela agência, com botão "Quero uma campanha nesta data", que abre o briefing já preenchido.
 - **Isolamento:** a marca A nunca vê nada da marca B.
 
-### Portal 3: Agência (`/agencia`, novo, só na web)
+### Portal 3: Agência (`/agencia`, novo, na web e no app)
 - **Início executivo:** creators ativos, marcas, negócios por etapa, contratos ativos, receita de comissões (simulada), valores a receber, entregas atrasadas e creators sem contato.
 - **Casting:** lista e ficha do creator, com segmentos, disponibilidade, métricas, documentos, histórico de contatos e campanhas.
 - **Pipeline:** quadro com as 13 etapas (no celular, lista agrupada por etapa). Cada negócio tem responsável, atividades, shortlist de creators, consulta de interesse em massa, proposta, contrato e entregáveis.
@@ -285,7 +285,7 @@ Por etapa: RLS com cenários novos (isolamento entre marcas e entre creators, do
 | Métricas inventadas | Campo `source` obrigatório. Declarado aparece como "declarado em DD/MM". Sem dado, aparece "não informado" e nunca zero |
 | Escopo grande demais | Etapas A–F publicáveis uma a uma, com o MVP fechado acima |
 | Conflito com o portal `/creator` atual | O escritório entra como seções novas; conteúdos e posts não mudam |
-| App das lojas | `/agencia` e `/marca` bloqueados lá; o escritório do creator pode aparecer (sem valores) |
+| App das lojas | `/agencia` e `/marca` abrem lá, como na web, sem transação nem checkout (05/11/2026); o escritório do creator aparece (sem valores) |
 | LGPD | Consentimento explícito, revogação, retenção de documentos definida, exportação e exclusão pelos fluxos que já existem |
 | Integrações externas | Só com chaves e contrato; até lá a interface diz "em breve" e não finge |
 | Dois desenvolvedores na master | Merge e testes antes de cada push, numeração de migração conferida |

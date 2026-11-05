@@ -25,7 +25,7 @@ export function CounterofferReview({ dealId, dealTalentId, counteroffers, canDec
       {open ? (
         <div className="flex flex-col gap-2 rounded-xl border border-warning/30 bg-warning-soft/30 px-3 py-2">
           <span className="text-xs font-semibold text-fg">{t("title")}</span>
-          <CounterLine c={open} locale={locale} feeHidden={t("feeHidden")} />
+          <CounterLine c={open} locale={locale} feeHidden={t("feeHidden")} feeInApp />
           {canDecide ? (
             <div className="flex flex-wrap gap-2">
               <Button type="button" size="sm" leadingIcon={<Check />} onClick={() => setDeciding("accepted")} data-testid="counter-accept">
@@ -46,7 +46,7 @@ export function CounterofferReview({ dealId, dealTalentId, counteroffers, canDec
           <ul className="mt-1 flex flex-col gap-1.5">
             {earlier.map((c) => (
               <li key={c.id}>
-                <CounterLine c={c} locale={locale} feeHidden={t("feeHidden")} />
+                <CounterLine c={c} locale={locale} feeHidden={t("feeHidden")} feeInApp />
               </li>
             ))}
           </ul>
