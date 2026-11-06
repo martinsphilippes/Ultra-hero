@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { DealForm } from "@/components/deals/DealForms";
-import { PageHeader } from "@/components/ui";
+import { Building2, UserPlus } from "lucide-react";
+import Link from "next/link";
+import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { listAgencyBrands, listTeam } from "@/lib/agency/queries";
 import { requireAgency } from "@/lib/agency/server";
 import { listServices } from "@/lib/roadmap/queries";
@@ -43,20 +45,41 @@ export default async function NewDealPage({ searchParams }: Props) {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title={t("newTitle")} description={t("newDescription")} backHref="/agencia/pipeline" backLabel={t("title")} />
-      <section className="rounded-2xl border border-border bg-surface p-4 sm:p-5">
-        <DealForm
-          initial={{ brandId: brandPick ?? brands[0]?.brand.id ?? "", title: "", talentBrief: "", expectedStart: "", expectedEnd: "", ownerId: "", notes: "" }}
-          dealId={null}
-          brands={brands.map((b) => ({ id: b.brand.id, name: b.brand.name, logoUrl: b.brand.logoUrl }))}
-          members={team.map((m) => ({ userId: m.userId, name: m.name, role: m.role, jobTitle: m.jobTitle }))}
-          canEdit={brands.length > 0 || clientTalents.length > 0}
-          canSetOwner
-          talents={clientTalents}
-          services={services.items.map((x) => ({ id: x.id, name: x.name, clientKind: x.clientKind, slaDays: x.slaDays }))}
-          prefill={prefill}
-        />
-        {brands.length === 0 && clientTalents.length === 0 ? <p className="mt-3 type-body-sm text-fg-muted">{t("noBrands")}</p> : null}
-      </section>
+      {brands.length === 0 && clientTalents.length === 0 ? (
+        // agência recém-criada: sem marca nem Hero não há para quem abrir o negócio. Antes o formulário aparecia
+        // inteiro travado (cinza) e parecia que o celular não respondia; agora mostra o que fazer primeiro.
+        <section className="rounded-2xl border border-border bg-surface" data-testid="deal-new-no-clients">
+          <EmptyState
+            icon={<Building2 />}
+            title={t("noClientsTitle")}
+            description={t("noClientsBody")}
+            action={
+              <>
+                <Button asChild leadingIcon={<Building2 />}>
+                  <Link href="/agencia/marcas/nova">{t("noClientsBrand")}</Link>
+                </Button>
+                <Button asChild variant="secondary" leadingIcon={<UserPlus />}>
+                  <Link href="/agencia/casting/novo">{t("noClientsHero")}</Link>
+                </Button>
+              </>
+            }
+          />
+        </section>
+      ) : (
+        <section className="rounded-2xl border border-border bg-surface p-4 sm:p-5">
+          <DealForm
+            initial={{ brandId: brandPick ?? brands[0]?.brand.id ?? "", title: "", talentBrief: "", expectedStart: "", expectedEnd: "", ownerId: "", notes: "" }}
+            dealId={null}
+            brands={brands.map((b) => ({ id: b.brand.id, name: b.brand.name, logoUrl: b.brand.logoUrl }))}
+            members={team.map((m) => ({ userId: m.userId, name: m.name, role: m.role, jobTitle: m.jobTitle }))}
+            canEdit
+            canSetOwner
+            talents={clientTalents}
+            services={services.items.map((x) => ({ id: x.id, name: x.name, clientKind: x.clientKind, slaDays: x.slaDays }))}
+            prefill={prefill}
+          />
+        </section>
+      )}
     </div>
   );
 }

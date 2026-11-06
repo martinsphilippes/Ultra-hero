@@ -673,6 +673,10 @@
     "newTitle": "New deal",
     "newDescription": "For a briefing received outside the portal. The brand only sees the deal once the agency confirms.",
     "noBrands": "Add a served brand before opening a deal.",
+    "noClientsTitle": "Add a client first",
+    "noClientsBody": "A deal is opened for a served brand or for a Hero in your casting. This agency has neither yet.",
+    "noClientsBrand": "Add brand",
+    "noClientsHero": "Add Hero to casting",
     "internal": "Internal",
     "internalHint": "Hidden from the brand"
   },

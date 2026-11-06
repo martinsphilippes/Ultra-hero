@@ -673,6 +673,10 @@
     "newTitle": "Novo negócio",
     "newDescription": "Para um briefing recebido fora do portal. A marca só vê o negócio quando a agência confirmar.",
     "noBrands": "Cadastre uma marca atendida antes de abrir um negócio.",
+    "noClientsTitle": "Cadastre um cliente primeiro",
+    "noClientsBody": "O negócio é aberto para uma marca atendida ou para um Hero do casting. Esta agência ainda não tem nenhum dos dois.",
+    "noClientsBrand": "Cadastrar marca",
+    "noClientsHero": "Adicionar Hero ao casting",
     "internal": "Interno",
     "internalHint": "Oculto da marca"
   },
