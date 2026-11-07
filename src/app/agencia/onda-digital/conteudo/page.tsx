@@ -55,7 +55,9 @@ export default async function OndaDigitalEditorPage({ searchParams }: Props) {
       />
       <nav aria-label={t("editor.tabsLabel")} className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0" data-testid="onda-editor-tabs">
         {TABS.map((k) => (
-          <FilterAnchor key={k} href={`/agencia/onda-digital/conteudo?aba=${SLUG[k]}`} active={tab === k} label={`${t(`editor.tabs.${k}`)} (${count(k)})`} />
+          <span key={k} className="shrink-0 whitespace-nowrap">
+            <FilterAnchor href={`/agencia/onda-digital/conteudo?aba=${SLUG[k]}`} active={tab === k} label={`${t(`editor.tabs.${k}`)} (${count(k)})`} />
+          </span>
         ))}
       </nav>
       {tab === "instagram" || tab === "x" ? (
