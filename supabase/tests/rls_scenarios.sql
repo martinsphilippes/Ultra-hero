@@ -18789,5 +18789,105 @@ delete from public.agencies where id::text like 'c1250000-%';
 delete from auth.users where id::text like 'c1250000-%';
 drop table tests.s125b;
 
+-- ================================================================ S126 · Casting aberto, perfil reivindicado, marca única, nota 0–10 (0126)
+\ir ../migrations/0126_casting_aberto_marcas_score.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('c1260000-0000-4000-8000-000000000001', 'adm@groscove-s126.test'),
+  ('c1260000-0000-4000-8000-000000000002', 'adm@outra-s126.test'),
+  ('c1260000-0000-4000-8000-000000000003', 'neymar@s126.test'),
+  ('c1260000-0000-4000-8000-000000000004', 'impostor@s126.test');
+-- a agência de slug 'groscove' (dona da plataforma) do teste: a que já existir na base sai do caminho até o fim
+update public.agencies set slug = 'groscove-antes-s126' where slug = 'groscove';
+insert into public.agencies (id, slug, name) values
+  ('c1260000-0000-4000-8000-0000000000a1', 'groscove', 'Groscove S126'),
+  ('c1260000-0000-4000-8000-0000000000a2', 's126-outra', 'Outra S126');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('c1260000-0000-4000-8000-0000000000a1', 'c1260000-0000-4000-8000-000000000001', 'admin', 'Adm Groscove'),
+  ('c1260000-0000-4000-8000-0000000000a2', 'c1260000-0000-4000-8000-000000000002', 'admin', 'Adm Outra');
+insert into public.talent_profiles (id, agency_id, display_name, contact_email, contact_phone, segments) values
+  ('c1260000-0000-4000-8000-0000000000f1', 'c1260000-0000-4000-8000-0000000000a1', 'Neymar S126', 'neymar@s126.test', '+5511999990000', array['futebol']);
+create table tests.s126 (k text primary key, v text);
+grant all on tests.s126 to anon, authenticated;
+
+select tests.ok('S126 nota de 0 a 10: o check aceita 0 e 10 e recusa 11; ninguém de fora executa as funções novas',
+  (select pg_get_constraintdef(c.oid) from pg_constraint c where c.conname = 'talent_ratings_quality_check') like '%0%10%'
+  and not has_function_privilege('anon', 'public.casting_open_list(uuid, text, text, int, int)', 'execute')
+  and not has_function_privilege('anon', 'public.hero_claim_candidates(text)', 'execute')
+  and not has_function_privilege('anon', 'public.brand_approval_decide(uuid, boolean, text)', 'execute'));
+
+-- casting aberto
+select tests.login('c1260000-0000-4000-8000-000000000002', 'adm@outra-s126.test');
+select tests.ok('S126 outra agência vê o básico do casting da Groscove, sem contato',
+  (public.casting_open_list('c1260000-0000-4000-8000-0000000000a2', 'neymar') ->> 'total')::int = 1
+  and (public.casting_open_list('c1260000-0000-4000-8000-0000000000a2', null, 'futebol') -> 'items' -> 0 ->> 'access') = 'none'
+  and (public.casting_open_list('c1260000-0000-4000-8000-0000000000a2', 'neymar') -> 'items' -> 0) ? 'agency'
+  and not ((public.casting_open_list('c1260000-0000-4000-8000-0000000000a2', 'neymar') -> 'items' -> 0) ? 'phone')
+  and not exists (select 1 from public.talent_profiles where id = 'c1260000-0000-4000-8000-0000000000f1'));
+select tests.expect_error('S126 contato só com pedido aprovado',
+  $$select public.casting_open_contact('c1260000-0000-4000-8000-0000000000a2', 'c1260000-0000-4000-8000-0000000000f1')$$, 'forbidden');
+insert into tests.s126 select 'creq', public.casting_access_request('c1260000-0000-4000-8000-0000000000a2', 'c1260000-0000-4000-8000-0000000000f1', 'Campanha de verão')::text;
+select tests.expect_error('S126 quem pediu não aprova o próprio pedido',
+  format($$select public.casting_access_decide(%L, true)$$, (select v from tests.s126 where k = 'creq')), 'forbidden');
+select tests.login('c1260000-0000-4000-8000-000000000001', 'adm@groscove-s126.test');
+select tests.ok('S126 a dona do casting recebeu o aviso e vê o pedido',
+  jsonb_array_length(public.casting_access_inbox('c1260000-0000-4000-8000-0000000000a1')) = 1
+  and exists (select 1 from public.inbox_notifications n where n.user_id = 'c1260000-0000-4000-8000-000000000001' and n.kind = 'casting_access_requested'));
+select public.casting_access_decide((select v from tests.s126 where k = 'creq')::uuid, true);
+select tests.login('c1260000-0000-4000-8000-000000000002', 'adm@outra-s126.test');
+select tests.ok('S126 aprovado: contato liberado só para quem pediu',
+  (public.casting_open_contact('c1260000-0000-4000-8000-0000000000a2', 'c1260000-0000-4000-8000-0000000000f1') ->> 'phone') = '+5511999990000'
+  and (public.casting_open_list('c1260000-0000-4000-8000-0000000000a2', 'neymar') -> 'items' -> 0 ->> 'access') = 'approved');
+
+-- marca única com aprovação
+select tests.login('c1260000-0000-4000-8000-000000000002', 'adm@outra-s126.test');
+insert into tests.s126 select 'brand', public.agency_brand_create('c1260000-0000-4000-8000-0000000000a2',
+  '{"name": "Coca-Cola S126", "slug": "coca-cola-s126", "site_url": "https://coca.s126.test", "intent": "Campanha de verão", "evidence_url": "https://coca.s126.test/print.png"}'::jsonb)::text;
+select tests.su();
+select tests.ok('S126 marca nova de quem não é da Groscove nasce pendente e avisa os Adms da Groscove',
+  (select approval_status from public.brands where id = (select v from tests.s126 where k = 'brand')::uuid) = 'pending'
+  and exists (select 1 from public.inbox_notifications n where n.user_id = 'c1260000-0000-4000-8000-000000000001' and n.kind = 'brand_approval_requested'));
+select tests.login('c1260000-0000-4000-8000-000000000001', 'adm@groscove-s126.test');
+select tests.expect_error('S126 a mesma marca (outro jeito de escrever) não abre duas: já é de outra agência',
+  $$select public.agency_brand_create('c1260000-0000-4000-8000-0000000000a1', '{"name": "coca cola s126", "slug": "coca-2-s126", "site_url": "https://c2.s126.test"}'::jsonb)$$, 'brand_exists');
+select tests.ok('S126 a Groscove vê a fila e aprova',
+  jsonb_array_length(public.brand_approval_pending()) >= 1
+  and public.brand_approval_decide((select v from tests.s126 where k = 'brand')::uuid, true, null));
+select tests.login('c1260000-0000-4000-8000-000000000002', 'adm@outra-s126.test');
+select tests.expect_error('S126 quem não é da Groscove não aprova marca', $$select public.brand_approval_pending()$$, 'forbidden');
+
+-- perfil reivindicado
+select tests.login('c1260000-0000-4000-8000-000000000003', 'neymar@s126.test');
+select tests.ok('S126 "É você?": acha o perfil pelo nome e marca o e-mail igual ao do casting',
+  (public.hero_claim_candidates('Neymar') -> 0 ->> 'name') = 'Neymar S126'
+  and (public.hero_claim_candidates('Neymar') -> 0 ->> 'email_matches')::boolean
+  and jsonb_array_length(public.hero_claim_candidates('Ney')) = 0);
+insert into tests.s126 select 'claim', public.hero_claim_request('c1260000-0000-4000-8000-0000000000f1')::text;
+select tests.login('c1260000-0000-4000-8000-000000000004', 'impostor@s126.test');
+select tests.ok('S126 outra conta pode pedir, mas a agência vê que o e-mail não confere; ninguém vê o pedido dos outros',
+  (select count(*) from public.profile_claims) = 0
+  and (public.hero_claim_candidates('Neymar S126') -> 0 ->> 'email_matches')::boolean = false);
+select tests.login('c1260000-0000-4000-8000-000000000001', 'adm@groscove-s126.test');
+select tests.ok('S126 a agência vê o pedido com o e-mail conferido', (public.profile_claim_inbox('c1260000-0000-4000-8000-0000000000a1') -> 0 ->> 'email_matches')::boolean);
+select public.profile_claim_decide((select v from tests.s126 where k = 'claim')::uuid, true);
+select tests.su();
+select tests.ok('S126 aprovado: a conta fica ligada ao perfil do casting e recebe o aviso',
+  (select user_id from public.talent_profiles where id = 'c1260000-0000-4000-8000-0000000000f1') = 'c1260000-0000-4000-8000-000000000003'
+  and exists (select 1 from public.inbox_notifications n where n.user_id = 'c1260000-0000-4000-8000-000000000003' and n.kind = 'profile_claim_decided'));
+
+delete from public.inbox_notifications where user_id::text like 'c1260000-%';
+delete from public.role_assignments where user_id::text like 'c1260000-%';
+delete from public.profile_claims where user_id::text like 'c1260000-%';
+delete from public.casting_access_requests where agency_id::text like 'c1260000-%';
+delete from public.invitations where agency_id::text like 'c1260000-%';
+delete from public.agency_brands where agency_id::text like 'c1260000-%';
+delete from public.brands where slug like '%-s126';
+delete from public.talent_profiles where agency_id::text like 'c1260000-%';
+delete from public.agency_members where agency_id::text like 'c1260000-%';
+delete from public.agencies where id::text like 'c1260000-%';
+update public.agencies set slug = 'groscove' where slug = 'groscove-antes-s126';
+delete from auth.users where id::text like 'c1260000-%';
+drop table tests.s126;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;
