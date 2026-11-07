@@ -7255,7 +7255,9 @@ delete from auth.users where id in ('71000000-0000-4000-8000-0000000007a1', '710
 -- chave própria em toda ligação (S65/PGRST201).
 select tests.su();
 -- a 0063 trocou as marcas de exemplo pelas reais: para o S72 testar o seed da 0062 como foi escrito,
--- tira as reais e reaplica a 0062 (tudo some no rollback); o S73 confere o estado final da 0063
+-- tira as reais e reaplica a 0062 (tudo some no rollback); o S73 confere o estado final da 0063.
+-- A 0130 liga as marcas da Groscove à agência (agency_brands, FK restrict): solta esse vínculo antes.
+delete from public.agency_brands ab using public.brands b where b.id = ab.brand_id and not b.is_demo;
 delete from public.brands where not is_demo;
 \ir ../migrations/0062_brands_smart_tags.sql
 select tests.su();
@@ -8785,6 +8787,7 @@ drop table t_s76;
 -- ================================================================ S77 · Gestão: agenda integrada e feed .ics (0067)
 -- Eventos de sistema nascem do negócio (confirmação, prazo de consulta, entregáveis) e cada lado vê só o seu;
 -- eventos manuais da agência com visibilidade escolhida; data comercial avisa as marcas; feed por token.
+-- Desde a 0104 toda equipe (marca, agência, creator) lê o Calendário Groscove (scope 'platform'); as contas daqui ficam só na agenda do negócio.
 \ir ../migrations/0067_gestao_agenda.sql
 select tests.su();
 create temp table t_s77 (k text primary key, v text);
@@ -8823,7 +8826,7 @@ select public.agency_consult_talents((select v::uuid from t_s77 where k = 'deal'
 select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
 select tests.ok('S77 creator vê o prazo de resposta na agenda', (select count(*) from public.calendar_events where kind = 'consult_deadline') = 1);
 select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
-select tests.ok('S77 marca não vê o prazo de consulta', (select count(*) from public.calendar_events) = 0);
+select tests.ok('S77 marca não vê o prazo de consulta', (select count(*) from public.calendar_events where scope <> 'platform') = 0);
 select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
 select public.talent_opportunity_respond((select v::uuid from t_s77 where k = 'dt1'), 'interested', null);
 select tests.ok('S77 resposta apaga o prazo da agenda', (select count(*) from public.calendar_events where kind = 'consult_deadline') = 0);
@@ -8843,10 +8846,10 @@ select tests.ok('S77 confirmação: 1 evento de campanha (dia inteiro, 3 dias) +
   and exists (select 1 from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000d1' and kind = 'calendar_event_added'));
 select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
 select tests.ok('S77 marca vê a campanha e a publicação, não o prazo interno de entrega',
-  (select count(*) from public.calendar_events) = 2 and (select count(*) from public.calendar_events where source_key like '%:due') = 0);
+  (select count(*) from public.calendar_events where scope <> 'platform') = 2 and (select count(*) from public.calendar_events where source_key like '%:due') = 0);
 select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
 select tests.ok('S77 creator vê campanha, prazo e publicação; nada de valor no evento',
-  (select count(*) from public.calendar_events) = 3 and (select string_agg(title || description || subtitle, ' ') from public.calendar_events) !~ '(R\$|cents|cachê)');
+  (select count(*) from public.calendar_events where scope <> 'platform') = 3 and (select string_agg(title || description || subtitle, ' ') from public.calendar_events where scope <> 'platform') !~ '(R\$|cents|cachê)');
 -- mudar a data do negócio move o evento; cancelar o negócio limpa
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 select public.agency_deal_update((select v::uuid from t_s77 where k = 'deal'), ('{"expected_start": "' || (current_date + 50) || '", "expected_end": "' || (current_date + 50) || '"}')::jsonb);
@@ -8877,7 +8880,7 @@ select tests.ok('S77 creator vê a gravação (dele) e não a reunião da marca;
   (select count(*) from public.calendar_events where kind = 'recording') = 1 and (select count(*) from public.calendar_events where kind = 'meeting') = 0
   and (select count(*) from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000d1' and kind = 'calendar_event_added') >= 2);
 select tests.login('74000000-0000-4000-8000-0000000000a4', 'ag-col2@test.local');
-select tests.ok('S77 colaborador de fora não vê eventos de negócio alheio nem de creator', (select count(*) from public.calendar_events) = 0);
+select tests.ok('S77 colaborador de fora não vê eventos de negócio alheio nem de creator', (select count(*) from public.calendar_events where scope <> 'platform') = 0);
 
 -- 4) data comercial: gestor+ publica; marcas atendidas veem e são avisadas; marca de outra agência não -------------------
 select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
@@ -8892,7 +8895,7 @@ select tests.ok('S77 marca D vê a data comercial e recebeu o aviso',
 select tests.login('74000000-0000-4000-8000-0000000000a4', 'ag-col2@test.local');
 select tests.ok('S77 colaborador vê a data comercial (evento geral da agência)', (select count(*) from public.calendar_events where kind = 'commercial_date') = 1);
 select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
-select tests.ok('S77 agência B não vê eventos da A', (select count(*) from public.calendar_events) = 0);
+select tests.ok('S77 agência B não vê eventos da A', (select count(*) from public.calendar_events where scope <> 'platform') = 0);
 select tests.expect_error('S77 agência B não apaga evento da A', $q$select public.agency_event_delete((select v::uuid from t_s77 where k = 'ev_meet'))$q$, 'not_found');
 
 -- 4b) revisão P1b: colaborador não sequestra evento de gestor; sem negócio a marca não vê; brief interno fora do evento ----
@@ -8934,20 +8937,21 @@ select tests.ok('S77 feed do creator traz os eventos dele (campanha, entregas, g
   and public.calendar_feed_resolve('0000000000000000000000000000000000000000000000000000000000000000') is null
   and public.calendar_feed_resolve('abc') is null);
 -- paridade feed × RLS: a leitura direta como a pessoa (política) e a função por pessoa (feed) devolvem os mesmos ids
+-- (o Calendário Groscove fica fora do feed por pessoa; ver S105)
 select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
-insert into t_s77 select 'rls_creator', coalesce(array_agg(id order by id)::text, '{}') from public.calendar_events;
+insert into t_s77 select 'rls_creator', coalesce(array_agg(id order by id)::text, '{}') from public.calendar_events where scope <> 'platform';
 select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
-insert into t_s77 select 'rls_brand', coalesce(array_agg(id order by id)::text, '{}') from public.calendar_events;
+insert into t_s77 select 'rls_brand', coalesce(array_agg(id order by id)::text, '{}') from public.calendar_events where scope <> 'platform';
 select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
-insert into t_s77 select 'rls_staff', coalesce(array_agg(id order by id)::text, '{}') from public.calendar_events;
+insert into t_s77 select 'rls_staff', coalesce(array_agg(id order by id)::text, '{}') from public.calendar_events where scope <> 'platform';
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
-insert into t_s77 select 'rls_admin', coalesce(array_agg(id order by id)::text, '{}') from public.calendar_events;
+insert into t_s77 select 'rls_admin', coalesce(array_agg(id order by id)::text, '{}') from public.calendar_events where scope <> 'platform';
 select tests.su();
 select tests.ok('S77 feed e RLS concordam para creator, marca, colaborador e admin geral',
-  coalesce((select array_agg(id order by id)::text from public.calendar_events_for_user('77000000-0000-4000-8000-0000000000d1')), '{}') = (select v from t_s77 where k = 'rls_creator')
-  and coalesce((select array_agg(id order by id)::text from public.calendar_events_for_user('77000000-0000-4000-8000-0000000000c1')), '{}') = (select v from t_s77 where k = 'rls_brand')
-  and coalesce((select array_agg(id order by id)::text from public.calendar_events_for_user('74000000-0000-4000-8000-0000000000a3')), '{}') = (select v from t_s77 where k = 'rls_staff')
-  and coalesce((select array_agg(id order by id)::text from public.calendar_events_for_user('10000000-0000-4000-8000-000000000001')), '{}') = (select v from t_s77 where k = 'rls_admin')
+  coalesce((select array_agg(id order by id)::text from public.calendar_events_for_user('77000000-0000-4000-8000-0000000000d1') where scope <> 'platform'), '{}') = (select v from t_s77 where k = 'rls_creator')
+  and coalesce((select array_agg(id order by id)::text from public.calendar_events_for_user('77000000-0000-4000-8000-0000000000c1') where scope <> 'platform'), '{}') = (select v from t_s77 where k = 'rls_brand')
+  and coalesce((select array_agg(id order by id)::text from public.calendar_events_for_user('74000000-0000-4000-8000-0000000000a3') where scope <> 'platform'), '{}') = (select v from t_s77 where k = 'rls_staff')
+  and coalesce((select array_agg(id order by id)::text from public.calendar_events_for_user('10000000-0000-4000-8000-000000000001') where scope <> 'platform'), '{}') = (select v from t_s77 where k = 'rls_admin')
   and (select v from t_s77 where k = 'rls_brand') <> '{}' and (select v from t_s77 where k = 'rls_admin') <> '{}'
   and (select count(*) from public.calendar_feeds) = 2);
 -- Hero suspenso: a RLS (my_talent_id) não devolve nada e o feed também não
@@ -8977,7 +8981,7 @@ select tests.ok('S77 negócio cancelado: eventos de sistema somem, manuais ficam
   (select count(*) from public.calendar_events where deal_id = (select v::uuid from t_s77 where k = 'deal') and source = 'system') = 0
   and (select count(*) from public.calendar_events where id = (select v::uuid from t_s77 where k = 'ev_meet')) = 1);
 select tests.login('74000000-0000-4000-8000-0000000000e1', 's74-demo-admin@test.local');
-select tests.ok('S77 D6: admin de demonstração lê 0 eventos e 0 feeds da agência real', (select count(*) from public.calendar_events) = 0 and (select count(*) from public.calendar_feeds) = 0);
+select tests.ok('S77 D6: admin de demonstração lê 0 eventos e 0 feeds da agência real', (select count(*) from public.calendar_events where scope <> 'platform') = 0 and (select count(*) from public.calendar_feeds) = 0);
 select tests.anon();
 select tests.expect_error('S77 visitante sem acesso à agenda', $q$select count(*) from public.calendar_events$q$, '42501');
 select tests.su();
@@ -11668,6 +11672,9 @@ drop table t_s91;
 -- rascunho com o creator, datas e briefing; segue o fluxo da 0081) ou recusa; a agência vê quem quis/recusou e escolhe
 -- as vencedoras. A marca nunca vê respostas de outras; marca fora do público e de outra agência veem 0 linhas; o
 -- creator vê a dele e as vencedoras, nunca quem recusou; colaborador da agência fica de fora. S14 segue 18.
+-- A 0099 grava o Calendário Groscove (kind 'institutional', da 0098) e reaplicar a 0085 recria a checagem antiga dos
+-- tipos: tira essas datas antes (tudo some no rollback; o S105 reaplica a 0098 e usa as próprias datas).
+delete from public.calendar_events where scope = 'platform';
 \ir ../migrations/0085_oportunidade_patrocinio.sql
 select tests.su();
 insert into auth.users (id, email) values
