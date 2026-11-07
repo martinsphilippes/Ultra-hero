@@ -42,6 +42,7 @@ import {
   Library,
   Search,
   Wallet,
+  Waves,
   CalendarCheck,
   IdCard,
   Images,
@@ -123,6 +124,8 @@ const ICONS: Record<string, LucideIcon> = {
   consent: ShieldCheck,
   // Staff externo (0110)
   projects: MessagesSquare,
+  // Onda Digital (0132)
+  ondaDigital: Waves,
 };
 
 function isActive(pathname: string, href: string, root: string) {

@@ -1,0 +1,231 @@
+{
+  "meta": {
+    "title": "Onda Digital"
+  },
+  "homeCard": {
+    "badge": "New",
+    "title": "Onda Digital",
+    "text": "A simple way to advertise inside the most viral conversations of the moment.",
+    "cta": "Discover the wave"
+  },
+  "hero": {
+    "eyebrow": "Groscove presents:",
+    "title": "Onda Digital",
+    "lead": "A simple way to advertise inside the most viral conversations of the moment.",
+    "text": "Many pages post together, in sync, everywhere at once. It feels like an explosion.",
+    "cta": "I want to ride the wave",
+    "how": "See how it works"
+  },
+  "why": {
+    "line1": "In digital culture, your brand competes for attention with the cat of the moment and the meme of the week.",
+    "line2": "Topics come and go, and there's always the feeling that everyone is talking about the same thing.",
+    "question": "And why does that happen?",
+    "answer": "Because viral is the sum of <hl>news + entertainment.</hl>",
+    "formula": "The formula that sparks interest and engages millions of people.",
+    "tide": "This tide is a <hl>new opportunity for brands.</hl>"
+  },
+  "what": {
+    "line1": "We bring together the biggest meme, entertainment and news profiles.",
+    "line2": "The makers of viral conversations.",
+    "line3": "The ones that make it feel like everyone is talking about it.",
+    "wave": "Everything rides the same wave."
+  },
+  "how": {
+    "title": "How it works",
+    "s1Title": "Choose your wave",
+    "s1Text": "Tell us your goal and pick the pages.",
+    "s2Title": "Groscove creates, your brand approves",
+    "s2Text": "The post is made in each page's own style, in any agreed format. Nothing goes live without your approval.",
+    "s3Title": "Everything rides the same wave",
+    "s3Text": "On the date agreed with Groscove, the pages post together, fast and in sync!",
+    "s4Title": "See how big the wave was",
+    "s4Text": "Groscove delivers the indicators and metrics of your wave."
+  },
+  "simulation": {
+    "title": "See your brand on the wave",
+    "text": "{brand}'s topic at the same minute, on many pages.",
+    "label": "Illustrative example",
+    "post": "Everyone is talking about {brand}.",
+    "time": "12:00",
+    "fronts": {
+      "memes": "Meme page",
+      "news": "News page",
+      "x": "Profile on X",
+      "portal": "News site",
+      "creator": "Creator"
+    }
+  },
+  "fronts": {
+    "title": "Your brand chooses how to ride the wave.",
+    "followers": "{count} followers",
+    "pages": {
+      "title": "Pages",
+      "text": "The biggest meme and entertainment profiles.",
+      "list": "Which pages?",
+      "note": "*Instagram followers, November 2026.",
+      "more": "See all {count} pages"
+    },
+    "x": {
+      "title": "Onda X",
+      "intro": "If everyone is talking about something, we couldn't miss the network where everything hot becomes a trending topic.",
+      "text": "Onda X brings together booming profiles that will turn your brand into the most talked-about topic in Brazil and the world.",
+      "fast": "All of it fast and in sync!",
+      "list": "Which profiles?",
+      "note": "*Followers on X, November 2026.",
+      "more": "See all {count} profiles"
+    },
+    "press": {
+      "title": "Press",
+      "text": "The news sites where the story gains weight.",
+      "heading": "And where the story gains weight.",
+      "mass": "Mass distribution, with high visibility and potential to spark conversation."
+    },
+    "creators": {
+      "title": "Creators",
+      "text": "More than a thousand creators for private campaigns.",
+      "cta": "See the creators"
+    }
+  },
+  "areas": {
+    "noticias": "News",
+    "negocios": "Business",
+    "moda": "Fashion",
+    "entretenimento": "Entertainment",
+    "musica": "Music",
+    "tecnologia": "Technology",
+    "financas": "Finance",
+    "cultura_afro": "Afro culture"
+  },
+  "size": {
+    "impacts": "Onda pages reach <hl>190+ million</hl> potential impressions.",
+    "fastest": "The fastest way to get high reach and lots of interactions.",
+    "compareTitle": "Basic comparison",
+    "veja": "The country's biggest magazine, Veja, averages <b>1 million copies a week.</b>",
+    "vejaDigital": "Its digital circulation averages <b>366 thousand copies</b>.",
+    "source": "Source: Instituto Verificador de Comunicação (IVC)",
+    "onePage": "With a single Onda page, you can reach more than <hl>1 million people</hl> right away."
+  },
+  "influencer": {
+    "title": "How is it different from influencers?",
+    "influencer": "Influencer",
+    "onda": "Onda Digital",
+    "personal": "Personal",
+    "association": "Creates association",
+    "analysis": "Needs evaluation",
+    "match": "Needs a brand match",
+    "instant": "Instant",
+    "impersonal": "Impersonal",
+    "noAssociation": "No direct association"
+  },
+  "ideal": {
+    "title": "Ideal for:",
+    "closing": "An original, high-impact format for your launches.",
+    "simple": "A simple way to advertise inside the most viral conversations of the moment."
+  },
+  "purposes": {
+    "launch": "Amplifying a product launch",
+    "realtime": "Real-time activation",
+    "events": "Event coverage",
+    "influencers": "Amplifying influencers and digital actions",
+    "conversion": "Conversion actions",
+    "opportunity": "Opportunity actions",
+    "awareness": "Awareness and general brand actions"
+  },
+  "cases": {
+    "title": "Let's see some cases...",
+    "name": "Onda Digital + {brand}",
+    "yourArea": "In your area",
+    "metrics": {
+      "reach": "Total reach",
+      "impressions": "Total impressions",
+      "impacts": "Impressions",
+      "feed_reach": "Feed reach"
+    }
+  },
+  "packages": {
+    "title": "Choose your wave.",
+    "price": "Price on request",
+    "cta": "I want this wave",
+    "help": "Not sure which wave to choose? We'll suggest one.",
+    "helpCta": "Help me choose"
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "q1": "Who creates the post?",
+    "a1": "Groscove creates the post in each page's own style.",
+    "q2": "Does my brand approve before the wave goes live?",
+    "a2": "Yes. Nothing goes live without your brand's approval.",
+    "q3": "How long does it take? Can we ride a same-day topic?",
+    "a3": "Timing is agreed between your brand and Groscove.",
+    "q4": "Can I choose the pages?",
+    "a4": "Yes, you choose the pages for your wave.",
+    "q5": "Which formats are included: feed, stories, reels, X?",
+    "a5": "Any format, agreed in the negotiation with Groscove.",
+    "q6": "How do I see how big the wave was?",
+    "a6": "Groscove delivers the indicators and metrics of your wave."
+  },
+  "end": {
+    "title": "Come surf with us.",
+    "cta": "I want to ride the wave",
+    "whatsapp": "Chat on WhatsApp",
+    "email": "Email",
+    "hello": "Hi, we are Groscove.",
+    "about": "A group specialized in music, entertainment and digital culture."
+  },
+  "request": {
+    "title": "I want to ride the wave",
+    "description": "Tell Groscove what your brand wants. We'll reach out to agree on everything.",
+    "package": "Which wave?",
+    "packageHelp": "Help me choose",
+    "purpose": "What for?",
+    "when": "When?",
+    "whenOptions": {
+      "tbd": "To be agreed",
+      "now": "Now: real-time activation",
+      "date": "On a date"
+    },
+    "date": "Date",
+    "subject": "Tell us the topic",
+    "subjectHint": "The product, the launch or the topic your brand wants to see on the wave.",
+    "budget": "Budget (optional)",
+    "pages": "Choose the pages (optional)",
+    "pagesHint": "Tick the pages you want on your wave.",
+    "pagesChosen": "{count, plural, =0 {No pages chosen} one {1 page chosen} other {# pages chosen}}",
+    "submit": "Send to Groscove",
+    "sent": "Got it! Groscove will reach out so your brand can ride the wave.",
+    "whatsappText": "Hi, Groscove! I'm from {brand} and I want to join Onda Digital{package, select, none {} other {, {package} wave}}.",
+    "noAccess": "Only brand members can request the wave. You're viewing as an administrator.",
+    "whatsapp": "Chat on WhatsApp"
+  },
+  "mine": {
+    "title": "Your requests",
+    "sentOn": "Requested on {date}",
+    "whenNow": "Now: real-time activation",
+    "whenDate": "For {date}",
+    "whenTbd": "Date to be agreed",
+    "closed": "This request was closed. If you want, request a new wave."
+  },
+  "statuses": {
+    "received": "Received",
+    "talking": "In talks",
+    "proposal": "Proposal",
+    "live": "On the wave!",
+    "closed": "Closed"
+  },
+  "agency": {
+    "title": "Onda Digital requests",
+    "description": "Brands that want to ride the wave. Talk to the brand and move the stage forward: they follow it in their portal.",
+    "empty": "No requests yet.",
+    "by": "Requested by {name}",
+    "openDeal": "Open deal",
+    "noDeal": "Brand served by another agency: the request didn't enter the pipeline. Reach out using the contact below.",
+    "budget": "Budget: {value}",
+    "pages": "Chosen pages",
+    "status": "Stage",
+    "save": "Save stage",
+    "saved": "Stage updated. The brand was notified.",
+    "noPackage": "Help me choose",
+    "onlyGroscove": "Only Groscove sees Onda Digital requests.",
+    "seePage": "See the brand page"
+  }
+}

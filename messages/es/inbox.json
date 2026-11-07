@@ -274,6 +274,18 @@
     "brand_login_decided": {
       "title": "{approved, select, true {Acceso liberado} other {Acceso no aprobado}}",
       "body": "{approved, select, true {Groscove liberó tu acceso a {brand}.} other {Groscove no aprobó tu acceso a {brand}.}}"
+    },
+    "onda_digital_news": {
+      "title": "Novedad de Groscove: Onda Digital",
+      "body": "Varias páginas publican juntas, de forma sincronizada. Parece una explosión. Mira cómo tu marca entra en la ola."
+    },
+    "onda_request_received": {
+      "title": "{brand} quiere entrar en la ola",
+      "body": "Nuevo pedido de la Onda Digital{title, select, none {} other { — ola {title}}}. Habla con la marca y avanza la etapa."
+    },
+    "onda_request_updated": {
+      "title": "{status, select, talking {Onda Digital: en conversación} proposal {Onda Digital: propuesta} live {¡Tu marca está en la ola!} closed {Onda Digital: pedido cerrado} other {Onda Digital: pedido actualizado}}",
+      "body": "Tu pedido de la Onda Digital cambió de etapa. Mira el avance en el portal."
     }
   }
 }

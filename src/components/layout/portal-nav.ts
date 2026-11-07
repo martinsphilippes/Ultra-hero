@@ -123,6 +123,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "strategies", href: "/agencia/estrategias" },
     { key: "casting", href: "/agencia/casting" },
     { key: "brands", href: "/agencia/marcas" },
+    // Onda Digital (0132): pedidos das marcas, só para a Groscove
+    { key: "ondaDigital", href: "/agencia/onda-digital" },
     { key: "notifications", href: "/agencia/notificacoes" },
     { key: "settings", href: "/agencia/configuracoes" },
     { key: "team", href: "/agencia/equipe" },
@@ -135,6 +137,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
   // Marca (0066): propostas de campanha e o catálogo autorizado de creators; o calendário chega na P1b.
   brand: [
     { key: "dashboard", href: "/marca" },
+    // Onda Digital (0132): o produto da Groscove para as marcas
+    { key: "ondaDigital", href: "/marca/onda-digital" },
     // Ações por etapa (0078): cada entregável de cada creator, de Enviada a Publicada
     { key: "board", href: "/marca/acoes" },
     { key: "campaigns", href: "/marca/campanhas" },

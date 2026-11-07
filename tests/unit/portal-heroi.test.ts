@@ -29,11 +29,17 @@ function visibleTexts(locale: string): Array<[string, string]> {
 // Exceção pedida pela Groscove (reunião de 06/11/2026): no cadastro, o cartão do Hero diz "Sou um Creator e quero
 // trabalhar com marcas", porque quem chega ainda não sabe o que é um Hero. Só esta frase.
 const CREATOR_ALLOWED = new Set(["auth.choose.hero.text"]);
+// Onda Digital (0132, roteiro aprovado em 07/11/2026): a página repete os textos da apresentação da Groscove, que
+// fala em "creators" (a frente Creators, "Mais de mil creators para campanhas particulares", "com creators como
+// opcional"). Só os textos dessa página.
+const CREATOR_ALLOWED_PREFIXES = ["ondaDigital."];
 
 describe("nenhum texto visível fala em creator (0097)", () => {
   for (const locale of LOCALES) {
     it(`${locale}: sem creator/creador/criador nos textos (só nas chaves técnicas)`, () => {
-      const found = visibleTexts(locale).filter(([key, text]) => !CREATOR_ALLOWED.has(key) && /creator|creador|criador/i.test(text));
+      const found = visibleTexts(locale).filter(
+        ([key, text]) => !CREATOR_ALLOWED.has(key) && !CREATOR_ALLOWED_PREFIXES.some((p) => key.startsWith(p)) && /creator|creador|criador/i.test(text),
+      );
       expect(found).toEqual([]);
     });
     it(`${locale}: sem o "escritório" do creator (virou o Portal do Hero)`, () => {

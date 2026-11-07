@@ -30,7 +30,7 @@ export default async function AgencyLayout({ children }: { children: ReactNode }
   return (
     <PortalShell
       portal="agency"
-      navKeys={agencyNavKeys(ctx.role, ctx.platformAdmin)}
+      navKeys={agencyNavKeys(ctx.role, ctx.platformAdmin, { groscove: ctx.agency.slug === "groscove" })}
       headerAction={unread !== null ? <NotificationBell userId={user.id} initialUnread={unread} allHref="/agencia/notificacoes?aba=avisos" messages={{ portal: "agency", href: "/agencia/notificacoes?aba=mensagens", initialUnread: 0 }} /> : null}
     >
       {ctx.agency.isDemo ? (

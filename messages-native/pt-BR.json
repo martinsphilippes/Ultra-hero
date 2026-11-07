@@ -92,5 +92,10 @@
     "purchases": {
       "description": "Seus pedidos e seus lances nos colecionáveis."
     }
+  },
+  "ondaDigital": {
+    "simulation": {
+      "label": "Exemplo"
+    }
   }
 }

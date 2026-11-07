@@ -19063,5 +19063,108 @@ delete from public.agencies where id::text like 'c1310000-%';
 update public.agencies set slug = 'groscove' where slug = 'groscove-antes-s131';
 delete from auth.users where id::text like 'c1310000-%';
 
+-- ================================================================ S132 · Onda Digital: conteúdo, pedido da marca, negócio no funil e avisos (0132)
+\ir ../migrations/0132_onda_digital.sql
+\ir ../migrations/0133_onda_digital_aviso.sql
+select tests.su();
+update public.agencies set slug = 'groscove-antes-s132' where slug = 'groscove';
+insert into auth.users (id, email) values
+  ('c1320000-0000-4000-8000-000000000001', 'gestor@groscove-s132.test'),
+  ('c1320000-0000-4000-8000-000000000002', 'colab@groscove-s132.test'),
+  ('c1320000-0000-4000-8000-000000000003', 'dona@marca-s132.test'),
+  ('c1320000-0000-4000-8000-000000000004', 'fora@outra-s132.test'),
+  ('c1320000-0000-4000-8000-000000000005', 'pessoa@s132.test');
+insert into public.agencies (id, slug, name) values ('c1320000-0000-4000-8000-0000000000a1', 'groscove', 'Groscove S132'),
+  ('c1320000-0000-4000-8000-0000000000a2', 's132-outra', 'Outra S132');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('c1320000-0000-4000-8000-0000000000a1', 'c1320000-0000-4000-8000-000000000001', 'manager', 'Gestor S132'),
+  ('c1320000-0000-4000-8000-0000000000a1', 'c1320000-0000-4000-8000-000000000002', 'staff', 'Colab S132');
+insert into public.brands (id, slug, name, site_url, status) values
+  ('c1320000-0000-4000-8000-0000000000b1', 'marca-s132', 'Marca S132', 'https://marca-s132.test/', 'inactive'),
+  ('c1320000-0000-4000-8000-0000000000b2', 'outra-s132', 'Outra Marca S132', 'https://outra-s132.test/', 'inactive');
+insert into public.agency_brands (agency_id, brand_id, status) values
+  ('c1320000-0000-4000-8000-0000000000a1', 'c1320000-0000-4000-8000-0000000000b1', 'active'),
+  ('c1320000-0000-4000-8000-0000000000a2', 'c1320000-0000-4000-8000-0000000000b2', 'active');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('c1320000-0000-4000-8000-0000000000b1', 'c1320000-0000-4000-8000-000000000003', 'owner', 'Dona S132'),
+  ('c1320000-0000-4000-8000-0000000000b2', 'c1320000-0000-4000-8000-000000000004', 'owner', 'Fora S132');
+create table tests.s132 (k text primary key, v text);
+grant all on tests.s132 to anon, authenticated;
+insert into tests.s132 select 'perfil', id::text from public.onda_profiles where network = 'instagram' and handle = 'choquei';
+select tests.ok('S132 conteúdo da apresentação: 4 ondas, 28 páginas, 14 perfis no X, 35 portais e 16 cases',
+  (select count(*) from public.onda_packages) = 4
+  and (select count(*) from public.onda_profiles where network = 'instagram') = 28
+  and (select count(*) from public.onda_profiles where network = 'x') = 14
+  and (select count(*) from public.onda_portals) = 35
+  and (select count(*) from public.onda_cases) = 16);
+
+select tests.login('c1320000-0000-4000-8000-000000000005', 'pessoa@s132.test');
+select tests.expect_error('S132 quem não é de marca nem da Groscove não vê a Onda Digital', $$select public.onda_content()$$, 'forbidden');
+select tests.ok('S132 nem pelas tabelas', (select count(*) from public.onda_packages) = 0 and (select count(*) from public.onda_profiles) = 0);
+
+select tests.login('c1320000-0000-4000-8000-000000000003', 'dona@marca-s132.test');
+select tests.ok('S132 a marca vê a página inteira (ondas, perfis, portais e cases)',
+  jsonb_array_length(public.onda_content() -> 'packages') = 4 and jsonb_array_length(public.onda_content() -> 'profiles') = 42
+  and jsonb_array_length(public.onda_content() -> 'cases') = 16);
+insert into tests.s132 select 'req', public.onda_request_create('c1320000-0000-4000-8000-0000000000b1',
+  jsonb_build_object('package', 'sereia', 'purpose', 'launch', 'when_kind', 'date', 'when_date', (current_date + 7)::text,
+    'subject', 'Lançamento do produto novo', 'budget_cents', 5000000, 'profile_ids', jsonb_build_array((select v from tests.s132 where k = 'perfil'))))::text;
+select tests.expect_error('S132 para quê fora da lista é recusado',
+  $$select public.onda_request_create('c1320000-0000-4000-8000-0000000000b1', '{"purpose":"x","subject":"Teste"}'::jsonb)$$, 'invalid_input');
+select tests.expect_error('S132 data no passado é recusada',
+  $$select public.onda_request_create('c1320000-0000-4000-8000-0000000000b1', jsonb_build_object('purpose','launch','subject','Teste','when_kind','date','when_date',(current_date - 1)::text))$$, 'invalid_input');
+select tests.ok('S132 a marca acompanha o próprio pedido', (select count(*) from public.onda_requests) = 1);
+
+select tests.login('c1320000-0000-4000-8000-000000000004', 'fora@outra-s132.test');
+select tests.expect_error('S132 outra marca não pede em nome desta',
+  $$select public.onda_request_create('c1320000-0000-4000-8000-0000000000b1', '{"purpose":"launch","subject":"Teste"}'::jsonb)$$, 'forbidden');
+select tests.ok('S132 e não vê o pedido dela', (select count(*) from public.onda_requests) = 0);
+insert into tests.s132 select 'req2', public.onda_request_create('c1320000-0000-4000-8000-0000000000b2', '{"purpose":"realtime","when_kind":"now","subject":"Assunto do momento"}'::jsonb)::text;
+
+select tests.su();
+select tests.ok('S132 pedido vira negócio no funil da Groscove (marca atendida por ela), com a onda no título',
+  exists (select 1 from public.onda_requests r join public.deals d on d.id = r.deal_id
+          where r.id = (select v from tests.s132 where k = 'req')::uuid and d.agency_id = 'c1320000-0000-4000-8000-0000000000a1'
+            and d.stage = 'briefing_received' and d.title = 'Onda Digital — Sereia' and d.expected_start = current_date + 7)
+  and (select cardinality(profile_ids) from public.onda_requests where id = (select v from tests.s132 where k = 'req')::uuid) = 1);
+select tests.ok('S132 marca de outra agência: pedido sem negócio, mas a Groscove é avisada dos dois',
+  (select deal_id from public.onda_requests where id = (select v from tests.s132 where k = 'req2')::uuid) is null
+  and (select count(*) from public.inbox_notifications where user_id = 'c1320000-0000-4000-8000-000000000001' and kind = 'onda_request_received') = 2
+  and not exists (select 1 from public.inbox_notifications where user_id = 'c1320000-0000-4000-8000-000000000002' and kind = 'onda_request_received'));
+
+select tests.login('c1320000-0000-4000-8000-000000000002', 'colab@groscove-s132.test');
+select tests.ok('S132 a equipe da Groscove vê os pedidos', jsonb_array_length(public.onda_request_inbox()) = 2);
+select tests.expect_error('S132 colaborador não muda a etapa', format($$select public.onda_request_set_status(%L, 'talking')$$, (select v from tests.s132 where k = 'req')), 'forbidden');
+select tests.login('c1320000-0000-4000-8000-000000000001', 'gestor@groscove-s132.test');
+select tests.ok('S132 o gestor avança a etapa', public.onda_request_set_status((select v from tests.s132 where k = 'req')::uuid, 'talking'));
+select tests.su();
+select tests.ok('S132 a marca recebe o aviso da etapa nova',
+  exists (select 1 from public.inbox_notifications where user_id = 'c1320000-0000-4000-8000-000000000003' and kind = 'onda_request_updated'
+          and params ->> 'status' = 'talking')
+  and (select status from public.onda_requests where id = (select v from tests.s132 where k = 'req')::uuid) = 'talking');
+
+select tests.login('c1320000-0000-4000-8000-000000000003', 'dona@marca-s132.test');
+select public.onda_request_create('c1320000-0000-4000-8000-0000000000b1', '{"purpose":"awareness","subject":"Mais um"}'::jsonb) from generate_series(1, 4);
+select tests.expect_error('S132 no máximo 5 pedidos por marca em 24 horas',
+  $$select public.onda_request_create('c1320000-0000-4000-8000-0000000000b1', '{"purpose":"awareness","subject":"Sexto"}'::jsonb)$$, 'rate_limited');
+select tests.su();
+select tests.ok('S132 nada novo para anon',
+  not has_function_privilege('anon', 'public.onda_request_create(uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.onda_content()', 'execute')
+  and not has_function_privilege('anon', 'public.onda_request_inbox()', 'execute'));
+
+delete from public.inbox_notifications where user_id::text like 'c1320000-%';
+delete from public.onda_requests where brand_id::text like 'c1320000-%';
+delete from public.activities where agency_id::text like 'c1320000-%';
+delete from public.deals where agency_id::text like 'c1320000-%';
+delete from public.brand_members where user_id::text like 'c1320000-%';
+delete from public.agency_brands where agency_id::text like 'c1320000-%';
+delete from public.brands where id::text like 'c1320000-%';
+delete from public.agency_members where agency_id::text like 'c1320000-%';
+delete from public.agencies where id::text like 'c1320000-%';
+update public.agencies set slug = 'groscove' where slug = 'groscove-antes-s132';
+delete from auth.users where id::text like 'c1320000-%';
+drop table tests.s132;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

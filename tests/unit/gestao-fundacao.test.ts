@@ -39,7 +39,7 @@ describe("hierarquia da agência", () => {
     expect(agencyNavKeys("manager")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings", "profile"]);
     expect(agencyNavKeys("admin")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings", "team", "finance", "history", "profile"]);
     expect(agencyNavKeys(null, true)).toContain("team");
-    expect(brandNavKeys()).toEqual(["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "payments", "team", "notifications"]);
+    expect(brandNavKeys()).toEqual(["dashboard", "ondaDigital", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "payments", "team", "notifications"]);
   });
 
   it("só o Adm convida a equipe, em qualquer nível", () => {
@@ -105,7 +105,7 @@ describe("erros das RPCs", () => {
 
 describe("avisos", () => {
   it("tipos iguais ao check mais recente do banco (0125: acesso à agência; 0126: casting aberto, marca e perfil)", () => {
-    expect(INBOX_KINDS).toHaveLength(65);
+    expect(INBOX_KINDS).toHaveLength(68);
     const sql = latestInboxCheckSql();
     for (const kind of INBOX_KINDS) expect(sql).toContain(`'${kind}'`);
     expect(isInboxKind("member_joined")).toBe(true);

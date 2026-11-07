@@ -1,0 +1,231 @@
+{
+  "meta": {
+    "title": "Onda Digital"
+  },
+  "homeCard": {
+    "badge": "Novo",
+    "title": "Onda Digital",
+    "text": "Uma forma simples de anunciar dentro das conversas mais virais do momento.",
+    "cta": "Conhecer a onda"
+  },
+  "hero": {
+    "eyebrow": "A Groscove apresenta:",
+    "title": "Onda Digital",
+    "lead": "Uma forma simples de anunciar dentro das conversas mais virais do momento.",
+    "text": "Várias páginas publicam juntas, de forma sincronizada, em todos os pontos. Parece uma explosão.",
+    "cta": "Quero entrar na onda",
+    "how": "Ver como funciona"
+  },
+  "why": {
+    "line1": "Na cultura digital, sua marca disputa atenção com o gatinho do momento e o meme da semana.",
+    "line2": "Os assuntos vêm e vão, e fica sempre a impressão de que todo mundo está falando da mesma coisa.",
+    "question": "E por que isso acontece?",
+    "answer": "Porque viral é a soma de <hl>notícia + entretenimento.</hl>",
+    "formula": "A fórmula que desperta interesse e engaja milhões de pessoas.",
+    "tide": "Essa maré é uma <hl>nova oportunidade para marcas.</hl>"
+  },
+  "what": {
+    "line1": "Reunimos os maiores perfis de memes, entretenimento e notícias.",
+    "line2": "Os geradores de conversas virais.",
+    "line3": "Os que dão aquela impressão de que todo mundo está falando disso.",
+    "wave": "Tudo entra na mesma onda."
+  },
+  "how": {
+    "title": "Como funciona",
+    "s1Title": "Escolha a sua onda",
+    "s1Text": "Conte o objetivo e escolha as páginas.",
+    "s2Title": "A Groscove cria, a sua marca aprova",
+    "s2Text": "O post é feito no jeito de cada página, em qualquer formato combinado. Nada sobe sem a sua aprovação.",
+    "s3Title": "Tudo entra na mesma onda",
+    "s3Text": "Na data combinada com a Groscove, as páginas publicam juntas, de forma rápida e sincronizada!",
+    "s4Title": "Veja o tamanho da onda",
+    "s4Text": "A Groscove entrega os indicadores e as métricas da sua onda."
+  },
+  "simulation": {
+    "title": "Veja a sua marca na onda",
+    "text": "O assunto da {brand} no mesmo minuto, em várias páginas.",
+    "label": "Exemplo ilustrativo",
+    "post": "Todo mundo está falando de {brand}.",
+    "time": "12:00",
+    "fronts": {
+      "memes": "Página de memes",
+      "news": "Página de notícias",
+      "x": "Perfil no X",
+      "portal": "Portal",
+      "creator": "Creator"
+    }
+  },
+  "fronts": {
+    "title": "Sua marca escolhe como entrar na onda.",
+    "followers": "{count} seguidores",
+    "pages": {
+      "title": "Páginas",
+      "text": "Os maiores perfis de memes e entretenimento.",
+      "list": "Quais são as páginas?",
+      "note": "*Número de seguidores no Instagram, novembro de 2026.",
+      "more": "Ver as {count} páginas"
+    },
+    "x": {
+      "title": "Onda X",
+      "intro": "E se está todo mundo falando sobre algo, não poderíamos deixar de estar na rede onde tudo o que é quente vira trend topic.",
+      "text": "A Onda X reúne perfis bombados que vão transformar sua marca no assunto mais comentado do Brasil e do mundo.",
+      "fast": "Tudo isso de forma rápida e sincronizada!",
+      "list": "Quais são os perfis?",
+      "note": "*Número de seguidores no X, novembro de 2026.",
+      "more": "Ver os {count} perfis"
+    },
+    "press": {
+      "title": "Imprensa",
+      "text": "Os portais onde a notícia ganha peso.",
+      "heading": "E onde a notícia ganha peso.",
+      "mass": "Distribuição em massa, com alta percepção e potencial para gerar conversa."
+    },
+    "creators": {
+      "title": "Creators",
+      "text": "Mais de mil creators para campanhas particulares.",
+      "cta": "Ver os creators"
+    }
+  },
+  "areas": {
+    "noticias": "Notícias",
+    "negocios": "Negócios",
+    "moda": "Moda",
+    "entretenimento": "Entretenimento",
+    "musica": "Música",
+    "tecnologia": "Tecnologia",
+    "financas": "Finanças",
+    "cultura_afro": "Cultura afro"
+  },
+  "size": {
+    "impacts": "As páginas da Onda atingem <hl>+190 milhões</hl> de impactos potenciais.",
+    "fastest": "A forma mais rápida de ter alto alcance e muitas interações.",
+    "compareTitle": "Comparativo básico",
+    "veja": "A maior revista do país, a Veja, tem em média <b>1 milhão de exemplares por semana.</b>",
+    "vejaDigital": "Sua circulação digital é de <b>366 mil exemplares</b> em média.",
+    "source": "Fonte: Instituto Verificador de Comunicação (IVC)",
+    "onePage": "Com uma só página da Onda, você pode atingir mais de <hl>1 milhão de pessoas</hl> na hora."
+  },
+  "influencer": {
+    "title": "Qual a diferença para influenciadores?",
+    "influencer": "Influenciador",
+    "onda": "Onda Digital",
+    "personal": "Personalista",
+    "association": "Gera associação",
+    "analysis": "Pede análise",
+    "match": "Precisa de match com a marca",
+    "instant": "Instantânea",
+    "impersonal": "Impessoal",
+    "noAssociation": "Sem associação direta"
+  },
+  "ideal": {
+    "title": "Ideal para:",
+    "closing": "Um formato original e de alto impacto para os seus lançamentos.",
+    "simple": "Uma forma simples de anunciar dentro das conversas mais virais do momento."
+  },
+  "purposes": {
+    "launch": "Amplificação de lançamento de produto",
+    "realtime": "Ativação em tempo real",
+    "events": "Cobertura de eventos",
+    "influencers": "Amplificação de influenciadores e ações digitais",
+    "conversion": "Ações de conversão",
+    "opportunity": "Ações de oportunidade",
+    "awareness": "Awareness e ações gerais da marca"
+  },
+  "cases": {
+    "title": "E vamos de case...",
+    "name": "Onda Digital + {brand}",
+    "yourArea": "Da sua área",
+    "metrics": {
+      "reach": "Alcance total",
+      "impressions": "Impressões totais",
+      "impacts": "Impactos",
+      "feed_reach": "Alcance feed"
+    }
+  },
+  "packages": {
+    "title": "Escolha a sua onda.",
+    "price": "Valor a consultar",
+    "cta": "Quero esta onda",
+    "help": "Não sabe qual onda escolher? A gente indica.",
+    "helpCta": "Me ajudem a escolher"
+  },
+  "faq": {
+    "title": "Perguntas frequentes",
+    "q1": "Quem cria o post?",
+    "a1": "A Groscove cria o post no jeito de cada página.",
+    "q2": "Minha marca aprova antes de a onda subir?",
+    "a2": "Sim. Nada sobe sem a aprovação da sua marca.",
+    "q3": "Quanto tempo leva? Dá para surfar um assunto do mesmo dia?",
+    "a3": "O prazo é combinado entre a sua marca e a Groscove.",
+    "q4": "Posso escolher as páginas?",
+    "a4": "Sim, você escolhe as páginas da sua onda.",
+    "q5": "Quais formatos entram: feed, stories, reels, X?",
+    "a5": "Qualquer formato, combinado na negociação com a Groscove.",
+    "q6": "Como vejo o tamanho da onda depois?",
+    "a6": "A Groscove entrega os indicadores e as métricas da sua onda."
+  },
+  "end": {
+    "title": "Vem surfar com a gente.",
+    "cta": "Quero entrar na onda",
+    "whatsapp": "Falar no WhatsApp",
+    "email": "E-mail",
+    "hello": "Oi, nós somos a Groscove.",
+    "about": "Um grupo especializado em música, entretenimento e cultura digital."
+  },
+  "request": {
+    "title": "Quero entrar na onda",
+    "description": "Conte para a Groscove o que a sua marca quer. A gente fala com você para combinar tudo.",
+    "package": "Qual onda?",
+    "packageHelp": "Me ajudem a escolher",
+    "purpose": "Para quê?",
+    "when": "Quando?",
+    "whenOptions": {
+      "tbd": "A combinar",
+      "now": "Agora: ativação em tempo real",
+      "date": "Numa data"
+    },
+    "date": "Data",
+    "subject": "Conte o assunto",
+    "subjectHint": "O produto, o lançamento ou o assunto que a sua marca quer ver na onda.",
+    "budget": "Verba (opcional)",
+    "pages": "Escolher as páginas (opcional)",
+    "pagesHint": "Marque as páginas que você quer na sua onda.",
+    "pagesChosen": "{count, plural, =0 {Nenhuma página escolhida} one {1 página escolhida} other {# páginas escolhidas}}",
+    "submit": "Enviar para a Groscove",
+    "sent": "Recebemos! A Groscove vai falar com você para a sua marca entrar na onda.",
+    "whatsappText": "Oi, Groscove! Sou da {brand} e quero entrar na Onda Digital{package, select, none {} other {, onda {package}}}.",
+    "noAccess": "Só quem é da marca pede a onda. Você está vendo como administrador.",
+    "whatsapp": "Falar no WhatsApp"
+  },
+  "mine": {
+    "title": "Seus pedidos",
+    "sentOn": "Pedido em {date}",
+    "whenNow": "Agora: ativação em tempo real",
+    "whenDate": "Para {date}",
+    "whenTbd": "Data a combinar",
+    "closed": "Este pedido foi encerrado. Se quiser, peça uma onda nova."
+  },
+  "statuses": {
+    "received": "Recebido",
+    "talking": "Em conversa",
+    "proposal": "Proposta",
+    "live": "Na onda!",
+    "closed": "Encerrado"
+  },
+  "agency": {
+    "title": "Pedidos da Onda Digital",
+    "description": "Marcas que querem entrar na onda. Fale com a marca e avance a etapa: ela acompanha pelo portal.",
+    "empty": "Nenhum pedido ainda.",
+    "by": "Pedido por {name}",
+    "openDeal": "Abrir negócio",
+    "noDeal": "Marca atendida por outra agência: o pedido não entrou no funil. Fale com ela pelo contato abaixo.",
+    "budget": "Verba: {value}",
+    "pages": "Páginas escolhidas",
+    "status": "Etapa",
+    "save": "Salvar etapa",
+    "saved": "Etapa atualizada. A marca recebeu o aviso.",
+    "noPackage": "Me ajudem a escolher",
+    "onlyGroscove": "Só a Groscove vê os pedidos da Onda Digital.",
+    "seePage": "Ver a página da marca"
+  }
+}

@@ -110,7 +110,7 @@ describe("migração 0084", () => {
   const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0084_assinatura_emails_kit_portfolio.sql"), "utf8");
   it("recria o check de avisos com TODOS os tipos e não abre nada para o visitante", () => {
     // os avisos do patrocínio chegaram depois, na 0085; os da chamada da marca, na 0089; verba e pagamentos, na 0090
-    for (const kind of INBOX_KINDS.filter((k) => !k.startsWith("sponsorship_") && !k.startsWith("brand_call_") && k !== "budget_change" && !k.startsWith("payment_") && !k.startsWith("roadmap_") && k !== "payout_due" && k !== "hero_account_linked" && k !== "brand_access_granted" && !k.startsWith("agency_access_") && !k.startsWith("casting_access_") && !k.startsWith("brand_approval_") && !k.startsWith("profile_claim_") && !k.startsWith("brand_login_")))
+    for (const kind of INBOX_KINDS.filter((k) => !k.startsWith("sponsorship_") && !k.startsWith("brand_call_") && k !== "budget_change" && !k.startsWith("payment_") && !k.startsWith("roadmap_") && k !== "payout_due" && k !== "hero_account_linked" && k !== "brand_access_granted" && !k.startsWith("agency_access_") && !k.startsWith("casting_access_") && !k.startsWith("brand_approval_") && !k.startsWith("profile_claim_") && !k.startsWith("brand_login_") && !k.startsWith("onda_")))
       expect(sql).toContain(`'${kind}'`);
     expect(sql).not.toMatch(/grant execute[^;]*to[^;]*\banon\b/i);
     expect(sql).toMatch(/revoke execute on function public\.terms_signature_create\([^)]*\) from public, anon, authenticated/);

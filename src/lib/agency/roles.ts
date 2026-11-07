@@ -31,18 +31,20 @@ export function canSeeValues(role: AgencyRole | null, platformAdmin = false): bo
 }
 
 // ---------------------------------------------------------------- menus por papel (6.2 e 6.3)
-export const AGENCY_NAV = ["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings", "team", "finance", "history", "profile"] as const;
+export const AGENCY_NAV = ["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "ondaDigital", "notifications", "settings", "team", "finance", "history", "profile"] as const;
 export type AgencyNavKey = (typeof AGENCY_NAV)[number];
 
 /** Itens do menu da agência (P1a: + Pipeline para todos, o colaborador vê só os negócios dele;
  *  Configurações gestor+; Equipe só o Adm). */
-export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false): AgencyNavKey[] {
+export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false, opts: { groscove?: boolean } = {}): AgencyNavKey[] {
   // Estratégias para marcas (0111): banco de ideias mensal — todo membro propõe; Estratégia/Adm aprovam
   const keys: AgencyNavKey[] = ["dashboard", "pipeline", "tasks", "agenda", "strategies", "casting", "brands", "notifications"];
   // Heros (0070): gestor+ cria os perfis e publica em nome deles
   if (agencyCan(role, "manager", platformAdmin)) keys.splice(1, 0, "heroes");
   // Patrocínio (0085): gestor+ publica e decide; as respostas das marcas não são do colaborador
   if (agencyCan(role, "manager", platformAdmin)) keys.splice(keys.indexOf("agenda") + 1, 0, "sponsorships");
+  // Onda Digital (0132): os pedidos das marcas chegam só à Groscove
+  if (opts.groscove || platformAdmin) keys.splice(keys.indexOf("brands") + 1, 0, "ondaDigital");
   if (agencyCan(role, "manager", platformAdmin)) keys.push("settings");
   // Adm: equipe, financeiro simulado e histórico (auditoria da agência)
   if (agencyCan(role, "admin", platformAdmin)) keys.push("team", "finance", "history");
@@ -51,7 +53,7 @@ export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false): A
   return keys;
 }
 
-export const BRAND_NAV = ["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "payments", "team", "notifications"] as const;
+export const BRAND_NAV = ["dashboard", "ondaDigital", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "payments", "team", "notifications"] as const;
 export type BrandNavKey = (typeof BRAND_NAV)[number];
 
 export function brandNavKeys(): BrandNavKey[] {
@@ -59,7 +61,8 @@ export function brandNavKeys(): BrandNavKey[] {
   // Biblioteca (0083): conteúdos aprovados com o vencimento do direito de uso, logo depois de Campanhas
   // Oportunidades de patrocínio (0085): logo depois da Agenda
   // Pagamentos (0090): o que a marca deve à agência e "Informar pagamento", logo depois de Patrocínios
-  return ["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "payments", "team", "notifications"];
+  // Onda Digital (0132): o produto da Groscove explicado para a marca, logo depois do Início
+  return ["dashboard", "ondaDigital", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "payments", "team", "notifications"];
 }
 
 /** Papel mínimo de cada rota restrita da agência (o layout do segmento redireciona para /agencia). */

@@ -118,7 +118,8 @@
     "history": "History",
     "sponsorships": "Sponsorships",
     "strategies": "Strategies",
-    "profile": "My details"
+    "profile": "My details",
+    "ondaDigital": "Onda Digital"
   },
   "brand": {
     "dashboard": "Home",
@@ -130,7 +131,8 @@
     "catalog": "Heroes",
     "agenda": "Calendar",
     "sponsorships": "Sponsorships",
-    "payments": "Payments"
+    "payments": "Payments",
+    "ondaDigital": "Onda Digital"
   },
   "groups": {
     "content": "Content",

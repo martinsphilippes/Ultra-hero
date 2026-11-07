@@ -18,6 +18,7 @@ import { listBrandMembers } from "@/lib/agency/queries";
 import { getBrandContext } from "@/lib/brand-portal/server";
 import { brandTurns, listBrandCampaignsOnce } from "@/lib/deals/turn-queries";
 import { TurnCard } from "@/components/deals/TurnCard";
+import { OndaHomeCard } from "@/components/onda-digital/OndaHomeCard";
 import { listTasks } from "@/lib/execution/queries";
 import { brandBudgetOverview } from "@/lib/finance/queries";
 import { unreadInboxCount } from "@/lib/inbox/queries";
@@ -84,6 +85,8 @@ export default async function BrandDashboardPage() {
         actions={ctx.role ? <RoleBadge role={ctx.role === "owner" ? "owner" : "brandStaff"} /> : null}
       />
       {turns.available ? <TurnCard party="brand" items={turns.items} /> : null}
+      {/* 0132: a Onda Digital da Groscove, em destaque no início */}
+      <OndaHomeCard />
       {!ctx.agency && ctx.role ? (
         // 0091: marca sem agência funciona; a chamada aberta a todas as agências não precisa de vínculo
         <section className="flex flex-col gap-3 rounded-2xl border border-dashed border-border-strong bg-surface p-4" data-testid="brand-no-agency">

@@ -118,7 +118,8 @@
     "history": "Histórico",
     "sponsorships": "Patrocínios",
     "strategies": "Estratégias",
-    "profile": "Meu cadastro"
+    "profile": "Meu cadastro",
+    "ondaDigital": "Onda Digital"
   },
   "brand": {
     "dashboard": "Início",
@@ -130,7 +131,8 @@
     "catalog": "Heros",
     "agenda": "Agenda",
     "sponsorships": "Patrocínios",
-    "payments": "Pagamentos"
+    "payments": "Pagamentos",
+    "ondaDigital": "Onda Digital"
   },
   "groups": {
     "content": "Conteúdo",

@@ -82,6 +82,10 @@ export const INBOX_KINDS = [
   // login da marca ligado à marca certa (0129)
   "brand_login_requested",
   "brand_login_decided",
+  // Onda Digital (0132)
+  "onda_digital_news",
+  "onda_request_received",
+  "onda_request_updated",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 

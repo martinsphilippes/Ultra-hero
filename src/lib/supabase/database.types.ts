@@ -9,6 +9,174 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      onda_requests: {
+        Row: {
+          id: string;
+          brand_id: string;
+          requested_by: string | null;
+          package: string | null;
+          purpose: string;
+          when_kind: string;
+          when_date: string | null;
+          subject: string;
+          budget_cents: number | null;
+          profile_ids: string[];
+          status: string;
+          deal_id: string | null;
+          status_changed_by: string | null;
+          status_changed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          brand_id: string;
+          requested_by?: string | null;
+          package?: string | null;
+          purpose: string;
+          when_kind?: string;
+          when_date?: string | null;
+          subject: string;
+          budget_cents?: number | null;
+          profile_ids?: string[];
+          status?: string;
+          deal_id?: string | null;
+          status_changed_by?: string | null;
+          status_changed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          brand_id?: string;
+          requested_by?: string | null;
+          package?: string | null;
+          purpose?: string;
+          when_kind?: string;
+          when_date?: string | null;
+          subject?: string;
+          budget_cents?: number | null;
+          profile_ids?: string[];
+          status?: string;
+          deal_id?: string | null;
+          status_changed_by?: string | null;
+          status_changed_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      onda_packages: {
+        Row: {
+          slug: string;
+          name: string;
+          scope: string;
+          description: string;
+          sort_order: number;
+          active: boolean;
+        };
+        Insert: {
+          slug: string;
+          name: string;
+          scope: string;
+          description: string;
+          sort_order?: number;
+          active?: boolean;
+        };
+        Update: {
+          slug?: string;
+          name?: string;
+          scope?: string;
+          description?: string;
+          sort_order?: number;
+          active?: boolean;
+        };
+        Relationships: [];
+      };
+      onda_cases: {
+        Row: {
+          id: string;
+          brand_name: string;
+          brand_id: string | null;
+          category: string | null;
+          description: string;
+          metrics: Json;
+          sort_order: number;
+          active: boolean;
+        };
+        Insert: {
+          id?: string;
+          brand_name: string;
+          brand_id?: string | null;
+          category?: string | null;
+          description: string;
+          metrics?: Json;
+          sort_order?: number;
+          active?: boolean;
+        };
+        Update: {
+          id?: string;
+          brand_name?: string;
+          brand_id?: string | null;
+          category?: string | null;
+          description?: string;
+          metrics?: Json;
+          sort_order?: number;
+          active?: boolean;
+        };
+        Relationships: [];
+      };
+      onda_portals: {
+        Row: {
+          id: string;
+          area: string;
+          name: string;
+          sort_order: number;
+          active: boolean;
+        };
+        Insert: {
+          id?: string;
+          area: string;
+          name: string;
+          sort_order?: number;
+          active?: boolean;
+        };
+        Update: {
+          id?: string;
+          area?: string;
+          name?: string;
+          sort_order?: number;
+          active?: boolean;
+        };
+        Relationships: [];
+      };
+      onda_profiles: {
+        Row: {
+          id: string;
+          network: string;
+          handle: string;
+          followers: number;
+          avatar_url: string | null;
+          sort_order: number;
+          active: boolean;
+        };
+        Insert: {
+          id?: string;
+          network: string;
+          handle: string;
+          followers: number;
+          avatar_url?: string | null;
+          sort_order?: number;
+          active?: boolean;
+        };
+        Update: {
+          id?: string;
+          network?: string;
+          handle?: string;
+          followers?: number;
+          avatar_url?: string | null;
+          sort_order?: number;
+          active?: boolean;
+        };
+        Relationships: [];
+      };
       brand_access_requests: {
         Row: {
           id: string;
@@ -12052,6 +12220,11 @@ isOneToOne: false
       [_ in never]: never;
     };
     Functions: {
+      onda_request_set_status: { Args: { p_request: string; p_status: string }; Returns: boolean };
+      onda_request_inbox: { Args: Record<PropertyKey, never>; Returns: Json };
+      onda_request_create: { Args: { p_brand: string; p_data: Json }; Returns: string };
+      onda_content: { Args: Record<PropertyKey, never>; Returns: Json };
+      onda_viewer: { Args: Record<PropertyKey, never>; Returns: boolean };
       brand_logo_set: { Args: { p_brand: string; p_url: string }; Returns: boolean };
       brand_logo_can_edit: { Args: { p_brand: string }; Returns: boolean };
       brand_login_decide: { Args: { p_request: string; p_approve: boolean; p_role?: string }; Returns: boolean };

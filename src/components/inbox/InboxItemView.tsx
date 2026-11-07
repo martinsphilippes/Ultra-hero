@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Briefcase, CalendarDays, FileCheck2, Handshake, Megaphone, MessageSquare, UserPlus, Wallet, type LucideIcon } from "lucide-react";
+import { Bell, Briefcase, CalendarDays, FileCheck2, Handshake, Megaphone, MessageSquare, UserPlus, Wallet, Waves, type LucideIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import type { MouseEvent } from "react";
 import { markReadAction } from "@/lib/inbox/actions";
@@ -59,6 +59,9 @@ const ICON: Partial<Record<string, LucideIcon>> = {
   profile_claim_decided: UserPlus,
   brand_login_requested: UserPlus,
   brand_login_decided: UserPlus,
+  onda_digital_news: Waves,
+  onda_request_received: Waves,
+  onda_request_updated: Waves,
 };
 
 // Tokens que os textos dos avisos podem usar: sempre presentes (vazio quando o aviso não traz).

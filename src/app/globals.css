@@ -264,6 +264,8 @@
   --animate-fade-in: uh-fade-in 0.25s var(--ease-out-expo) both;
   --animate-slide-up: uh-slide-up 0.35s var(--ease-out-expo) both;
   --animate-shimmer: uh-shimmer 1.6s linear infinite;
+  /* Onda Digital (0132): os posts da simulação aparecem juntos, no mesmo instante */
+  --animate-onda-pop: uh-onda-pop 3.6s var(--ease-out-expo) infinite;
 
   @keyframes uh-fade-in {
     from {
@@ -289,6 +291,22 @@
     }
     to {
       background-position: 200% 0;
+    }
+  }
+  @keyframes uh-onda-pop {
+    0%,
+    12% {
+      opacity: 0;
+      transform: translateY(10px) scale(0.96);
+    }
+    22%,
+    88% {
+      opacity: 1;
+      transform: none;
+    }
+    100% {
+      opacity: 0;
+      transform: none;
     }
   }
 }
