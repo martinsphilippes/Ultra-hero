@@ -18703,5 +18703,91 @@ drop table tests.s125;
 select tests.ok('S124 nenhuma função pública gera mais "herói"',
   not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.prosrc ~ 'her[óÓ]i|HERÓI'));
 
+-- ================================================================ S125b · Entrada na agência pelo domínio (0125)
+\ir ../migrations/0125_acesso_agencia_dominio.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('c1250000-0000-4000-8000-000000000001', 'adm@s125dom.test'),
+  ('c1250000-0000-4000-8000-000000000002', 'nova@s125dom.test'),
+  ('c1250000-0000-4000-8000-000000000003', 'fora@outro.test'),
+  ('c1250000-0000-4000-8000-000000000004', 'equipe@s125dom.test');
+insert into public.agencies (id, slug, name, email_domains) values ('c1250000-0000-4000-8000-0000000000a1', 's125b-ag', 'Agência S125b', array['s125dom.test']);
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('c1250000-0000-4000-8000-0000000000a1', 'c1250000-0000-4000-8000-000000000001', 'admin', 'Adm S125b'),
+  ('c1250000-0000-4000-8000-0000000000a1', 'c1250000-0000-4000-8000-000000000004', 'staff', 'Equipe S125b');
+insert into public.account_onboardings (user_id, kind, source) values ('c1250000-0000-4000-8000-000000000003', 'agency', 'self');
+create table tests.s125b (k text primary key, v text);
+grant all on tests.s125b to anon, authenticated;
+
+select tests.ok('S125b domínio: anon só sabe se o domínio vale; e-mail de fora não vale',
+  public.agency_email_domain_allowed('x@S125DOM.test') and not public.agency_email_domain_allowed('x@outro.test')
+  and has_function_privilege('anon', 'public.agency_email_domain_allowed(text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.agency_for_email(text)', 'execute')
+  and not has_function_privilege('anon', 'public.agency_access_request(text, text, text, text, text)', 'execute'));
+
+select tests.login('c1250000-0000-4000-8000-000000000003', 'fora@outro.test');
+select tests.expect_error('S125b e-mail de outro domínio não pede acesso',
+  $$select public.agency_access_request('Fora', '11222333000181', 'Atendimento', 'pleno', '2026-11-07')$$, 'domain_not_allowed');
+select tests.expect_error('S125b sem domínio também não cria agência por conta própria',
+  $$select public.onboarding_create_agency('Minha Agência', null, null)$$, 'agency_by_request');
+
+select tests.login('c1250000-0000-4000-8000-000000000002', 'nova@s125dom.test');
+select tests.expect_error('S125b CNPJ inválido recusado',
+  $$select public.agency_access_request('Nova Pessoa', '11111111111111', 'Atendimento', 'pleno', '2026-11-07')$$, 'invalid_cnpj');
+select tests.expect_error('S125b nível obrigatório',
+  $$select public.agency_access_request('Nova Pessoa', '11222333000181', 'Atendimento', 'premium', '2026-11-07')$$, 'level_required');
+insert into tests.s125b select 'req', public.agency_access_request('Nova Pessoa', '11.222.333/0001-81', 'Atendimento', 'pleno', '2026-11-07')::text;
+select tests.ok('S125b pedido pendente visível para quem pediu; termo aceito; ainda sem acesso à agência',
+  (public.my_agency_access() #>> '{request,status}') = 'pending' and (public.my_agency_access() ->> 'agency') = 'Agência S125b'
+  and (select count(*) from public.agency_access_requests) = 1
+  and exists (select 1 from public.partner_terms_acceptances a where a.user_id = 'c1250000-0000-4000-8000-000000000002' and a.terms_version = '2026-11-07')
+  and not public.agency_can('c1250000-0000-4000-8000-0000000000a1', 'staff'));
+select tests.expect_error('S125b quem pediu não se aprova',
+  format($$select public.agency_access_decide(%L, true, 'admin')$$, (select v from tests.s125b where k = 'req')), 'forbidden');
+
+select tests.login('c1250000-0000-4000-8000-000000000004', 'equipe@s125dom.test');
+select tests.ok('S125b equipe (não Adm) não vê os pedidos', (select count(*) from public.agency_access_requests) = 0);
+select tests.expect_error('S125b equipe não aprova',
+  format($$select public.agency_access_decide(%L, true, 'staff')$$, (select v from tests.s125b where k = 'req')), 'forbidden');
+
+select tests.login('c1250000-0000-4000-8000-000000000001', 'adm@s125dom.test');
+select tests.ok('S125b o Adm recebeu o aviso e vê o pedido',
+  (select count(*) from public.agency_access_requests) = 1
+  and exists (select 1 from public.inbox_notifications n where n.user_id = 'c1250000-0000-4000-8000-000000000001' and n.kind = 'agency_access_requested'));
+select public.agency_access_decide((select v from tests.s125b where k = 'req')::uuid, true, 'manager');
+select tests.su();
+select tests.ok('S125b aprovado: entra como Gestor com CNPJ, cargo, nível e termo; papel de agência; aviso para quem pediu',
+  exists (select 1 from public.agency_members m where m.user_id = 'c1250000-0000-4000-8000-000000000002' and m.revoked_at is null
+            and m.role = 'manager' and m.cnpj = '11222333000181' and m.level = 'pleno' and m.job_title = 'Atendimento')
+  and exists (select 1 from public.role_assignments r where r.user_id = 'c1250000-0000-4000-8000-000000000002' and r.role = 'agency'
+                and r.scope_id = 'c1250000-0000-4000-8000-0000000000a1' and r.revoked_at is null)
+  and exists (select 1 from public.inbox_notifications n where n.user_id = 'c1250000-0000-4000-8000-000000000002' and n.kind = 'agency_access_decided')
+  and (select status from public.agency_access_requests where id = (select v from tests.s125b where k = 'req')::uuid) = 'approved');
+select tests.login('c1250000-0000-4000-8000-000000000001', 'adm@s125dom.test');
+select tests.expect_error('S125b pedido já decidido não muda',
+  format($$select public.agency_access_decide(%L, false)$$, (select v from tests.s125b where k = 'req')), 'already_decided');
+
+select tests.login('c1250000-0000-4000-8000-000000000004', 'equipe@s125dom.test');
+select tests.expect_error('S125b cadastro do colaborador exige CNPJ válido',
+  $$select public.member_complete_profile('Equipe', '123', 'Produção', 'junior', '2026-11-07')$$, 'invalid_cnpj');
+select public.member_complete_profile('Equipe Nova', '11222333000181', 'Produção', 'junior', '2026-11-07');
+select tests.su();
+select tests.ok('S125b colaborador completa o próprio cadastro; segmentos do Hero: até 4, sem feriados',
+  exists (select 1 from public.agency_members m where m.user_id = 'c1250000-0000-4000-8000-000000000004' and m.level = 'junior'
+            and m.job_title = 'Produção' and m.display_name = 'Equipe Nova' and m.role = 'staff')
+  and public.hero_segments_valid(array['futebol', 'moda'])
+  and not public.hero_segments_valid(array['feriados'])
+  and not public.hero_segments_valid(array['futebol', 'esporte', 'musica', 'moda', 'saude']));
+
+delete from public.inbox_notifications where user_id::text like 'c1250000-%';
+delete from public.role_assignments where user_id::text like 'c1250000-%';
+delete from public.agency_access_requests where user_id::text like 'c1250000-%';
+delete from public.partner_terms_acceptances where user_id::text like 'c1250000-%';
+delete from public.account_onboardings where user_id::text like 'c1250000-%';
+delete from public.agency_members where agency_id::text like 'c1250000-%';
+delete from public.agencies where id::text like 'c1250000-%';
+delete from auth.users where id::text like 'c1250000-%';
+drop table tests.s125b;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;
