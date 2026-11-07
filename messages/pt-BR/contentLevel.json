@@ -1,0 +1,42 @@
+{
+  "title": "Nível do conteúdo",
+  "hint": "A plataforma só publica conteúdo que eleva quem assiste: do nível 400 para cima na escala de consciência. Escolha o nível do seu conteúdo.",
+  "value": "nível {value}",
+  "accept": "Declaro o nível e assumo a responsabilidade por este conteúdo",
+  "acceptHint": "Conteúdo fora do padrão pode ser tirado do ar pela Groscove.",
+  "readTerms": "Ler o Padrão de conteúdo",
+  "levels": {
+    "400": {
+      "name": "Razão",
+      "body": "Informa e explica: dados, técnica, aprendizado, raciocínio claro."
+    },
+    "500": {
+      "name": "Amor",
+      "body": "Cuidado e acolhimento: inspira, apoia, cuida de quem assiste."
+    },
+    "540": {
+      "name": "Alegria",
+      "body": "Leveza e celebração: diverte e contagia sem diminuir ninguém."
+    },
+    "600": {
+      "name": "Paz",
+      "body": "Serenidade: equilíbrio, gratidão, calma, contemplação."
+    },
+    "700": {
+      "name": "Iluminação",
+      "body": "Transcendência: propósito, espiritualidade, o sentido maior das coisas."
+    }
+  },
+  "groscove": {
+    "inOnda": "Na Onda",
+    "addOnda": "Colocar na Onda",
+    "takedown": "Tirar do ar",
+    "takedownTitle": "Tirar este conteúdo do ar",
+    "takedownBody": "O conteúdo sai do ar para todos. O Hero vê o motivo em Meus conteúdos.",
+    "reason": "Motivo",
+    "takedownConfirm": "Tirar do ar",
+    "cancel": "Cancelar",
+    "reasonRequired": "Escreva o motivo (pelo menos 3 letras).",
+    "failed": "Não foi possível tirar do ar. Tente de novo."
+  }
+}

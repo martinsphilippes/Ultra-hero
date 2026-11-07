@@ -8,6 +8,8 @@ import { useCallback, useEffect, useId, useRef, useState, type ChangeEvent, type
 import type { Upload } from "tus-js-client";
 import { discardVideoPost, publishVideoPost, startVideoPost } from "@/app/heroi/post/actions";
 import { discardPhotoPost, publishPhotoPost, startPhotoPost } from "@/app/heroi/post/photo-actions";
+import { ContentLevelPicker } from "./ContentLevelPicker";
+import type { ContentLevel } from "@/lib/content-level/levels";
 import { Button, Chip, Dialog, FormField, Input, ProgressBar, Textarea, useToast } from "@/components/ui";
 import { AvatarPrepareError, prepareFittedImage } from "@/lib/avatar/resize";
 import { POST_PHOTO_MAX_EDGE, POST_PHOTO_MAX_UPLOAD_BYTES, type PostPhotoState } from "@/lib/post-photo/constants";
@@ -149,6 +151,9 @@ export function PostComposer({ configured, photoState, defaultPillar, blockOptio
   const [publish, setPublish] = useState<PublishState>({ state: "idle" });
   const [title, setTitle] = useState("");
   const [caption, setCaption] = useState(campaign?.caption ?? "");
+  // 0127: nível do conteúdo e aceite de responsabilidade antes de publicar
+  const [level, setLevel] = useState<ContentLevel | null>(null);
+  const [responsible, setResponsible] = useState(false);
   const [pillar, setPillar] = useState<Pillar>(defaultPillar);
   // bloco do pilar (0075): um rascunho por pilar, para trocar de pilar e voltar sem perder o texto
   const [drafts, setDrafts] = useState<BlockDrafts>(() => emptyDrafts());
@@ -617,7 +622,7 @@ export function PostComposer({ configured, photoState, defaultPillar, blockOptio
   const trimmedTitle = title.trim();
   const uploadDone = upload.state === "done";
   const publishing = publish.state === "publishing" || publish.state === "processing";
-  const canPublish = uploadDone && trimmedTitle.length > 0 && !publishing && contentId !== null;
+  const canPublish = uploadDone && trimmedTitle.length > 0 && !publishing && contentId !== null && level !== null && responsible;
 
   async function doPublish() {
     if (!contentId || !canPublish) return;
@@ -630,7 +635,7 @@ export function PostComposer({ configured, photoState, defaultPillar, blockOptio
     }
     setBlockError(null);
     // Texto congelado no toque: os campos ficam desabilitados enquanto publica/processa.
-    const payload = { contentId: id, title: trimmedTitle, caption: caption.trim(), pillar, block: blockResult.block };
+    const payload = { contentId: id, title: trimmedTitle, caption: caption.trim(), pillar, block: blockResult.block, level: level ?? 0, responsibility: responsible };
     stopPolling();
     setPublish({ state: "publishing" });
     setAnnouncement(t("sr.publishing"));
@@ -785,7 +790,7 @@ export function PostComposer({ configured, photoState, defaultPillar, blockOptio
           : upload.state === "error"
             ? message(upload.error)
             : "";
-  const publishHint = !uploadDone ? text(kind, "publishHintUpload") : !trimmedTitle ? t("publishHintTitle") : null;
+  const publishHint = !uploadDone ? text(kind, "publishHintUpload") : !trimmedTitle ? t("publishHintTitle") : level === null || !responsible ? t("publishHintLevel") : null;
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
@@ -871,6 +876,8 @@ export function PostComposer({ configured, photoState, defaultPillar, blockOptio
           {/* o pilar abre os campos dele (0075): Rotina não abre nada */}
           <PillarBlockEditor pillar={pillar} drafts={drafts} onChange={setDrafts} options={blockOptions} hrefs={blockHrefs} error={blockError} disabled={publishing} />
         </fieldset>
+
+        <ContentLevelPicker level={level} onLevel={setLevel} accepted={responsible} onAccepted={setResponsible} disabled={publishing} />
 
         {publish.state === "processing" && <p className="type-caption text-fg-muted">{t("processingHint")}</p>}
         {publish.state === "error" && (

@@ -254,7 +254,9 @@
       "upload_rights_required": "Antes do primeiro envio, confirme que você tem os direitos sobre a foto ou o vídeo.",
       "invalid_block": "Os campos do pilar não ficaram válidos. Confira e tente de novo.",
       "invalid_reference": "Uma receita ou produto escolhido não está mais disponível. Remova e escolha outro.",
-      "hero_not_active": "Seu Hero ainda não foi aprovado. O post ficou guardado como rascunho; publique depois da aprovação."
+      "hero_not_active": "Seu Hero ainda não foi aprovado. O post ficou guardado como rascunho; publique depois da aprovação.",
+      "missing_level": "Escolha o nível do conteúdo e aceite a responsabilidade antes de publicar.",
+      "invalid_level": "Escolha o nível do conteúdo e aceite a responsabilidade antes de publicar."
     },
     "photo": {
       "draftTitle": "Post com foto",
@@ -373,7 +375,8 @@
         "counter": "{count}/{max}"
       }
     },
-    "backToCampaign": "Voltar para a campanha"
+    "backToCampaign": "Voltar para a campanha",
+    "publishHintLevel": "Escolha o nível do conteúdo e aceite a responsabilidade para publicar."
   },
   "reviews": {
     "title": "Histórico de revisões",

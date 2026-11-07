@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OndaToggle } from "@/components/creator/GroscoveControls";
 import { Info, ShieldCheck } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -81,12 +82,21 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
     ...(hub.commerceEnabled && !follow.nativeApp ? [{ key: "products", value: hub.products.length, label: statLabel("products", hub.products.length) }] : []),
   ];
 
+  const ondaSb = await createClient();
+  const ondaAdmin = (await ondaSb.rpc("is_groscove_admin")).data === true;
+  const ondaOn = ondaAdmin ? Boolean((await ondaSb.from("creator_profiles").select("onda").eq("id", creator.id).maybeSingle()).data?.onda) : false;
   return (
     <div className="flex flex-col gap-5">
       {/* visita à página do Hero (0061): contador por dia, sem a pessoa */}
       <HeroPageViewTracker creatorId={creator.id} />
       {/* volta para a tela anterior do app; aberto de fora, cai na lista de Heros */}
       <BackLink href="/personalities">{t("back")}</BackLink>
+      {/* 0127: só a Groscove vê — põe ou tira esta página da Onda */}
+      {ondaAdmin ? (
+        <div className="flex justify-end">
+          <OndaToggle creatorId={creator.id} on={ondaOn} />
+        </div>
+      ) : null}
 
       {/* Cabeçalho no formato do Instagram: foto pequena, nome e números lado a lado; o que importa são os posts. */}
       <header className="flex flex-col gap-3">

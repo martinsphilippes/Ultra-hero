@@ -50,6 +50,7 @@ import { loadRecipeLd, loadRatingState } from "@/components/recipes/view/recipe-
 import { AddToListButton, CompleteButton, FavoriteButton, NotInterestedButton } from "@/components/library";
 import { Avatar, Badge, Button, PillarBadge, Section } from "@/components/ui";
 import { ArchiveContentButton } from "@/components/creator/PublishButtons";
+import { TakedownButton } from "@/components/creator/GroscoveControls";
 import { listMyHeroesAll } from "@/app/heroi/_lib/creator";
 import { creatorContentHref } from "@/lib/creator-content/rules";
 import type { Locale } from "@/i18n/config";
@@ -165,6 +166,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
   // Dono do post (titular ou membro da equipe do Hero): ganha Editar; o titular também Arquivar (o banco confere de novo)
   const myRoleOnHero =
     user && content.creator_id ? ((await listMyHeroesAll()).find((h) => h.id === content.creator_id)?.role ?? null) : null;
+  const groscoveAdmin = user ? (await supabase.rpc("is_groscove_admin")).data === true : false;
   const uiLocale = locale as Locale;
   const wantsLocalization = content.source_locale !== uiLocale;
 
@@ -463,6 +465,8 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
                       {myRoleOnHero === "owner" ? <ArchiveContentButton contentId={content.id} afterHref="/heroi/conteudos" /> : null}
                     </>
                   ) : null}
+                  {/* 0127: a Groscove tira do ar conteúdo fora do padrão */}
+                  {groscoveAdmin ? <TakedownButton contentId={content.id} /> : null}
                 </>
               ) : null}
               {isRecipe ? <RecipeShareButtons title={title} path={path} canPrint={Boolean(recipeOpen && structured)} /> : null}

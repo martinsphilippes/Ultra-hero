@@ -27,7 +27,12 @@ export async function exploreFeedPage(query: SearchQuery, seed: number, offset: 
   const ids = rows.slice(0, TILE_PAGE_SIZE).map((row) => row.id);
   if (ids.length === 0) return { items: [], hasMore: false, nextOffset: safeOffset };
 
-  const { data: tiles, error: tilesError } = await supabase.from("content").select(CONTENT_TILE_SELECT).in("id", ids);
+  // 0127: a Onda (o antigo Explorar) só mostra conteúdo das páginas liberadas pela Groscove (creator_profiles.onda)
+  const { data: tiles, error: tilesError } = await supabase
+    .from("content")
+    .select(`${CONTENT_TILE_SELECT}, onda:creator_profiles!inner(onda)`)
+    .in("id", ids)
+    .eq("onda.onda", true);
   if (tilesError) throw tilesError;
 
   const byId = new Map((tiles as unknown as ContentTileData[]).map((tile) => [tile.id, tile]));

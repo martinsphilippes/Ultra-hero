@@ -1317,6 +1317,8 @@ export type Database = {
           title: string;
           type: Database["public"]["Enums"]["content_type"];
           updated_at: string;
+          content_level: number | null;
+          responsibility_accepted_at: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -1355,6 +1357,8 @@ export type Database = {
           title: string;
           type: Database["public"]["Enums"]["content_type"];
           updated_at?: string;
+          content_level?: number | null;
+          responsibility_accepted_at?: string | null;
         };
         Update: {
           access_level?: Database["public"]["Enums"]["access_level"] | null;
@@ -1392,6 +1396,8 @@ export type Database = {
           title?: string;
           type?: Database["public"]["Enums"]["content_type"];
           updated_at?: string;
+          content_level?: number | null;
+          responsibility_accepted_at?: string | null;
         };
         Relationships: [
           {
@@ -1917,6 +1923,7 @@ export type Database = {
           user_id: string | null;
           level: string | null;
           segments: string[];
+          onda: boolean;
         };
         ComputedFields: never;
         Insert: {
@@ -1944,6 +1951,7 @@ export type Database = {
           user_id?: string | null;
           level?: string | null;
           segments?: string[];
+          onda?: boolean;
         };
         Update: {
           avatar_url?: string | null;
@@ -1970,6 +1978,7 @@ export type Database = {
           user_id?: string | null;
           level?: string | null;
           segments?: string[];
+          onda?: boolean;
         };
         Relationships: [];
       };
@@ -11914,6 +11923,9 @@ isOneToOne: false
       [_ in never]: never;
     };
     Functions: {
+      content_takedown: { Args: { p_content: string; p_reason: string }; Returns: boolean };
+      content_declare_level: { Args: { p_content: string; p_level: number }; Returns: boolean };
+      onda_set: { Args: { p_creator: string; p_on: boolean }; Returns: boolean };
       profile_claim_decide: { Args: { p_claim: string; p_approve: boolean }; Returns: boolean };
       profile_claim_inbox: { Args: { p_agency: string }; Returns: Json };
       my_hero_claim: { Args: Record<PropertyKey, never>; Returns: Json };

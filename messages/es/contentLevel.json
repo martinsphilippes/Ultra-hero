@@ -1,0 +1,42 @@
+{
+  "title": "Nivel del contenido",
+  "hint": "La plataforma solo publica contenido que eleva a quien lo ve: del nivel 400 hacia arriba en la escala de conciencia. Elige el nivel de tu contenido.",
+  "value": "nivel {value}",
+  "accept": "Declaro el nivel y asumo la responsabilidad por este contenido",
+  "acceptHint": "El contenido fuera del estándar puede ser retirado por Groscove.",
+  "readTerms": "Leer el Estándar de contenido",
+  "levels": {
+    "400": {
+      "name": "Razón",
+      "body": "Informa y explica: datos, técnica, aprendizaje, razonamiento claro."
+    },
+    "500": {
+      "name": "Amor",
+      "body": "Cuidado y acogida: inspira, apoya, cuida de quien lo ve."
+    },
+    "540": {
+      "name": "Alegría",
+      "body": "Ligereza y celebración: divierte sin disminuir a nadie."
+    },
+    "600": {
+      "name": "Paz",
+      "body": "Serenidad: equilibrio, gratitud, calma, contemplación."
+    },
+    "700": {
+      "name": "Iluminación",
+      "body": "Trascendencia: propósito, espiritualidad, el sentido mayor de las cosas."
+    }
+  },
+  "groscove": {
+    "inOnda": "En la Onda",
+    "addOnda": "Poner en la Onda",
+    "takedown": "Retirar",
+    "takedownTitle": "Retirar este contenido",
+    "takedownBody": "El contenido sale del aire para todos. El Hero ve el motivo en Mis contenidos.",
+    "reason": "Motivo",
+    "takedownConfirm": "Retirar",
+    "cancel": "Cancelar",
+    "reasonRequired": "Escribe el motivo (al menos 3 letras).",
+    "failed": "No fue posible retirarlo. Inténtalo de nuevo."
+  }
+}

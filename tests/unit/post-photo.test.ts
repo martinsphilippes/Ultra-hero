@@ -339,7 +339,7 @@ describe("startPhotoPost", () => {
 });
 
 describe("publishPhotoPost", () => {
-  const PUBLISH = { contentId: ids.CONTENT, title: "  Café da manhã  ", caption: "Pão, ovo e fruta.", pillar: "nutrition" as const };
+  const PUBLISH = { contentId: ids.CONTENT, title: "  Café da manhã  ", caption: "Pão, ovo e fruta.", pillar: "nutrition" as const, level: 540, responsibility: true };
 
   it("grava texto, troca o slug provisório e publica pela RPC do banco", async () => {
     expect(await publishPhotoPost(PUBLISH)).toEqual({ ok: true, slug: "cafe-da-manha-x1y2" });

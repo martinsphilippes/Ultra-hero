@@ -1,0 +1,42 @@
+{
+  "title": "Content level",
+  "hint": "The platform only publishes content that uplifts the audience: level 400 and above on the consciousness scale. Choose your content's level.",
+  "value": "level {value}",
+  "accept": "I declare the level and take responsibility for this content",
+  "acceptHint": "Content outside the standard can be taken down by Groscove.",
+  "readTerms": "Read the Content standard",
+  "levels": {
+    "400": {
+      "name": "Reason",
+      "body": "Informs and explains: data, technique, learning, clear reasoning."
+    },
+    "500": {
+      "name": "Love",
+      "body": "Care and warmth: inspires, supports, cares for the audience."
+    },
+    "540": {
+      "name": "Joy",
+      "body": "Lightness and celebration: entertains without putting anyone down."
+    },
+    "600": {
+      "name": "Peace",
+      "body": "Serenity: balance, gratitude, calm, contemplation."
+    },
+    "700": {
+      "name": "Enlightenment",
+      "body": "Transcendence: purpose, spirituality, the bigger meaning of things."
+    }
+  },
+  "groscove": {
+    "inOnda": "In Onda",
+    "addOnda": "Add to Onda",
+    "takedown": "Take down",
+    "takedownTitle": "Take this content down",
+    "takedownBody": "The content goes offline for everyone. The Hero sees the reason in My content.",
+    "reason": "Reason",
+    "takedownConfirm": "Take down",
+    "cancel": "Cancel",
+    "reasonRequired": "Write the reason (at least 3 letters).",
+    "failed": "Could not take it down. Try again."
+  }
+}

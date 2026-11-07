@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getLocale, getTranslations } from "next-intl/server";
 import { z } from "zod";
+import { isContentLevel } from "@/lib/content-level/levels";
 import { CAPTION_MAX, MAX_POST_BYTES, MAX_POST_SECONDS, SERVER_MAX_POST_SECONDS, TITLE_MAX, durationMinutes } from "@/components/creator/post/validation";
 import { LOCALE_VALUES, PILLAR_VALUES } from "@/components/editors/content/schema";
 import { pillarBlockSchema, type PillarBlock } from "@/lib/post-blocks/schema";
@@ -43,6 +44,9 @@ const publishSchema = z.object({
   pillar: z.enum(PILLAR_VALUES),
   // bloco do pilar (0075): treino, nutrição ou cardápio; ausente = post só com foto/vídeo e texto
   block: pillarBlockSchema.nullable().optional(),
+  // 0127: nível do conteúdo (escala de consciência, 400+) e o aceite de responsabilidade
+  level: z.number().int().refine(isContentLevel),
+  responsibility: z.literal(true),
 });
 
 const idSchema = z.object({ contentId: z.uuid() });
@@ -178,11 +182,11 @@ async function loadOwnContent(ctx: CreatorActionContext, contentId: string): Pro
   return data as OwnDraft;
 }
 
-export async function publishVideoPost(input: { contentId: string; title: string; caption?: string; pillar: Pillar; block?: PillarBlock | null }): Promise<PublishResult> {
+export async function publishVideoPost(input: { contentId: string; title: string; caption?: string; pillar: Pillar; block?: PillarBlock | null; level: number; responsibility: boolean }): Promise<PublishResult> {
   const parsed = publishSchema.safeParse(input);
   if (!parsed.success) {
     const first = parsed.error.issues[0]?.path[0];
-    return { ok: false, error: first === "title" ? "missing_title" : first === "block" ? "invalid_block" : "invalid_input" };
+    return { ok: false, error: first === "title" ? "missing_title" : first === "block" ? "invalid_block" : first === "level" || first === "responsibility" ? "missing_level" : "invalid_input" };
   }
   const { contentId, title, caption, pillar, block } = parsed.data;
 
@@ -221,6 +225,10 @@ export async function publishVideoPost(input: { contentId: string; title: string
     const slugFailure = await setDraftSlug(ctx, contentId, title);
     if (slugFailure) return slugFailure;
   }
+
+  // 0127: nível declarado e responsabilidade aceita, antes de ir ao ar
+  const { error: levelError } = await supabase.rpc("content_declare_level", { p_content: contentId, p_level: parsed.data.level });
+  if (levelError && !isMissingSchema(levelError)) return failFrom(levelError);
 
   const { data: published, error } = await supabase.rpc("creator_publish_content", { p_content: contentId });
   if (error) return failFrom(error);

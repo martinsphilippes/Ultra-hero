@@ -230,7 +230,7 @@ beforeEach(() => {
 });
 
 const START = { fileSize: 48_000_000, fileName: "VID_20261021.mp4", durationSec: 95.4 };
-const PUBLISH = { contentId: ids.CONTENT, title: "  Receita de domingo  ", caption: "Arroz de forno em 3 passos.", pillar: "gastronomy" as const };
+const PUBLISH = { contentId: ids.CONTENT, title: "  Receita de domingo  ", caption: "Arroz de forno em 3 passos.", pillar: "gastronomy" as const, level: 540, responsibility: true };
 
 describe("startVideoPost", () => {
   it("sem a confirmação de direitos (Termos do Parceiro), não pede ticket nem cria rascunho", async () => {

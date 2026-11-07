@@ -1,7 +1,7 @@
 {
   "meta": {
     "home": "Social",
-    "explore": "Explorar",
+    "explore": "Onda",
     "lists": "Minhas listas",
     "list": "{name} · Lista",
     "personalities": "Heros",
@@ -24,12 +24,12 @@
       "end": "Você viu todos os posts",
       "emptyTitle": "Nenhum post por aqui ainda",
       "emptyDescription": "Os Heros ainda não publicaram nada.",
-      "emptyCta": "Ir para o Explorar"
+      "emptyCta": "Ir para a Onda"
     }
   },
   "explore": {
-    "title": "Explorar",
-    "description": "Busque por título, tema, Hero ou programa.",
+    "title": "Onda",
+    "description": "O que está rolando: só as páginas liberadas pela Groscove (portais, a própria Groscove e Heroes escolhidos).",
     "recipesDescription": "Receitas dos chefs com busca por nome, chef ou ingrediente e filtros.",
     "search": {
       "label": "Buscar conteúdos",
@@ -52,7 +52,7 @@
       "count": "{count, plural, =1 {1 post na grade} other {# posts na grade}}"
     },
     "tabs": {
-      "label": "Seções do Explorar",
+      "label": "Seções da Onda",
       "contents": "Conteúdos",
       "recipes": "Receitas",
       "programs": "Programas",

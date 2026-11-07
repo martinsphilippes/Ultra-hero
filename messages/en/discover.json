@@ -1,7 +1,7 @@
 {
   "meta": {
     "home": "Social",
-    "explore": "Explore",
+    "explore": "Onda",
     "lists": "My lists",
     "list": "{name} · List",
     "personalities": "Heroes",
@@ -24,12 +24,12 @@
       "end": "You've seen all the posts",
       "emptyTitle": "No posts here yet",
       "emptyDescription": "The heroes haven't posted anything yet.",
-      "emptyCta": "Go to Explore"
+      "emptyCta": "Go to Onda"
     }
   },
   "explore": {
-    "title": "Explore",
-    "description": "Search by title, topic, hero or program.",
+    "title": "Onda",
+    "description": "What's happening: only the pages approved by Groscove (news portals, Groscove itself and selected Heroes).",
     "recipesDescription": "Chefs' recipes with search by name, chef or ingredient, plus filters.",
     "search": {
       "label": "Search content",
@@ -52,7 +52,7 @@
       "count": "{count, plural, =1 {1 post in the grid} other {# posts in the grid}}"
     },
     "tabs": {
-      "label": "Explore sections",
+      "label": "Onda sections",
       "contents": "Content",
       "recipes": "Recipes",
       "programs": "Programs",

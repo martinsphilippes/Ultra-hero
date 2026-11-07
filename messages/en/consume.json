@@ -1,6 +1,6 @@
 {
   "content": {
-    "backToExplore": "Explore",
+    "backToExplore": "Onda",
     "visitorTitle": "Sign in to use this content",
     "visitorDescription": "Create a free account or sign in to watch, read and track your progress.",
     "visitorCta": "Sign in to continue",
@@ -165,7 +165,7 @@
   },
   "program": {
     "eyebrow": "Program",
-    "backToExplore": "Explore",
+    "backToExplore": "Onda",
     "version": "version {n}",
     "weeks": "{n, plural, =1 {1 week} other {# weeks}}",
     "items": "{n, plural, =1 {1 item} other {# items}}",

@@ -254,7 +254,9 @@
       "upload_rights_required": "Before your first upload, confirm that you hold the rights to the photo or video.",
       "invalid_block": "The pillar fields are not valid. Check and try again.",
       "invalid_reference": "A chosen recipe or product is no longer available. Remove it and choose another.",
-      "hero_not_active": "Your hero has not been approved yet. The post was kept as a draft; publish after approval."
+      "hero_not_active": "Your hero has not been approved yet. The post was kept as a draft; publish after approval.",
+      "missing_level": "Choose the content level and accept responsibility before publishing.",
+      "invalid_level": "Choose the content level and accept responsibility before publishing."
     },
     "photo": {
       "draftTitle": "Photo post",
@@ -373,7 +375,8 @@
         "counter": "{count}/{max}"
       }
     },
-    "backToCampaign": "Back to the campaign"
+    "backToCampaign": "Back to the campaign",
+    "publishHintLevel": "Choose the content level and accept responsibility to publish."
   },
   "reviews": {
     "title": "Review history",

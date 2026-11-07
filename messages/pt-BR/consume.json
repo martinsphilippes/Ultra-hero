@@ -1,6 +1,6 @@
 {
   "content": {
-    "backToExplore": "Explorar",
+    "backToExplore": "Onda",
     "visitorTitle": "Entre para consumir este conteúdo",
     "visitorDescription": "Crie uma conta gratuita ou entre para assistir, ler e marcar seu progresso.",
     "visitorCta": "Entre para consumir",
@@ -165,7 +165,7 @@
   },
   "program": {
     "eyebrow": "Programa",
-    "backToExplore": "Explorar",
+    "backToExplore": "Onda",
     "version": "versão {n}",
     "weeks": "{n, plural, =1 {1 semana} other {# semanas}}",
     "items": "{n, plural, =1 {1 conteúdo} other {# conteúdos}}",
