@@ -1,0 +1,91 @@
+{
+  "profile": {
+    "fullName": "Full name",
+    "cnpj": "CNPJ (company ID)",
+    "cnpjHint": "Every collaborator works as a company (PJ): enter your company's CNPJ.",
+    "jobTitle": "Job title",
+    "jobTitleHint": "Write it your way, e.g. Account, Production or Strategy Director.",
+    "jobTitlePlaceholder": "Your job title",
+    "level": "Level",
+    "levelHint": "How you feel in your role today. It doesn't depend on numbers: it helps us match the right communication.",
+    "levels": {
+      "junior": {
+        "title": "Junior",
+        "body": "Starting out: learns fast and still relies on day-to-day support."
+      },
+      "pleno": {
+        "title": "Mid-level",
+        "body": "Handles the day to day alone and has some work with brands."
+      },
+      "senior": {
+        "title": "Senior",
+        "body": "A reference in the role: already works with brands and guides others."
+      }
+    },
+    "acceptTerms": "I have read and accept the Partner Terms",
+    "acceptTermsHint": "They work as the partnership agreement: you work with us as a company, through the platform.",
+    "readTerms": "Read the Partner Terms",
+    "submitRequest": "Send access request",
+    "submitComplete": "Save my details",
+    "errors": {
+      "fullName": "Enter your full name.",
+      "cnpj": "Check the CNPJ: it needs 14 valid digits.",
+      "jobTitle": "Write your job title.",
+      "level": "Choose your level.",
+      "terms": "To continue, accept the Partner Terms."
+    }
+  },
+  "requests": {
+    "title": "{count, plural, =0 {Access requests} one {# access request} other {# access requests}}",
+    "description": "People who signed up with the agency e-mail and are waiting for your approval.",
+    "empty": "No requests waiting right now. When someone signs up with the agency e-mail, it shows up here and in the bell.",
+    "since": "requested on {date}",
+    "cnpj": "CNPJ {cnpj}",
+    "roleLabel": "Access level",
+    "roleHint": "Collaborator sees the day to day; Manager runs deals; Admin also manages the agency.",
+    "approve": "Approve",
+    "reject": "Decline",
+    "approvedDone": "{name} joined the agency.",
+    "rejectedDone": "{name}'s request declined.",
+    "banner": "{count, plural, one {# person is} other {# people are}} waiting for your approval to join the agency.",
+    "bannerAction": "See requests"
+  },
+  "gate": {
+    "title": "Complete your details",
+    "body": "Before continuing, enter your CNPJ, job title and level, and accept the Partner Terms. It takes 1 minute.",
+    "editTitle": "My details",
+    "editBody": "Your partner (company) details. You can update them any time."
+  },
+  "access": {
+    "requestTitle": "Access request to {agency}",
+    "requestBody": "Fill in your details. An administrator of {agency} receives the request and approves your access.",
+    "pendingTitle": "Request sent",
+    "pendingBody": "The administrators of {agency} have been notified. As soon as they approve, you get a notice and the portal opens for you.",
+    "pendingEdit": "Fix my details",
+    "rejectedTitle": "Request not approved",
+    "rejectedBody": "The administrators of {agency} did not approve this request. If it was a mistake, talk to them and send it again.",
+    "rejectedNote": "Reason: {note}",
+    "domainTitle": "This e-mail can't join as an agency",
+    "domainBody": "Only Groscove e-mails (@groscovegroup.com or @groscoveultra.com) join as an agency. Sign out and sign up with your Groscove e-mail.",
+    "signOut": "Sign out",
+    "goPortal": "Open the portal"
+  },
+  "segments": {
+    "title": "Segments",
+    "hint": "Choose up to {max} segments (the same as the Groscove Calendar). {count} of {max} chosen.",
+    "levelTitle": "Level",
+    "levelHint": "How you feel in the market today, regardless of numbers. It helps match the right communication with each brand.",
+    "save": "Save segments and level",
+    "saved": "Saved.",
+    "sectionTitle": "Groscove Calendar segments",
+    "sectionHint": "The platform uses these segments to suggest the right Hero for each campaign."
+  },
+  "brand": {
+    "title": "My job title and level",
+    "description": "How you introduce yourself to the agency and the Heroes.",
+    "jobTitle": "Job title",
+    "level": "Level",
+    "save": "Save",
+    "saved": "Saved."
+  }
+}

@@ -109,7 +109,7 @@
     "brands": "Marcas",
     "notifications": "Avisos y mensajes",
     "settings": "Configuración",
-    "team": "Equipo",
+    "team": "Personal",
     "casting": "Casting",
     "pipeline": "Pipeline",
     "agenda": "Agenda",
@@ -117,7 +117,8 @@
     "finance": "Finanzas",
     "history": "Historial",
     "sponsorships": "Patrocinios",
-    "strategies": "Estrategias"
+    "strategies": "Estrategias",
+    "profile": "Mi registro"
   },
   "brand": {
     "dashboard": "Inicio",

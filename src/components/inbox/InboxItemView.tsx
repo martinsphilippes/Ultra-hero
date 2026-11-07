@@ -49,10 +49,12 @@ const ICON: Partial<Record<string, LucideIcon>> = {
   roadmap_overdue: CalendarDays,
   hero_account_linked: UserPlus,
   brand_access_granted: UserPlus,
+  agency_access_requested: UserPlus,
+  agency_access_decided: UserPlus,
 };
 
 // Tokens que os textos dos avisos podem usar: sempre presentes (vazio quando o aviso não traz).
-const TOKENS = ["name", "brand", "deal", "talent", "step", "date", "status", "title"] as const;
+const TOKENS = ["name", "brand", "deal", "talent", "step", "date", "status", "title", "job", "agency", "approved"] as const;
 
 export function inboxValues(params: Record<string, string>): Record<string, string> {
   return Object.fromEntries(TOKENS.map((k) => [k, params[k] ?? ""]));

@@ -31,7 +31,7 @@ export function canSeeValues(role: AgencyRole | null, platformAdmin = false): bo
 }
 
 // ---------------------------------------------------------------- menus por papel (6.2 e 6.3)
-export const AGENCY_NAV = ["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings", "team", "finance", "history"] as const;
+export const AGENCY_NAV = ["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings", "team", "finance", "history", "profile"] as const;
 export type AgencyNavKey = (typeof AGENCY_NAV)[number];
 
 /** Itens do menu da agência (P1a: + Pipeline para todos, o colaborador vê só os negócios dele;
@@ -46,6 +46,8 @@ export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false): A
   if (agencyCan(role, "manager", platformAdmin)) keys.push("settings");
   // Adm: equipe, financeiro simulado e histórico (auditoria da agência)
   if (agencyCan(role, "admin", platformAdmin)) keys.push("team", "finance", "history");
+  // Meu cadastro (0125): cada colaborador revê o próprio cadastro PJ (CNPJ, cargo, nível)
+  if (role) keys.push("profile");
   return keys;
 }
 

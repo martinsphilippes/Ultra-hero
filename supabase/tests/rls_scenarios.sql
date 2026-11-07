@@ -18719,9 +18719,9 @@ insert into public.account_onboardings (user_id, kind, source) values ('c1250000
 create table tests.s125b (k text primary key, v text);
 grant all on tests.s125b to anon, authenticated;
 
-select tests.ok('S125b domínio: anon só sabe se o domínio vale; e-mail de fora não vale',
+select tests.ok('S125b domínio: e-mail de fora não vale; nada novo para anon',
   public.agency_email_domain_allowed('x@S125DOM.test') and not public.agency_email_domain_allowed('x@outro.test')
-  and has_function_privilege('anon', 'public.agency_email_domain_allowed(text)', 'execute')
+  and not has_function_privilege('anon', 'public.agency_email_domain_allowed(text)', 'execute')
   and not has_function_privilege('authenticated', 'public.agency_for_email(text)', 'execute')
   and not has_function_privilege('anon', 'public.agency_access_request(text, text, text, text, text)', 'execute'));
 

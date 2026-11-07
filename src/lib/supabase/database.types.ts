@@ -9,6 +9,63 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      agency_access_requests: {
+        Row: {
+          id: string;
+          agency_id: string;
+          user_id: string;
+          email: string;
+          full_name: string;
+          cnpj: string;
+          job_title: string;
+          level: string;
+          terms_version: string;
+          status: string;
+          granted_role: string | null;
+          decided_by: string | null;
+          decided_at: string | null;
+          decision_note: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          agency_id: string;
+          user_id: string;
+          email: string;
+          full_name: string;
+          cnpj: string;
+          job_title: string;
+          level: string;
+          terms_version: string;
+          status?: string;
+          granted_role?: string | null;
+          decided_by?: string | null;
+          decided_at?: string | null;
+          decision_note?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          agency_id?: string;
+          user_id?: string;
+          email?: string;
+          full_name?: string;
+          cnpj?: string;
+          job_title?: string;
+          level?: string;
+          terms_version?: string;
+          status?: string;
+          granted_role?: string | null;
+          decided_by?: string | null;
+          decided_at?: string | null;
+          decision_note?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       brand_calls: {
         Row: {
           calendar_event_id: string | null;
@@ -1858,6 +1915,8 @@ export type Database = {
           status: Database["public"]["Enums"]["partner_status"];
           updated_at: string;
           user_id: string | null;
+          level: string | null;
+          segments: string[];
         };
         ComputedFields: never;
         Insert: {
@@ -1883,6 +1942,8 @@ export type Database = {
           status?: Database["public"]["Enums"]["partner_status"];
           updated_at?: string;
           user_id?: string | null;
+          level?: string | null;
+          segments?: string[];
         };
         Update: {
           avatar_url?: string | null;
@@ -1907,6 +1968,8 @@ export type Database = {
           status?: Database["public"]["Enums"]["partner_status"];
           updated_at?: string;
           user_id?: string | null;
+          level?: string | null;
+          segments?: string[];
         };
         Relationships: [];
       };
@@ -6452,6 +6515,7 @@ export type Database = {
           status: string;
           timezone: string;
           updated_at: string;
+          email_domains: string[];
         };
         ComputedFields: never;
         Insert: {
@@ -6469,6 +6533,7 @@ export type Database = {
           status?: string;
           timezone?: string;
           updated_at?: string;
+          email_domains?: string[];
         };
         Update: {
           platform_calendar_editor?: boolean;
@@ -6485,6 +6550,7 @@ export type Database = {
           status?: string;
           timezone?: string;
           updated_at?: string;
+          email_domains?: string[];
         };
         Relationships: [];
       };
@@ -6501,6 +6567,9 @@ export type Database = {
           updated_at: string;
           user_id: string;
           sectors: string[];
+          cnpj: string | null;
+          level: string | null;
+          terms_version: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -6515,6 +6584,9 @@ export type Database = {
           updated_at?: string;
           user_id: string;
           sectors?: string[];
+          cnpj?: string | null;
+          level?: string | null;
+          terms_version?: string | null;
         };
         Update: {
           agency_id?: string;
@@ -6528,6 +6600,9 @@ export type Database = {
           updated_at?: string;
           user_id?: string;
           sectors?: string[];
+          cnpj?: string | null;
+          level?: string | null;
+          terms_version?: string | null;
         };
         Relationships: [
           {
@@ -7380,6 +7455,7 @@ export type Database = {
           role: string;
           updated_at: string;
           user_id: string;
+          level: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -7393,6 +7469,7 @@ export type Database = {
           role?: string;
           updated_at?: string;
           user_id: string;
+          level?: string | null;
         };
         Update: {
           brand_id?: string;
@@ -7405,6 +7482,7 @@ export type Database = {
           role?: string;
           updated_at?: string;
           user_id?: string;
+          level?: string | null;
         };
         Relationships: [
           {
@@ -7651,6 +7729,8 @@ export type Database = {
           topics: string[];
           updated_at: string;
           user_id: string | null;
+          level: string | null;
+          segments: string[];
         };
         ComputedFields: never;
         Insert: {
@@ -7682,6 +7762,8 @@ export type Database = {
           state?: string | null;
           updated_at?: string;
           user_id?: string | null;
+          level?: string | null;
+          segments?: string[];
         };
         Update: {
           agency_id?: string;
@@ -7712,6 +7794,8 @@ export type Database = {
           state?: string | null;
           updated_at?: string;
           user_id?: string | null;
+          level?: string | null;
+          segments?: string[];
         };
         Relationships: [
           {
@@ -11809,6 +11893,15 @@ isOneToOne: false
       [_ in never]: never;
     };
     Functions: {
+      brand_member_set_level: { Args: { p_level: string | null; p_job_title: string | null }; Returns: boolean };
+      talent_set_segments: { Args: { p_talent: string; p_segments: string[]; p_level: string | null }; Returns: boolean };
+      hero_set_segments: { Args: { p_segments: string[]; p_level: string | null }; Returns: boolean };
+      member_complete_profile: { Args: { p_full_name: string; p_cnpj: string; p_job_title: string; p_level: string; p_terms_version: string }; Returns: boolean };
+      onboarding_agency_by_request: { Args: Record<PropertyKey, never>; Returns: boolean };
+      agency_access_decide: { Args: { p_request: string; p_approve: boolean; p_role?: string; p_note?: string | null }; Returns: boolean };
+      agency_access_request: { Args: { p_full_name: string; p_cnpj: string; p_job_title: string; p_level: string; p_terms_version: string }; Returns: string };
+      my_agency_access: { Args: Record<PropertyKey, never>; Returns: Json };
+      agency_email_domain_allowed: { Args: { p_email: string }; Returns: boolean };
       casting_groscove_2027_import: { Args: { p_admin_email?: string }; Returns: Json };
       casting_groscove_2027_data: { Args: Record<PropertyKey, never>; Returns: Json };
       casting_groscove_2027_publish: { Args: { p_admin_email?: string }; Returns: Json };

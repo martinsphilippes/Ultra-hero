@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { OnboardingWizard } from "@/components/invites/OnboardingWizard";
+import { AgencyAccessPanel } from "@/components/team/AgencyAccessPanel";
 import { Button, EmptyState } from "@/components/ui";
 import { requireUser } from "@/lib/auth/session";
 import { isWizardKind, type WizardKind } from "@/lib/invitations/rules";
@@ -28,11 +29,13 @@ export default async function FirstAccessPage() {
     .map((x) => x as { id?: string; kind?: string; agency?: string | null; source?: string })
     .filter((x): x is Pending => typeof x.id === "string" && isWizardKind(x.kind));
   const current = items[0];
+  // 0125: agência por autosserviço vira pedido de acesso (só o admin da plataforma ainda cria agência aqui)
+  const byRequest = current?.kind === "agency" && current.source === "self" ? (await supabase.rpc("onboarding_agency_by_request")).data !== false : false;
   return (
     <AuthCard title={current?.source === "self" ? t("selfTitle") : t("title")} subtitle={current ? (current.kind === "hero" ? t("heroSubtitle") : t("subtitle")) : undefined}>
       {current ? (
         <div className="flex flex-col gap-4">
-          <OnboardingWizard key={current.id} kind={current.kind} agencyName={current.agency} selfService={current.source === "self"} />
+          {byRequest ? <AgencyAccessPanel /> : <OnboardingWizard key={current.id} kind={current.kind} agencyName={current.agency} selfService={current.source === "self"} />}
           {items.length > 1 ? <p className="type-caption text-fg-muted">{t("more", { count: items.length - 1 })}</p> : null}
         </div>
       ) : (

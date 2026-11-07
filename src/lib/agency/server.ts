@@ -36,6 +36,8 @@ export type AgencyContext =
       agencies: AgencySummary[];
       memberName: string | null;
       memberTitle: string | null;
+      /** 0125: cadastro PJ do colaborador (CNPJ, nível, termo). Null para o admin da plataforma sem vínculo. */
+      memberProfile: { cnpj: string | null; level: string | null; termsVersion: string | null } | null;
     };
 
 const AGENCY_SELECT = "id, slug, name, status, is_demo, timezone, relationship_alert_days, contact_email";
@@ -75,7 +77,7 @@ export const getAgencyContext = cache(async (): Promise<AgencyContext> => {
       supabase.rpc("is_demo_account"),
       supabase
         .from("agency_members")
-        .select(`agency_id, role, display_name, job_title, agency:agencies!agency_members_agency_fk(${AGENCY_SELECT})`)
+        .select(`agency_id, role, display_name, job_title, cnpj, level, terms_version, agency:agencies!agency_members_agency_fk(${AGENCY_SELECT})`)
         .eq("user_id", user.id)
         .is("revoked_at", null)
         .maybeSingle(),
@@ -88,7 +90,17 @@ export const getAgencyContext = cache(async (): Promise<AgencyContext> => {
       const agencyRow = Array.isArray(embedded) ? embedded[0] : embedded;
       if (!agencyRow) return { state: "none", platformAdmin: Boolean(platformAdmin) };
       const agency = toAgency(agencyRow as AgencyRow);
-      return { state: "ok", agency, role: member.role, platformAdmin: Boolean(platformAdmin), agencies: [agency], memberName: member.display_name, memberTitle: member.job_title };
+      const m = member as { cnpj?: string | null; level?: string | null; terms_version?: string | null };
+      return {
+        state: "ok",
+        agency,
+        role: member.role,
+        platformAdmin: Boolean(platformAdmin),
+        agencies: [agency],
+        memberName: member.display_name,
+        memberTitle: member.job_title,
+        memberProfile: { cnpj: m.cnpj ?? null, level: m.level ?? null, termsVersion: m.terms_version ?? null },
+      };
     }
 
     if (platformAdmin) {
@@ -97,7 +109,7 @@ export const getAgencyContext = cache(async (): Promise<AgencyContext> => {
       if (agencies.length === 0) return { state: "none", platformAdmin: true };
       const chosen = (await cookies()).get(AGENCY_COOKIE)?.value;
       const agency = agencies.find((a) => a.id === chosen) ?? agencies[0];
-      return { state: "ok", agency, role: null, platformAdmin: true, agencies, memberName: null, memberTitle: null };
+      return { state: "ok", agency, role: null, platformAdmin: true, agencies, memberName: null, memberTitle: null, memberProfile: null };
     }
     // conta demo com papel admin e sem vínculo (admin@demo): nada da agência real (D6)
     if (demo) return { state: "demo_forbidden" };

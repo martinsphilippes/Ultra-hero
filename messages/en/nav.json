@@ -109,7 +109,7 @@
     "brands": "Brands",
     "notifications": "Notices and messages",
     "settings": "Settings",
-    "team": "Team",
+    "team": "Staff",
     "casting": "Roster",
     "pipeline": "Pipeline",
     "agenda": "Calendar",
@@ -117,7 +117,8 @@
     "finance": "Finance",
     "history": "History",
     "sponsorships": "Sponsorships",
-    "strategies": "Strategies"
+    "strategies": "Strategies",
+    "profile": "My details"
   },
   "brand": {
     "dashboard": "Home",

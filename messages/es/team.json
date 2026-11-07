@@ -1,0 +1,91 @@
+{
+  "profile": {
+    "fullName": "Nombre completo",
+    "cnpj": "CNPJ",
+    "cnpjHint": "Cada colaborador trabaja como empresa (PJ): informa el CNPJ de tu empresa.",
+    "jobTitle": "Cargo",
+    "jobTitleHint": "Escríbelo a tu manera, por ejemplo Atención, Producción o Directora de Estrategia.",
+    "jobTitlePlaceholder": "Tu cargo",
+    "level": "Nivel",
+    "levelHint": "Cómo te sientes en tu función hoy. No depende de números: es para ajustar la comunicación correcta.",
+    "levels": {
+      "junior": {
+        "title": "Júnior",
+        "body": "Empezando: aprende rápido y aún cuenta con acompañamiento en el día a día."
+      },
+      "pleno": {
+        "title": "Pleno",
+        "body": "Ya resuelve solo el día a día y tiene algunos trabajos con marcas."
+      },
+      "senior": {
+        "title": "Sénior",
+        "body": "Referencia en la función: ya trabaja con marcas y orienta a otras personas."
+      }
+    },
+    "acceptTerms": "Leí y acepto los Términos del Socio",
+    "acceptTermsHint": "Valen como el contrato de asociación: trabajas con nosotros como empresa, por la plataforma.",
+    "readTerms": "Leer los Términos del Socio",
+    "submitRequest": "Enviar solicitud de acceso",
+    "submitComplete": "Guardar mis datos",
+    "errors": {
+      "fullName": "Escribe tu nombre completo.",
+      "cnpj": "Revisa el CNPJ: necesita 14 números válidos.",
+      "jobTitle": "Escribe tu cargo.",
+      "level": "Elige tu nivel.",
+      "terms": "Para continuar, acepta los Términos del Socio."
+    }
+  },
+  "requests": {
+    "title": "{count, plural, =0 {Solicitudes de acceso} one {# solicitud de acceso} other {# solicitudes de acceso}}",
+    "description": "Personas que se registraron con el e-mail de la agencia y esperan tu autorización.",
+    "empty": "No hay solicitudes esperando ahora. Cuando alguien se registre con el e-mail de la agencia, aparece aquí y en la campana.",
+    "since": "pidió el {date}",
+    "cnpj": "CNPJ {cnpj}",
+    "roleLabel": "Nivel de acceso",
+    "roleHint": "Colaborador ve el día a día; Gestor lleva negocios; Admin también gestiona la agencia.",
+    "approve": "Aceptar",
+    "reject": "Rechazar",
+    "approvedDone": "{name} entró en la agencia.",
+    "rejectedDone": "Solicitud de {name} rechazada.",
+    "banner": "{count, plural, one {# persona espera} other {# personas esperan}} tu autorización para entrar en la agencia.",
+    "bannerAction": "Ver solicitudes"
+  },
+  "gate": {
+    "title": "Completa tu registro",
+    "body": "Antes de continuar, informa tu CNPJ, tu cargo y tu nivel, y acepta los Términos del Socio. Toma 1 minuto.",
+    "editTitle": "Mi registro",
+    "editBody": "Tus datos de socio (empresa). Puedes actualizarlos cuando quieras."
+  },
+  "access": {
+    "requestTitle": "Solicitud de acceso a {agency}",
+    "requestBody": "Completa tus datos. Un administrador de {agency} recibe la solicitud y autoriza tu acceso.",
+    "pendingTitle": "Solicitud enviada",
+    "pendingBody": "Los administradores de {agency} ya fueron avisados. En cuanto autoricen, recibes un aviso y el portal se abre para ti.",
+    "pendingEdit": "Corregir mis datos",
+    "rejectedTitle": "Solicitud no autorizada",
+    "rejectedBody": "Los administradores de {agency} no autorizaron esta solicitud. Si fue un error, habla con ellos y envíala de nuevo.",
+    "rejectedNote": "Motivo: {note}",
+    "domainTitle": "Este e-mail no entra como agencia",
+    "domainBody": "Solo los e-mails de Groscove (@groscovegroup.com o @groscoveultra.com) entran como agencia. Sal y regístrate con tu e-mail de Groscove.",
+    "signOut": "Salir",
+    "goPortal": "Abrir el portal"
+  },
+  "segments": {
+    "title": "Segmentos",
+    "hint": "Marca hasta {max} segmentos (los mismos del Calendario Groscove). {count} de {max} elegidos.",
+    "levelTitle": "Nivel",
+    "levelHint": "Cómo te sientes en el mercado hoy, sin importar los números. Ayuda a ajustar la comunicación correcta con cada marca.",
+    "save": "Guardar segmentos y nivel",
+    "saved": "Guardado.",
+    "sectionTitle": "Segmentos del Calendario Groscove",
+    "sectionHint": "La plataforma usa estos segmentos para indicar el Hero correcto para cada campaña."
+  },
+  "brand": {
+    "title": "Mi cargo y nivel",
+    "description": "Cómo te presentas a la agencia y a los Heroes.",
+    "jobTitle": "Cargo",
+    "level": "Nivel",
+    "save": "Guardar",
+    "saved": "Guardado."
+  }
+}

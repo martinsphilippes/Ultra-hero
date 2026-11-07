@@ -507,13 +507,35 @@
   },
   "partner": {
     "title": "Termos do Parceiro",
-    "intro": "Estes Termos do Parceiro valem para Heros, agências e integrantes de agências que publicam no {app}. Eles completam os <terms>Termos de Uso</terms> e a <privacy>Política de Privacidade</privacy>. Ao aceitar um convite para o {app}, você concorda com eles.",
+    "intro": "Estes Termos do Parceiro valem para agências e seus colaboradores, Heroes, marcas e demais pessoas que trabalham pelo {app}. Eles completam os <terms>Termos de Uso</terms> e a <privacy>Política de Privacidade</privacy> e funcionam como o contrato de parceria entre você e {company}. Ao aceitar estes Termos no cadastro, no pedido de acesso ou em um convite, você concorda com tudo o que está aqui.",
     "sections": {
       "who": {
         "title": "Quem é parceiro",
         "blocks": {
           "p1": "Parceiro é quem entra no {app} por convite da equipe para publicar ou gerenciar conteúdo: o <strong>Hero</strong> (a personalidade real dona do perfil), a <strong>agência</strong> que representa Heros ou marcas, as pessoas da equipe da agência e as demais pessoas convidadas para um portal de parceiro (marcas, profissionais e fornecedores).",
           "p2": "O convite é pessoal e ligado ao e-mail para o qual foi enviado. Não compartilhe o acesso ao portal."
+        }
+      },
+      "relationship": {
+        "title": "Relação de parceria (PJ)",
+        "blocks": {
+          "p1": "Você trabalha com {company} como parceiro independente, por meio da sua empresa (CNPJ ativo e regular). Estes Termos <strong>não criam vínculo de emprego</strong>, sociedade, representação comercial exclusiva ou subordinação.",
+          "list1": {
+            "i1": "Você define como organiza o seu trabalho, dentro dos prazos e padrões combinados em cada negócio;",
+            "i2": "você é responsável pelos seus tributos, notas fiscais, contribuições e obrigações trabalhistas da sua própria equipe;",
+            "i3": "mantenha seus dados (nome, CNPJ, cargo e nível) corretos e atualizados em \"Meu cadastro\"."
+          }
+        }
+      },
+      "access": {
+        "title": "Acesso, conta e segurança",
+        "blocks": {
+          "p1": "O acesso é pessoal e intransferível. Na agência, a entrada é feita com o e-mail do domínio autorizado e depende da aprovação de um administrador, que define o nível de acesso (Colaborador, Gestor ou Adm).",
+          "list1": {
+            "i1": "Não compartilhe senha nem deixe outra pessoa usar a sua conta;",
+            "i2": "avise imediatamente se perceber uso indevido, perda do aparelho ou vazamento;",
+            "i3": "o acesso pode ser ajustado ou retirado pelos administradores a qualquer momento, por exemplo quando a parceria termina."
+          }
         }
       },
       "rights": {
@@ -559,6 +581,62 @@
           "p1": "A equipe do {app} pode revisar, pedir ajustes, ocultar ou remover conteúdos e suspender portais que descumpram estes Termos ou que recebam reclamação fundamentada de terceiros. As principais ações de moderação ficam registradas em auditoria."
         }
       },
+      "contentLevel": {
+        "title": "Padrão de conteúdo da plataforma",
+        "blocks": {
+          "p1": "O {app} só aceita conteúdo que eleve quem assiste. Usamos como referência a escala de níveis de consciência (Hawkins): só podem ser publicados conteúdos a partir do nível 400 (Razão, Amor, Alegria, Paz e Iluminação).",
+          "p2": "Não são aceitos conteúdos construídos sobre vergonha, culpa, apatia, tristeza, medo, desejo, raiva ou orgulho, nem conteúdos apenas neutros, de coragem ou de aceitação quando usados para provocar esses sentimentos. Ao publicar, você declara o nível do conteúdo e assume a responsabilidade por essa declaração.",
+          "p3": "A plataforma pode revisar, ocultar ou remover conteúdos fora deste padrão, mesmo depois de publicados."
+        }
+      },
+      "confidentiality": {
+        "title": "Confidencialidade",
+        "blocks": {
+          "p1": "Tudo o que você vê ou recebe pelo {app} e não é público é confidencial: dados de marcas e de Heroes, contatos, valores, propostas, estratégias, briefings, agendas e relatórios.",
+          "list1": {
+            "i1": "Use essas informações só para executar os trabalhos combinados pela plataforma;",
+            "i2": "não copie, exporte, fotografe ou repasse listas do casting, contatos ou valores para fora do {app};",
+            "i3": "a obrigação de confidencialidade continua por 5 anos depois do fim da parceria."
+          }
+        }
+      },
+      "data": {
+        "title": "Dados pessoais (LGPD)",
+        "blocks": {
+          "p1": "Quando você trata dados pessoais de outras pessoas pelo {app} (por exemplo, do casting), você o faz em nome de {company}, só para a finalidade do trabalho, com o mínimo necessário e seguindo a Lei Geral de Proteção de Dados (Lei nº 13.709/2018). Qualquer incidente com dados deve ser comunicado em até 24 horas."
+        }
+      },
+      "commercial": {
+        "title": "Negócios, valores e pagamentos",
+        "blocks": {
+          "p1": "Valores, comissões, permutas e prazos de cada trabalho ficam registrados no próprio negócio, dentro do {app}, e só valem quando confirmados ali.",
+          "p2": "<strong>Não contorne a plataforma:</strong> durante a parceria e por 12 meses depois dela, não negocie diretamente, por fora do {app}, com marcas ou Heroes que conheceu por meio dele, para trabalhos do mesmo tipo, sem autorização por escrito de {company}."
+        }
+      },
+      "platform": {
+        "title": "Propriedade da plataforma",
+        "blocks": {
+          "p1": "O {app}, a marca Groscove e todo o seu conteúdo próprio (software, desenho, textos, roteiros, modelos e bases de dados) pertencem a {company}. É proibido copiar, raspar dados, fazer engenharia reversa ou usar o {app} para criar serviço concorrente."
+        }
+      },
+      "termination": {
+        "title": "Suspensão e término",
+        "blocks": {
+          "p1": "Qualquer das partes pode encerrar a parceria a qualquer momento. {company} pode suspender ou encerrar o seu acesso, com ou sem aviso, se houver descumprimento destes Termos, risco para outras pessoas ou ordem legal. Os trabalhos em andamento são concluídos ou acertados conforme o combinado em cada negócio."
+        }
+      },
+      "changes": {
+        "title": "Mudanças nestes Termos",
+        "blocks": {
+          "p1": "Podemos atualizar estes Termos. Quando a mudança for relevante, avisaremos pelo {app} e pediremos um novo aceite antes de você continuar usando os portais."
+        }
+      },
+      "law": {
+        "title": "Lei aplicável",
+        "blocks": {
+          "p1": "Estes Termos seguem as leis do Brasil. As partes tentarão resolver qualquer divergência por conversa direta; não havendo acordo, fica eleito o foro do domicílio de {company}, salvo quando a lei determinar outro."
+        }
+      },
       "liability": {
         "title": "Responsabilidade",
         "blocks": {
@@ -568,7 +646,7 @@
       "acceptance": {
         "title": "Como registramos o aceite",
         "blocks": {
-          "p1": "Ao aceitar o convite, guardamos a versão destes Termos e a data do aceite. Antes do seu primeiro envio de foto ou vídeo, pedimos que você confirme a declaração de direitos acima, e também guardamos essa data. Se estes Termos mudarem de forma relevante, pediremos um novo aceite."
+          "p1": "Guardamos a versão destes Termos e a data do seu aceite (no cadastro, no pedido de acesso, no convite ou em \"Meu cadastro\"). Antes do seu primeiro envio de foto ou vídeo, pedimos que você confirme a declaração de direitos, e também guardamos essa data. Se estes Termos mudarem de forma relevante, pediremos um novo aceite."
         }
       },
       "contact": {

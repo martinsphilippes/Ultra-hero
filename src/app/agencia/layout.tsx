@@ -10,6 +10,8 @@ import { requireRole } from "@/lib/auth/session";
 import { unreadInboxCount } from "@/lib/inbox/queries";
 import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
 import { WelcomeTourMount } from "@/components/welcome/WelcomeTourMount";
+import { MemberProfileForm } from "@/components/team/MemberProfileForm";
+import { memberProfileComplete } from "@/lib/team/levels";
 
 // Portal da agência (6.2, só web): papel no servidor (admin geral também passa), menu pelo nível
 // (Adm > Gestor > Colaborador) e o sino. Com loading.tsx na raiz (velocidade: o toque troca a tela na hora); os
@@ -17,7 +19,7 @@ import { WelcomeTourMount } from "@/components/welcome/WelcomeTourMount";
 export default async function AgencyLayout({ children }: { children: ReactNode }) {
   const { user } = await requireRole("agency", "/agencia");
   // tudo em paralelo (o contador de avisos não depende do contexto): uma ida ao banco a menos em cada tela
-  const [ctx, t, unread] = await Promise.all([getAgencyContext(), getTranslations("agency"), unreadInboxCount()]);
+  const [ctx, t, tg, unread] = await Promise.all([getAgencyContext(), getTranslations("agency"), getTranslations("team.gate"), unreadInboxCount()]);
   if (ctx.state !== "ok") {
     return (
       <PortalShell portal="agency" navKeys={["dashboard"]}>
@@ -40,7 +42,18 @@ export default async function AgencyLayout({ children }: { children: ReactNode }
         </p>
       ) : null}
       <SeasonalTheme area="portals" />
-      {children}
+      {/* 0125: cada colaborador é PJ — sem CNPJ, nível e o termo vigente, o portal pede isso antes de tudo */}
+      {ctx.role && !memberProfileComplete(ctx.memberProfile) ? (
+        <section className="mx-auto flex w-full max-w-xl flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-6" data-testid="member-profile-gate">
+          <div className="flex flex-col gap-1">
+            <h1 className="type-h2 text-fg">{tg("title")}</h1>
+            <p className="type-body-sm text-fg-muted">{tg("body")}</p>
+          </div>
+          <MemberProfileForm mode="complete" doneHref="/agencia" initial={{ fullName: ctx.memberName, cnpj: ctx.memberProfile?.cnpj, jobTitle: ctx.memberTitle, level: ctx.memberProfile?.level }} />
+        </section>
+      ) : (
+        children
+      )}
       {/* boas-vindas do portal: só para quem é membro (o admin que só supervisiona não vê) */}
       {ctx.role ? <WelcomeTourMount area="agencia" /> : null}
     </PortalShell>

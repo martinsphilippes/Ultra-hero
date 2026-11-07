@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { latestInboxCheckSql } from "../support/latest-inbox-check";
 import { describe, expect, it } from "vitest";
 import { agencyErrorCode } from "@/lib/agency/error-codes";
 import { agencyCan, agencyNavKeys, brandNavKeys, canSeeValues, invitableAgencyRoles, isAgencyRole, isBrandRole } from "@/lib/agency/roles";
@@ -34,9 +35,9 @@ describe("hierarquia da agência", () => {
   });
 
   it("menu por nível: Equipe só para o Adm, Configurações e Heros para gestor+", () => {
-    expect(agencyNavKeys("staff")).toEqual(["dashboard", "pipeline", "tasks", "agenda", "strategies", "casting", "brands", "notifications"]);
-    expect(agencyNavKeys("manager")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings"]);
-    expect(agencyNavKeys("admin")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings", "team", "finance", "history"]);
+    expect(agencyNavKeys("staff")).toEqual(["dashboard", "pipeline", "tasks", "agenda", "strategies", "casting", "brands", "notifications", "profile"]);
+    expect(agencyNavKeys("manager")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings", "profile"]);
+    expect(agencyNavKeys("admin")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings", "team", "finance", "history", "profile"]);
     expect(agencyNavKeys(null, true)).toContain("team");
     expect(brandNavKeys()).toEqual(["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "payments", "team", "notifications"]);
   });
@@ -103,9 +104,9 @@ describe("erros das RPCs", () => {
 });
 
 describe("avisos", () => {
-  it("55 tipos, iguais ao check do banco (recriado na 0112 com os avisos de acesso do Hero e da marca)", () => {
-    expect(INBOX_KINDS).toHaveLength(55);
-    const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0112_heroi_conta_vinculada.sql"), "utf8");
+  it("tipos iguais ao check mais recente do banco (0125: + pedidos de acesso à agência)", () => {
+    expect(INBOX_KINDS).toHaveLength(57);
+    const sql = latestInboxCheckSql();
     for (const kind of INBOX_KINDS) expect(sql).toContain(`'${kind}'`);
     expect(isInboxKind("member_joined")).toBe(true);
     expect(isInboxKind("auction_outbid")).toBe(false);

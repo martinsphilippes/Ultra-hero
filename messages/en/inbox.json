@@ -234,6 +234,14 @@
     "brand_access_granted": {
       "title": "You are the Owner of {brand}",
       "body": "{name} registered {brand} and gave you Owner access. Open the brand portal."
+    },
+    "agency_access_requested": {
+      "title": "Agency access request",
+      "body": "{name} ({job}) signed up with the agency e-mail and is waiting for your approval."
+    },
+    "agency_access_decided": {
+      "title": "{approved, select, true {Access approved} other {Access not approved}}",
+      "body": "{approved, select, true {You joined {agency}. Open the agency portal.} other {The administrators of {agency} did not approve your request.}}"
     }
   }
 }

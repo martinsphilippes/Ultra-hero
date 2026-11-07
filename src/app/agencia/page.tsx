@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Wallet } from "lucide-react";
+import { UserPlus, Wallet } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { KpiCard } from "@/components/admin-ops/KpiCard";
@@ -15,7 +15,7 @@ import { RoadmapIndicatorsCard } from "@/components/roadmap/RoadmapIndicatorsCar
 import { SectorTodayPanel } from "@/components/roadmap/SectorTodayPanel";
 import { PageHeader } from "@/components/ui";
 import { agencyDashboardData } from "@/lib/agency/dashboards";
-import { agencyDashboard } from "@/lib/agency/queries";
+import { agencyDashboard, listAccessRequests } from "@/lib/agency/queries";
 import { castingCounts } from "@/lib/talent/queries";
 import { agencyCan } from "@/lib/agency/roles";
 import { getAgencyContext } from "@/lib/agency/server";
@@ -50,8 +50,11 @@ export default async function AgencyDashboardPage({ searchParams }: Props) {
   const isManager = agencyCan(ctx.role, "manager", ctx.platformAdmin);
   const [user, sp] = await Promise.all([getUser(), searchParams]);
   const asked = isTodayScope(sp.setor) ? sp.setor : null;
-  const [t, data, casting, deals, upcoming, tasks, panel, firstToday, indicators, satisfaction, growth, insights, turns] = await Promise.all([
+  const [t, tq, accessRequests, data, casting, deals, upcoming, tasks, panel, firstToday, indicators, satisfaction, growth, insights, turns] = await Promise.all([
     getTranslations("agency.dashboard"),
+    getTranslations("team.requests"),
+    // 0125: pedidos de acesso pelo domínio do e-mail — bem à vista para o Adm
+    isAdmin ? listAccessRequests(ctx.agency.id) : Promise.resolve([]),
     agencyDashboard(ctx.agency.id, isAdmin),
     castingCounts(ctx.agency.id),
     dealCounts(ctx.agency.id),
@@ -86,6 +89,19 @@ export default async function AgencyDashboardPage({ searchParams }: Props) {
         description={ctx.memberName ? t("greeting", { name: ctx.memberName }) : t("adminView")}
         actions={ctx.role ? <RoleBadge role={ctx.role} /> : null}
       />
+      {accessRequests.length > 0 ? (
+        <Link
+          href="/agencia/equipe#pedidos"
+          className="flex min-h-14 items-center justify-between gap-3 rounded-2xl border-2 border-accent bg-accent-soft p-4 transition-colors hover:bg-surface-hover"
+          data-testid="access-requests-banner"
+        >
+          <span className="flex items-center gap-3">
+            <UserPlus className="size-5 shrink-0 text-accent-text" aria-hidden="true" />
+            <span className="text-sm font-semibold text-fg">{tq("banner", { count: accessRequests.length })}</span>
+          </span>
+          <span className="shrink-0 text-sm font-semibold text-accent-text">{tq("bannerAction")}</span>
+        </Link>
+      ) : null}
       {turns.available ? <TurnCard party="agency" items={turns.items} /> : null}
       {ctx.platformAdmin && ctx.agencies.length > 1 ? (
         <AgencySwitcher agencies={ctx.agencies.map((a) => ({ id: a.id, name: a.name, isDemo: a.isDemo }))} currentId={ctx.agency.id} />

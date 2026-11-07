@@ -352,6 +352,12 @@ export async function profileSignupAction(_prev: AuthActionState, formData: Form
 
   if (!hasAdminClient()) return { status: "error", error: "signupUnavailable" };
   const admin = createAdminClient();
+  // 0125: agência só com e-mail de domínio autorizado (Groscove). A conta nasce e o pedido de acesso vai aos Adms.
+  if (kind === "agency") {
+    const { data: allowed, error: domainError } = await admin.rpc("agency_email_domain_allowed", { p_email: email });
+    if (domainError) return { status: "error", error: "signupUnavailable" };
+    if (!allowed) return { status: "error", fieldErrors: { email: "agencyDomain" } };
+  }
   const ip = clientIp(await headers());
   const attempt = await recordQuickSignupAttempt(admin, hashForRateLimit("ip", ip), hashForRateLimit("email", email));
   if (attempt === "schema_missing" || attempt === "error") return { status: "error", error: "signupUnavailable" };

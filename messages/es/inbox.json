@@ -234,6 +234,14 @@
     "brand_access_granted": {
       "title": "Eres Dueño de {brand}",
       "body": "{name} registró {brand} y te dio el acceso de Dueño. Abre el portal de la marca."
+    },
+    "agency_access_requested": {
+      "title": "Solicitud de acceso a la agencia",
+      "body": "{name} ({job}) se registró con el e-mail de la agencia y espera tu autorización."
+    },
+    "agency_access_decided": {
+      "title": "{approved, select, true {Acceso autorizado} other {Acceso no autorizado}}",
+      "body": "{approved, select, true {Entraste en {agency}. Abre el portal de la agencia.} other {Los administradores de {agency} no autorizaron tu solicitud.}}"
     }
   }
 }

@@ -507,13 +507,35 @@
   },
   "partner": {
     "title": "Partner Terms",
-    "intro": "These Partner Terms apply to heroes, agencies and agency team members who publish on {app}. They complement the <terms>Terms of Use</terms> and the <privacy>Privacy Policy</privacy>. By accepting an invitation to {app}, you agree to them.",
+    "intro": "These Partner Terms apply to agencies and their collaborators, Heroes, brands and everyone who works through {app}. They complement the <terms>Terms of Use</terms> and the <privacy>Privacy Policy</privacy> and work as the partnership agreement between you and {company}. By accepting these Terms at sign-up, in the access request or in an invitation, you agree to everything here.",
     "sections": {
       "who": {
         "title": "Who is a partner",
         "blocks": {
           "p1": "A partner is anyone who joins {app} by invitation from the team to publish or manage content: the <strong>hero</strong> (the real public figure who owns the profile), the <strong>agency</strong> that represents heroes or brands, the agency’s team members and anyone else invited to a partner portal (brands, professionals and suppliers).",
           "p2": "The invitation is personal and tied to the email it was sent to. Do not share access to the portal."
+        }
+      },
+      "relationship": {
+        "title": "Partnership (company to company)",
+        "blocks": {
+          "p1": "You work with {company} as an independent partner, through your own company (active and regular CNPJ). These Terms <strong>do not create employment</strong>, partnership in the corporate sense, exclusive commercial representation or subordination.",
+          "list1": {
+            "i1": "You decide how to organize your work, within the deadlines and standards agreed in each deal;",
+            "i2": "you are responsible for your taxes, invoices, contributions and the labor obligations of your own team;",
+            "i3": "keep your details (name, CNPJ, job title and level) correct and up to date in \"My details\"."
+          }
+        }
+      },
+      "access": {
+        "title": "Access, account and security",
+        "blocks": {
+          "p1": "Access is personal and non-transferable. In an agency, you join with the authorized domain e-mail and need the approval of an administrator, who sets the access level (Collaborator, Manager or Admin).",
+          "list1": {
+            "i1": "Do not share your password or let anyone else use your account;",
+            "i2": "tell us immediately about misuse, a lost device or a leak;",
+            "i3": "administrators can change or remove access at any time, for example when the partnership ends."
+          }
         }
       },
       "rights": {
@@ -559,6 +581,62 @@
           "p1": "The {app} team may review, request changes to, hide or remove content and suspend portals that breach these Terms or receive a substantiated third-party complaint. The main moderation actions are recorded in an audit log."
         }
       },
+      "contentLevel": {
+        "title": "Platform content standard",
+        "blocks": {
+          "p1": "{app} only accepts content that uplifts the audience. We use the levels-of-consciousness scale (Hawkins) as reference: only content from level 400 up (Reason, Love, Joy, Peace and Enlightenment) can be published.",
+          "p2": "Content built on shame, guilt, apathy, grief, fear, desire, anger or pride is not accepted, nor merely neutral, courage or acceptance content used to provoke those feelings. When publishing, you declare the content level and take responsibility for that statement.",
+          "p3": "The platform may review, hide or remove content outside this standard, even after publication."
+        }
+      },
+      "confidentiality": {
+        "title": "Confidentiality",
+        "blocks": {
+          "p1": "Everything you see or receive through {app} that is not public is confidential: brand and Hero data, contacts, amounts, proposals, strategies, briefings, schedules and reports.",
+          "list1": {
+            "i1": "Use this information only to carry out the work agreed through the platform;",
+            "i2": "do not copy, export, photograph or pass casting lists, contacts or amounts outside {app};",
+            "i3": "the confidentiality obligation lasts 5 years after the partnership ends."
+          }
+        }
+      },
+      "data": {
+        "title": "Personal data (LGPD)",
+        "blocks": {
+          "p1": "When you process other people's personal data through {app} (for example, from the casting), you do it on behalf of {company}, only for the purpose of the work, with the minimum necessary and following Brazil's General Data Protection Law (Law 13,709/2018). Any data incident must be reported within 24 hours."
+        }
+      },
+      "commercial": {
+        "title": "Deals, amounts and payments",
+        "blocks": {
+          "p1": "Amounts, commissions, barter and deadlines of each job are recorded in the deal itself, inside {app}, and are only valid once confirmed there.",
+          "p2": "<strong>Do not bypass the platform:</strong> during the partnership and for 12 months after it, do not negotiate directly, outside {app}, with brands or Heroes you met through it, for the same type of work, without written authorization from {company}."
+        }
+      },
+      "platform": {
+        "title": "Platform ownership",
+        "blocks": {
+          "p1": "{app}, the Groscove brand and all its own content (software, design, texts, workflows, templates and databases) belong to {company}. Copying, scraping, reverse engineering or using {app} to build a competing service is forbidden."
+        }
+      },
+      "termination": {
+        "title": "Suspension and termination",
+        "blocks": {
+          "p1": "Either party may end the partnership at any time. {company} may suspend or end your access, with or without notice, in case of breach of these Terms, risk to others or a legal order. Ongoing jobs are completed or settled as agreed in each deal."
+        }
+      },
+      "changes": {
+        "title": "Changes to these Terms",
+        "blocks": {
+          "p1": "We may update these Terms. When a change is relevant, we will tell you in {app} and ask for a new acceptance before you keep using the portals."
+        }
+      },
+      "law": {
+        "title": "Governing law",
+        "blocks": {
+          "p1": "These Terms follow the laws of Brazil. The parties will try to settle any disagreement by talking directly; failing that, the courts of {company}'s domicile are chosen, unless the law sets another."
+        }
+      },
       "liability": {
         "title": "Responsibility",
         "blocks": {
@@ -568,7 +646,7 @@
       "acceptance": {
         "title": "How we record acceptance",
         "blocks": {
-          "p1": "When you accept the invitation, we store the version of these Terms and the date of acceptance. Before your first photo or video upload, we ask you to confirm the rights declaration above, and we also store that date. If these Terms change materially, we will ask you to accept them again."
+          "p1": "We keep the version of these Terms and the date you accepted them (at sign-up, in the access request, in an invitation or in \"My details\"). Before your first photo or video upload, we ask you to confirm the rights statement, and we keep that date too. If these Terms change in a relevant way, we will ask for a new acceptance."
         }
       },
       "contact": {

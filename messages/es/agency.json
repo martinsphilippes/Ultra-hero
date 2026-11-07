@@ -1,7 +1,7 @@
 {
   "meta": {
     "dashboard": "Agencia",
-    "team": "Equipo de la agencia",
+    "team": "Personal de la agencia",
     "brands": "Marcas",
     "newBrand": "Nueva marca",
     "brand": "Marca",
@@ -134,7 +134,7 @@
     }
   },
   "team": {
-    "title": "Equipo",
+    "title": "Personal",
     "description": "Quién trabaja en la agencia y qué puede hacer cada nivel.",
     "demoLocked": "El equipo de la agencia de ejemplo es fijo.",
     "levelsTitle": "Niveles de acceso",
@@ -394,7 +394,14 @@
     "hero_email_mismatch": "Este Hero tiene otro e-mail de acceso registrado. Corrige el e-mail en la ficha.",
     "contact_missing": "Registra el e-mail y el celular antes de enviar la invitación.",
     "brand_required": "Este negocio no tiene marca a quien mostrarlo.",
-    "already_confirmed": "Una vez confirmada, la campaña queda siempre visible para la marca."
+    "already_confirmed": "Una vez confirmada, la campaña queda siempre visible para la marca.",
+    "domain_not_allowed": "Este e-mail no es de un dominio autorizado para la agencia. Usa tu e-mail de Groscove.",
+    "agency_by_request": "La agencia no se crea aquí: envía la solicitud de acceso y un administrador la autoriza.",
+    "job_title_required": "Escribe tu cargo.",
+    "level_required": "Elige tu nivel: Júnior, Pleno o Sénior.",
+    "terms_required": "Lee y acepta los Términos del Socio para continuar.",
+    "already_decided": "Esta solicitud ya fue respondida.",
+    "invalid_segments": "Elige hasta 4 segmentos de la lista."
   },
   "casting": {
     "title": "Casting",

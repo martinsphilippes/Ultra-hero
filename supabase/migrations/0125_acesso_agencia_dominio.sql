@@ -134,13 +134,13 @@ $$;
 revoke execute on function public.agency_for_email(text) from public, anon, authenticated;
 grant execute on function public.agency_for_email(text) to service_role;
 
--- domínio autorizado? (a tela de cadastro avisa antes de criar a conta; não revela o nome da agência)
+-- domínio autorizado? (o servidor do cadastro confere antes de criar a conta, com a chave de serviço: nada para anon)
 create or replace function public.agency_email_domain_allowed(p_email text)
 returns boolean language sql stable security definer set search_path = '' as $$
   select public.agency_for_email(p_email) is not null
 $$;
-revoke execute on function public.agency_email_domain_allowed(text) from public;
-grant execute on function public.agency_email_domain_allowed(text) to anon, authenticated, service_role;
+revoke execute on function public.agency_email_domain_allowed(text) from public, anon;
+grant execute on function public.agency_email_domain_allowed(text) to authenticated, service_role;
 
 -- estado do pedido da pessoa logada: {domain_ok, agency, request:{status, created_at, decision_note}}
 create or replace function public.my_agency_access()

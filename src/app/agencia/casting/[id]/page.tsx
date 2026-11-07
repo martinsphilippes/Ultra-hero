@@ -3,6 +3,7 @@ import { ExternalLink } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ArchiveTalentButton, CatalogSwitch, HeroLinkForm, RecordConsentForm, SegmentPicker, TalentForm } from "@/components/agency/CastingForms";
 import { AccessPanel } from "@/components/agency/AccessPanel";
+import { HeroSegmentsForm } from "@/components/team/HeroSegmentsForm";
 import { ImageAuthorizationNotice } from "@/components/catalog/ImageAuthorizationNotice";
 import { InviteDialog } from "@/components/agency/InviteDialog";
 import { CreateTalentPageButton } from "@/components/agency/NewHeroForm";
@@ -46,8 +47,9 @@ export default async function TalentSummaryPage({ params }: Props) {
   // 0103: convites pausados escondem o "reenviar" (o aviso fica no lugar do botão principal)
   const invitesOn = await getInvitesEnabled();
   const canInvite = canInviteCreator({ access, canEdit, locked, heroActive: Boolean(talent.hero), hasHero: Boolean(talent.creatorId) });
-  const [t, locale, managers, segments, heroes, documents, invites] = await Promise.all([
+  const [t, tsg, locale, managers, segments, heroes, documents, invites] = await Promise.all([
     getTranslations("agency.casting"),
+    getTranslations("team.segments"),
     getLocale() as Promise<Locale>,
     listManagers(ctx.agency.id),
     listSegments(ctx.agency.id),
@@ -92,6 +94,15 @@ export default async function TalentSummaryPage({ params }: Props) {
       </section>
 
       <div className="flex flex-col gap-5">
+        {/* 0125: segmentos do Calendário Groscove (até 4) e nível — a plataforma usa para indicar o Hero certo */}
+        <section className={card} aria-labelledby="talent-territories">
+          <h2 id="talent-territories" className="text-base font-semibold text-fg">
+            {tsg("sectionTitle")}
+          </h2>
+          <p className="type-caption text-fg-muted">{tsg("sectionHint")}</p>
+          <HeroSegmentsForm talentId={talent.id} initialSegments={talent.territories} initialLevel={talent.level} canEdit={canEdit} />
+        </section>
+
         <section className={card} aria-labelledby="talent-segments">
           <h2 id="talent-segments" className="text-base font-semibold text-fg">
             {t("segmentsTitle")}

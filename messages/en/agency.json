@@ -1,7 +1,7 @@
 {
   "meta": {
     "dashboard": "Agency",
-    "team": "Agency team",
+    "team": "Agency staff",
     "brands": "Brands",
     "newBrand": "New brand",
     "brand": "Brand",
@@ -134,7 +134,7 @@
     }
   },
   "team": {
-    "title": "Team",
+    "title": "Staff",
     "description": "Who works at the agency and what each level can do.",
     "demoLocked": "The example agency team is fixed.",
     "levelsTitle": "Access levels",
@@ -394,7 +394,14 @@
     "hero_email_mismatch": "This hero has a different access e-mail on file. Fix the e-mail on the record.",
     "contact_missing": "Add the e-mail and mobile before sending the invitation.",
     "brand_required": "This deal has no brand to show it to.",
-    "already_confirmed": "Once confirmed, the campaign always stays visible to the brand."
+    "already_confirmed": "Once confirmed, the campaign always stays visible to the brand.",
+    "domain_not_allowed": "This e-mail is not from a domain allowed for the agency. Use your Groscove e-mail.",
+    "agency_by_request": "Agencies are not created here: send the access request and an administrator approves it.",
+    "job_title_required": "Write your job title.",
+    "level_required": "Choose your level: Junior, Mid-level or Senior.",
+    "terms_required": "Read and accept the Partner Terms to continue.",
+    "already_decided": "This request has already been answered.",
+    "invalid_segments": "Choose up to 4 segments from the list."
   },
   "casting": {
     "title": "Roster",

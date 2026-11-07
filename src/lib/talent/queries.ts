@@ -30,6 +30,9 @@ export type TalentListItem = {
   hasLogin: boolean;
   managerId: string | null;
   segmentIds: string[];
+  /** 0125: segmentos do Calendário Groscove (até 4) e nível autodeclarado. */
+  territories: string[];
+  level: string | null;
   topFollowers: number | null;
   archived: boolean;
 };
@@ -64,7 +67,7 @@ export type MediaKitRow = {
 export type TalentFilters = { segment?: string; availability?: string; status?: string; manager?: string; q?: string; archived?: boolean };
 
 const LIST_SELECT =
-  "id, display_name, city, state, commercial_status, availability, consent_at, consent_revoked_at, catalog_visible, creator_id, user_id, manager_id, archived_at, availability_note, contact_email, contact_phone, internal_notes, last_contact_at, consent_version, created_at, updated_at, photo_url, category_label, topics, creator:creator_profiles(name, slug, avatar_url), talent_segment_links(segment_id), talent_social_accounts(network, handle, url, followers)";
+  "id, display_name, city, state, commercial_status, availability, consent_at, consent_revoked_at, catalog_visible, creator_id, user_id, manager_id, archived_at, availability_note, contact_email, contact_phone, internal_notes, last_contact_at, consent_version, created_at, updated_at, photo_url, category_label, topics, segments, level, creator:creator_profiles(name, slug, avatar_url), talent_segment_links(segment_id), talent_social_accounts(network, handle, url, followers)";
 
 type TalentRow = {
   id: string;
@@ -93,6 +96,8 @@ type TalentRow = {
   topics: string[] | null;
   creator: { name: string; slug: string; avatar_url: string | null } | null;
   talent_segment_links: { segment_id: string }[] | null;
+  segments: string[] | null;
+  level: string | null;
   talent_social_accounts: { network: string; handle: string; url: string | null; followers: number | null }[] | null;
 };
 
@@ -116,6 +121,8 @@ function toDetail(r: TalentRow): TalentDetail {
     hasLogin: Boolean(r.user_id) || Boolean(r.creator_id),
     managerId: r.manager_id,
     segmentIds: (r.talent_segment_links ?? []).map((l) => l.segment_id),
+    territories: r.segments ?? [],
+    level: r.level ?? null,
     topFollowers: followers.length > 0 ? Math.max(...followers) : null,
     archived: Boolean(r.archived_at),
     creatorId: r.creator_id,

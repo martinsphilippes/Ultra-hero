@@ -1,5 +1,12 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // entrada pelo domínio, cadastro PJ e segmentos (0125)
+  "domain_not_allowed",
+  "agency_by_request",
+  "job_title_required",
+  "level_required",
+  "already_decided",
+  "invalid_segments",
   // "Mostrar para a marca" (0121)
   "brand_required",
   "already_confirmed",
@@ -155,6 +162,8 @@ export const AGENCY_ERROR_CODES = [
   "forbidden",
   "not_found",
   "invalid_input",
+  // 0125 (genérico: depois de payment_terms_required, porque a busca é por trecho da mensagem)
+  "terms_required",
 ] as const;
 export type AgencyErrorCode = (typeof AGENCY_ERROR_CODES)[number] | "generic";
 

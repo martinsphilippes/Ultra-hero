@@ -14,6 +14,7 @@ import { HeroNewPost } from "@/components/creator/HeroNewPost";
 import { HeroWorkShortcuts } from "@/components/hero-work/HeroWorkShortcuts";
 import { loadHeroShortcutData } from "@/lib/hero-work/summary";
 import { HeroPendingNotice } from "@/components/creator/HeroPendingNotice";
+import { HeroSegmentsForm } from "@/components/team/HeroSegmentsForm";
 import { LegalLinks } from "@/components/legal/LegalLinks";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
@@ -92,6 +93,13 @@ export default async function ProfilePage() {
   const heroActive = heroProfile !== null && creator.creatorId !== null;
   // 0091: membro da equipe do Hero posta, mas perfil, foto e capa ficam com o titular
   const heroOwner = heroActive && creator.teamRole !== "member";
+  // 0125: segmentos do Calendário Groscove (até 4) e nível do Hero — o titular escolhe aqui
+  const [mySegments, tsg] = heroOwner
+    ? await Promise.all([
+        createClient().then((sb) => sb.from("creator_profiles").select("segments, level").eq("user_id", user.id).maybeSingle()),
+        getTranslations("team.segments"),
+      ])
+    : [null, null];
   // admin com perfil de Hero posta pelo seletor de "Publicar como hero" (o mesmo fluxo dos outros Heros)
   const newPostHref = roleSet.includes("admin") ? heroPickerHref("post") : "/heroi/post/novo";
   // 0092: Novo conteúdo (estruturado) ao lado do Novo post; o admin segue pelo seletor de "Publicar como hero"
@@ -152,6 +160,17 @@ export default async function ProfilePage() {
           {heroActive ? <HeroNewPost href={newPostHref} contentHref={newContentHref} listHref={myContentHref} /> : null}
           {/* 0094: Agenda e Financeiro do Hero em uso, com o próximo compromisso e "a receber este mês" */}
           {heroActive && heroWork ? <HeroWorkShortcuts data={heroWork} /> : null}
+          {heroOwner && tsg ? (
+            <section aria-labelledby="hero-segments-title" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:p-5" data-testid="hero-segments">
+              <div className="flex flex-col gap-0.5">
+                <h2 id="hero-segments-title" className="text-base font-semibold text-fg">
+                  {tsg("sectionTitle")}
+                </h2>
+                <p className="type-body-sm text-fg-muted">{tsg("sectionHint")}</p>
+              </div>
+              <HeroSegmentsForm initialSegments={mySegments?.data?.segments ?? []} initialLevel={mySegments?.data?.level ?? null} />
+            </section>
+          ) : null}
           <HeroProfileEditor
             profile={heroProfile}
             active={heroOwner}

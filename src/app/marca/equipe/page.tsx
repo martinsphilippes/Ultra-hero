@@ -9,6 +9,7 @@ import { Avatar, EmptyState, PageHeader, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { getUser } from "@/lib/auth/session";
+import { BrandLevelForm } from "@/components/team/BrandLevelForm";
 import { listBrandInvites, listBrandMembers } from "@/lib/agency/queries";
 import { requireBrand } from "@/lib/brand-portal/server";
 import { InvitesGate } from "@/components/invites/InvitesGate";
@@ -24,8 +25,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function BrandTeamPage() {
   const ctx = await requireBrand();
   const isOwner = ctx.role === "owner";
-  const [t, locale, user, members, invites] = await Promise.all([
+  const [t, tb, locale, user, members, invites] = await Promise.all([
     getTranslations("brandPortal.team"),
+    getTranslations("team.brand"),
     getLocale(),
     getUser(),
     listBrandMembers(ctx.brand.id),
@@ -44,6 +46,16 @@ export default async function BrandTeamPage() {
           ) : null
         }
       />
+      {(() => {
+        const me = members.find((m) => m.userId === user?.id);
+        return me ? (
+          <Section title={tb("title")} description={tb("description")}>
+            <div className="rounded-2xl border border-border bg-surface p-4">
+              <BrandLevelForm initialLevel={me.level ?? null} initialJobTitle={me.jobTitle} />
+            </div>
+          </Section>
+        ) : null;
+      })()}
       <Section title={t("membersTitle", { count: members.length })}>
         <ul className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-surface" data-testid="brand-team">
           {members.map((m) => (

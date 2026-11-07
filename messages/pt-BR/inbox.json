@@ -234,6 +234,14 @@
     "brand_access_granted": {
       "title": "Você é Dono de {brand}",
       "body": "{name} cadastrou {brand} e deu a você o acesso de Dono. Abra o portal da marca."
+    },
+    "agency_access_requested": {
+      "title": "Pedido de acesso à agência",
+      "body": "{name} ({job}) se cadastrou com o e-mail da agência e espera a sua autorização."
+    },
+    "agency_access_decided": {
+      "title": "{approved, select, true {Acesso autorizado} other {Acesso não autorizado}}",
+      "body": "{approved, select, true {Você entrou em {agency}. Abra o portal da agência.} other {Os administradores de {agency} não autorizaram o seu pedido.}}"
     }
   }
 }

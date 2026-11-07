@@ -129,6 +129,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     // Financeiro simulado e histórico (0069): só o Adm
     { key: "finance", href: "/agencia/financeiro" },
     { key: "history", href: "/agencia/historico" },
+    // Meu cadastro (0125): CNPJ, cargo e nível do próprio colaborador
+    { key: "profile", href: "/agencia/cadastro" },
   ],
   // Marca (0066): propostas de campanha e o catálogo autorizado de creators; o calendário chega na P1b.
   brand: [

@@ -57,7 +57,7 @@ export function ProfileSignupForm({ profile, alternatives, passwordless = false,
           <Input name="fullName" type="text" autoComplete="name" autoCapitalize="words" placeholder={t("quick.fullNamePlaceholder")} maxLength={120} />
         </FormField>
 
-        <FormField label={t("fields.email")} required error={err(fieldErrors.email)}>
+        <FormField label={t("fields.email")} required hint={profile === "agency" ? t("profile.agencyEmailHint") : undefined} error={err(fieldErrors.email)}>
           <Input name="email" type="email" autoComplete="email" inputMode="email" placeholder={t("fields.emailPlaceholder")} maxLength={254} defaultValue={defaultEmail} />
         </FormField>
 

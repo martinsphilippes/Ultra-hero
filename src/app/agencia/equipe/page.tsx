@@ -4,11 +4,13 @@ import { InviteDialog } from "@/components/agency/InviteDialog";
 import { MemberActions } from "@/components/agency/MemberActions";
 import { RevokeInviteButton } from "@/components/agency/RevokeInviteButton";
 import { RoleBadge } from "@/components/agency/RoleBadge";
-import { Avatar, EmptyState, PageHeader, Section } from "@/components/ui";
+import { Avatar, Badge, EmptyState, PageHeader, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { getUser } from "@/lib/auth/session";
-import { listTeam, listTeamInvites } from "@/lib/agency/queries";
+import { listAccessRequests, listTeam, listTeamInvites } from "@/lib/agency/queries";
+import { AccessRequestCard } from "@/components/team/AccessRequestCard";
+import { isMemberLevel, levelRank } from "@/lib/team/levels";
 import { AGENCY_ROLES } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
 import { InvitesGate } from "@/components/invites/InvitesGate";
@@ -22,18 +24,22 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("team") };
 }
 
-// Equipe da agência: membros por nível, convites pendentes e o convite novo. Só o Adm chega aqui.
+// Funcionários da agência (reunião Groscove: "uma aba de funcionários"): pedidos de acesso no topo, membros por nível
+// de acesso e senioridade (cargo e nível escolhidos pela própria pessoa), convites pendentes e o convite novo. Só o Adm.
 // 0107: setores de cada membro (Gestor, Estratégia, Operação, Comunicação) — as etapas dos roteiros vão ao setor.
 export default async function AgencyTeamPage() {
   const ctx = await requireAgency("admin");
-  const [t, tr, locale, user, team, invites, sectors] = await Promise.all([
+  const [t, tr, tl, tq, locale, user, team, invites, sectors, requests] = await Promise.all([
     getTranslations("agency.team"),
     getTranslations("roadmap.team"),
+    getTranslations("team.profile.levels"),
+    getTranslations("team.requests"),
     getLocale(),
     getUser(),
     listTeam(ctx.agency.id),
     listTeamInvites(ctx.agency.id),
     listTeamSectors(ctx.agency.id),
+    listAccessRequests(ctx.agency.id),
   ]);
   const locked = ctx.agency.isDemo;
 
@@ -47,6 +53,24 @@ export default async function AgencyTeamPage() {
           )
         } />
       {locked ? <p className="rounded-xl border border-dashed border-border-strong p-3 type-body-sm text-fg-muted">{t("demoLocked")}</p> : null}
+
+      {/* 0125: pedidos de acesso (e-mail do domínio da agência) — no topo, bem à vista */}
+      <Section id="pedidos" title={tq("title", { count: requests.length })} description={tq("description")} className="scroll-mt-20">
+        {requests.length > 0 ? (
+          <ul className="flex flex-col gap-3" data-testid="access-requests">
+            {requests.map((r) => (
+              <AccessRequestCard
+                key={r.id}
+                request={{ id: r.id, fullName: r.fullName, email: r.email, cnpj: r.cnpj, jobTitle: r.jobTitle, level: r.level, createdLabel: tq("since", { date: formatDate(r.createdAt, locale as Locale) }) }}
+              />
+            ))}
+          </ul>
+        ) : (
+          <p className="rounded-2xl border border-dashed border-border p-4 type-body-sm text-fg-muted" data-testid="access-requests-empty">
+            {tq("empty")}
+          </p>
+        )}
+      </Section>
 
       <section aria-labelledby="team-levels" className="grid gap-2 sm:grid-cols-3">
         <h2 id="team-levels" className="sr-only">
@@ -62,7 +86,7 @@ export default async function AgencyTeamPage() {
 
       <Section title={t("membersTitle", { count: team.length })} description={tr("hint")}>
         <ul className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-surface" data-testid="team-list">
-          {team.map((m) => (
+          {[...team].sort((a, b) => levelRank(b.level) - levelRank(a.level)).sort((a, b) => ["admin", "manager", "staff"].indexOf(a.role) - ["admin", "manager", "staff"].indexOf(b.role)).map((m) => (
             <li key={m.userId} className="flex flex-col gap-3 p-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-3">
                 <Avatar name={m.name} size="sm" />
@@ -74,6 +98,11 @@ export default async function AgencyTeamPage() {
                   </span>
                 </div>
                 <RoleBadge role={m.role} />
+                {isMemberLevel(m.level) ? (
+                  <Badge variant="neutral" size="sm">
+                    {tl(`${m.level}.title`)}
+                  </Badge>
+                ) : null}
               </div>
               {locked ? null : <MemberActions userId={m.userId} name={m.name} role={m.role} isSelf={m.userId === user?.id} />}
               <div className="flex flex-col gap-1 sm:basis-full">

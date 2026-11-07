@@ -69,6 +69,9 @@ export const INBOX_KINDS = [
   // acesso criado pela agência (0112): conta existente ligada ao Hero / virou Dono da marca (sino + e-mail do app)
   "hero_account_linked",
   "brand_access_granted",
+  // entrada na agência pelo domínio do e-mail (0125)
+  "agency_access_requested",
+  "agency_access_decided",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 
@@ -148,7 +151,7 @@ export function inboxParams(raw: unknown): Record<string, string> {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
   const out: Record<string, string> = {};
   for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
-    if (typeof value === "string" || typeof value === "number") out[key] = String(value).slice(0, 120);
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") out[key] = String(value).slice(0, 120);
   }
   return out;
 }

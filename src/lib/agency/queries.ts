@@ -5,7 +5,7 @@ import { isAgencyRole, isBrandRole, type AgencyRole, type BrandRole } from "./ro
 
 // Leituras do portal da agência (RLS decide o que cada um vê). Sem a 0064: listas vazias.
 
-export type TeamMember = { userId: string; role: AgencyRole; name: string; jobTitle: string | null; since: string };
+export type TeamMember = { userId: string; role: AgencyRole; name: string; jobTitle: string | null; since: string; level?: string | null };
 export type PendingInvite = { id: string; email: string; role: string; expiresAt: string; createdAt: string };
 export type AgencyBrand = {
   linkId: string;
@@ -14,7 +14,8 @@ export type AgencyBrand = {
   accountManagerId: string | null;
   brand: { id: string; slug: string; name: string; logoUrl: string | null; siteUrl: string; status: string };
 };
-export type BrandMember = { userId: string; role: BrandRole; name: string; jobTitle: string | null; since: string };
+export type BrandMember = {
+  level?: string | null; userId: string; role: BrandRole; name: string; jobTitle: string | null; since: string };
 
 const RANK: Record<AgencyRole, number> = { admin: 0, manager: 1, staff: 2 };
 
@@ -22,14 +23,29 @@ export async function listTeam(agencyId: string): Promise<TeamMember[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("agency_members")
-    .select("user_id, role, display_name, job_title, created_at")
+    .select("user_id, role, display_name, job_title, created_at, level")
     .eq("agency_id", agencyId)
     .is("revoked_at", null);
   if (error) return [];
   return (data ?? [])
     .filter((m) => isAgencyRole(m.role))
-    .map((m) => ({ userId: m.user_id, role: m.role as AgencyRole, name: m.display_name, jobTitle: m.job_title, since: m.created_at }))
+    .map((m) => ({ userId: m.user_id, role: m.role as AgencyRole, name: m.display_name, jobTitle: m.job_title, since: m.created_at, level: m.level ?? null }))
     .sort((a, b) => RANK[a.role] - RANK[b.role] || a.name.localeCompare(b.name, "pt-BR"));
+}
+
+/** Pedidos de acesso pendentes (0125): quem se cadastrou com e-mail do domínio da agência. Só o Adm lê (RLS). */
+export async function listAccessRequests(agencyId: string): Promise<
+  Array<{ id: string; fullName: string; email: string; cnpj: string; jobTitle: string; level: string; createdAt: string }>
+> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("agency_access_requests")
+    .select("id, full_name, email, cnpj, job_title, level, created_at")
+    .eq("agency_id", agencyId)
+    .eq("status", "pending")
+    .order("created_at", { ascending: true });
+  if (error) return [];
+  return (data ?? []).map((r) => ({ id: r.id, fullName: r.full_name, email: r.email, cnpj: r.cnpj, jobTitle: r.job_title, level: r.level, createdAt: r.created_at }));
 }
 
 /** Convites pendentes da equipe da agência (só o Adm lê, pela RLS). */
@@ -88,13 +104,13 @@ export async function listBrandMembers(brandId: string): Promise<BrandMember[]> 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("brand_members")
-    .select("user_id, role, display_name, job_title, created_at")
+    .select("user_id, role, display_name, job_title, created_at, level")
     .eq("brand_id", brandId)
     .is("revoked_at", null);
   if (error) return [];
   return (data ?? [])
     .filter((m) => isBrandRole(m.role))
-    .map((m) => ({ userId: m.user_id, role: m.role as BrandRole, name: m.display_name, jobTitle: m.job_title, since: m.created_at }))
+    .map((m) => ({ userId: m.user_id, role: m.role as BrandRole, name: m.display_name, jobTitle: m.job_title, since: m.created_at, level: m.level ?? null }))
     .sort((a, b) => (a.role === b.role ? a.name.localeCompare(b.name, "pt-BR") : a.role === "owner" ? -1 : 1));
 }
 
