@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { ExternalLink, Mail } from "lucide-react";
+import { ExternalLink, Mail, PencilLine } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-universe/BrandLogo";
 import { OndaStatusControl } from "@/components/onda-digital/OndaStatusControl";
-import { Badge, EmptyState, PageHeader } from "@/components/ui";
+import { Badge, Button, EmptyState, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatCurrency, formatDate, formatPlainDate } from "@/i18n/format";
 import { agencyCan } from "@/lib/agency/roles";
@@ -27,7 +27,17 @@ export default async function AgencyOndaDigitalPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader title={t("agency.title")} description={t("agency.description")} />
+      <PageHeader
+        title={t("agency.title")}
+        description={t("agency.description")}
+        actions={
+          items !== null ? (
+            <Button asChild size="sm" variant="secondary" leadingIcon={<PencilLine />}>
+              <Link href="/agencia/onda-digital/conteudo">{t("editor.open")}</Link>
+            </Button>
+          ) : null
+        }
+      />
       {items === null ? (
         <div className="rounded-2xl border border-border bg-surface">
           <EmptyState title={t("agency.onlyGroscove")} />

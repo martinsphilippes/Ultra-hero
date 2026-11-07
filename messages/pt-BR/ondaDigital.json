@@ -62,7 +62,7 @@
       "title": "Páginas",
       "text": "Os maiores perfis de memes e entretenimento.",
       "list": "Quais são as páginas?",
-      "note": "*Número de seguidores no Instagram, novembro de 2026.",
+      "note": "*Número de seguidores no Instagram, {date}.",
       "more": "Ver as {count} páginas"
     },
     "x": {
@@ -71,7 +71,7 @@
       "text": "A Onda X reúne perfis bombados que vão transformar sua marca no assunto mais comentado do Brasil e do mundo.",
       "fast": "Tudo isso de forma rápida e sincronizada!",
       "list": "Quais são os perfis?",
-      "note": "*Número de seguidores no X, novembro de 2026.",
+      "note": "*Número de seguidores no X, {date}.",
       "more": "Ver os {count} perfis"
     },
     "press": {
@@ -227,5 +227,74 @@
     "noPackage": "Me ajudem a escolher",
     "onlyGroscove": "Só a Groscove vê os pedidos da Onda Digital.",
     "seePage": "Ver a página da marca"
+  },
+  "editor": {
+    "title": "Editar a página da Onda Digital",
+    "open": "Editar a página",
+    "description": "O que você muda aqui aparece na hora para as marcas.",
+    "readOnly": "Só gestor ou acima da Groscove edita. Você está vendo para consulta.",
+    "tabsLabel": "Partes da página",
+    "tabs": {
+      "instagram": "Páginas (Instagram)",
+      "x": "Perfis no X",
+      "cases": "Cases",
+      "packages": "Ondas"
+    },
+    "seeRequests": "Ver os pedidos da Onda Digital",
+    "up": "Subir",
+    "down": "Descer",
+    "profiles": {
+      "followers": "Seguidores",
+      "followersHint": "Escreva como preferir: 26M, 9,5M, 892 mil ou 1.300.000.",
+      "preview": "= {value} seguidores",
+      "invalid": "Não entendi o número. Ex.: 26M, 9,5M ou 892 mil.",
+      "visible": "Aparece na página",
+      "hidden": "Fora da página",
+      "visibleSwitch": "Aparece na página",
+      "photo": "Trocar foto",
+      "save": "Salvar",
+      "saved": "Salvo. A página das marcas já mostra a mudança.",
+      "add": "Adicionar página",
+      "addX": "Adicionar perfil",
+      "added": "Adicionada à lista.",
+      "handle": "@ da página",
+      "order": "As páginas aparecem por número de seguidores, do maior para o menor. A nota da página mostra o mês da última atualização."
+    },
+    "cases": {
+      "add": "Novo case",
+      "brand": "Marca",
+      "brandHint": "Se a marca estiver no universo de marcas, o logo entra sozinho.",
+      "logoFound": "Logo da marca encontrado no universo de marcas.",
+      "noLogo": "Marca sem logo: aparecem as iniciais.",
+      "category": "Área",
+      "noCategory": "Sem área",
+      "description": "Frase",
+      "metrics": "Números",
+      "metricKind": "Indicador",
+      "metricValue": "Valor",
+      "metricPlus": "Mostrar com +",
+      "addMetric": "Adicionar número",
+      "removeMetric": "Tirar",
+      "invalidValue": "Valor inválido",
+      "valueHint": "Ex.: 55,9M, 892 mil ou, no alcance feed, 13,67 (%).",
+      "delete": "Apagar case",
+      "confirmDelete": "Confirmar: apagar",
+      "visible": "Aparece na página",
+      "save": "Salvar case",
+      "create": "Criar case",
+      "saved": "Salvo."
+    },
+    "packages": {
+      "add": "Nova onda",
+      "name": "Nome",
+      "scope": "Alcance",
+      "scopeHint": "Ex.: 10 páginas + 2 portais",
+      "description": "Frase",
+      "visible": "Aparece na página",
+      "save": "Salvar onda",
+      "create": "Criar onda",
+      "saved": "Salvo.",
+      "keepHint": "Uma onda não se apaga (os pedidos guardam a onda escolhida). Para tirar da página, desligue \"Aparece na página\"."
+    }
   }
 }

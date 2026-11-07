@@ -19166,5 +19166,97 @@ update public.agencies set slug = 'groscove' where slug = 'groscove-antes-s132';
 delete from auth.users where id::text like 'c1320000-%';
 drop table tests.s132;
 
+-- ================================================================ S134 · Onda Digital: a Groscove edita seguidores, cases e ondas (0134)
+\ir ../migrations/0134_onda_digital_editor.sql
+select tests.su();
+update public.agencies set slug = 'groscove-antes-s134' where slug = 'groscove';
+insert into auth.users (id, email) values
+  ('c1340000-0000-4000-8000-000000000001', 'gestor@groscove-s134.test'),
+  ('c1340000-0000-4000-8000-000000000002', 'colab@groscove-s134.test'),
+  ('c1340000-0000-4000-8000-000000000003', 'dona@marca-s134.test');
+insert into public.agencies (id, slug, name) values ('c1340000-0000-4000-8000-0000000000a1', 'groscove', 'Groscove S134');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('c1340000-0000-4000-8000-0000000000a1', 'c1340000-0000-4000-8000-000000000001', 'manager', 'Gestor S134'),
+  ('c1340000-0000-4000-8000-0000000000a1', 'c1340000-0000-4000-8000-000000000002', 'staff', 'Colab S134');
+insert into public.brands (id, slug, name, site_url, status, logo_url) values
+  ('c1340000-0000-4000-8000-0000000000b1', 'marca-s134', 'Marca S134', 'https://marca-s134.test/', 'inactive', '/brands/m/marca-s134.png');
+insert into public.agency_brands (agency_id, brand_id, status) values ('c1340000-0000-4000-8000-0000000000a1', 'c1340000-0000-4000-8000-0000000000b1', 'active');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('c1340000-0000-4000-8000-0000000000b1', 'c1340000-0000-4000-8000-000000000003', 'owner', 'Dona S134');
+create table tests.s134 (k text primary key, v text);
+grant all on tests.s134 to anon, authenticated;
+insert into tests.s134 select 'choquei', id::text from public.onda_profiles where network = 'instagram' and handle = 'choquei';
+insert into tests.s134 select 'case', id::text from public.onda_cases order by sort_order limit 1;
+update public.onda_profiles set updated_at = '2026-01-15' where network = 'instagram';
+
+select tests.login('c1340000-0000-4000-8000-000000000003', 'dona@marca-s134.test');
+select tests.expect_error('S134 a marca não edita a Onda Digital',
+  format($$select public.onda_admin_profile_save(%L, '{"followers": 1}'::jsonb)$$, (select v from tests.s134 where k = 'choquei')), 'forbidden');
+select tests.login('c1340000-0000-4000-8000-000000000002', 'colab@groscove-s134.test');
+select tests.expect_error('S134 colaborador da Groscove só consulta',
+  format($$select public.onda_admin_profile_save(%L, '{"followers": 1}'::jsonb)$$, (select v from tests.s134 where k = 'choquei')), 'forbidden');
+select tests.ok('S134 mas vê o editor (tudo, inclusive o que está fora da página)', jsonb_array_length(public.onda_admin_content() -> 'profiles') = 42);
+
+select tests.login('c1340000-0000-4000-8000-000000000001', 'gestor@groscove-s134.test');
+select tests.ok('S134 o gestor atualiza os seguidores',
+  public.onda_admin_profile_save((select v from tests.s134 where k = 'choquei')::uuid, '{"followers": 27500000}'::jsonb) is not null);
+select tests.ok('S134 o número novo fica gravado e a nota da página passa para o mês da atualização',
+  (select followers from public.onda_profiles where id = (select v from tests.s134 where k = 'choquei')::uuid) = 27500000
+  and ((public.onda_content() -> 'updated' ->> 'instagram')::timestamptz)::date = current_date);
+select tests.expect_error('S134 seguidores negativos são recusados',
+  format($$select public.onda_admin_profile_save(%L, '{"followers": -5}'::jsonb)$$, (select v from tests.s134 where k = 'choquei')), 'invalid_input');
+insert into tests.s134 select 'novo', public.onda_admin_profile_save(null, '{"network":"instagram","handle":"@NovaPagina_S134","followers":1500000}'::jsonb)::text;
+select tests.ok('S134 página nova entra na lista (o @ e as maiúsculas são limpos), em ordem de seguidores',
+  (select handle from public.onda_profiles where id = (select v from tests.s134 where k = 'novo')::uuid) = 'novapagina_s134'
+  and exists (select 1 from jsonb_array_elements(public.onda_content() -> 'profiles') e where e ->> 'handle' = 'novapagina_s134'));
+select tests.expect_error('S134 a mesma página não entra duas vezes',
+  $$select public.onda_admin_profile_save(null, '{"network":"instagram","handle":"choquei","followers":1}'::jsonb)$$, 'onda_profile_exists');
+select tests.ok('S134 tirar a página da lista', public.onda_admin_profile_save((select v from tests.s134 where k = 'novo')::uuid, '{"active": false}'::jsonb) is not null);
+select tests.ok('S134 tirada: some da Onda Digital da marca, mas fica no editor',
+  not exists (select 1 from jsonb_array_elements(public.onda_content() -> 'profiles') e where e ->> 'handle' = 'novapagina_s134')
+  and exists (select 1 from jsonb_array_elements(public.onda_admin_content() -> 'profiles') e where e ->> 'handle' = 'novapagina_s134' and (e ->> 'active')::boolean = false));
+select tests.expect_error('S134 foto de página só por endereço seguro',
+  format($$select public.onda_admin_profile_save(%L, '{"avatar_url": "javascript:alert(1)"}'::jsonb)$$, (select v from tests.s134 where k = 'novo')), 'invalid_image');
+
+insert into tests.s134 select 'case_novo', public.onda_admin_case_save(null, jsonb_build_object('brand_name', 'Marca S134', 'category', 'beleza',
+  'description', 'Lançamento com a onda inteira.', 'metrics', jsonb_build_array(jsonb_build_object('k','reach','v',12000000), jsonb_build_object('k','impacts','v',20000000,'plus',true))))::text;
+select tests.ok('S134 case novo: ligado à marca do universo pelo nome (logo), no fim da lista',
+  (select logo_url from jsonb_array_elements(public.onda_content() -> 'cases') e(x) cross join lateral (select x ->> 'logo_url' as logo_url) l where x ->> 'id' = (select v from tests.s134 where k = 'case_novo')) = '/brands/m/marca-s134.png'
+  and (select (x -> 'metrics' -> 1 ->> 'plus')::boolean from jsonb_array_elements(public.onda_content() -> 'cases') x where x ->> 'id' = (select v from tests.s134 where k = 'case_novo')));
+select tests.expect_error('S134 número de case inválido é recusado',
+  format($$select public.onda_admin_case_save(%L, '{"metrics":[{"k":"feed_reach","v":150}]}'::jsonb)$$, (select v from tests.s134 where k = 'case_novo')), 'invalid_input');
+select tests.expect_error('S134 número sem valor é recusado',
+  format($$select public.onda_admin_case_save(%L, '{"metrics":[{"k":"reach"}]}'::jsonb)$$, (select v from tests.s134 where k = 'case_novo')), 'invalid_input');
+select tests.ok('S134 mudar a ordem dos cases',
+  public.onda_admin_reorder('cases', array[(select v from tests.s134 where k = 'case_novo')] || (select array_agg(id::text order by sort_order) from public.onda_cases where id::text <> (select v from tests.s134 where k = 'case_novo'))));
+select tests.ok('S134 o case novo foi para o topo', (public.onda_content() -> 'cases' -> 0 ->> 'id') = (select v from tests.s134 where k = 'case_novo'));
+select tests.ok('S134 apagar case', public.onda_admin_case_delete((select v from tests.s134 where k = 'case_novo')::uuid));
+select tests.ok('S134 o case apagado sumiu', not exists (select 1 from public.onda_cases where id = (select v from tests.s134 where k = 'case_novo')::uuid));
+
+insert into tests.s134 select 'onda', public.onda_admin_package_save(null, '{"name":"Maré Alta","scope":"8 páginas","description":"Um teste de onda."}'::jsonb);
+select tests.ok('S134 onda nova com o endereço gerado pelo nome', (select v from tests.s134 where k = 'onda') = 'mare-alta');
+select tests.ok('S134 editar e tirar a onda da página', public.onda_admin_package_save('mare-alta', '{"active": false, "scope": "9 páginas"}'::jsonb) = 'mare-alta');
+select tests.ok('S134 a onda tirada continua guardada, mas some da página',
+  (select scope from public.onda_packages where slug = 'mare-alta') = '9 páginas'
+  and not exists (select 1 from jsonb_array_elements(public.onda_content() -> 'packages') e where e ->> 'slug' = 'mare-alta'));
+select tests.expect_error('S134 onda sem nome é recusada', $$select public.onda_admin_package_save(null, '{"scope":"x páginas","description":"Sem nome"}'::jsonb)$$, 'invalid_input');
+select tests.su();
+select tests.ok('S134 nada novo para anon',
+  not has_function_privilege('anon', 'public.onda_admin_profile_save(uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.onda_admin_case_save(uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.onda_admin_package_save(text, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.onda_admin_content()', 'execute'));
+
+delete from public.onda_packages where slug = 'mare-alta';
+delete from public.onda_profiles where handle = 'novapagina_s134';
+delete from public.brand_members where user_id::text like 'c1340000-%';
+delete from public.agency_brands where agency_id::text like 'c1340000-%';
+delete from public.brands where id::text like 'c1340000-%';
+delete from public.agency_members where agency_id::text like 'c1340000-%';
+delete from public.agencies where id::text like 'c1340000-%';
+update public.agencies set slug = 'groscove' where slug = 'groscove-antes-s134';
+delete from auth.users where id::text like 'c1340000-%';
+drop table tests.s134;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

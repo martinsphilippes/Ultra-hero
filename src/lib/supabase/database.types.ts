@@ -71,6 +71,8 @@ export type Database = {
           description: string;
           sort_order: number;
           active: boolean;
+          updated_at: string;
+          updated_by: string | null;
         };
         Insert: {
           slug: string;
@@ -79,6 +81,8 @@ export type Database = {
           description: string;
           sort_order?: number;
           active?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
         };
         Update: {
           slug?: string;
@@ -87,6 +91,8 @@ export type Database = {
           description?: string;
           sort_order?: number;
           active?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
         };
         Relationships: [];
       };
@@ -100,6 +106,8 @@ export type Database = {
           metrics: Json;
           sort_order: number;
           active: boolean;
+          updated_at: string;
+          updated_by: string | null;
         };
         Insert: {
           id?: string;
@@ -110,6 +118,8 @@ export type Database = {
           metrics?: Json;
           sort_order?: number;
           active?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
         };
         Update: {
           id?: string;
@@ -120,6 +130,8 @@ export type Database = {
           metrics?: Json;
           sort_order?: number;
           active?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
         };
         Relationships: [];
       };
@@ -156,6 +168,8 @@ export type Database = {
           avatar_url: string | null;
           sort_order: number;
           active: boolean;
+          updated_at: string;
+          updated_by: string | null;
         };
         Insert: {
           id?: string;
@@ -165,6 +179,8 @@ export type Database = {
           avatar_url?: string | null;
           sort_order?: number;
           active?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
         };
         Update: {
           id?: string;
@@ -174,6 +190,8 @@ export type Database = {
           avatar_url?: string | null;
           sort_order?: number;
           active?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
         };
         Relationships: [];
       };
@@ -12220,6 +12238,13 @@ isOneToOne: false
       [_ in never]: never;
     };
     Functions: {
+      onda_admin_content: { Args: Record<PropertyKey, never>; Returns: Json };
+      onda_admin_reorder: { Args: { p_kind: string; p_keys: string[] }; Returns: boolean };
+      onda_admin_package_save: { Args: { p_slug: string; p_data: Json }; Returns: string };
+      onda_admin_case_delete: { Args: { p_id: string }; Returns: boolean };
+      onda_admin_case_save: { Args: { p_id: string; p_data: Json }; Returns: string };
+      onda_admin_profile_save: { Args: { p_id: string; p_data: Json }; Returns: string };
+      onda_admin_can: { Args: Record<PropertyKey, never>; Returns: boolean };
       onda_request_set_status: { Args: { p_request: string; p_status: string }; Returns: boolean };
       onda_request_inbox: { Args: Record<PropertyKey, never>; Returns: Json };
       onda_request_create: { Args: { p_brand: string; p_data: Json }; Returns: string };

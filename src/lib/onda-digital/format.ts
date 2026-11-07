@@ -61,3 +61,40 @@ export function isOndaPurpose(v: unknown): v is OndaPurpose {
 export function isOndaStatus(v: unknown): v is OndaStatus {
   return typeof v === "string" && (ONDA_STATUSES as readonly string[]).includes(v);
 }
+
+/**
+ * Lê o número como a Groscove escreve: "26M", "9,5M", "26 milhões", "892K", "892 mil", "1.300.000" ou "1300000".
+ * Devolve o número inteiro ou null quando não dá para entender.
+ */
+export function parseCompactNumber(input: string): number | null {
+  const s = input.trim().toLowerCase().replace(/\s+/g, "").replace(/\+$/, "").replace(/^\+/, "");
+  if (!s) return null;
+  const m = /^([\d.,]+)(milhões|milhoes|millones|millions|million|mi|mm|m|mil|k)?$/.exec(s);
+  if (!m) return null;
+  const num = m[1]!;
+  const suffix = m[2];
+  const mult = suffix === undefined ? 1 : suffix === "mil" || suffix === "k" ? 1_000 : 1_000_000;
+  let value: number;
+  if (suffix) {
+    // com sufixo, vírgula ou ponto é casa decimal ("9,5M", "9.5M"); se houver mais de um, só o último vale
+    const parts = num.replace(/,/g, ".").split(".");
+    const normalized = parts.length > 1 ? `${parts.slice(0, -1).join("")}.${parts[parts.length - 1]}` : parts[0]!;
+    value = Number(normalized);
+  } else if (/^\d{1,3}([.,]\d{3})+$/.test(num)) {
+    value = Number(num.replace(/[.,]/g, "")); // "1.300.000"
+  } else if (/^\d+([.,]\d{1,2})?$/.test(num)) {
+    value = Number(num.replace(",", "."));
+  } else {
+    return null;
+  }
+  if (!Number.isFinite(value) || value < 0) return null;
+  return Math.round(value * mult);
+}
+
+/** Percentual escrito como "13,67", "13.67" ou "13,67%". */
+export function parsePercent(input: string): number | null {
+  const s = input.trim().replace(/%$/, "").replace(",", ".");
+  if (!/^\d+(\.\d{1,2})?$/.test(s)) return null;
+  const v = Number(s);
+  return v >= 0 && v <= 100 ? v : null;
+}

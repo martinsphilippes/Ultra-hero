@@ -420,7 +420,8 @@
     "brand_exists": "Esta marca ya está registrada en la plataforma y la atiende otra agencia.",
     "already_claimed": "Este perfil ya tiene dueño.",
     "claim_link_failed": "No fue posible vincular la cuenta al perfil. Revisa si la persona ya tiene otro Hero.",
-    "brand_exists_claim": "Esta marca ya está en la plataforma. Pide acceso a ella en la lista de arriba — Groscove la revisa y la libera."
+    "brand_exists_claim": "Esta marca ya está en la plataforma. Pide acceso a ella en la lista de arriba — Groscove la revisa y la libera.",
+    "onda_profile_exists": "Esta página ya está en la lista."
   },
   "casting": {
     "title": "Casting",

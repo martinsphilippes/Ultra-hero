@@ -1,5 +1,7 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // Onda Digital (0134): a página já está na lista do editor
+  "onda_profile_exists",
   // universo de marcas (0129): a marca já existe → pedir acesso a ela (antes de "brand_exists", que é parte do nome)
   "brand_exists_claim",
   // casting aberto, marca única e perfil reivindicado (0126)

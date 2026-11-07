@@ -62,7 +62,7 @@
       "title": "Pages",
       "text": "The biggest meme and entertainment profiles.",
       "list": "Which pages?",
-      "note": "*Instagram followers, November 2026.",
+      "note": "*Instagram followers, {date}.",
       "more": "See all {count} pages"
     },
     "x": {
@@ -71,7 +71,7 @@
       "text": "Onda X brings together booming profiles that will turn your brand into the most talked-about topic in Brazil and the world.",
       "fast": "All of it fast and in sync!",
       "list": "Which profiles?",
-      "note": "*Followers on X, November 2026.",
+      "note": "*Followers on X, {date}.",
       "more": "See all {count} profiles"
     },
     "press": {
@@ -227,5 +227,74 @@
     "noPackage": "Help me choose",
     "onlyGroscove": "Only Groscove sees Onda Digital requests.",
     "seePage": "See the brand page"
+  },
+  "editor": {
+    "title": "Edit the Onda Digital page",
+    "open": "Edit the page",
+    "description": "What you change here shows up right away for brands.",
+    "readOnly": "Only Groscove managers and above can edit. You're viewing it for reference.",
+    "tabsLabel": "Page sections",
+    "tabs": {
+      "instagram": "Pages (Instagram)",
+      "x": "Profiles on X",
+      "cases": "Cases",
+      "packages": "Waves"
+    },
+    "seeRequests": "See Onda Digital requests",
+    "up": "Move up",
+    "down": "Move down",
+    "profiles": {
+      "followers": "Followers",
+      "followersHint": "Write it your way: 26M, 9.5M, 892K or 1,300,000.",
+      "preview": "= {value} followers",
+      "invalid": "Couldn't read the number. E.g. 26M, 9.5M or 892K.",
+      "visible": "Shown on the page",
+      "hidden": "Off the page",
+      "visibleSwitch": "Shown on the page",
+      "photo": "Change photo",
+      "save": "Save",
+      "saved": "Saved. The brands' page already shows the change.",
+      "add": "Add page",
+      "addX": "Add profile",
+      "added": "Added to the list.",
+      "handle": "Page @",
+      "order": "Pages are listed by follower count, highest first. The page note shows the month of the last update."
+    },
+    "cases": {
+      "add": "New case",
+      "brand": "Brand",
+      "brandHint": "If the brand is in the brand universe, its logo is added automatically.",
+      "logoFound": "Brand logo found in the brand universe.",
+      "noLogo": "Brand without a logo: initials are shown.",
+      "category": "Area",
+      "noCategory": "No area",
+      "description": "Sentence",
+      "metrics": "Numbers",
+      "metricKind": "Indicator",
+      "metricValue": "Value",
+      "metricPlus": "Show with +",
+      "addMetric": "Add number",
+      "removeMetric": "Remove",
+      "invalidValue": "Invalid value",
+      "valueHint": "E.g. 55.9M, 892K or, for feed reach, 13.67 (%).",
+      "delete": "Delete case",
+      "confirmDelete": "Confirm: delete",
+      "visible": "Shown on the page",
+      "save": "Save case",
+      "create": "Create case",
+      "saved": "Saved."
+    },
+    "packages": {
+      "add": "New wave",
+      "name": "Name",
+      "scope": "Reach",
+      "scopeHint": "E.g. 10 pages + 2 news sites",
+      "description": "Sentence",
+      "visible": "Shown on the page",
+      "save": "Save wave",
+      "create": "Create wave",
+      "saved": "Saved.",
+      "keepHint": "Waves aren't deleted (requests keep the chosen wave). To take one off the page, turn off \"Shown on the page\"."
+    }
   }
 }

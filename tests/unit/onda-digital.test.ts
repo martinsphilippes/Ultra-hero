@@ -38,3 +38,24 @@ describe("Onda Digital (0132)", () => {
     expect(agencyNavKeys(null, true)).toContain("ondaDigital");
   });
 });
+
+describe("Onda Digital: editor da Groscove (0134)", () => {
+  it("entende os seguidores como a Groscove escreve", async () => {
+    const { parseCompactNumber, parsePercent } = await import("@/lib/onda-digital/format");
+    expect(parseCompactNumber("26M")).toBe(26_000_000);
+    expect(parseCompactNumber("9,5M")).toBe(9_500_000);
+    expect(parseCompactNumber("9.5M")).toBe(9_500_000);
+    expect(parseCompactNumber("26 milhões")).toBe(26_000_000);
+    expect(parseCompactNumber("1,3 mi")).toBe(1_300_000);
+    expect(parseCompactNumber("892K")).toBe(892_000);
+    expect(parseCompactNumber("892 mil")).toBe(892_000);
+    expect(parseCompactNumber("1.300.000")).toBe(1_300_000);
+    expect(parseCompactNumber("1300000")).toBe(1_300_000);
+    expect(parseCompactNumber("+35M")).toBe(35_000_000);
+    expect(parseCompactNumber("abc")).toBeNull();
+    expect(parseCompactNumber("")).toBeNull();
+    expect(parsePercent("13,67")).toBe(13.67);
+    expect(parsePercent("13,67%")).toBe(13.67);
+    expect(parsePercent("150")).toBeNull();
+  });
+});

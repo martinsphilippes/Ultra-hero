@@ -72,6 +72,9 @@ export default async function OndaDigitalPage() {
   const pkgName = (slug: string | null) => content.packages.find((p) => p.slug === slug)?.name ?? t("agency.noPackage");
   const brandName = ctx.brand.name;
   const wa = whatsappHref(t("request.whatsappText", { brand: brandName, package: "none" }));
+  // 0134: a nota dos seguidores mostra o mês da última atualização de cada rede
+  const monthYear = (iso: string | null) =>
+    new Intl.DateTimeFormat(locale, { month: "long", year: "numeric", timeZone: "America/Sao_Paulo" }).format(iso ? new Date(iso) : new Date());
 
   return (
     <OndaRequestProvider
@@ -267,7 +270,7 @@ export default async function OndaDigitalPage() {
             <div className="mt-6">
               <OndaProfileGrid profiles={instagram} locale={locale} moreLabel={t("fronts.pages.more", { count: instagram.length })} testId="onda-pages" />
             </div>
-            <p className="mt-4 text-xs text-[#3d3d55]">{t("fronts.pages.note")}</p>
+            <p className="mt-4 text-xs text-[#3d3d55]">{t("fronts.pages.note", { date: monthYear(content.updated.instagram) })}</p>
           </div>
         </OndaBlock>
 
@@ -290,7 +293,7 @@ export default async function OndaDigitalPage() {
             <div className="mt-6">
               <OndaProfileGrid profiles={x} locale={locale} moreLabel={t("fronts.x.more", { count: x.length })} testId="onda-x-profiles" />
             </div>
-            <p className="mt-4 text-xs text-[#3d3d55]">{t("fronts.x.note")}</p>
+            <p className="mt-4 text-xs text-[#3d3d55]">{t("fronts.x.note", { date: monthYear(content.updated.x) })}</p>
           </div>
         </OndaBlock>
 
