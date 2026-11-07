@@ -1,0 +1,241 @@
+{
+  "meta": {
+    "title": "How we work",
+    "universes": "Universes",
+    "answers": "Action answers"
+  },
+  "hero": {
+    "eyebrow": "Groscove Group",
+    "title": "How we work with brands",
+    "lead": "We are building relationships with Heroes to understand how each profile can connect with brands and opportunities in the current cycle and, above all, in next year's actions.",
+    "moment": "This year's calendar has already had actions and events. Since the relationship with part of the casting is starting now, we are mapping things out: from Black Friday to the end of the year is a period of getting closer, testing and reading opportunities, which also prepares next year's campaigns."
+  },
+  "team": {
+    "title": "Who takes care of you",
+    "body": "Jonathas Groscove is the founder of Groscove Group, but the work happens through a team of professionals who follow every step. It is with this team that you organize information, opportunities and day-to-day next steps."
+  },
+  "formats": {
+    "title": "The four ways to work with brands",
+    "lead": "They can happen at different times. Each action depends on alignment between you, the brand, the scope, the budget and the formal agreement.",
+    "progress": "You answered {count} of 4",
+    "question": "Does this format make sense for you?",
+    "interest": {
+      "yes": "I'm interested",
+      "maybe": "I want to evaluate",
+      "no": "Not now"
+    },
+    "notePlaceholder": "Anything the team should know (optional)",
+    "save": "Save",
+    "saved": "Saved",
+    "importantLabel": "Important",
+    "items": {
+      "cpa": {
+        "label": "Format 1",
+        "title": "CPA: relationship, links and coupons",
+        "summary": "The first step to start or deepen the relationship with brands. The idea is to understand how familiar you are with products and brands, test communication and see how your audience responds.",
+        "points": {
+          "p1": "You tell us which brands you already consume, know or use in your routine.",
+          "p2": "You may receive links and discount coupons for tests, depending on availability and each brand's rules.",
+          "p3": "You use links and coupons in content that fits your editorial calendar, always following the brand's guidelines.",
+          "p4": "The brand looks at fit, content quality, audience interest and the available results."
+        },
+        "important": "CPA is not guaranteed fixed pay. Before starting, we explain the attribution rule, what counts as a valid action, the measurement window, the percentage or amount and how payment works, according to the terms set by the brand."
+      },
+      "publi": {
+        "label": "Format 2",
+        "title": "Sponsored post: paid campaign",
+        "summary": "Once we understand your communication better, we can present sponsored content opportunities. Brands often need to know your profile and review your data before defining scope and investment.",
+        "points": {
+          "p1": "We ask for your updated media kit by e-mail. If you don't have one, we prepare an internal presentation with your data.",
+          "p2": "We talk about past campaigns, brands served, formats delivered, results and the fees you charged or want.",
+          "p3": "Fees and terms are evaluated based on the brief, deliverables, deadline, usage rights, exclusivity and the brand's budget."
+        },
+        "important": "We don't promise fees, campaigns or approval during the conversation. Every proposal is handled and formalized by e-mail."
+      },
+      "project": {
+        "label": "Format 3",
+        "title": "Original projects and sponsorship",
+        "summary": "We look for Heroes with their own ideas and the ability to build projects, experiences, events, recurring formats or content properties that can attract sponsors.",
+        "points": {
+          "p1": "Well-known references help explain the idea: Carlinhos Maia's Rancho, Gkay's Farofa, Neymar's charity auction, Anitta's Ensaios, Ludmilla's Numanice and Thiaguinho's Tardezinha. This is not about comparing scale or promising results: it shows how an original project can become a brand property.",
+          "p2": "If you have an idea on hold, a project in progress or a community you'd like to bring together in an experience, tell us: concept, audience, format, place, calendar, differentiators, partners and stage.",
+          "p3": "The team can study the project and look for sponsors. The brands and sponsorship tiers sought may involve investments above R$ 100 thousand, depending on the project, scope and opportunity."
+        },
+        "important": "We don't promise sponsorship or amounts. The figure mentioned is a reference for the type of opportunity, not a guarantee: feasibility depends on the pitch, budget, audience, counterparts and sponsor interest."
+      },
+      "events": {
+        "label": "Format 4",
+        "title": "Brand events and experiences",
+        "summary": "Brands and partners can hire Heroes for events, activations, launches, internal meetings and experiences. Being there can be an opportunity for relationships, content production and getting closer to the market.",
+        "points": {
+          "p1": "You tell us your availability, interest in events, the cities you can be in and how much notice you need.",
+          "p2": "Participation formats vary: attendance, coverage, stories, reels, interviews, content before or after the event, among others.",
+          "p3": "Opportunities can come from a specific brand or from the group's relationships with press offices and partners."
+        },
+        "important": "Punctuality, professional conduct, courtesy with staff and guests and keeping your commitments make all the difference."
+      }
+    }
+  },
+  "idea": {
+    "title": "Your original project",
+    "lead": "Tell us your idea even if it's still at the beginning. The team studies it and replies here and by e-mail.",
+    "open": "Send my project",
+    "fields": {
+      "title": "Project name or idea",
+      "concept": "Concept",
+      "conceptHint": "What it is, why it exists and what makes it different.",
+      "audience": "Audience",
+      "format": "Format",
+      "location": "Place",
+      "timeline": "Planned calendar",
+      "stage": "Current stage",
+      "partners": "Partners already involved",
+      "needs": "What the project needs"
+    },
+    "send": "Send project",
+    "sent": "Project sent. The team will study it and get back to you.",
+    "mine": "Projects you sent",
+    "sentOn": "Sent on {date}",
+    "status": {
+      "received": "Received",
+      "studying": "Under study",
+      "prospecting": "Looking for sponsors",
+      "paused": "Paused",
+      "closed": "Closed"
+    }
+  },
+  "actions": {
+    "title": "Open action",
+    "until": "Answers until {date}",
+    "question": "Are you interested in taking part?",
+    "interest": {
+      "yes": "I'm interested",
+      "depends": "Depends on the brands and terms",
+      "no": "Not this time"
+    },
+    "categories": "Categories and brands of interest",
+    "availability": "Availability and schedule restrictions",
+    "availabilityHint": "Trips, commitments, conflicts with competitors and formats you don't want to do.",
+    "notes": "Anything else",
+    "send": "Send answer",
+    "update": "Update answer",
+    "sent": "Answer sent. The team formalizes the possibilities by e-mail.",
+    "answered": "Your answer: {interest}",
+    "calendar": "See the date in the calendar",
+    "disclaimer": "Answering does not confirm participation: it depends on alignment of brand, scope, fees, availability and a formal agreement."
+  },
+  "tips": {
+    "title": "Content that helps brands choose you",
+    "lead": "Many opportunities depend on the brand understanding your language, your consistency and how you talk about products and services.",
+    "items": {
+      "natural": {
+        "title": "Naturalness",
+        "text": "Show products and experiences in a way that fits your routine, without turning every post into an ad."
+      },
+      "consistency": {
+        "title": "Consistency",
+        "text": "Keep frequency and quality, avoiding long gaps without posting when there is a calendar commitment."
+      },
+      "context": {
+        "title": "Context",
+        "text": "Explain why you use, like or recommend something. Show real use, benefit or experience."
+      },
+      "variety": {
+        "title": "Variety",
+        "text": "Mix short videos, stories, carousels, behind the scenes, tutorials, reviews and routine content, according to your profile."
+      },
+      "community": {
+        "title": "Community",
+        "text": "Start conversations, reply to comments and notice the questions your audience keeps asking."
+      },
+      "safety": {
+        "title": "Brand safety",
+        "text": "Take care with language, image, information and advertising transparency. Label sponsored content when it applies."
+      },
+      "planning": {
+        "title": "Planning",
+        "text": "Connect commercial and seasonal dates to your segment, without posting artificial or out-of-context content."
+      }
+    },
+    "calendar": "The team will send a calendar of suggestions with relevant dates, seasonal opportunities and content ideas. It is a reference: adapt it to your identity, schedule and production capacity."
+  },
+  "universes": {
+    "title": "Universes",
+    "body": "The Universes tab brings together the segments and brands Groscove Group works with and is updated from time to time. Mark the universes that make sense for you, the brands you already know and the ones you'd like to explore.",
+    "note": "Marking something is not automatic campaign approval.",
+    "open": "Open Universes",
+    "summary": "{universes, plural, =0 {No universe marked} one {# universe marked} other {# universes marked}} · {brands, plural, =0 {no brands} one {# brand} other {# brands}}",
+    "lead": "The segments and brands Groscove Group works with. Mark what makes sense for you.",
+    "fits": "Makes sense for me",
+    "known": "I know it",
+    "explore": "I want to explore",
+    "search": "Search brand",
+    "brandsCount": "{count, plural, one {# brand} other {# brands}}",
+    "save": "Save choices",
+    "saved": "Choices saved",
+    "dirty": "You have changes that haven't been saved yet.",
+    "empty": "No brand found."
+  },
+  "kit": {
+    "title": "Media kit and profile details",
+    "lead": "So the team can present you to brands, keep your media kit and your details up to date.",
+    "items": {
+      "identity": "Identification: full name, stage name, city and state, a short bio and professional contacts.",
+      "channels": "Channels: links to Instagram, TikTok, YouTube, Twitch, website, podcast or other platforms, with each handle.",
+      "audience": "Audience: followers per channel, reach and impressions, average views, engagement and data such as age, gender and location.",
+      "content": "Content: main topics and formats, posting frequency, what makes you different and representative examples.",
+      "history": "Commercial history: brands served, past campaigns, deliverables and results cleared for disclosure.",
+      "prices": "Formats and fees: stories, reels, feed, video, appearances and packages, with a price list or reference ranges, if any.",
+      "conditions": "Terms: availability, minimum lead times, travel, production costs, usage rights, paid boosting and exclusivity.",
+      "materials": "Materials: professional photos, portraits, logo, portfolio links and recent screenshots of platform insights."
+    },
+    "registration": "Also keep your details up to date: full name, stage name, address (for shipments and logistics, when needed), phone or WhatsApp with area code, main and alternative e-mail, city and state.",
+    "privacy": "Bank details, documents and tax information are only requested when there is a hiring, through the right channel and with guidance from the responsible team. Never in WhatsApp groups.",
+    "open": "Open my media kit"
+  },
+  "channels": {
+    "title": "Official channels",
+    "email": "E-mail is the official channel for brands, briefs, proposals, fees, approvals, contracts, deadlines and confirmations. Check your inbox and also your spam folder.",
+    "whatsapp": "WhatsApp is for quick contact, alignments and notices, but it does not replace formalization by e-mail.",
+    "portal": "Here in the portal you follow opportunities, tasks, calendar and notices."
+  },
+  "limits": {
+    "title": "What you can expect",
+    "items": {
+      "p1": "We don't guarantee campaigns, fees, invitations, sponsorships, results or brand approval.",
+      "p2": "Being in the casting means your profile is presented to advertisers to evaluate opportunities. Each brand decides according to its own brief and criteria.",
+      "p3": "Each action may require its own negotiation and formal agreement.",
+      "p4": "Never publish brand content without a brief, authorization and agreed commercial terms.",
+      "p5": "We don't share confidential information about brands, other Heroes, fees or negotiations.",
+      "p6": "If you have a question that doesn't have an answer yet, the team forwards it to the right area and replies by e-mail after checking."
+    }
+  },
+  "notInCasting": "This page explains how Groscove Group works with Heroes. Once you join the casting, you'll be able to mark the formats that make sense, answer open actions and send your original project here.",
+  "teamView": {
+    "tab": "Relationship",
+    "title": "Relationship with brands",
+    "lead": "What the Hero marked in the portal and what the team recorded in meetings.",
+    "updatedAt": "Updated on {date}",
+    "formats": "Formats of interest",
+    "notAnswered": "Not answered",
+    "recordHint": "Record here what the Hero said in the meeting.",
+    "actions": "Actions",
+    "noActions": "Hasn't answered any action yet.",
+    "seeAnswers": "See all answers",
+    "universes": "Universes that make sense",
+    "brandsKnown": "Brands they already know",
+    "brandsExplore": "Brands they want to explore",
+    "noneMarked": "Nothing marked yet.",
+    "ideas": "Original projects",
+    "noIdeas": "No project sent.",
+    "ideaStatus": "Progress",
+    "teamNote": "Team note (the Hero doesn't see it)",
+    "saveIdea": "Save progress",
+    "ideaSaved": "Progress saved",
+    "answersTitle": "Answers: {title}",
+    "answersLead": "Who answered the action, interested first. Answering doesn't confirm participation.",
+    "answersCount": "{yes} interested · {depends} depends · {no} no",
+    "noAnswers": "No one has answered yet.",
+    "openTalent": "Open profile"
+  }
+}

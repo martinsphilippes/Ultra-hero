@@ -20,11 +20,13 @@ export type PortalLink = { key: string; href: string; group?: string };
 /** Itens do Portal do Hero para a pessoa (puro, testável). Hero = papel de Hero (titular ou membro da equipe);
  *  casting = está num casting de agência (ficha com login próprio ou Hero ligado). */
 export function heroPortalNavKeys(opts: { hero: boolean; casting: boolean }): string[] {
-  const keys = ["home"];
+  // Como trabalhamos (0136): o guia dos quatro formatos vale para todo mundo do portal, logo depois do Início
+  const keys = ["home", "howWeWork"];
   if (opts.hero) keys.push("post", "newContent", "content", "recipes");
   if (opts.casting) keys.push("opportunities", "tasks");
   if (opts.hero || opts.casting) keys.push("agenda", "finance");
-  if (opts.casting) keys.push("availability");
+  // Universos (0136): segmentos e marcas que fazem sentido para o creator do casting
+  if (opts.casting) keys.push("availability", "universes");
   if (opts.hero) keys.push("publicPage");
   keys.push("team");
   if (opts.casting) keys.push("kit", "portfolio", "documents", "consent");
@@ -76,6 +78,7 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
   // ("Publicar como hero"), por isso não está aqui; patrocínios aparecem na Agenda (não há tela própria).
   creator: [
     { key: "home", href: "/heroi" },
+    { key: "howWeWork", href: "/heroi/como-trabalhamos" },
     { key: "post", href: "/heroi/post/novo", group: "content" },
     { key: "newContent", href: "/heroi/conteudos/novo", group: "content" },
     { key: "content", href: "/heroi/conteudos", group: "content" },
@@ -85,6 +88,7 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "agenda", href: "/heroi/agenda", group: "work" },
     { key: "finance", href: "/heroi/financeiro", group: "work" },
     { key: "availability", href: "/heroi/disponibilidade", group: "work" },
+    { key: "universes", href: "/heroi/universos", group: "work" },
     { key: "publicPage", href: "/heroi/pagina", group: "profile" },
     { key: "team", href: "/heroi/equipe", group: "profile" },
     { key: "kit", href: "/heroi/media-kit", group: "profile" },

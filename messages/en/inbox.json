@@ -286,6 +286,18 @@
     "onda_request_updated": {
       "title": "{status, select, talking {Onda Digital: in talks} proposal {Onda Digital: proposal} live {Your brand is on the wave!} closed {Onda Digital: request closed} other {Onda Digital: request updated}}",
       "body": "Your Onda Digital request moved to a new stage. Follow it in the portal."
+    },
+    "creator_idea_received": {
+      "title": "{talent} sent an original project",
+      "body": "“{title}”. See it in the Hero profile and move it forward."
+    },
+    "creator_idea_updated": {
+      "title": "{status, select, studying {Your project is under study} prospecting {We are looking for sponsors for your project} paused {Your project was paused} closed {Your project was closed} other {Your project moved to a new stage}}",
+      "body": "“{title}”. See the details in How we work."
+    },
+    "creator_action_answered": {
+      "title": "{talent} answered: {action}",
+      "body": "{interest, select, yes {Interested.} depends {Depends on the brands and terms.} other {Not this time.}} See all answers."
     }
   }
 }

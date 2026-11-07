@@ -80,7 +80,7 @@ describe("Portal do Hero (0097: um portal só)", () => {
     expect(talent).toEqual(expect.arrayContaining(["home", "opportunities", "tasks", "agenda", "finance", "availability", "kit", "portfolio", "documents", "consent", "notifications"]));
     expect(talent).not.toContain("post");
     expect(heroPortalNavKeys({ hero: true, casting: true })).toEqual(PORTAL_LINKS.creator.map((l) => l.key));
-    expect(heroPortalNavKeys({ hero: false, casting: false })).toEqual(["home", "team", "notifications"]);
+    expect(heroPortalNavKeys({ hero: false, casting: false })).toEqual(["home", "howWeWork", "team", "notifications"]);
   });
   it("um atalho só: Portal do Hero para quem tem Hero ou está num casting", () => {
     expect(buildPortalItems(["consumer", "creator"], undefined, { hasTalent: true })).toEqual([{ kind: "portal", key: "creator", href: HERO_PORTAL_PATH, nativeHidden: false }]);

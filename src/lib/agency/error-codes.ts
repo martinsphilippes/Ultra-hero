@@ -1,5 +1,7 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // Como trabalhamos (0136): a ação (ex.: Black Friday) já fechou
+  "action_closed",
   // Onda Digital (0134): a página já está na lista do editor
   "onda_profile_exists",
   // universo de marcas (0129): a marca já existe → pedir acesso a ela (antes de "brand_exists", que é parte do nome)

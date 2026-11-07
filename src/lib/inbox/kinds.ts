@@ -86,6 +86,10 @@ export const INBOX_KINDS = [
   "onda_digital_news",
   "onda_request_received",
   "onda_request_updated",
+  // Como trabalhamos (0136): projeto autoral e resposta às ações do casting
+  "creator_idea_received",
+  "creator_idea_updated",
+  "creator_action_answered",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 

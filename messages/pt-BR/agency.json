@@ -421,7 +421,8 @@
     "already_claimed": "Este perfil já tem dono.",
     "claim_link_failed": "Não foi possível ligar a conta ao perfil. Confira se a pessoa já tem outro Hero.",
     "brand_exists_claim": "Essa marca já está na plataforma. Peça o acesso a ela na lista acima — a Groscove confere e libera.",
-    "onda_profile_exists": "Essa página já está na lista."
+    "onda_profile_exists": "Essa página já está na lista.",
+    "action_closed": "Esta ação já foi encerrada."
   },
   "casting": {
     "title": "Casting",
@@ -493,7 +494,8 @@
       "kit": "Media kit",
       "documents": "Documentos",
       "history": "Histórico",
-      "availability": "Disponibilidade"
+      "availability": "Disponibilidade",
+      "relationship": "Relacionamento"
     },
     "sections": {
       "data": "Dados do Hero",

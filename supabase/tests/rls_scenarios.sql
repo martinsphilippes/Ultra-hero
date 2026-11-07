@@ -19265,5 +19265,158 @@ update public.agencies set slug = 'groscove' where slug = 'groscove-antes-s134';
 delete from auth.users where id::text like 'c1340000-%';
 drop table tests.s134;
 
+-- ================================================================ S136 · Como trabalhamos: formatos, ações, projeto autoral e universos (0136)
+\ir ../migrations/0136_como_trabalhamos_creator.sql
+select tests.su();
+update public.agencies set slug = 'groscove-antes-s136' where slug = 'groscove';
+insert into auth.users (id, email) values
+  ('c1360000-0000-4000-8000-000000000001', 'gestor@groscove-s136.test'),
+  ('c1360000-0000-4000-8000-000000000002', 'colab@groscove-s136.test'),
+  ('c1360000-0000-4000-8000-000000000003', 'creator@s136.test'),
+  ('c1360000-0000-4000-8000-000000000004', 'creator-outra@s136.test'),
+  ('c1360000-0000-4000-8000-000000000005', 'pessoa@s136.test'),
+  ('c1360000-0000-4000-8000-000000000006', 'gestor@outra-s136.test');
+insert into public.agencies (id, slug, name) values ('c1360000-0000-4000-8000-0000000000a1', 'groscove', 'Groscove S136'),
+  ('c1360000-0000-4000-8000-0000000000a2', 's136-outra', 'Outra S136');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('c1360000-0000-4000-8000-0000000000a1', 'c1360000-0000-4000-8000-000000000001', 'manager', 'Gestor S136'),
+  ('c1360000-0000-4000-8000-0000000000a1', 'c1360000-0000-4000-8000-000000000002', 'staff', 'Colab S136'),
+  ('c1360000-0000-4000-8000-0000000000a2', 'c1360000-0000-4000-8000-000000000006', 'manager', 'Gestor Outra S136');
+insert into public.talent_profiles (id, agency_id, display_name, user_id) values
+  ('c1360000-0000-4000-8000-0000000000c1', 'c1360000-0000-4000-8000-0000000000a1', 'Creator S136', 'c1360000-0000-4000-8000-000000000003'),
+  ('c1360000-0000-4000-8000-0000000000c2', 'c1360000-0000-4000-8000-0000000000a2', 'Creator Outra S136', 'c1360000-0000-4000-8000-000000000004');
+insert into public.brands (id, slug, name, site_url, status, category, approval_status, is_demo) values
+  ('c1360000-0000-4000-8000-0000000000b1', 'marca-s136', 'Marca S136', 'https://marca-s136.test/', 'inactive', 'moda', 'approved', false),
+  ('c1360000-0000-4000-8000-0000000000b2', 'demo-s136', 'Demo S136', 'https://demo-s136.test/', 'inactive', 'moda', 'approved', true);
+insert into public.creator_actions (key, agency_id, title, summary, starts_on, ends_on) values
+  ('s136-aberta', 'c1360000-0000-4000-8000-0000000000a1', 'Ação aberta S136', 'Teste', current_date - 1, current_date + 30),
+  ('s136-fechada', 'c1360000-0000-4000-8000-0000000000a1', 'Ação fechada S136', 'Teste', current_date - 30, current_date - 1),
+  ('s136-outra', 'c1360000-0000-4000-8000-0000000000a2', 'Ação da outra S136', 'Teste', current_date - 1, current_date + 30);
+create table tests.s136 (k text primary key, v text);
+grant all on tests.s136 to anon, authenticated;
+select tests.ok('S136 a Black Friday 2026 vem semeada até o fim do ano',
+  exists (select 1 from public.creator_actions where key = 'black-friday-2026' and ends_on = date '2026-12-31'));
+
+-- quem não está num casting
+select tests.login('c1360000-0000-4000-8000-000000000005', 'pessoa@s136.test');
+select tests.ok('S136 sem casting não há guia pessoal', public.creator_guide_mine() is null);
+select tests.expect_error('S136 sem casting não marca formato', $$select public.creator_formats_save('{"cpa":{"interest":"yes"}}'::jsonb)$$, 'forbidden');
+select tests.expect_error('S136 sem casting não vê os universos', $$select public.creator_universe_catalog()$$, 'forbidden');
+select tests.expect_error('S136 nem a ficha de um creator', $$select public.talent_relationship_team('c1360000-0000-4000-8000-0000000000c1')$$, 'forbidden');
+select tests.expect_error('S136 nem as respostas de uma ação', $$select public.creator_action_answers('s136-aberta')$$, 'forbidden');
+
+-- o creator do casting da Groscove
+select tests.login('c1360000-0000-4000-8000-000000000003', 'creator@s136.test');
+select tests.ok('S136 o creator vê o guia dele, da Groscove, só com a ação aberta da agência dele',
+  (public.creator_guide_mine() ->> 'groscove')::boolean
+  and (select array_agg(e ->> 'key') from jsonb_array_elements(public.creator_guide_mine() -> 'actions') e) = array['s136-aberta']);
+select tests.expect_error('S136 formato fora da lista é recusado', $$select public.creator_formats_save('{"tiktok":{"interest":"yes"}}'::jsonb)$$, 'invalid_input');
+select tests.expect_error('S136 interesse fora da lista é recusado', $$select public.creator_formats_save('{"cpa":{"interest":"talvez"}}'::jsonb)$$, 'invalid_input');
+select public.creator_formats_save('{"cpa":{"interest":"yes","note":"Uso marcas de beleza"},"publi":{"interest":"maybe"}}'::jsonb);
+select public.creator_formats_save('{"events":{"interest":"no"}}'::jsonb);
+select tests.ok('S136 cada formato salvo sem apagar os outros',
+  public.creator_guide_mine() -> 'formats' -> 'cpa' ->> 'interest' = 'yes'
+  and public.creator_guide_mine() -> 'formats' -> 'cpa' ->> 'note' = 'Uso marcas de beleza'
+  and public.creator_guide_mine() -> 'formats' -> 'events' ->> 'interest' = 'no');
+select public.creator_universes_save(array['moda', 'nao-existe'], array['c1360000-0000-4000-8000-0000000000b1', 'c1360000-0000-4000-8000-0000000000b2']::uuid[],
+  array[]::uuid[]);
+select tests.ok('S136 universo inexistente e marca de demonstração ficam de fora',
+  (public.creator_guide_mine() -> 'universes') = '["moda"]'::jsonb
+  and (public.creator_guide_mine() -> 'brands_known') = '["c1360000-0000-4000-8000-0000000000b1"]'::jsonb);
+select tests.ok('S136 o catálogo dos universos não traz marca de demonstração nem dado interno',
+  exists (select 1 from jsonb_array_elements(public.creator_universe_catalog() -> 'brands') e where e ->> 'name' = 'Marca S136')
+  and not exists (select 1 from jsonb_array_elements(public.creator_universe_catalog() -> 'brands') e where e ->> 'name' = 'Demo S136')
+  and not exists (select 1 from jsonb_array_elements(public.creator_universe_catalog() -> 'brands') e where e ? 'cnpj' or e ? 'email_domains'));
+select public.creator_action_respond('s136-aberta', '{"interest":"depends","categories":"Beleza","availability":"Livre em dezembro"}'::jsonb);
+select tests.ok('S136 a resposta da ação fica guardada',
+  (select e -> 'response' ->> 'interest' from jsonb_array_elements(public.creator_guide_mine() -> 'actions') e where e ->> 'key' = 's136-aberta') = 'depends');
+select tests.expect_error('S136 ação encerrada não recebe resposta', $$select public.creator_action_respond('s136-fechada', '{"interest":"yes"}'::jsonb)$$, 'action_closed');
+select tests.expect_error('S136 ação de outra agência não existe para ele', $$select public.creator_action_respond('s136-outra', '{"interest":"yes"}'::jsonb)$$, 'not_found');
+select tests.expect_error('S136 resposta fora da lista é recusada', $$select public.creator_action_respond('s136-aberta', '{"interest":"talvez"}'::jsonb)$$, 'invalid_input');
+select public.creator_action_respond('s136-aberta', '{"interest":"yes","categories":"Beleza e moda"}'::jsonb);
+select tests.expect_error('S136 projeto sem conceito é recusado', $$select public.creator_idea_submit('{"title":"Meu projeto","concept":"curto"}'::jsonb)$$, 'invalid_input');
+insert into tests.s136 select 'ideia', public.creator_idea_submit('{"title":"Festival na praia","concept":"Um festival de música e esporte na praia, com a comunidade.","audience":"Jovens de 18 a 30","stage":"Ideia"}'::jsonb)::text;
+select tests.ok('S136 o projeto aparece para o creator como recebido',
+  (select e ->> 'status' from jsonb_array_elements(public.creator_guide_mine() -> 'ideas') e) = 'received');
+select tests.expect_error('S136 o creator não lê as tabelas direto', $$select count(*) from public.talent_relationship$$, 'permission denied');
+select tests.expect_error('S136 nem a de projetos', $$select count(*) from public.creator_project_ideas$$, 'permission denied');
+select tests.expect_error('S136 o creator não muda o andamento do próprio projeto',
+  $$select public.creator_idea_update((select v from tests.s136 where k = 'ideia')::uuid, 'prospecting', '')$$, 'forbidden');
+
+select tests.su();
+select tests.ok('S136 o gestor recebe um aviso do projeto e um da resposta (mesmo respondendo duas vezes); o colaborador não',
+  (select count(*) from public.inbox_notifications where user_id = 'c1360000-0000-4000-8000-000000000001' and kind = 'creator_idea_received') = 1
+  and (select count(*) from public.inbox_notifications where user_id = 'c1360000-0000-4000-8000-000000000001' and kind = 'creator_action_answered') = 1
+  and (select count(*) from public.inbox_notifications where user_id = 'c1360000-0000-4000-8000-000000000002') = 0);
+
+-- creator de outra agência
+select tests.login('c1360000-0000-4000-8000-000000000004', 'creator-outra@s136.test');
+select tests.ok('S136 o creator de outra agência não vê as ações da Groscove nem é marcado como Groscove',
+  not (public.creator_guide_mine() ->> 'groscove')::boolean
+  and not exists (select 1 from jsonb_array_elements(public.creator_guide_mine() -> 'actions') e where e ->> 'key' like 's136-aberta'));
+select tests.expect_error('S136 e não responde a ação da Groscove', $$select public.creator_action_respond('s136-aberta', '{"interest":"yes"}'::jsonb)$$, 'not_found');
+
+-- a equipe da Groscove
+select tests.login('c1360000-0000-4000-8000-000000000002', 'colab@groscove-s136.test');
+select tests.ok('S136 o colaborador vê a ficha do creator: formatos, universos, marcas, ação e projeto',
+  public.talent_relationship_team('c1360000-0000-4000-8000-0000000000c1') -> 'formats' -> 'cpa' ->> 'interest' = 'yes'
+  and jsonb_array_length(public.talent_relationship_team('c1360000-0000-4000-8000-0000000000c1') -> 'universes') = 1
+  and jsonb_array_length(public.talent_relationship_team('c1360000-0000-4000-8000-0000000000c1') -> 'brands_known') = 1
+  and (public.talent_relationship_team('c1360000-0000-4000-8000-0000000000c1') -> 'actions' -> 0 ->> 'interest') = 'yes'
+  and (public.talent_relationship_team('c1360000-0000-4000-8000-0000000000c1') -> 'ideas' -> 0 ->> 'audience') = 'Jovens de 18 a 30'
+  and not (public.talent_relationship_team('c1360000-0000-4000-8000-0000000000c1') ->> 'can_manage')::boolean);
+select public.talent_formats_save_team('c1360000-0000-4000-8000-0000000000c1', '{"project":{"interest":"yes","note":"Tem um festival"}}'::jsonb);
+select tests.ok('S136 a equipe registra o formato na reunião sem apagar o que o creator marcou',
+  public.talent_relationship_team('c1360000-0000-4000-8000-0000000000c1') -> 'formats' -> 'project' ->> 'interest' = 'yes'
+  and public.talent_relationship_team('c1360000-0000-4000-8000-0000000000c1') -> 'formats' -> 'cpa' ->> 'interest' = 'yes');
+select tests.expect_error('S136 o colaborador não dá andamento ao projeto (gestor+)',
+  $$select public.creator_idea_update((select v from tests.s136 where k = 'ideia')::uuid, 'studying', '')$$, 'forbidden');
+select tests.ok('S136 o colaborador vê quem respondeu a ação',
+  jsonb_array_length(public.creator_action_answers('s136-aberta') -> 'answers') = 1);
+select tests.expect_error('S136 e não vê a ficha de creator de outra agência',
+  $$select public.talent_relationship_team('c1360000-0000-4000-8000-0000000000c2')$$, 'forbidden');
+
+select tests.login('c1360000-0000-4000-8000-000000000001', 'gestor@groscove-s136.test');
+select public.creator_idea_update((select v from tests.s136 where k = 'ideia')::uuid, 'studying', 'Vamos estudar patrocínio');
+select tests.expect_error('S136 andamento fora da lista é recusado',
+  $$select public.creator_idea_update((select v from tests.s136 where k = 'ideia')::uuid, 'aprovado', '')$$, 'invalid_input');
+select tests.su();
+select tests.ok('S136 o gestor dá andamento e o creator recebe o aviso',
+  (select status from public.creator_project_ideas where id = (select v from tests.s136 where k = 'ideia')::uuid) = 'studying'
+  and (select count(*) from public.inbox_notifications where user_id = 'c1360000-0000-4000-8000-000000000003' and kind = 'creator_idea_updated') = 1);
+
+select tests.login('c1360000-0000-4000-8000-000000000006', 'gestor@outra-s136.test');
+select tests.expect_error('S136 gestor de outra agência não mexe no projeto do creator da Groscove',
+  $$select public.creator_idea_update((select v from tests.s136 where k = 'ideia')::uuid, 'closed', '')$$, 'forbidden');
+select tests.expect_error('S136 nem vê as respostas da ação da Groscove', $$select public.creator_action_answers('s136-aberta')$$, 'forbidden');
+
+-- limite de envios
+select tests.login('c1360000-0000-4000-8000-000000000003', 'creator@s136.test');
+select public.creator_idea_submit(jsonb_build_object('title', 'Projeto ' || g, 'concept', 'Um conceito de projeto com detalhes suficientes.')) from generate_series(2, 5) g;
+select tests.expect_error('S136 o sexto projeto em 24 h é segurado',
+  $$select public.creator_idea_submit('{"title":"Mais um","concept":"Outro conceito com detalhes suficientes."}'::jsonb)$$, 'rate_limited');
+
+select tests.su();
+select tests.ok('S136 nada novo para anon',
+  not has_function_privilege('anon', 'public.creator_guide_mine()', 'execute')
+  and not has_function_privilege('anon', 'public.creator_formats_save(jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.creator_universes_save(text[], uuid[], uuid[])', 'execute')
+  and not has_function_privilege('anon', 'public.creator_action_respond(text, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.creator_idea_submit(jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.talent_relationship_team(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.creator_universe_catalog()', 'execute')
+  and not has_table_privilege('anon', 'public.talent_relationship', 'select')
+  and not has_table_privilege('authenticated', 'public.creator_project_ideas', 'select'));
+
+delete from public.inbox_notifications where user_id::text like 'c1360000-%';
+delete from public.creator_actions where key like 's136-%';
+delete from public.talent_profiles where id::text like 'c1360000-%';
+delete from public.brands where id::text like 'c1360000-%';
+delete from public.agency_members where agency_id::text like 'c1360000-%';
+delete from public.agencies where id::text like 'c1360000-%';
+update public.agencies set slug = 'groscove' where slug = 'groscove-antes-s136';
+delete from auth.users where id::text like 'c1360000-%';
+drop table tests.s136;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

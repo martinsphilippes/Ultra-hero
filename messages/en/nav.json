@@ -65,7 +65,9 @@
     "portfolio": "Portfolio",
     "documents": "Documents",
     "consent": "Consent",
-    "notifications": "Notices and messages"
+    "notifications": "Notices and messages",
+    "howWeWork": "How we work",
+    "universes": "Universes"
   },
   "seller": {
     "dashboard": "Dashboard",

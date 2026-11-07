@@ -43,6 +43,8 @@ import {
   Search,
   Wallet,
   Waves,
+  Compass,
+  Orbit,
   CalendarCheck,
   IdCard,
   Images,
@@ -126,6 +128,9 @@ const ICONS: Record<string, LucideIcon> = {
   projects: MessagesSquare,
   // Onda Digital (0132)
   ondaDigital: Waves,
+  // Como trabalhamos e Universos (0136)
+  howWeWork: Compass,
+  universes: Orbit,
 };
 
 function isActive(pathname: string, href: string, root: string) {

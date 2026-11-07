@@ -9,6 +9,168 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      creator_project_ideas: {
+        Row: {
+          id: string;
+          talent_id: string;
+          agency_id: string;
+          title: string;
+          concept: string;
+          audience: string;
+          format: string;
+          location: string;
+          timeline: string;
+          stage: string;
+          partners: string;
+          needs: string;
+          status: string;
+          team_note: string;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          talent_id: string;
+          agency_id: string;
+          title: string;
+          concept: string;
+          audience?: string;
+          format?: string;
+          location?: string;
+          timeline?: string;
+          stage?: string;
+          partners?: string;
+          needs?: string;
+          status?: string;
+          team_note?: string;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          talent_id?: string;
+          agency_id?: string;
+          title?: string;
+          concept?: string;
+          audience?: string;
+          format?: string;
+          location?: string;
+          timeline?: string;
+          stage?: string;
+          partners?: string;
+          needs?: string;
+          status?: string;
+          team_note?: string;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
+      talent_action_responses: {
+        Row: {
+          talent_id: string;
+          action_key: string;
+          interest: string;
+          categories: string;
+          availability: string;
+          notes: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          talent_id: string;
+          action_key: string;
+          interest: string;
+          categories?: string;
+          availability?: string;
+          notes?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          talent_id?: string;
+          action_key?: string;
+          interest?: string;
+          categories?: string;
+          availability?: string;
+          notes?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
+      creator_actions: {
+        Row: {
+          key: string;
+          agency_id: string;
+          title: string;
+          summary: string;
+          starts_on: string;
+          ends_on: string;
+          active: boolean;
+          calendar_event_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          key: string;
+          agency_id: string;
+          title: string;
+          summary?: string;
+          starts_on: string;
+          ends_on: string;
+          active?: boolean;
+          calendar_event_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          key?: string;
+          agency_id?: string;
+          title?: string;
+          summary?: string;
+          starts_on?: string;
+          ends_on?: string;
+          active?: boolean;
+          calendar_event_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      talent_relationship: {
+        Row: {
+          talent_id: string;
+          formats: Json;
+          universes: string[];
+          brands_known: string[];
+          brands_explore: string[];
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          talent_id: string;
+          formats?: Json;
+          universes?: string[];
+          brands_known?: string[];
+          brands_explore?: string[];
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          talent_id?: string;
+          formats?: Json;
+          universes?: string[];
+          brands_known?: string[];
+          brands_explore?: string[];
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
       onda_requests: {
         Row: {
           id: string;
@@ -12238,6 +12400,17 @@ isOneToOne: false
       [_ in never]: never;
     };
     Functions: {
+      creator_universe_catalog: { Args: Record<PropertyKey, never>; Returns: Json };
+      creator_action_answers: { Args: { p_action: string }; Returns: Json };
+      creator_idea_update: { Args: { p_id: string; p_status: string; p_note: string }; Returns: undefined };
+      talent_formats_save_team: { Args: { p_talent: string; p_formats: Json }; Returns: undefined };
+      talent_relationship_team: { Args: { p_talent: string }; Returns: Json };
+      creator_idea_submit: { Args: { p_data: Json }; Returns: string };
+      creator_action_respond: { Args: { p_action: string; p_data: Json }; Returns: undefined };
+      creator_universes_save: { Args: { p_universes: string[]; p_known: string[]; p_explore: string[] }; Returns: undefined };
+      creator_formats_save: { Args: { p_formats: Json }; Returns: undefined };
+      creator_guide_mine: { Args: Record<PropertyKey, never>; Returns: Json };
+      creator_formats_clean: { Args: { p: Json }; Returns: Json };
       onda_admin_content: { Args: Record<PropertyKey, never>; Returns: Json };
       onda_admin_reorder: { Args: { p_kind: string; p_keys: string[] }; Returns: boolean };
       onda_admin_package_save: { Args: { p_slug: string; p_data: Json }; Returns: string };

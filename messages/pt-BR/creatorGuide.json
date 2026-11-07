@@ -1,0 +1,241 @@
+{
+  "meta": {
+    "title": "Como trabalhamos",
+    "universes": "Universos",
+    "answers": "Respostas da ação"
+  },
+  "hero": {
+    "eyebrow": "Groscove Group",
+    "title": "Como trabalhamos com marcas",
+    "lead": "Estamos estruturando relacionamentos com Heros para entender como cada perfil pode se conectar a marcas e oportunidades no ciclo atual e, principalmente, nas ações do próximo ano.",
+    "moment": "O calendário deste ano já teve ações e eventos. Como o relacionamento com parte do casting está começando agora, estamos fazendo um mapeamento: da Black Friday até o fim do ano é um período de aproximação, testes e leitura de oportunidades, que também prepara as campanhas do próximo ano."
+  },
+  "team": {
+    "title": "Quem cuida de você",
+    "body": "O Jonathas Groscove é o fundador da Groscove Group, mas o trabalho acontece por meio de uma equipe de profissionais que acompanha cada etapa. É com essa equipe que você organiza informações, oportunidades e os encaminhamentos do dia a dia."
+  },
+  "formats": {
+    "title": "Os quatro formatos de trabalho com marcas",
+    "lead": "Eles podem acontecer em momentos diferentes. Cada ação depende do alinhamento entre você, a marca, o escopo, o orçamento e a formalização.",
+    "progress": "Você respondeu {count} de 4",
+    "question": "Esse formato faz sentido para você?",
+    "interest": {
+      "yes": "Tenho interesse",
+      "maybe": "Quero avaliar",
+      "no": "Agora não"
+    },
+    "notePlaceholder": "Algo que a equipe precisa saber (opcional)",
+    "save": "Salvar",
+    "saved": "Salvo",
+    "importantLabel": "Importante",
+    "items": {
+      "cpa": {
+        "label": "Formato 1",
+        "title": "CPA: relacionamento, links e cupons",
+        "summary": "O primeiro passo para começar ou aprofundar o relacionamento com marcas. A ideia é entender a sua familiaridade com produtos e marcas, testar a comunicação e observar a resposta do seu público.",
+        "points": {
+          "p1": "Contamos quais marcas você já consome, conhece ou usa na sua rotina.",
+          "p2": "Você pode receber links e cupons de desconto para testes, conforme a disponibilidade e as regras de cada marca.",
+          "p3": "Você usa links e cupons em conteúdos coerentes com o seu calendário editorial, sempre respeitando as orientações da marca.",
+          "p4": "A marca observa aderência, qualidade do conteúdo, interesse do público e os resultados disponíveis."
+        },
+        "important": "CPA não é remuneração fixa garantida. Antes de começar, explicamos a regra de atribuição, a ação considerada válida, a janela de apuração, o percentual ou valor e a forma de pagamento, conforme as condições formalizadas pela marca."
+      },
+      "publi": {
+        "label": "Formato 2",
+        "title": "Publi post: campanha remunerada",
+        "summary": "Depois de entender melhor a sua comunicação, podemos apresentar oportunidades de conteúdo patrocinado. Muitas vezes a marca precisa conhecer o seu perfil e avaliar os dados antes de definir escopo e investimento.",
+        "points": {
+          "p1": "Pedimos o seu media kit atualizado por e-mail. Se você não tiver um, preparamos uma apresentação interna com os seus dados.",
+          "p2": "Conversamos sobre campanhas anteriores, marcas atendidas, formatos entregues, resultados e valores praticados ou desejados.",
+          "p3": "Valores e condições são avaliados com base no briefing, nos entregáveis, no prazo, nos direitos de uso, na exclusividade e no orçamento da marca."
+        },
+        "important": "Não prometemos cachê, campanha ou aprovação durante a conversa. Toda proposta é tratada e formalizada por e-mail."
+      },
+      "project": {
+        "label": "Formato 3",
+        "title": "Projetos autorais e captação de patrocínio",
+        "summary": "Buscamos Heros com ideias próprias e capacidade de criar projetos, experiências, eventos, formatos recorrentes ou propriedades de conteúdo que possam atrair patrocinadores.",
+        "points": {
+          "p1": "Referências conhecidas ajudam a entender o conceito: o Rancho do Carlinhos Maia, a Farofa da Gkay, o leilão beneficente do Neymar, os Ensaios da Anitta, o Numanice da Ludmilla e a Tardezinha do Thiaguinho. Não é para comparar escala nem prometer resultado: é para mostrar como um projeto autoral pode virar uma propriedade de marca.",
+          "p2": "Se você tem uma ideia guardada, um projeto em andamento ou uma comunidade que gostaria de reunir numa experiência, conte para a gente: conceito, público, formato, local, calendário, diferenciais, parceiros e estágio.",
+          "p3": "A equipe pode estudar o projeto e prospectar patrocínios. As marcas e cotas buscadas podem envolver investimentos acima de R$ 100 mil, dependendo do projeto, do escopo e da oportunidade."
+        },
+        "important": "Não prometemos captação nem valor de patrocínio. O valor citado é uma referência do perfil de oportunidade, não uma garantia: a viabilidade depende de apresentação, orçamento, público, contrapartidas e interesse dos patrocinadores."
+      },
+      "events": {
+        "label": "Formato 4",
+        "title": "Eventos e experiências de marca",
+        "summary": "Marcas e parceiros podem contratar Heros para eventos, ativações, lançamentos, encontros internos e experiências. A presença pode ser uma oportunidade de relacionamento, produção de conteúdo e aproximação com o mercado.",
+        "points": {
+          "p1": "Contamos a sua disponibilidade, o interesse em eventos, as cidades em que você consegue estar e a antecedência de que precisa.",
+          "p2": "Os formatos de participação variam: presença, cobertura, stories, reels, entrevistas, conteúdo antes ou depois do evento, entre outros.",
+          "p3": "As oportunidades podem vir de uma marca específica ou do relacionamento com assessorias de imprensa e parceiros do grupo."
+        },
+        "important": "Pontualidade, postura profissional, cordialidade com equipes e convidados e o cumprimento do combinado fazem toda a diferença."
+      }
+    }
+  },
+  "idea": {
+    "title": "Seu projeto autoral",
+    "lead": "Conte a ideia mesmo que ainda esteja no começo. A equipe estuda e responde por aqui e por e-mail.",
+    "open": "Enviar meu projeto",
+    "fields": {
+      "title": "Nome ou ideia do projeto",
+      "concept": "Conceito",
+      "conceptHint": "O que é, por que existe e o que o torna diferente.",
+      "audience": "Público",
+      "format": "Formato",
+      "location": "Local",
+      "timeline": "Calendário pretendido",
+      "stage": "Em que estágio está",
+      "partners": "Parceiros que já estão no projeto",
+      "needs": "Do que o projeto precisa"
+    },
+    "send": "Enviar projeto",
+    "sent": "Projeto enviado. A equipe vai estudar e te dar retorno.",
+    "mine": "Projetos que você enviou",
+    "sentOn": "Enviado em {date}",
+    "status": {
+      "received": "Recebido",
+      "studying": "Em estudo",
+      "prospecting": "Buscando patrocínio",
+      "paused": "Pausado",
+      "closed": "Encerrado"
+    }
+  },
+  "actions": {
+    "title": "Ação aberta",
+    "until": "Respostas até {date}",
+    "question": "Você tem interesse em participar?",
+    "interest": {
+      "yes": "Tenho interesse",
+      "depends": "Depende das marcas e condições",
+      "no": "Desta vez não"
+    },
+    "categories": "Categorias e marcas de interesse",
+    "availability": "Disponibilidade e restrições de agenda",
+    "availabilityHint": "Viagens, compromissos, conflitos com concorrentes e formatos que você não quer fazer.",
+    "notes": "Algo mais",
+    "send": "Enviar resposta",
+    "update": "Atualizar resposta",
+    "sent": "Resposta enviada. A equipe formaliza as possibilidades por e-mail.",
+    "answered": "Sua resposta: {interest}",
+    "calendar": "Ver a data na agenda",
+    "disclaimer": "Responder não confirma participação: ela depende do alinhamento de marca, escopo, valores, disponibilidade e formalização."
+  },
+  "tips": {
+    "title": "Conteúdo que ajuda as marcas a te escolher",
+    "lead": "Muitas oportunidades dependem de a marca entender a sua linguagem, a sua consistência e como você comunica produtos e serviços.",
+    "items": {
+      "natural": {
+        "title": "Naturalidade",
+        "text": "Mostre produtos e experiências de forma coerente com a sua rotina, sem transformar todo conteúdo em anúncio."
+      },
+      "consistency": {
+        "title": "Consistência",
+        "text": "Mantenha frequência e qualidade, evitando longos períodos sem publicar quando houver compromisso com um calendário."
+      },
+      "context": {
+        "title": "Contexto",
+        "text": "Explique por que você usa, gosta ou recomenda algo. Mostre aplicação real, benefício ou experiência."
+      },
+      "variety": {
+        "title": "Variedade",
+        "text": "Alterne vídeos curtos, stories, carrosséis, bastidores, tutoriais, avaliações e conteúdos de rotina, conforme o seu perfil."
+      },
+      "community": {
+        "title": "Comunidade",
+        "text": "Puxe conversa, responda comentários e observe as dúvidas que se repetem no seu público."
+      },
+      "safety": {
+        "title": "Segurança de marca",
+        "text": "Cuide de linguagem, imagem, informações e transparência em publicidade. Sinalize conteúdo patrocinado quando for o caso."
+      },
+      "planning": {
+        "title": "Planejamento",
+        "text": "Conecte datas comerciais e sazonais ao seu segmento, sem publicar conteúdo artificial ou fora de contexto."
+      }
+    },
+    "calendar": "A equipe vai encaminhar um calendário de sugestões com datas relevantes, oportunidades sazonais e ideias de conteúdo. Ele é uma referência: adapte à sua identidade, à sua agenda e à sua capacidade de produção."
+  },
+  "universes": {
+    "title": "Universos",
+    "body": "A aba Universos reúne os segmentos e as marcas com que a Groscove Group trabalha e é atualizada de tempos em tempos. Marque os universos que fazem sentido para você, as marcas que já conhece e as que gostaria de explorar.",
+    "note": "A indicação não é aprovação automática de campanha.",
+    "open": "Abrir Universos",
+    "summary": "{universes, plural, =0 {Nenhum universo marcado} one {# universo marcado} other {# universos marcados}} · {brands, plural, =0 {nenhuma marca} one {# marca} other {# marcas}}",
+    "lead": "Os segmentos e as marcas com que a Groscove Group trabalha. Marque o que faz sentido para você.",
+    "fits": "Faz sentido para mim",
+    "known": "Já conheço",
+    "explore": "Quero explorar",
+    "search": "Buscar marca",
+    "brandsCount": "{count, plural, one {# marca} other {# marcas}}",
+    "save": "Salvar escolhas",
+    "saved": "Escolhas salvas",
+    "dirty": "Você tem mudanças que ainda não foram salvas.",
+    "empty": "Nenhuma marca encontrada."
+  },
+  "kit": {
+    "title": "Media kit e cadastro",
+    "lead": "Para a equipe apresentar você às marcas, mantenha o seu media kit e o seu cadastro em dia.",
+    "items": {
+      "identity": "Identificação: nome completo, nome artístico, cidade e estado, uma breve biografia e contatos profissionais.",
+      "channels": "Canais: links de Instagram, TikTok, YouTube, Twitch, site, podcast ou outras plataformas, com o @ de cada um.",
+      "audience": "Audiência: seguidores por canal, alcance e impressões, visualizações médias, engajamento e dados como idade, gênero e localização.",
+      "content": "Conteúdo: principais temas e formatos, frequência de publicação, diferenciais e exemplos representativos.",
+      "history": "Histórico comercial: marcas atendidas, campanhas anteriores, entregáveis e resultados autorizados para divulgação.",
+      "prices": "Formatos e valores: stories, reels, feed, vídeo, presença e pacotes, com tabela ou faixas de referência, quando houver.",
+      "conditions": "Condições: disponibilidade, prazos mínimos, deslocamento, custos de produção, direitos de uso, impulsionamento e exclusividade.",
+      "materials": "Materiais: fotos profissionais, retratos, logotipo, links de portfólio e capturas recentes dos insights das plataformas."
+    },
+    "registration": "Mantenha também o cadastro atualizado: nome completo, nome artístico, endereço (para envios e logística, quando necessário), telefone ou WhatsApp com DDD, e-mail principal e alternativo, cidade e estado.",
+    "privacy": "Dados bancários, documentos e informações fiscais só são pedidos quando há contratação, pelo canal certo e com orientação do setor responsável. Nunca em grupos de WhatsApp.",
+    "open": "Abrir meu media kit"
+  },
+  "channels": {
+    "title": "Canais oficiais",
+    "email": "O e-mail é o canal oficial para marcas, briefings, propostas, valores, aprovações, contratos, prazos e confirmações. Confira a caixa de entrada e também o spam.",
+    "whatsapp": "O WhatsApp serve para contato rápido, alinhamentos e avisos, mas não substitui a formalização por e-mail.",
+    "portal": "Aqui no portal você acompanha oportunidades, tarefas, agenda e avisos."
+  },
+  "limits": {
+    "title": "O que você pode esperar",
+    "items": {
+      "p1": "Não garantimos campanhas, cachês, convites, patrocínios, resultados nem aprovação de marcas.",
+      "p2": "Estar no casting significa que o seu perfil é apresentado a anunciantes para avaliação de oportunidades. Cada marca decide de acordo com o próprio briefing e os próprios critérios.",
+      "p3": "Cada ação pode exigir negociação e formalização específicas.",
+      "p4": "Nunca publique conteúdo de marca sem briefing, autorização e condições comerciais alinhadas.",
+      "p5": "Não compartilhamos informações confidenciais de marcas, de outros Heros, valores ou negociações.",
+      "p6": "Se você tiver uma dúvida que ainda não tem resposta, a equipe encaminha ao setor responsável e responde por e-mail depois da validação."
+    }
+  },
+  "notInCasting": "Esta página explica como a Groscove Group trabalha com Heros. Quando você entrar no casting, vai poder marcar aqui os formatos que fazem sentido, responder às ações abertas e enviar o seu projeto autoral.",
+  "teamView": {
+    "tab": "Relacionamento",
+    "title": "Relacionamento com marcas",
+    "lead": "O que o Hero marcou no portal e o que a equipe registrou nas reuniões.",
+    "updatedAt": "Atualizado em {date}",
+    "formats": "Formatos de interesse",
+    "notAnswered": "Não respondido",
+    "recordHint": "Registre aqui o que o Hero disse na reunião.",
+    "actions": "Ações",
+    "noActions": "Ainda não respondeu nenhuma ação.",
+    "seeAnswers": "Ver todas as respostas",
+    "universes": "Universos que fazem sentido",
+    "brandsKnown": "Marcas que já conhece",
+    "brandsExplore": "Marcas que quer explorar",
+    "noneMarked": "Nada marcado ainda.",
+    "ideas": "Projetos autorais",
+    "noIdeas": "Nenhum projeto enviado.",
+    "ideaStatus": "Andamento",
+    "teamNote": "Nota da equipe (o Hero não vê)",
+    "saveIdea": "Salvar andamento",
+    "ideaSaved": "Andamento salvo",
+    "answersTitle": "Respostas: {title}",
+    "answersLead": "Quem respondeu à ação, com interesse primeiro. Responder não confirma participação.",
+    "answersCount": "{yes} com interesse · {depends} depende · {no} não",
+    "noAnswers": "Ninguém respondeu ainda.",
+    "openTalent": "Abrir ficha"
+  }
+}

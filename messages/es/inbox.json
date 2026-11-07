@@ -286,6 +286,18 @@
     "onda_request_updated": {
       "title": "{status, select, talking {Onda Digital: en conversación} proposal {Onda Digital: propuesta} live {¡Tu marca está en la ola!} closed {Onda Digital: pedido cerrado} other {Onda Digital: pedido actualizado}}",
       "body": "Tu pedido de la Onda Digital cambió de etapa. Mira el avance en el portal."
+    },
+    "creator_idea_received": {
+      "title": "{talent} envió un proyecto propio",
+      "body": "“{title}”. Míralo en la ficha del Hero y dale seguimiento."
+    },
+    "creator_idea_updated": {
+      "title": "{status, select, studying {Tu proyecto está en estudio} prospecting {Estamos buscando patrocinio para tu proyecto} paused {Tu proyecto quedó en pausa} closed {Tu proyecto se cerró} other {Tu proyecto cambió de etapa}}",
+      "body": "“{title}”. Mira los detalles en Cómo trabajamos."
+    },
+    "creator_action_answered": {
+      "title": "{talent} respondió: {action}",
+      "body": "{interest, select, yes {Le interesa.} depends {Depende de las marcas y condiciones.} other {Esta vez no.}} Ver todas las respuestas."
     }
   }
 }
