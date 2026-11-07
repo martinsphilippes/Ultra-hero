@@ -18953,5 +18953,115 @@ delete from public.agency_members where agency_id::text like 'c1280000-%';
 delete from public.agencies where id::text like 'c1280000-%';
 delete from auth.users where id::text like 'c1280000-%';
 
+-- ================================================================ S129 · Universo de marcas: categorias, dados internos e login da marca (0129/0130)
+\ir ../migrations/0129_universo_marcas.sql
+\ir ../migrations/0130_importa_marcas_groscove.sql
+select tests.su();
+update public.agencies set slug = 'groscove-antes-s129' where slug = 'groscove';
+insert into auth.users (id, email) values
+  ('c1290000-0000-4000-8000-000000000001', 'gestor@groscove-s129.test'),
+  ('c1290000-0000-4000-8000-000000000002', 'ana@adidas-s129.com.br'),
+  ('c1290000-0000-4000-8000-000000000003', 'qualquer@gmail.com'),
+  ('c1290000-0000-4000-8000-000000000004', 'fora@outra-s129.test');
+insert into public.agencies (id, slug, name) values ('c1290000-0000-4000-8000-0000000000a1', 'groscove', 'Groscove S129'),
+  ('c1290000-0000-4000-8000-0000000000a2', 's129-outra', 'Outra S129');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('c1290000-0000-4000-8000-0000000000a1', 'c1290000-0000-4000-8000-000000000001', 'manager', 'Gestor S129'),
+  ('c1290000-0000-4000-8000-0000000000a2', 'c1290000-0000-4000-8000-000000000004', 'admin', 'Adm Outra S129');
+create table tests.s129 (k text primary key, v text);
+grant all on tests.s129 to anon, authenticated;
+select public.groscove_brands_import('[{"slug":"adidas-s129","name":"Adidas S129","category":"moda","site_url":"https://www.adidas-s129.com.br/","email_domains":["adidas-s129.com.br"],"cpa":"0.07","mid":"999","phone":"(11) 0000-0000","email":"sac@adidas-s129.com.br"},{"slug":"nike-s129","name":"Nike S129","category":"moda","site_url":"https://www.nike-s129.com.br/","email_domains":["nike-s129.com.br"]}]'::jsonb);
+insert into tests.s129 select 'brand', id::text from public.brands where slug = 'adidas-s129';
+select tests.ok('S129 16 categorias; importação idempotente, ligada à Groscove, fora da vitrine',
+  (select count(*) from public.brand_categories) = 16
+  and public.groscove_brands_import('[{"slug":"adidas-s129","name":"ADIDAS s129","category":"moda","site_url":"https://www.adidas-s129.com.br/","email_domains":[]}]'::jsonb) = 0
+  and (select count(*) from public.brands where public.brand_name_key(name) = 'adidass129') = 1
+  and exists (select 1 from public.brands b join public.agency_brands ab on ab.brand_id = b.id and ab.status = 'active'
+              where b.slug = 'adidas-s129' and ab.agency_id = 'c1290000-0000-4000-8000-0000000000a1' and b.status = 'inactive' and b.approval_status = 'approved'));
+
+select tests.login('c1290000-0000-4000-8000-000000000004', 'fora@outra-s129.test');
+select tests.ok('S129 outra agência não vê os dados internos (CPA, MID)', (select count(*) from public.brand_internal) = 0);
+select tests.expect_error('S129 outra agência não edita a marca', $$select public.brand_admin_save((select v from tests.s129 where k = 'brand')::uuid, '{"name":"X"}'::jsonb)$$, 'forbidden');
+select tests.login('c1290000-0000-4000-8000-000000000001', 'gestor@groscove-s129.test');
+select tests.ok('S129 a Groscove vê os dados internos e edita a marca (gmail não vira domínio)',
+  (select mid from public.brand_internal i join public.brands b on b.id = i.brand_id where b.slug = 'adidas-s129') = '999'
+  and public.brand_admin_save((select v from tests.s129 where k = 'brand')::uuid, '{"category":"beleza","email_domains":["adidas-s129.com.br","gmail.com"]}'::jsonb)
+  and (select email_domains from public.brands where slug = 'adidas-s129') = array['adidas-s129.com.br']);
+
+select tests.login('c1290000-0000-4000-8000-000000000003', 'qualquer@gmail.com');
+select tests.ok('S129 e-mail pessoal não liga sozinho (só pela busca do nome, sem o selo de domínio)',
+  jsonb_array_length(public.brand_login_candidates(null)) = 0
+  and (public.brand_login_candidates('adidas') -> 0 ->> 'domain_matches')::boolean = false);
+select tests.login('c1290000-0000-4000-8000-000000000002', 'ana@adidas-s129.com.br');
+select tests.ok('S129 "Você é da Adidas?": o domínio do e-mail acha a marca',
+  (public.brand_login_candidates(null) -> 0 ->> 'name') = 'Adidas S129'
+  and (public.brand_login_candidates(null) -> 0 ->> 'domain_matches')::boolean);
+insert into tests.s129 select 'req', public.brand_login_request((select v from tests.s129 where k = 'brand')::uuid, 'Ana Lima', 'Marketing')::text;
+select tests.expect_error('S129 quem pediu não se aprova', format($$select public.brand_login_decide(%L, true)$$, (select v from tests.s129 where k = 'req')), 'forbidden');
+select tests.login('c1290000-0000-4000-8000-000000000001', 'gestor@groscove-s129.test');
+select tests.ok('S129 a Groscove vê o pedido com o domínio conferido e aprova',
+  (public.brand_login_inbox() -> 0 ->> 'domain_matches')::boolean
+  and public.brand_login_decide((select v from tests.s129 where k = 'req')::uuid, true));
+select tests.su();
+select tests.ok('S129 aprovado: a pessoa entra como Dona da marca existente, com o papel de marca e o aviso',
+  exists (select 1 from public.brand_members m join public.brands b on b.id = m.brand_id
+          where b.slug = 'adidas-s129' and m.user_id = 'c1290000-0000-4000-8000-000000000002' and m.role = 'owner' and m.revoked_at is null)
+  and exists (select 1 from public.role_assignments r where r.user_id = 'c1290000-0000-4000-8000-000000000002' and r.role = 'brand' and r.revoked_at is null)
+  and exists (select 1 from public.inbox_notifications n where n.user_id = 'c1290000-0000-4000-8000-000000000002' and n.kind = 'brand_login_decided'));
+select tests.ok('S129 nada novo para anon',
+  not has_function_privilege('anon', 'public.brand_login_candidates(text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.groscove_brands_import(jsonb)', 'execute'));
+
+delete from public.inbox_notifications where user_id::text like 'c1290000-%';
+delete from public.role_assignments where user_id::text like 'c1290000-%';
+delete from public.brand_access_requests where user_id::text like 'c1290000-%';
+delete from public.brand_members where user_id::text like 'c1290000-%';
+delete from public.agency_brands where agency_id::text like 'c1290000-%';
+delete from public.brand_internal where brand_id in (select id from public.brands where slug like '%-s129');
+delete from public.brands where slug like '%-s129';
+delete from public.agency_members where agency_id::text like 'c1290000-%';
+delete from public.agencies where id::text like 'c1290000-%';
+update public.agencies set slug = 'groscove' where slug = 'groscove-antes-s129';
+delete from auth.users where id::text like 'c1290000-%';
+drop table tests.s129;
+
+-- ================================================================ S131 · Logos do universo de marcas: quem troca o logo (0131)
+\ir ../migrations/0131_logos_marcas.sql
+select tests.su();
+update public.agencies set slug = 'groscove-antes-s131' where slug = 'groscove';
+insert into auth.users (id, email) values
+  ('c1310000-0000-4000-8000-000000000001', 'gestor@groscove-s131.test'),
+  ('c1310000-0000-4000-8000-000000000002', 'dona@marca-s131.test'),
+  ('c1310000-0000-4000-8000-000000000003', 'fora@outra-s131.test');
+insert into public.agencies (id, slug, name) values ('c1310000-0000-4000-8000-0000000000a1', 'groscove', 'Groscove S131');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('c1310000-0000-4000-8000-0000000000a1', 'c1310000-0000-4000-8000-000000000001', 'manager', 'Gestor S131');
+insert into public.brands (id, slug, name, site_url, status) values ('c1310000-0000-4000-8000-0000000000b1', 'marca-s131', 'Marca S131', 'https://marca-s131.test/', 'inactive');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('c1310000-0000-4000-8000-0000000000b1', 'c1310000-0000-4000-8000-000000000002', 'owner', 'Dona S131');
+
+select tests.login('c1310000-0000-4000-8000-000000000003', 'fora@outra-s131.test');
+select tests.expect_error('S131 quem não é da marca nem da Groscove não troca o logo',
+  $$select public.brand_logo_set('c1310000-0000-4000-8000-0000000000b1', '/brands/m/x.png')$$, 'forbidden');
+select tests.login('c1310000-0000-4000-8000-000000000002', 'dona@marca-s131.test');
+select tests.ok('S131 a própria marca troca o logo', public.brand_logo_set('c1310000-0000-4000-8000-0000000000b1', 'https://cdn.marca-s131.test/logo.png'));
+select tests.expect_error('S131 caminho de imagem fora do padrão é recusado',
+  $$select public.brand_logo_set('c1310000-0000-4000-8000-0000000000b1', 'javascript:alert(1)')$$, 'invalid_image');
+select tests.login('c1310000-0000-4000-8000-000000000001', 'gestor@groscove-s131.test');
+select tests.ok('S131 a Groscove (gestor) troca o logo de qualquer marca',
+  public.brand_logo_can_edit('c1310000-0000-4000-8000-0000000000b1')
+  and public.brand_logo_set('c1310000-0000-4000-8000-0000000000b1', '/brands/m/marca-s131.svg'));
+select tests.su();
+select tests.ok('S131 o logo ficou gravado e nada novo para anon',
+  (select logo_url from public.brands where id = 'c1310000-0000-4000-8000-0000000000b1') = '/brands/m/marca-s131.svg'
+  and not has_function_privilege('anon', 'public.brand_logo_set(uuid, text)', 'execute'));
+
+delete from public.brand_members where user_id::text like 'c1310000-%';
+delete from public.brands where id::text like 'c1310000-%';
+delete from public.agency_members where agency_id::text like 'c1310000-%';
+delete from public.agencies where id::text like 'c1310000-%';
+update public.agencies set slug = 'groscove' where slug = 'groscove-antes-s131';
+delete from auth.users where id::text like 'c1310000-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

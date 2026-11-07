@@ -12,7 +12,7 @@ export type AgencyBrand = {
   status: "active" | "archived";
   isDemo: boolean;
   accountManagerId: string | null;
-  brand: { id: string; slug: string; name: string; logoUrl: string | null; siteUrl: string; status: string; approval?: "pending" | "approved" | "rejected" };
+  brand: { id: string; slug: string; name: string; logoUrl: string | null; siteUrl: string; status: string; approval?: "pending" | "approved" | "rejected"; category?: string | null };
 };
 export type BrandMember = {
   level?: string | null; userId: string; role: BrandRole; name: string; jobTitle: string | null; since: string };
@@ -65,10 +65,10 @@ type LinkRow = {
   status: string;
   is_demo: boolean;
   account_manager_id: string | null;
-  brand: { id: string; slug: string; name: string; logo_url: string | null; site_url: string; status: string; approval_status?: string | null } | null;
+  brand: { id: string; slug: string; name: string; logo_url: string | null; site_url: string; status: string; approval_status?: string | null; category?: string | null } | null;
 };
 
-const LINK_SELECT = "id, status, is_demo, account_manager_id, brand:brands!agency_brands_brand_fk(id, slug, name, logo_url, site_url, status, approval_status)";
+const LINK_SELECT = "id, status, is_demo, account_manager_id, brand:brands!agency_brands_brand_fk(id, slug, name, logo_url, site_url, status, approval_status, category)";
 
 function toAgencyBrand(row: LinkRow): AgencyBrand | null {
   if (!row.brand) return null;
@@ -86,6 +86,8 @@ function toAgencyBrand(row: LinkRow): AgencyBrand | null {
       status: row.brand.status,
       // 0126: marca nova espera a aprovação da Groscove
       approval: row.brand.approval_status === "pending" ? "pending" : row.brand.approval_status === "rejected" ? "rejected" : "approved",
+      // 0129: categoria do universo de marcas
+      category: row.brand.category ?? null,
     },
   };
 }

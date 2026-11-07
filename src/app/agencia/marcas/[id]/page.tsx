@@ -16,6 +16,8 @@ import { getAgencyBrand, listBrandInvites, listBrandMembers } from "@/lib/agency
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
 import { InvitesGate } from "@/components/invites/InvitesGate";
+import { BrandAdminEditor, type BrandInternal } from "@/components/brand-universe/BrandAdminEditor";
+import { BrandLogoUpload } from "@/components/brand-universe/BrandLogoUpload";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -43,8 +45,22 @@ export default async function AgencyBrandPage({ params }: Props) {
     canEdit ? listBrandInvites(id) : Promise.resolve([]),
   ]);
   const locked = ctx.agency.isDemo;
+  // 0129: a Groscove vê os dados internos; gestor+ da Groscove (ou admin geral) edita a ficha e o logo
+  const supabase = await createClient();
+  const groscoveEditor = ctx.platformAdmin || (ctx.agency.slug === "groscove" && agencyCan(ctx.role, "manager", false));
+  const groscoveMember = ctx.platformAdmin || ctx.agency.slug === "groscove";
+  const [tu, brandRow, internalRow, categories] = groscoveMember
+    ? await Promise.all([
+        getTranslations("brandUniverse"),
+        supabase.from("brands").select("name, category, site_url, email_domains, logo_url").eq("id", id).maybeSingle(),
+        supabase.from("brand_internal").select("cpa, cpa_influencer, mid, official_phone, official_email").eq("brand_id", id).maybeSingle(),
+        supabase.from("brand_categories").select("slug, name").order("sort_order"),
+      ])
+    : [null, null, null, null];
+  const internal = (internalRow?.data ?? null) as BrandInternal | null;
+  const brand = brandRow?.data ?? null;
   // 0112: acesso do contato da marca (situação, nome, e-mail e celular — só gestor+ e admin geral)
-  const access = canEdit && active && !locked ? ((await loadAccessStatus(await createClient(), ctx.agency.id, "brand")).get(id) ?? null) : null;
+  const access = canEdit && active && !locked ? ((await loadAccessStatus(supabase, ctx.agency.id, "brand")).get(id) ?? null) : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -69,6 +85,45 @@ export default async function AgencyBrandPage({ params }: Props) {
           </a>
         }
       />
+
+      {tu && brand && groscoveEditor ? (
+        <Section title={tu("admin.title")} description={tu("admin.hint")}>
+          <div className="flex flex-col gap-5 rounded-2xl border border-border bg-surface p-4">
+            <BrandLogoUpload brandId={id} name={brand.name} url={brand.logo_url} />
+            <BrandAdminEditor
+              brandId={id}
+              initial={{ name: brand.name, category: brand.category, siteUrl: brand.site_url, emailDomains: brand.email_domains ?? [] }}
+              internal={internal}
+              categories={categories?.data ?? []}
+            />
+          </div>
+        </Section>
+      ) : tu && groscoveMember ? (
+        <Section title={tu("internalView.title")}>
+          <dl className="grid gap-3 rounded-2xl border border-dashed border-border-strong bg-surface p-4 sm:grid-cols-2" data-testid="brand-internal-view">
+            {internal && [internal.cpa, internal.cpa_influencer, internal.mid, internal.official_phone, internal.official_email].some(Boolean) ? (
+              (
+                [
+                  ["cpa", internal.cpa],
+                  ["cpaInfluencer", internal.cpa_influencer],
+                  ["mid", internal.mid],
+                  ["phone", internal.official_phone],
+                  ["email", internal.official_email],
+                ] as const
+              )
+                .filter(([, v]) => v)
+                .map(([k, v]) => (
+                  <div key={k} className="flex flex-col">
+                    <dt className="type-caption text-fg-muted">{tu(`admin.${k}`)}</dt>
+                    <dd className="break-words text-sm text-fg">{v}</dd>
+                  </div>
+                ))
+            ) : (
+              <p className="type-body-sm text-fg-muted">{tu("internalView.empty")}</p>
+            )}
+          </dl>
+        </Section>
+      ) : null}
 
       {access ? (
         <Section title={t("accessTitle")} description={t("accessHint")}>

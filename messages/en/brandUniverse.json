@@ -1,0 +1,75 @@
+{
+  "filters": {
+    "label": "Filter by category",
+    "all": "All",
+    "search": "Search brand by name",
+    "searchButton": "Search",
+    "results": "{count, plural, =0 {No brands} one {1 brand} other {# brands}}",
+    "clear": "Clear"
+  },
+  "noCategory": "No category",
+  "logins": {
+    "title": "Brand login requests ({count})",
+    "hint": "People who signed up as a Brand and said they belong to a brand in our universe. Check the email and approve: the first approved person becomes the brand Owner; later ones join as Staff.",
+    "empty": "No pending requests.",
+    "domainOk": "Email from the brand's domain",
+    "domainNo": "Email outside the brand's domain — check before approving",
+    "hasOwner": "The brand already has an Owner: joins as Staff",
+    "noOwner": "First access: joins as Owner",
+    "approve": "Approve",
+    "approveStaff": "Approve as Staff",
+    "reject": "Reject",
+    "done": "Request decided."
+  },
+  "admin": {
+    "title": "Brand record (Groscove)",
+    "hint": "Only Groscove can edit. Name, category, website and email domains apply across the platform.",
+    "name": "Name",
+    "category": "Category",
+    "site": "Official website",
+    "domains": "Brand email domains",
+    "domainsHint": "Separate with commas (e.g. natura.net, natura.com.br). Anyone signing up with an email from these domains sees \"Are you from this brand?\". Personal email (gmail, hotmail…) never counts.",
+    "internalTitle": "Internal data",
+    "internalHint": "Only Groscove sees this. The brand and other agencies don't.",
+    "cpa": "CPA",
+    "cpaInfluencer": "Influencer CPA",
+    "mid": "MID code",
+    "phone": "Official phone",
+    "email": "Official email",
+    "save": "Save record",
+    "saved": "Record saved."
+  },
+  "internalView": {
+    "title": "Internal data (Groscove only)",
+    "empty": "No internal data."
+  },
+  "logo": {
+    "title": "Logo",
+    "hint": "PNG, JPG or WebP up to 1 MB, ideally with a transparent background.",
+    "change": "Change logo",
+    "sending": "Uploading…",
+    "done": "Logo updated.",
+    "remove": "Remove logo"
+  },
+  "claim": {
+    "title": "Are you from one of these brands?",
+    "titleDomain": "Are you from {brand}?",
+    "body": "These brands are already on the platform. Request access to yours: Groscove checks and approves it. This way nobody creates the same brand twice.",
+    "search": "Search the brand by name",
+    "searchButton": "Search",
+    "none": "No brand found with that name.",
+    "domainMatch": "Your email is from this brand's domain",
+    "fullName": "Your full name",
+    "jobTitle": "Your job title (optional)",
+    "request": "I'm from this brand",
+    "notListed": "My brand isn't here — register a new one",
+    "searchAgain": "Look for my brand in the list",
+    "pendingTitle": "Request sent",
+    "pendingBody": "You asked for access to {brand}. Groscove checks and approves it; you'll get a notice in the bell.",
+    "rejected": "Your previous request for {brand} was not approved. If that's a mistake, ask again or contact Groscove."
+  },
+  "brandLogo": {
+    "title": "Brand logo",
+    "hint": "The logo is shown to agencies, Heroes and in your portal."
+  }
+}

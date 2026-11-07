@@ -79,6 +79,9 @@ export const INBOX_KINDS = [
   "brand_approval_decided",
   "profile_claim_requested",
   "profile_claim_decided",
+  // login da marca ligado à marca certa (0129)
+  "brand_login_requested",
+  "brand_login_decided",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 

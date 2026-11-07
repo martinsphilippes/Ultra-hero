@@ -419,7 +419,8 @@
     "invalid_segments": "Escolha até 4 segmentos da lista.",
     "brand_exists": "Essa marca já está cadastrada na plataforma e é atendida por outra agência.",
     "already_claimed": "Este perfil já tem dono.",
-    "claim_link_failed": "Não foi possível ligar a conta ao perfil. Confira se a pessoa já tem outro Hero."
+    "claim_link_failed": "Não foi possível ligar a conta ao perfil. Confira se a pessoa já tem outro Hero.",
+    "brand_exists_claim": "Essa marca já está na plataforma. Peça o acesso a ela na lista acima — a Groscove confere e libera."
   },
   "casting": {
     "title": "Casting",

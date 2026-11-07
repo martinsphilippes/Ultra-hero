@@ -419,7 +419,8 @@
     "invalid_segments": "Choose up to 4 segments from the list.",
     "brand_exists": "This brand is already registered on the platform and served by another agency.",
     "already_claimed": "This profile already has an owner.",
-    "claim_link_failed": "The account could not be linked to the profile. Check whether the person already has another Hero."
+    "claim_link_failed": "The account could not be linked to the profile. Check whether the person already has another Hero.",
+    "brand_exists_claim": "This brand is already on the platform. Request access to it in the list above — Groscove checks and approves it."
   },
   "casting": {
     "title": "Roster",

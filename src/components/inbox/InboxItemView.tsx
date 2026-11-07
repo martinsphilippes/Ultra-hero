@@ -57,6 +57,8 @@ const ICON: Partial<Record<string, LucideIcon>> = {
   brand_approval_decided: UserPlus,
   profile_claim_requested: UserPlus,
   profile_claim_decided: UserPlus,
+  brand_login_requested: UserPlus,
+  brand_login_decided: UserPlus,
 };
 
 // Tokens que os textos dos avisos podem usar: sempre presentes (vazio quando o aviso não traz).

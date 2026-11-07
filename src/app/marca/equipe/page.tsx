@@ -14,6 +14,7 @@ import { PersonalityCta } from "@/components/personality/PersonalityCta";
 import { listBrandInvites, listBrandMembers } from "@/lib/agency/queries";
 import { requireBrand } from "@/lib/brand-portal/server";
 import { InvitesGate } from "@/components/invites/InvitesGate";
+import { BrandLogoUpload } from "@/components/brand-universe/BrandLogoUpload";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +27,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function BrandTeamPage() {
   const ctx = await requireBrand();
   const isOwner = ctx.role === "owner";
-  const [t, tb, locale, user, members, invites] = await Promise.all([
+  const [t, tb, tl, locale, user, members, invites] = await Promise.all([
     getTranslations("brandPortal.team"),
+    getTranslations("brandUniverse.brandLogo"),
     getTranslations("team.brand"),
     getLocale(),
     getUser(),
@@ -47,6 +49,12 @@ export default async function BrandTeamPage() {
           ) : null
         }
       />
+      {/* 0131: a própria marca troca o logo */}
+      <Section title={tl("title")} description={tl("hint")}>
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <BrandLogoUpload brandId={ctx.brand.id} name={ctx.brand.name} url={ctx.brand.logoUrl} />
+        </div>
+      </Section>
       {(() => {
         const me = members.find((m) => m.userId === user?.id);
         return me ? (

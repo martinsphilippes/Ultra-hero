@@ -1,0 +1,75 @@
+{
+  "filters": {
+    "label": "Filtrar por categoría",
+    "all": "Todas",
+    "search": "Buscar marca por nombre",
+    "searchButton": "Buscar",
+    "results": "{count, plural, =0 {Ninguna marca} one {1 marca} other {# marcas}}",
+    "clear": "Limpiar"
+  },
+  "noCategory": "Sin categoría",
+  "logins": {
+    "title": "Solicitudes de acceso de marcas ({count})",
+    "hint": "Personas que se registraron como Marca y dijeron ser de una marca de nuestro universo. Revisa el correo y aprueba: la primera persona aprobada pasa a ser Dueña de la marca; las siguientes entran como Equipo.",
+    "empty": "Ninguna solicitud pendiente.",
+    "domainOk": "Correo del dominio de la marca",
+    "domainNo": "Correo fuera del dominio de la marca — revisa antes de aprobar",
+    "hasOwner": "La marca ya tiene Dueño: entra como Equipo",
+    "noOwner": "Primer acceso: entra como Dueño",
+    "approve": "Aprobar",
+    "approveStaff": "Aprobar como Equipo",
+    "reject": "Rechazar",
+    "done": "Solicitud decidida."
+  },
+  "admin": {
+    "title": "Ficha de la marca (Groscove)",
+    "hint": "Solo Groscove edita. Nombre, categoría, sitio y dominios de correo valen para toda la plataforma.",
+    "name": "Nombre",
+    "category": "Categoría",
+    "site": "Sitio oficial",
+    "domains": "Dominios de correo de la marca",
+    "domainsHint": "Separa con comas (ej.: natura.net, natura.com.br). Quien se registre con un correo de estos dominios verá \"¿Eres de la marca?\". El correo personal (gmail, hotmail…) nunca cuenta.",
+    "internalTitle": "Datos internos",
+    "internalHint": "Solo Groscove los ve. La marca y otras agencias no.",
+    "cpa": "CPA",
+    "cpaInfluencer": "CPA Influencer",
+    "mid": "Código MID",
+    "phone": "Teléfono oficial",
+    "email": "Correo oficial",
+    "save": "Guardar ficha",
+    "saved": "Ficha guardada."
+  },
+  "internalView": {
+    "title": "Datos internos (solo Groscove)",
+    "empty": "Sin datos internos."
+  },
+  "logo": {
+    "title": "Logo",
+    "hint": "PNG, JPG o WebP de hasta 1 MB, preferiblemente con fondo transparente.",
+    "change": "Cambiar logo",
+    "sending": "Enviando…",
+    "done": "Logo actualizado.",
+    "remove": "Quitar logo"
+  },
+  "claim": {
+    "title": "¿Eres de alguna de estas marcas?",
+    "titleDomain": "¿Eres de {brand}?",
+    "body": "Estas marcas ya están en la plataforma. Pide acceso a la tuya: Groscove la revisa y la libera. Así nadie crea la misma marca dos veces.",
+    "search": "Buscar la marca por nombre",
+    "searchButton": "Buscar",
+    "none": "No se encontró ninguna marca con ese nombre.",
+    "domainMatch": "Tu correo es del dominio de esta marca",
+    "fullName": "Tu nombre completo",
+    "jobTitle": "Tu cargo (opcional)",
+    "request": "Soy de esta marca",
+    "notListed": "Mi marca no está aquí — registrar una nueva",
+    "searchAgain": "Buscar mi marca en la lista",
+    "pendingTitle": "Solicitud enviada",
+    "pendingBody": "Pediste acceso a {brand}. Groscove la revisa y la libera; recibirás el aviso en la campana.",
+    "rejected": "Tu solicitud anterior para {brand} no fue aprobada. Si es un error, pide de nuevo o habla con Groscove."
+  },
+  "brandLogo": {
+    "title": "Logo de la marca",
+    "hint": "El logo se muestra a las agencias, a los Heroes y en tu portal."
+  }
+}

@@ -6,6 +6,8 @@ import { OnboardingWizard } from "@/components/invites/OnboardingWizard";
 import { AgencyAccessPanel } from "@/components/team/AgencyAccessPanel";
 import { HeroClaimStep } from "@/components/casting-open/HeroClaimStep";
 import type { ClaimCandidate } from "@/lib/casting-open/actions";
+import { BrandClaimStep } from "@/components/brand-universe/BrandClaimStep";
+import type { BrandCandidate } from "@/lib/brand-universe/actions";
 import { Clock } from "lucide-react";
 import { Button, EmptyState } from "@/components/ui";
 import { requireUser } from "@/lib/auth/session";
@@ -42,6 +44,11 @@ export default async function FirstAccessPage() {
     ? (((await supabase.rpc("hero_claim_candidates", { p_name: fullName })).data as ClaimCandidate[] | null) ?? [])
     : [];
   const th = heroSelf ? await getTranslations("heroClaim") : null;
+  // 0129: "Você é da X?" — quem escolheu Marca vê as marcas do domínio do e-mail antes de cadastrar outra
+  const brandSelf = current?.kind === "brand" && current.source === "self";
+  const brandReq = brandSelf ? ((await supabase.rpc("my_brand_login_request")).data as { status?: string; brand?: string } | null) : null;
+  const brandCandidates = brandSelf && brandReq?.status !== "pending" ? (((await supabase.rpc("brand_login_candidates", {})).data as BrandCandidate[] | null) ?? []) : [];
+  const tb = brandSelf ? await getTranslations("brandUniverse.claim") : null;
   return (
     <AuthCard title={current?.source === "self" ? t("selfTitle") : t("title")} subtitle={current ? (current.kind === "hero" ? t("heroSubtitle") : t("subtitle")) : undefined}>
       {current ? (
@@ -56,6 +63,19 @@ export default async function FirstAccessPage() {
                 <p className="type-body-sm text-fg-muted">{th("pendingBody", { talent: claim.talent ?? "", agency: claim.agency ?? "" })}</p>
               </div>
             </div>
+          ) : brandSelf && brandReq?.status === "pending" && tb ? (
+            <div className="flex items-start gap-3 rounded-2xl border-2 border-accent bg-accent-soft p-4" data-testid="brand-claim-pending">
+              <Clock className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden="true" />
+              <div className="flex flex-col gap-1">
+                <p className="font-semibold text-fg">{tb("pendingTitle")}</p>
+                <p className="type-body-sm text-fg-muted">{tb("pendingBody", { brand: brandReq.brand ?? "" })}</p>
+              </div>
+            </div>
+          ) : brandSelf && tb ? (
+            <BrandClaimStep initial={brandCandidates} initialName={fullName}>
+              {brandReq?.status === "rejected" ? <p className="type-body-sm text-fg-muted">{tb("rejected", { brand: brandReq.brand ?? "" })}</p> : null}
+              <OnboardingWizard key={current.id} kind={current.kind} agencyName={current.agency} selfService />
+            </BrandClaimStep>
           ) : heroSelf ? (
             <HeroClaimStep initial={candidates} initialName={fullName}>
               {claim?.status === "rejected" && th ? <p className="type-body-sm text-fg-muted">{th("rejected", { talent: claim.talent ?? "" })}</p> : null}

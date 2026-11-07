@@ -266,6 +266,14 @@
     "profile_claim_decided": {
       "title": "{approved, select, true {Tu perfil fue liberado} other {Perfil no confirmado}}",
       "body": "{approved, select, true {Ahora entras como {talent}. Abre el Portal del Hero.} other {La agencia no confirmó que eres {talent}.}}"
+    },
+    "brand_login_requested": {
+      "title": "Solicitud de acceso de marca",
+      "body": "{name} pidió acceso como {brand}. Revisa el correo y aprueba."
+    },
+    "brand_login_decided": {
+      "title": "{approved, select, true {Acceso liberado} other {Acceso no aprobado}}",
+      "body": "{approved, select, true {Groscove liberó tu acceso a {brand}.} other {Groscove no aprobó tu acceso a {brand}.}}"
     }
   }
 }

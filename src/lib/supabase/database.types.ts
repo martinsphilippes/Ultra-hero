@@ -9,6 +9,102 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      brand_access_requests: {
+        Row: {
+          id: string;
+          brand_id: string;
+          user_id: string;
+          email: string;
+          full_name: string;
+          job_title: string | null;
+          domain_matches: boolean;
+          status: string;
+          granted_role: string | null;
+          decided_by: string | null;
+          decided_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          brand_id: string;
+          user_id: string;
+          email: string;
+          full_name: string;
+          job_title?: string | null;
+          domain_matches?: boolean;
+          status?: string;
+          granted_role?: string | null;
+          decided_by?: string | null;
+          decided_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          brand_id?: string;
+          user_id?: string;
+          email?: string;
+          full_name?: string;
+          job_title?: string | null;
+          domain_matches?: boolean;
+          status?: string;
+          granted_role?: string | null;
+          decided_by?: string | null;
+          decided_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      brand_internal: {
+        Row: {
+          brand_id: string;
+          cpa: string | null;
+          cpa_influencer: string | null;
+          mid: string | null;
+          official_phone: string | null;
+          official_email: string | null;
+          updated_by: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          brand_id: string;
+          cpa?: string | null;
+          cpa_influencer?: string | null;
+          mid?: string | null;
+          official_phone?: string | null;
+          official_email?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          brand_id?: string;
+          cpa?: string | null;
+          cpa_influencer?: string | null;
+          mid?: string | null;
+          official_phone?: string | null;
+          official_email?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      brand_categories: {
+        Row: {
+          slug: string;
+          name: string;
+          sort_order: number;
+        };
+        Insert: {
+          slug: string;
+          name: string;
+          sort_order?: number;
+        };
+        Update: {
+          slug?: string;
+          name?: string;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
       personality_results: {
         Row: {
           user_id: string;
@@ -5501,6 +5597,8 @@ export type Database = {
           approval_requested_by: string | null;
           approval_decided_by: string | null;
           approval_decided_at: string | null;
+          category: string | null;
+          email_domains: string[];
         };
         ComputedFields: never;
         Insert: {
@@ -5525,6 +5623,8 @@ export type Database = {
           approval_requested_by?: string | null;
           approval_decided_by?: string | null;
           approval_decided_at?: string | null;
+          category?: string | null;
+          email_domains?: string[];
         };
         Update: {
           self_managed?: boolean;
@@ -5548,6 +5648,8 @@ export type Database = {
           approval_requested_by?: string | null;
           approval_decided_by?: string | null;
           approval_decided_at?: string | null;
+          category?: string | null;
+          email_domains?: string[];
         };
         Relationships: [];
       };
@@ -11950,6 +12052,16 @@ isOneToOne: false
       [_ in never]: never;
     };
     Functions: {
+      brand_logo_set: { Args: { p_brand: string; p_url: string }; Returns: boolean };
+      brand_logo_can_edit: { Args: { p_brand: string }; Returns: boolean };
+      brand_login_decide: { Args: { p_request: string; p_approve: boolean; p_role?: string }; Returns: boolean };
+      brand_login_inbox: { Args: Record<PropertyKey, never>; Returns: Json };
+      my_brand_login_request: { Args: Record<PropertyKey, never>; Returns: Json };
+      brand_login_request: { Args: { p_brand: string; p_full_name: string; p_job_title?: string }; Returns: string };
+      brand_login_candidates: { Args: { p_name?: string }; Returns: Json };
+      brand_admin_save: { Args: { p_brand: string; p_data: Json }; Returns: boolean };
+      email_domain_generic: { Args: { p_domain: string }; Returns: boolean };
+      is_groscove_member: { Args: Record<PropertyKey, never>; Returns: boolean };
       finance_projection: { Args: { p_agency?: string | null }; Returns: Json };
       deal_set_compensation: { Args: { p_deal: string; p_type: string; p_pct?: number | null }; Returns: boolean };
       personality_save: { Args: { p_type: string; p_scores: Json }; Returns: boolean };
