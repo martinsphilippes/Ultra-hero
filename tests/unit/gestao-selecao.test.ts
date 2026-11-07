@@ -97,8 +97,9 @@ describe("nota do influenciador", () => {
   it("formulário: precisa do prazo (sim/não), 1 a 5 estrelas e comentário até 500", () => {
     expect(ratingInputValid({ onTime: true, quality: 5, comment: "" })).toBe(true);
     expect(ratingInputValid({ onTime: null, quality: 5, comment: "" })).toBe(false);
-    expect(ratingInputValid({ onTime: false, quality: 0, comment: "" })).toBe(false);
-    expect(ratingInputValid({ onTime: false, quality: 6, comment: "" })).toBe(false);
+    expect(ratingInputValid({ onTime: false, quality: 0, comment: "" })).toBe(true);
+    expect(ratingInputValid({ onTime: false, quality: 11, comment: "" })).toBe(false);
+    expect(ratingInputValid({ onTime: false, quality: 10, comment: "" })).toBe(true);
     expect(ratingInputValid({ onTime: false, quality: 3, comment: "x".repeat(501) })).toBe(false);
   });
 });

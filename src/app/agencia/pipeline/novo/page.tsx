@@ -27,7 +27,8 @@ export default async function NewDealPage({ searchParams }: Props) {
   const sp = await searchParams;
   const [t, brands, team, talents, services] = await Promise.all([
     getTranslations("agency.pipeline"),
-    listAgencyBrands(ctx.agency.id),
+    // 0126: só marca aprovada pela Groscove entra num negócio
+    listAgencyBrands(ctx.agency.id).then((list) => list.filter((b) => b.brand.approval !== "pending" && b.brand.approval !== "rejected")),
     listTeam(ctx.agency.id),
     listTalents(ctx.agency.id),
     listServices(ctx.agency.id, { activeOnly: true }),

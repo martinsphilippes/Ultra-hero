@@ -71,12 +71,12 @@ export function RatingPanel({ requestId, deliverables, ratings, canAct }: Props)
   );
 }
 
+// 0126: score de 0 a 10 (pedido da Groscove), no lugar das 5 estrelas
 function Stars({ value, label }: { value: number; label: string }) {
   return (
-    <span className="flex items-center gap-0.5" role="img" aria-label={label}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <Star key={n} className={`size-4 ${n <= value ? "fill-accent text-accent" : "text-fg-subtle"}`} aria-hidden="true" />
-      ))}
+    <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-0.5 text-sm font-semibold text-accent-text" role="img" aria-label={label}>
+      <Star className="size-3.5 fill-accent text-accent" aria-hidden="true" />
+      {value}/10
     </span>
   );
 }
@@ -87,7 +87,7 @@ function RatingForm({ requestId, deliverable }: { requestId: string; deliverable
   const { toast } = useToast();
   const suggested = suggestOnTime(deliverable);
   const [onTime, setOnTime] = useState<boolean | null>(suggested);
-  const [quality, setQuality] = useState(0);
+  const [quality, setQuality] = useState<number | null>(null);
   const [comment, setComment] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -97,7 +97,7 @@ function RatingForm({ requestId, deliverable }: { requestId: string; deliverable
 
   function save() {
     setError(null);
-    if (!ratingInputValid({ onTime, quality, comment })) return setError(t("pickOnTime"));
+    if (quality === null || !ratingInputValid({ onTime, quality, comment })) return setError(t("pickOnTime"));
     start(async () => {
       const result = await rateDeliverableAction({
         deliverableId: deliverable.id,
@@ -134,19 +134,19 @@ function RatingForm({ requestId, deliverable }: { requestId: string; deliverable
       </fieldset>
       <fieldset className="flex flex-col gap-1.5">
         <legend className="mb-1 text-sm font-medium text-fg">{t("quality")}</legend>
-        <div className="flex gap-1">
-          {[1, 2, 3, 4, 5].map((n) => (
+        <div className="grid grid-cols-6 gap-1.5 sm:grid-cols-11">
+          {Array.from({ length: 11 }, (_, n) => (
             <button
               key={n}
               type="button"
-              className="inline-flex size-11 items-center justify-center rounded-xl transition-colors hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              className={`inline-flex size-11 items-center justify-center rounded-xl border text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${quality === n ? on : off}`}
               aria-label={t("star", { count: n })}
               aria-pressed={quality === n}
               onClick={() => setQuality(n)}
               disabled={pending}
               data-testid={`rating-star-${n}`}
             >
-              <Star className={`size-6 ${n <= quality ? "fill-accent text-accent" : "text-fg-subtle"}`} aria-hidden="true" />
+              {n}
             </button>
           ))}
         </div>

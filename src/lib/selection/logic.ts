@@ -137,7 +137,7 @@ export function suggestOnTime(d: { publishAt: string | null; dueAt: string | nul
 }
 
 export function ratingInputValid(input: { onTime: boolean | null; quality: number; comment: string }): boolean {
-  return input.onTime !== null && Number.isInteger(input.quality) && input.quality >= 1 && input.quality <= 5 && input.comment.trim().length <= COMMENT_MAX;
+  return input.onTime !== null && Number.isInteger(input.quality) && input.quality >= 0 && input.quality <= 10 && input.comment.trim().length <= COMMENT_MAX;
 }
 
 // ---------------------------------------------------------------- aprovação interna

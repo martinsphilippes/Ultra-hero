@@ -212,7 +212,22 @@
       "logo": "Logo (opcional)",
       "logoHint": "Enlace https a una imagen.",
       "privacyNote": "La marca nace fuera de la app: solo la agencia y el equipo de la marca la ven.",
-      "submit": "Registrar marca"
+      "submit": "Registrar marca",
+      "approvalTitle": "Para que Groscove apruebe",
+      "approvalHint": "Toda marca nueva pasa por la aprobación de Groscove antes de entrar en el universo de la plataforma. Si la marca ya existe, tu agencia se vincula a ella, sin duplicar.",
+      "intent": "Qué quiere hacer la marca",
+      "intentHint": "Campaña, producto, periodo, público… en pocas líneas.",
+      "evidence": "Link de la captura o de la página oficial de la marca",
+      "evidenceHint": "Un link https a la imagen de la captura o a la página oficial (Instagram, sitio).",
+      "pendingBadge": "Esperando aprobación de Groscove",
+      "rejectedBadge": "No aprobada por Groscove",
+      "queueTitle": "{count, plural, =0 {Marcas para aprobar} one {# marca para aprobar} other {# marcas para aprobar}}",
+      "queueHint": "Marcas nuevas registradas por las agencias. Solo entran en el universo de la plataforma después de tu aprobación.",
+      "queueEmpty": "Ninguna marca esperando aprobación.",
+      "queueBy": "Pedido por {name} ({agency})",
+      "queueEvidence": "Ver captura / página",
+      "approve": "Aprobar",
+      "reject": "Rechazar"
     },
     "link": {
       "label": "Marca",
@@ -401,7 +416,10 @@
     "level_required": "Elige tu nivel: Júnior, Pleno o Sénior.",
     "terms_required": "Lee y acepta los Términos del Socio para continuar.",
     "already_decided": "Esta solicitud ya fue respondida.",
-    "invalid_segments": "Elige hasta 4 segmentos de la lista."
+    "invalid_segments": "Elige hasta 4 segmentos de la lista.",
+    "brand_exists": "Esta marca ya está registrada en la plataforma y la atiende otra agencia.",
+    "already_claimed": "Este perfil ya tiene dueño.",
+    "claim_link_failed": "No fue posible vincular la cuenta al perfil. Revisa si la persona ya tiene otro Hero."
   },
   "casting": {
     "title": "Casting",

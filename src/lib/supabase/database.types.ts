@@ -5464,6 +5464,13 @@ export type Database = {
           slug: string;
           status: string;
           updated_at: string;
+          approval_status: string;
+          approval_intent: string | null;
+          approval_evidence_url: string | null;
+          approval_note: string | null;
+          approval_requested_by: string | null;
+          approval_decided_by: string | null;
+          approval_decided_at: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -5481,6 +5488,13 @@ export type Database = {
           slug: string;
           status?: string;
           updated_at?: string;
+          approval_status?: string;
+          approval_intent?: string | null;
+          approval_evidence_url?: string | null;
+          approval_note?: string | null;
+          approval_requested_by?: string | null;
+          approval_decided_by?: string | null;
+          approval_decided_at?: string | null;
         };
         Update: {
           self_managed?: boolean;
@@ -5497,6 +5511,13 @@ export type Database = {
           slug?: string;
           status?: string;
           updated_at?: string;
+          approval_status?: string;
+          approval_intent?: string | null;
+          approval_evidence_url?: string | null;
+          approval_note?: string | null;
+          approval_requested_by?: string | null;
+          approval_decided_by?: string | null;
+          approval_decided_at?: string | null;
         };
         Relationships: [];
       };
@@ -11893,6 +11914,20 @@ isOneToOne: false
       [_ in never]: never;
     };
     Functions: {
+      profile_claim_decide: { Args: { p_claim: string; p_approve: boolean }; Returns: boolean };
+      profile_claim_inbox: { Args: { p_agency: string }; Returns: Json };
+      my_hero_claim: { Args: Record<PropertyKey, never>; Returns: Json };
+      hero_claim_request: { Args: { p_talent: string }; Returns: string };
+      hero_claim_candidates: { Args: { p_name: string }; Returns: Json };
+      casting_open_contact: { Args: { p_agency: string; p_talent: string }; Returns: Json };
+      casting_access_inbox: { Args: { p_agency: string }; Returns: Json };
+      casting_access_decide: { Args: { p_request: string; p_approve: boolean }; Returns: boolean };
+      casting_access_request: { Args: { p_agency: string; p_talent: string; p_note?: string | null }; Returns: string };
+      casting_open_list: { Args: { p_agency: string; p_query?: string | null; p_segment?: string | null; p_limit?: number; p_offset?: number }; Returns: Json };
+      brand_approval_decide: { Args: { p_brand: string; p_approve: boolean; p_note?: string | null }; Returns: boolean };
+      brand_approval_pending: { Args: Record<PropertyKey, never>; Returns: Json };
+      is_groscove_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+      groscove_agency_id: { Args: Record<PropertyKey, never>; Returns: string };
       brand_member_set_level: { Args: { p_level: string | null; p_job_title: string | null }; Returns: boolean };
       talent_set_segments: { Args: { p_talent: string; p_segments: string[]; p_level: string | null }; Returns: boolean };
       hero_set_segments: { Args: { p_segments: string[]; p_level: string | null }; Returns: boolean };

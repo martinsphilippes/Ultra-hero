@@ -212,7 +212,22 @@
       "logo": "Logo (optional)",
       "logoHint": "An https link to an image.",
       "privacyNote": "The brand starts outside the app: only the agency and the brand team see it.",
-      "submit": "Add brand"
+      "submit": "Add brand",
+      "approvalTitle": "For Groscove's approval",
+      "approvalHint": "Every new brand goes through Groscove's approval before joining the platform's universe. If the brand already exists, your agency is linked to it, without duplicating.",
+      "intent": "What the brand wants to do",
+      "intentHint": "Campaign, product, period, audience… in a few lines.",
+      "evidence": "Link to the screenshot or the brand's official page",
+      "evidenceHint": "An https link to the screenshot image or the official page (Instagram, website).",
+      "pendingBadge": "Waiting for Groscove's approval",
+      "rejectedBadge": "Not approved by Groscove",
+      "queueTitle": "{count, plural, =0 {Brands to approve} one {# brand to approve} other {# brands to approve}}",
+      "queueHint": "New brands registered by agencies. They only join the platform's universe after your approval.",
+      "queueEmpty": "No brands waiting for approval.",
+      "queueBy": "Requested by {name} ({agency})",
+      "queueEvidence": "See screenshot / page",
+      "approve": "Approve",
+      "reject": "Decline"
     },
     "link": {
       "label": "Brand",
@@ -401,7 +416,10 @@
     "level_required": "Choose your level: Junior, Mid-level or Senior.",
     "terms_required": "Read and accept the Partner Terms to continue.",
     "already_decided": "This request has already been answered.",
-    "invalid_segments": "Choose up to 4 segments from the list."
+    "invalid_segments": "Choose up to 4 segments from the list.",
+    "brand_exists": "This brand is already registered on the platform and served by another agency.",
+    "already_claimed": "This profile already has an owner.",
+    "claim_link_failed": "The account could not be linked to the profile. Check whether the person already has another Hero."
   },
   "casting": {
     "title": "Roster",

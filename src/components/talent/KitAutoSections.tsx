@@ -31,7 +31,7 @@ export function KitStatsView({ stats, as: Sub = "h2" }: { stats: KitStats; as?: 
         {tile(t("campaigns"), String(stats.completed_campaigns))}
         {tile(t("published"), String(stats.published_deliverables))}
         {tile(t("onTime"), rate === null ? "—" : `${rate}%`, rate === null ? undefined : t("onTimeBase", { count: stats.on_time_base }))}
-        {tile(t("rating"), stats.rating_avg === null ? "—" : `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(stats.rating_avg)}/5`, stats.rating_count > 0 ? t("ratingCount", { count: stats.rating_count }) : undefined)}
+        {tile(t("rating"), stats.rating_avg === null ? "—" : `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(stats.rating_avg)}/10`, stats.rating_count > 0 ? t("ratingCount", { count: stats.rating_count }) : undefined)}
         {stats.app_followers !== null ? tile(t("appFollowers"), formatCount(stats.app_followers, locale) ?? "0") : null}
         {metrics.map((m) => tile(tm(m.key), formatCount(m.value, locale) ?? "0"))}
       </dl>

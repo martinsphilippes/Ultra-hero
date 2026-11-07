@@ -12,7 +12,7 @@ export type AgencyBrand = {
   status: "active" | "archived";
   isDemo: boolean;
   accountManagerId: string | null;
-  brand: { id: string; slug: string; name: string; logoUrl: string | null; siteUrl: string; status: string };
+  brand: { id: string; slug: string; name: string; logoUrl: string | null; siteUrl: string; status: string; approval?: "pending" | "approved" | "rejected" };
 };
 export type BrandMember = {
   level?: string | null; userId: string; role: BrandRole; name: string; jobTitle: string | null; since: string };
@@ -65,10 +65,10 @@ type LinkRow = {
   status: string;
   is_demo: boolean;
   account_manager_id: string | null;
-  brand: { id: string; slug: string; name: string; logo_url: string | null; site_url: string; status: string } | null;
+  brand: { id: string; slug: string; name: string; logo_url: string | null; site_url: string; status: string; approval_status?: string | null } | null;
 };
 
-const LINK_SELECT = "id, status, is_demo, account_manager_id, brand:brands!agency_brands_brand_fk(id, slug, name, logo_url, site_url, status)";
+const LINK_SELECT = "id, status, is_demo, account_manager_id, brand:brands!agency_brands_brand_fk(id, slug, name, logo_url, site_url, status, approval_status)";
 
 function toAgencyBrand(row: LinkRow): AgencyBrand | null {
   if (!row.brand) return null;
@@ -77,7 +77,16 @@ function toAgencyBrand(row: LinkRow): AgencyBrand | null {
     status: row.status === "archived" ? "archived" : "active",
     isDemo: row.is_demo,
     accountManagerId: row.account_manager_id,
-    brand: { id: row.brand.id, slug: row.brand.slug, name: row.brand.name, logoUrl: row.brand.logo_url, siteUrl: row.brand.site_url, status: row.brand.status },
+    brand: {
+      id: row.brand.id,
+      slug: row.brand.slug,
+      name: row.brand.name,
+      logoUrl: row.brand.logo_url,
+      siteUrl: row.brand.site_url,
+      status: row.brand.status,
+      // 0126: marca nova espera a aprovação da Groscove
+      approval: row.brand.approval_status === "pending" ? "pending" : row.brand.approval_status === "rejected" ? "rejected" : "approved",
+    },
   };
 }
 

@@ -212,7 +212,22 @@
       "logo": "Logo (opcional)",
       "logoHint": "Link https de uma imagem.",
       "privacyNote": "A marca nasce fora do app: só a agência e a equipe da marca a veem.",
-      "submit": "Cadastrar marca"
+      "submit": "Cadastrar marca",
+      "approvalTitle": "Para a Groscove aprovar",
+      "approvalHint": "Toda marca nova passa pela aprovação da Groscove antes de entrar no universo da plataforma. Se a marca já existir, a sua agência é ligada a ela, sem duplicar.",
+      "intent": "O que a marca quer fazer",
+      "intentHint": "Campanha, produto, período, público… em poucas linhas.",
+      "evidence": "Link do print ou da página oficial da marca",
+      "evidenceHint": "Um link https para a imagem do print ou para a página oficial (Instagram, site).",
+      "pendingBadge": "Aguardando aprovação da Groscove",
+      "rejectedBadge": "Não aprovada pela Groscove",
+      "queueTitle": "{count, plural, =0 {Marcas para aprovar} one {# marca para aprovar} other {# marcas para aprovar}}",
+      "queueHint": "Marcas novas cadastradas pelas agências. Só entram no universo da plataforma depois da sua aprovação.",
+      "queueEmpty": "Nenhuma marca esperando aprovação.",
+      "queueBy": "Pedido por {name} ({agency})",
+      "queueEvidence": "Ver print / página",
+      "approve": "Aprovar",
+      "reject": "Recusar"
     },
     "link": {
       "label": "Marca",
@@ -401,7 +416,10 @@
     "level_required": "Escolha o seu nível: Júnior, Pleno ou Sênior.",
     "terms_required": "Leia e aceite o Termo do Parceiro para continuar.",
     "already_decided": "Este pedido já foi respondido.",
-    "invalid_segments": "Escolha até 4 segmentos da lista."
+    "invalid_segments": "Escolha até 4 segmentos da lista.",
+    "brand_exists": "Essa marca já está cadastrada na plataforma e é atendida por outra agência.",
+    "already_claimed": "Este perfil já tem dono.",
+    "claim_link_failed": "Não foi possível ligar a conta ao perfil. Confira se a pessoa já tem outro Hero."
   },
   "casting": {
     "title": "Casting",

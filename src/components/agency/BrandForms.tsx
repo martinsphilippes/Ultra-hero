@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
 import { createBrandAction, linkBrandAction, type BrandCreateResult } from "@/app/agencia/marcas/actions";
 import { AccessContactFields, AccessOutcomeNote } from "@/components/agency/AccessPanel";
-import { Button, EntitySelect, FormField, Input } from "@/components/ui";
+import { Button, EntitySelect, FormField, Input, Textarea } from "@/components/ui";
 import { normalizeAccessEmail } from "@/lib/agency/access-contact";
 import { normalizeBrMobile } from "@/lib/auth/phone";
 import { slugFromName } from "@/lib/agency/schemas";
@@ -19,6 +19,9 @@ export function BrandCreateForm({ demo }: { demo: boolean }) {
   const [slugTouched, setSlugTouched] = useState(false);
   const [siteUrl, setSiteUrl] = useState("https://");
   const [logoUrl, setLogoUrl] = useState("");
+  // 0126: para a Groscove aprovar a marca nova (o que a marca quer fazer e o print/página oficial)
+  const [intent, setIntent] = useState("");
+  const [evidenceUrl, setEvidenceUrl] = useState("");
   // 0112: o acesso do contato da marca nasce junto (fora da agência de exemplo)
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
@@ -42,6 +45,8 @@ export function BrandCreateForm({ demo }: { demo: boolean }) {
         slug: slug || slugFromName(name),
         siteUrl: siteUrl.trim(),
         logoUrl: logoUrl.trim(),
+        intent: intent.trim(),
+        evidenceUrl: evidenceUrl.trim(),
         ...(demo ? {} : { contactName, email, phone }),
       });
       if (!result.ok) {
@@ -98,6 +103,18 @@ export function BrandCreateForm({ demo }: { demo: boolean }) {
       <FormField label={t("logo")} hint={t("logoHint")}>
         <Input type="url" inputMode="url" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} disabled={pending} placeholder="https://" />
       </FormField>
+      {demo ? null : (
+        <fieldset className="flex flex-col gap-4 rounded-xl border border-border p-3" data-testid="brand-approval-fields">
+          <legend className="px-1 text-sm font-semibold text-fg">{t("approvalTitle")}</legend>
+          <p className="type-caption text-fg-muted">{t("approvalHint")}</p>
+          <FormField label={t("intent")} hint={t("intentHint")}>
+            <Textarea value={intent} onChange={(e) => setIntent(e.target.value)} maxLength={1000} rows={3} disabled={pending} />
+          </FormField>
+          <FormField label={t("evidence")} hint={t("evidenceHint")}>
+            <Input type="url" inputMode="url" value={evidenceUrl} onChange={(e) => setEvidenceUrl(e.target.value)} disabled={pending} placeholder="https://" />
+          </FormField>
+        </fieldset>
+      )}
       {demo ? null : (
         <fieldset className="flex flex-col gap-4 rounded-xl border border-border p-3">
           <legend className="px-1 text-sm font-semibold text-fg">{ta("brand.contactTitle")}</legend>

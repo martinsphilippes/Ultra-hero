@@ -1,5 +1,9 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // casting aberto, marca única e perfil reivindicado (0126)
+  "brand_exists",
+  "already_claimed",
+  "claim_link_failed",
   // entrada pelo domínio, cadastro PJ e segmentos (0125)
   "domain_not_allowed",
   "agency_by_request",

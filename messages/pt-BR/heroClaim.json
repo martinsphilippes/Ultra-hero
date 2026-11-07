@@ -1,0 +1,14 @@
+{
+  "title": "É você?",
+  "body": "Encontramos perfis no casting da Groscove com um nome parecido com o seu. Se um deles é você, peça o seu perfil: a agência confere e libera o acesso, e você entra com tudo o que já está lá.",
+  "searchLabel": "Buscar pelo seu nome artístico",
+  "search": "Buscar",
+  "none": "Nenhum perfil encontrado com esse nome.",
+  "emailMatches": "O e-mail do casting é o mesmo da sua conta",
+  "itsMe": "Sou eu",
+  "notMe": "Não sou nenhum deles: criar o meu Hero",
+  "searchAgain": "Procurar o meu perfil no casting",
+  "pendingTitle": "Pedido enviado",
+  "pendingBody": "A {agency} recebeu o seu pedido do perfil {talent}. Assim que confirmar que é você, o acesso é liberado e você recebe um aviso.",
+  "rejected": "A agência não confirmou o perfil {talent}. Se foi engano, fale com ela; ou crie o seu Hero abaixo."
+}

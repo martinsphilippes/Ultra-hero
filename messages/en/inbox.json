@@ -242,6 +242,30 @@
     "agency_access_decided": {
       "title": "{approved, select, true {Access approved} other {Access not approved}}",
       "body": "{approved, select, true {You joined {agency}. Open the agency portal.} other {The administrators of {agency} did not approve your request.}}"
+    },
+    "casting_access_requested": {
+      "title": "Casting contact request",
+      "body": "{agency} asks for {talent}'s contact and fees."
+    },
+    "casting_access_decided": {
+      "title": "{approved, select, true {Contact granted} other {Contact not granted}}",
+      "body": "{approved, select, true {You can now see {talent}'s contact and fees in Open casting.} other {The agency did not grant {talent}'s contact.}}"
+    },
+    "brand_approval_requested": {
+      "title": "New brand to approve",
+      "body": "{agency} registered {brand}. It only joins the platform's universe after your approval."
+    },
+    "brand_approval_decided": {
+      "title": "{approved, select, true {Brand approved} other {Brand not approved}}",
+      "body": "{approved, select, true {Groscove approved {brand}.} other {Groscove did not approve {brand}.}}"
+    },
+    "profile_claim_requested": {
+      "title": "Profile claimed",
+      "body": "{name} says they are {talent}. Check and grant access."
+    },
+    "profile_claim_decided": {
+      "title": "{approved, select, true {Your profile is ready} other {Profile not confirmed}}",
+      "body": "{approved, select, true {You now sign in as {talent}. Open the Hero Portal.} other {The agency did not confirm you are {talent}.}}"
     }
   }
 }

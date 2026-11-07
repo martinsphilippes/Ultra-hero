@@ -115,8 +115,9 @@ describe("métricas por Hero", () => {
   });
 
   it("confiança sobe com a nota e as entregas no prazo; sem nota é neutra e sinalizada", () => {
-    const good = heroMetrics(hero("a", { rating: { count: 5, quality_avg: 5, on_time_pct: 100 } }), CTX, TODAY).reliability;
-    const bad = heroMetrics(hero("a", { rating: { count: 5, quality_avg: 1, on_time_pct: 0 } }), CTX, TODAY).reliability;
+    // 0126: nota de 0 a 10
+    const good = heroMetrics(hero("a", { rating: { count: 5, quality_avg: 10, on_time_pct: 100 } }), CTX, TODAY).reliability;
+    const bad = heroMetrics(hero("a", { rating: { count: 5, quality_avg: 0, on_time_pct: 0 } }), CTX, TODAY).reliability;
     const none = heroMetrics(hero("a", { rating: { count: 0, quality_avg: null, on_time_pct: null } }), CTX, TODAY);
     expect(good).toBeCloseTo(1, 5);
     expect(bad).toBeCloseTo(0.85, 5);

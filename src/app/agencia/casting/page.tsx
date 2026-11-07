@@ -5,6 +5,8 @@ import Link from "next/link";
 import { FilterAnchor } from "@/components/admin-ops/FilterAnchor";
 import { PaginationNav } from "@/components/admin-ops/PaginationNav";
 import { CastingCard } from "@/components/agency/CastingCard";
+import { CastingRequestsView } from "@/components/casting-open/CastingRequestsView";
+import { OpenCastingView } from "@/components/casting-open/OpenCastingView";
 import { Button, EmptyState, EntitySelect, Input, PageHeader, Select } from "@/components/ui";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
@@ -21,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("casting") };
 }
 
-type Props = { searchParams: Promise<{ segmento?: string; disponibilidade?: string; situacao?: string; gestor?: string; q?: string; status?: string; page?: string }> };
+type Props = { searchParams: Promise<{ aba?: string; territorio?: string; segmento?: string; disponibilidade?: string; situacao?: string; gestor?: string; q?: string; status?: string; page?: string }> };
 
 /** Velocidade: 24 cartões por página (o casting tem centenas de Heros; antes ia tudo de uma vez, ~1,5 MB). */
 const PAGE_SIZE = 24;
@@ -33,6 +35,38 @@ const pick = (value: string | undefined, allowed: readonly string[]) => (value &
 export default async function CastingPage({ searchParams }: Props) {
   const ctx = await requireAgency("staff");
   const sp = await searchParams;
+  // 0126: abas Meu casting | Casting aberto (o das outras agências) | Pedidos (Adm: contato pedido e "É você?")
+  const isAdmin = agencyCan(ctx.role, "admin", ctx.platformAdmin);
+  const tab = sp.aba === "aberto" ? "aberto" : sp.aba === "pedidos" && isAdmin ? "pedidos" : "meu";
+  const tc = await getTranslations("castingOpen");
+  const tabs = (
+    <nav aria-label={tc("tabsLabel")} className="flex gap-1 overflow-x-auto rounded-2xl border border-border bg-surface-hover p-1" data-testid="casting-tabs">
+      {(["meu", "aberto", ...(isAdmin ? ["pedidos"] : [])] as const).map((k) => (
+        <a
+          key={k}
+          href={k === "meu" ? "/agencia/casting" : `/agencia/casting?aba=${k}`}
+          aria-current={tab === k ? "page" : undefined}
+          className={`inline-flex min-h-11 flex-1 items-center justify-center whitespace-nowrap rounded-xl px-3 text-sm font-semibold ${tab === k ? "bg-surface text-fg shadow-sm" : "text-fg-muted hover:text-fg"}`}
+        >
+          {tc(`tabs.${k}`)}
+        </a>
+      ))}
+    </nav>
+  );
+  if (tab !== "meu") {
+    const tt = await getTranslations("agency.casting");
+    return (
+      <div className="flex flex-col gap-5">
+        {tabs}
+        <PageHeader title={tt("title")} description={tc(tab === "aberto" ? "openSubtitle" : "requestsSubtitle")} />
+        {tab === "aberto" ? (
+          <OpenCastingView agencyId={ctx.agency.id} q={sp.q?.slice(0, 60)} segment={sp.territorio} page={Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1)} canRequest={agencyCan(ctx.role, "manager", ctx.platformAdmin)} />
+        ) : (
+          <CastingRequestsView agencyId={ctx.agency.id} />
+        )}
+      </div>
+    );
+  }
   const archived = sp.status === "arquivados";
   const filters = {
     segment: sp.segmento,
@@ -73,6 +107,7 @@ export default async function CastingPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
+      {tabs}
       <PageHeader
         title={t("title")}
         description={t("description")}

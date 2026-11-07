@@ -6,6 +6,8 @@ import { FilterAnchor } from "@/components/admin-ops/FilterAnchor";
 import { AgencyInviteDialog } from "@/components/invites/AgencyInviteDialog";
 import { Badge, Button, EmptyState, PageHeader } from "@/components/ui";
 import { listAgencyBrands } from "@/lib/agency/queries";
+import { BrandApprovalDecision } from "@/components/casting-open/BrandApprovalDecision";
+import { createClient } from "@/lib/supabase/server";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
 import { InvitesGate } from "@/components/invites/InvitesGate";
@@ -23,7 +25,17 @@ type Props = { searchParams: Promise<{ status?: string }> };
 export default async function AgencyBrandsPage({ searchParams }: Props) {
   const ctx = await requireAgency("staff");
   const archived = (await searchParams).status === "arquivadas";
-  const [t, brands] = await Promise.all([getTranslations("agency.brands"), listAgencyBrands(ctx.agency.id, archived ? "archived" : "active")]);
+  const [t, tf, brands, supabase] = await Promise.all([
+    getTranslations("agency.brands"),
+    getTranslations("agency.brands.form"),
+    listAgencyBrands(ctx.agency.id, archived ? "archived" : "active"),
+    createClient(),
+  ]);
+  // 0126: a Groscove (Adm) aprova as marcas novas cadastradas pelas agências
+  const { data: groscoveAdmin } = await supabase.rpc("is_groscove_admin");
+  const queue = groscoveAdmin
+    ? ((await supabase.rpc("brand_approval_pending")).data as Array<{ id: string; name: string; site_url: string; intent: string | null; evidence_url: string | null; agency: string | null; requested_by: string | null }> | null) ?? []
+    : [];
   const canEdit = agencyCan(ctx.role, "manager", ctx.platformAdmin);
 
   return (
@@ -47,6 +59,33 @@ export default async function AgencyBrandsPage({ searchParams }: Props) {
           ) : null
         }
       />
+      {groscoveAdmin ? (
+        <section id="aprovacao" className="flex scroll-mt-20 flex-col gap-3" data-testid="brand-approval-queue">
+          <h2 className="type-h3 text-fg">{tf("queueTitle", { count: queue.length })}</h2>
+          <p className="type-body-sm text-fg-muted">{tf("queueHint")}</p>
+          {queue.length === 0 ? <p className="type-body-sm text-fg-muted">{tf("queueEmpty")}</p> : null}
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {queue.map((b) => (
+              <li key={b.id} className="flex flex-col gap-3 rounded-2xl border-2 border-accent bg-surface p-4">
+                <div className="flex flex-col gap-1">
+                  <p className="font-semibold text-fg">{b.name}</p>
+                  <a href={b.site_url} target="_blank" rel="noopener noreferrer" className="break-all text-sm text-accent-text underline">
+                    {b.site_url}
+                  </a>
+                  {b.intent ? <p className="text-sm text-fg">{b.intent}</p> : null}
+                  {b.evidence_url ? (
+                    <a href={b.evidence_url} target="_blank" rel="noopener noreferrer" className="w-fit text-sm font-semibold text-accent-text underline">
+                      {tf("queueEvidence")}
+                    </a>
+                  ) : null}
+                  <p className="type-caption text-fg-muted">{tf("queueBy", { name: b.requested_by ?? "—", agency: b.agency ?? "—" })}</p>
+                </div>
+                <BrandApprovalDecision brandId={b.id} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       <nav aria-label={t("filterLabel")} className="flex flex-wrap gap-2">
         <FilterAnchor href="/agencia/marcas" active={!archived} label={t("filterActive")} />
         <FilterAnchor href="/agencia/marcas?status=arquivadas" active={archived} label={t("filterArchived")} />
@@ -73,6 +112,15 @@ export default async function AgencyBrandsPage({ searchParams }: Props) {
                     <Badge variant={b.brand.status === "active" ? "success" : "neutral"} size="sm">
                       {b.brand.status === "active" ? t("publicOn") : t("publicOff")}
                     </Badge>
+                    {b.brand.approval === "pending" ? (
+                      <Badge variant="warning" size="sm">
+                        {tf("pendingBadge")}
+                      </Badge>
+                    ) : b.brand.approval === "rejected" ? (
+                      <Badge variant="danger" size="sm">
+                        {tf("rejectedBadge")}
+                      </Badge>
+                    ) : null}
                     {b.isDemo ? (
                       <Badge variant="neutral" size="sm">
                         {t("demoTag")}

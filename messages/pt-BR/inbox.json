@@ -242,6 +242,30 @@
     "agency_access_decided": {
       "title": "{approved, select, true {Acesso autorizado} other {Acesso não autorizado}}",
       "body": "{approved, select, true {Você entrou em {agency}. Abra o portal da agência.} other {Os administradores de {agency} não autorizaram o seu pedido.}}"
+    },
+    "casting_access_requested": {
+      "title": "Pedido de contato do casting",
+      "body": "{agency} pede o contato e os valores de {talent}."
+    },
+    "casting_access_decided": {
+      "title": "{approved, select, true {Contato liberado} other {Contato não liberado}}",
+      "body": "{approved, select, true {Você já pode ver o contato e os valores de {talent} no Casting aberto.} other {A agência não liberou o contato de {talent}.}}"
+    },
+    "brand_approval_requested": {
+      "title": "Marca nova para aprovar",
+      "body": "{agency} cadastrou {brand}. Ela só entra no universo da plataforma depois da sua aprovação."
+    },
+    "brand_approval_decided": {
+      "title": "{approved, select, true {Marca aprovada} other {Marca não aprovada}}",
+      "body": "{approved, select, true {A Groscove aprovou {brand}.} other {A Groscove não aprovou {brand}.}}"
+    },
+    "profile_claim_requested": {
+      "title": "Perfil reivindicado",
+      "body": "{name} diz que é {talent}. Confira e libere o acesso."
+    },
+    "profile_claim_decided": {
+      "title": "{approved, select, true {Seu perfil foi liberado} other {Perfil não confirmado}}",
+      "body": "{approved, select, true {Agora você entra como {talent}. Abra o Portal do Hero.} other {A agência não confirmou que você é {talent}.}}"
     }
   }
 }

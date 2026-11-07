@@ -231,7 +231,7 @@ export async function rateDeliverableAction(input: { deliverableId: string; requ
       deliverableId: uuid,
       requestId: uuid,
       onTime: z.boolean(),
-      quality: z.number().int().min(1).max(5),
+      quality: z.number().int().min(0).max(10),
       comment: z.string().trim().max(COMMENT_MAX),
     })
     .safeParse(input);

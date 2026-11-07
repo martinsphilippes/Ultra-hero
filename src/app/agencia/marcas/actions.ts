@@ -27,6 +27,8 @@ export async function createBrandAction(input: {
   slug: string;
   siteUrl: string;
   logoUrl?: string;
+  intent?: string;
+  evidenceUrl?: string;
   contactName?: string;
   email?: string;
   phone?: string;
@@ -34,7 +36,14 @@ export async function createBrandAction(input: {
   const ctx = await requireAgency("manager");
   const parsed = brandCreateSchema.safeParse(input);
   if (!parsed.success) return agencyFail("invalid_input");
-  const p_data = { name: parsed.data.name, slug: parsed.data.slug, site_url: parsed.data.siteUrl, logo_url: parsed.data.logoUrl ?? "" };
+  const p_data = {
+    name: parsed.data.name,
+    slug: parsed.data.slug,
+    site_url: parsed.data.siteUrl,
+    logo_url: parsed.data.logoUrl ?? "",
+    intent: parsed.data.intent ?? "",
+    evidence_url: parsed.data.evidenceUrl ?? "",
+  };
   try {
     const supabase = await createClient();
     const t = await getTranslations("agency.brands");

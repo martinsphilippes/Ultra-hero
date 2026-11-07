@@ -166,9 +166,10 @@ function audienceFit(accounts: Array<{ a: CastAccount; reach: number }>, hero: C
 
 function reliabilityOf(r: CastHeroInput["rating"]): { value: number; known: boolean } {
   if (!r || !r.count || r.count < 1) return { value: 0.93, known: false };
-  const q = r.quality_avg ?? 3;
+  // 0126: nota de 0 a 10
+  const q = r.quality_avg ?? 6;
   const ot = r.on_time_pct ?? 80;
-  const score = ((Math.min(5, Math.max(1, q)) - 1) / 4) * 0.6 + (Math.min(100, Math.max(0, ot)) / 100) * 0.4;
+  const score = (Math.min(10, Math.max(0, q)) / 10) * 0.6 + (Math.min(100, Math.max(0, ot)) / 100) * 0.4;
   return { value: 0.85 + 0.15 * score, known: true };
 }
 

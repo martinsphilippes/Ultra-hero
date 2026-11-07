@@ -72,6 +72,13 @@ export const INBOX_KINDS = [
   // entrada na agência pelo domínio do e-mail (0125)
   "agency_access_requested",
   "agency_access_decided",
+  // casting aberto, marca nova e perfil reivindicado (0126)
+  "casting_access_requested",
+  "casting_access_decided",
+  "brand_approval_requested",
+  "brand_approval_decided",
+  "profile_claim_requested",
+  "profile_claim_decided",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 

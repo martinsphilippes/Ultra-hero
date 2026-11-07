@@ -19,6 +19,9 @@ export const brandCreateSchema = z.object({
   slug,
   siteUrl: httpsUrl,
   logoUrl: z.union([z.literal(""), httpsUrl]).optional(),
+  // 0126: aprovação da Groscove
+  intent: z.string().trim().max(1000).optional(),
+  evidenceUrl: z.union([z.literal(""), httpsUrl]).optional(),
 });
 export const brandInviteSchema = z.object({ brandId: z.uuid(), email: emailSchema, role: z.enum(BRAND_ROLES), days: daysSchema });
 
