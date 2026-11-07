@@ -18889,5 +18889,34 @@ update public.agencies set slug = 'groscove' where slug = 'groscove-antes-s126';
 delete from auth.users where id::text like 'c1260000-%';
 drop table tests.s126;
 
+-- ================================================================ S127 · Onda, nível do conteúdo e tirar do ar (0127)
+\ir ../migrations/0127_onda_nivel_conteudo.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('c1270000-0000-4000-8000-000000000001', 'hero@s127.test'),
+  ('c1270000-0000-4000-8000-000000000002', 'outro@s127.test');
+insert into public.creator_profiles (id, user_id, slug, name, pillars, status) values
+  ('c1270000-0000-4000-8000-0000000000c1', 'c1270000-0000-4000-8000-000000000001', 's127-hero', 'Hero S127', array['routine']::public.pillar[], 'active');
+insert into public.content (id, slug, creator_id, pillar, type, title, status, published_at) values
+  ('c1270000-0000-4000-8000-0000000000d1', 's127-post', 'c1270000-0000-4000-8000-0000000000c1', 'routine', 'guide', 'Post S127', 'published', now());
+
+select tests.login('c1270000-0000-4000-8000-000000000001', 'hero@s127.test');
+select tests.expect_error('S127 nível abaixo de 400 não vale', $$select public.content_declare_level('c1270000-0000-4000-8000-0000000000d1', 300)$$, 'invalid_level');
+select public.content_declare_level('c1270000-0000-4000-8000-0000000000d1', 540);
+select tests.expect_error('S127 o Hero não se coloca na Onda', $$select public.onda_set('c1270000-0000-4000-8000-0000000000c1', true)$$, 'forbidden');
+select tests.expect_error('S127 o Hero não tira conteúdo dos outros do ar', $$select public.content_takedown('c1270000-0000-4000-8000-0000000000d1', 'x')$$, 'forbidden');
+select tests.login('c1270000-0000-4000-8000-000000000002', 'outro@s127.test');
+select tests.expect_error('S127 outra pessoa não declara nível do conteúdo alheio', $$select public.content_declare_level('c1270000-0000-4000-8000-0000000000d1', 600)$$, 'forbidden');
+select tests.su();
+select tests.ok('S127 nível e aceite gravados; nada novo para anon',
+  (select content_level from public.content where id = 'c1270000-0000-4000-8000-0000000000d1') = 540
+  and (select responsibility_accepted_at from public.content where id = 'c1270000-0000-4000-8000-0000000000d1') is not null
+  and not has_function_privilege('anon', 'public.content_takedown(uuid, text)', 'execute')
+  and not has_function_privilege('anon', 'public.onda_set(uuid, boolean)', 'execute'));
+
+delete from public.content where id::text like 'c1270000-%';
+delete from public.creator_profiles where id::text like 'c1270000-%';
+delete from auth.users where id::text like 'c1270000-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;
