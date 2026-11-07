@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ProjectionCard } from "@/components/projection/ProjectionCard";
 import { Clock, Lock, Wallet } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { HeroFinance } from "@/components/hero-work/HeroFinance";
@@ -67,6 +68,8 @@ export default async function HeroFinancePage() {
   return (
     <div className="flex flex-col gap-5" data-testid="hero-finance-portal">
       <PageHeader eyebrow={eyebrow} title={t("title")} description={show.agency ? undefined : t("intro")} />
+      {/* 0128: projeção anual para o Hero e no segmento dele */}
+      <ProjectionCard />
       {show.agency ? <AgencyEarnings /> : null}
       {show.own && ws && services && ws.canSeeFinance ? (
         <section className="flex flex-col gap-4" aria-labelledby="hero-own-finance" data-testid="hero-finance-page">

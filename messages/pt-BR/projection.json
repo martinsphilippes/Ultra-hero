@@ -1,0 +1,19 @@
+{
+  "title": "Projeção anual",
+  "hint": "Cachês fechados nos últimos 12 meses + o que está em aberto no pipeline. Permuta não entra.",
+  "forYou": "Projeção para você",
+  "forAgency": "Projeção da agência",
+  "split": "{won} fechados · {open} em aberto",
+  "bySegment": "Projeção por segmento",
+  "yours": "seu segmento",
+  "empty": "Ainda não há valores registrados nos negócios.",
+  "compensation": {
+    "label": "Como o projeto paga",
+    "hint": "Permuta (troca por produto ou serviço), valor fixo ou performance (% sobre o resultado).",
+    "barter": "Permuta",
+    "fixed": "Valor fixo",
+    "performance": "Performance",
+    "pct": "Porcentagem",
+    "pctPlaceholder": "% sobre o resultado, ex.: 10"
+  }
+}

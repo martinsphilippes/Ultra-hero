@@ -16,6 +16,7 @@ import { SectorTodayPanel } from "@/components/roadmap/SectorTodayPanel";
 import { PageHeader } from "@/components/ui";
 import { agencyDashboardData } from "@/lib/agency/dashboards";
 import { agencyDashboard, listAccessRequests } from "@/lib/agency/queries";
+import { ProjectionCard } from "@/components/projection/ProjectionCard";
 import { castingCounts } from "@/lib/talent/queries";
 import { agencyCan } from "@/lib/agency/roles";
 import { getAgencyContext } from "@/lib/agency/server";
@@ -103,6 +104,8 @@ export default async function AgencyDashboardPage({ searchParams }: Props) {
         </Link>
       ) : null}
       {turns.available ? <TurnCard party="agency" items={turns.items} /> : null}
+      {/* 0128: projeção anual para você, da agência e por segmento */}
+      {ctx.role ? <ProjectionCard agencyId={ctx.agency.id} /> : null}
       {ctx.platformAdmin && ctx.agencies.length > 1 ? (
         <AgencySwitcher agencies={ctx.agencies.map((a) => ({ id: a.id, name: a.name, isDemo: a.isDemo }))} currentId={ctx.agency.id} />
       ) : null}

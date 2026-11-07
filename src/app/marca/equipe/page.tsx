@@ -10,6 +10,7 @@ import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { getUser } from "@/lib/auth/session";
 import { BrandLevelForm } from "@/components/team/BrandLevelForm";
+import { PersonalityCta } from "@/components/personality/PersonalityCta";
 import { listBrandInvites, listBrandMembers } from "@/lib/agency/queries";
 import { requireBrand } from "@/lib/brand-portal/server";
 import { InvitesGate } from "@/components/invites/InvitesGate";
@@ -53,6 +54,7 @@ export default async function BrandTeamPage() {
             <div className="rounded-2xl border border-border bg-surface p-4">
               <BrandLevelForm initialLevel={me.level ?? null} initialJobTitle={me.jobTitle} />
             </div>
+            <PersonalityCta userId={me.userId} />
           </Section>
         ) : null;
       })()}

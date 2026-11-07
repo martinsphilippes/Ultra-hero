@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { EventEditorProvider, EventNewButton } from "@/components/calendar/EventEditor";
 import { EventList } from "@/components/calendar/EventList";
@@ -40,6 +41,9 @@ type Props = { params: Promise<{ id: string }> };
 export default async function DealOverviewPage({ params }: Props) {
   const { id } = await params;
   const { ctx, deal, isOwner, canEdit, isManager, isAdmin } = await loadDeal(id);
+  // 0128: como o projeto paga
+  const compRow = (await (await createClient()).from("deals").select("compensation_type, performance_pct").eq("id", deal.id).maybeSingle()).data;
+  const compensation = { type: compRow?.compensation_type ?? "fixed", pct: compRow?.performance_pct ?? null };
   const tz = ctx.agency.timezone || "America/Sao_Paulo";
   const [t, tc, tb, locale, team, request, budget, activities, talents, events, changes, tpay, offer] = await Promise.all([
     getTranslations("agency.deal"),
@@ -146,6 +150,7 @@ export default async function DealOverviewPage({ params }: Props) {
             members={team.map((m) => ({ userId: m.userId, name: m.name, role: m.role, jobTitle: m.jobTitle }))}
             canEdit={canEdit}
             canSetOwner={isManager}
+            compensation={compensation}
           />
         </section>
         <section className={card} aria-labelledby="deal-activities">

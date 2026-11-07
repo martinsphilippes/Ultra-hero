@@ -1,0 +1,128 @@
+{
+  "title": "Personality test",
+  "description": "32 quick statements. Answer as you are today, not as you'd like to be. It helps build teams and match the right Hero with each brand.",
+  "scale": {
+    "1": "Strongly disagree",
+    "2": "Disagree",
+    "3": "Neutral",
+    "4": "Agree",
+    "5": "Strongly agree"
+  },
+  "progress": "{done} of {total} answered",
+  "submit": "See my result",
+  "missing": "Answer all statements to see the result.",
+  "resultTitle": "Your profile: {name}",
+  "resultType": "Type {type}",
+  "axes": {
+    "EI": "Energy: Extraversion × Introversion",
+    "SN": "Perception: Concrete × Intuitive",
+    "TF": "Decision: Reason × Feeling",
+    "JP": "Style: Planned × Flexible"
+  },
+  "again": "Retake the test",
+  "saved": "Result saved to your profile.",
+  "notAllowed": "The test is for people who work on the platform (agency, brand or Hero).",
+  "cta": "Take the personality test",
+  "ctaHint": "32 statements, 3 minutes. Your team sees the result.",
+  "myType": "Your profile: {name} ({type})",
+  "questions": {
+    "e1": "I gain energy from talking with lots of people.",
+    "e2": "In a meeting, I usually say what I think right away.",
+    "e3": "I like being at the center of the action and events.",
+    "e4": "I easily make friends with people I've just met.",
+    "i1": "After a day full of people, I need some time alone.",
+    "i2": "I prefer to think things through before speaking in public.",
+    "i3": "I work best focused and in silence.",
+    "i4": "I prefer a few deep conversations to many quick ones.",
+    "s1": "I trust facts and numbers more than hunches.",
+    "s2": "I like clear, step-by-step instructions.",
+    "s3": "I pay attention to the practical details of the present.",
+    "s4": "I'd rather improve what works than invent from scratch.",
+    "n1": "I keep thinking about possibilities and what could come.",
+    "n2": "I like new ideas, even without knowing if they'll work.",
+    "n3": "I see links between things that seem unrelated.",
+    "n4": "I care more about the meaning of things than the details.",
+    "t1": "I decide by logic, even if it displeases someone.",
+    "t2": "I give direct feedback, without beating around the bush.",
+    "t3": "In a conflict, I look for what is fair, not what pleases.",
+    "t4": "I weigh pros and cons before getting involved.",
+    "f1": "I take into account how people will feel.",
+    "f2": "I look for team harmony above all.",
+    "f3": "I easily put myself in someone else's shoes.",
+    "f4": "I decide by what I believe is right for people.",
+    "j1": "I like to plan and stick to the plan.",
+    "j2": "I finish tasks well before the deadline.",
+    "j3": "I feel better with everything organized and settled.",
+    "j4": "I make lists and follow their order.",
+    "p1": "I prefer to keep options open until the last moment.",
+    "p2": "I adapt well when plans change suddenly.",
+    "p3": "I work best improvising and under pressure.",
+    "p4": "I start several things at once, as inspiration comes."
+  },
+  "types": {
+    "ISTJ": {
+      "name": "Guardian",
+      "body": "Reliable and methodical: meets deadlines and minds the details."
+    },
+    "ISFJ": {
+      "name": "Protector",
+      "body": "Caring and loyal: looks after people and deliveries."
+    },
+    "INFJ": {
+      "name": "Counselor",
+      "body": "Visionary and sensitive: sees the purpose and inspires calmly."
+    },
+    "INTJ": {
+      "name": "Strategist",
+      "body": "Plans the long term and solves complex problems."
+    },
+    "ISTP": {
+      "name": "Craftsman",
+      "body": "Practical and skilled: fixes things on the spot, hands-on."
+    },
+    "ISFP": {
+      "name": "Artist",
+      "body": "Sensitive and creative: expresses values through aesthetics."
+    },
+    "INFP": {
+      "name": "Idealist",
+      "body": "Driven by values: writes, creates and stands up for causes."
+    },
+    "INTP": {
+      "name": "Thinker",
+      "body": "Curious and analytical: understands how things work."
+    },
+    "ESTP": {
+      "name": "Doer",
+      "body": "Action and energy: closes deals and solves under pressure."
+    },
+    "ESFP": {
+      "name": "Entertainer",
+      "body": "Charismatic and fun: connects with the audience instantly."
+    },
+    "ENFP": {
+      "name": "Inspirer",
+      "body": "Enthusiast of ideas and people: engages and motivates."
+    },
+    "ENTP": {
+      "name": "Innovator",
+      "body": "Inquisitive and quick: creates new ways out of anything."
+    },
+    "ESTJ": {
+      "name": "Organizer",
+      "body": "Structures teams and processes and gets things done."
+    },
+    "ESFJ": {
+      "name": "Host",
+      "body": "Welcoming and helpful: takes care of the mood and relationships."
+    },
+    "ENFJ": {
+      "name": "Mentor",
+      "body": "Leads by example and develops people."
+    },
+    "ENTJ": {
+      "name": "Commander",
+      "body": "Decisive and strategic: leads big projects."
+    }
+  }
+}

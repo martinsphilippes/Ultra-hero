@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      personality_results: {
+        Row: {
+          user_id: string;
+          type: string;
+          scores: Json;
+          taken_at: string;
+        };
+        Insert: {
+          user_id: string;
+          type: string;
+          scores?: Json;
+          taken_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          type?: string;
+          scores?: Json;
+          taken_at?: string;
+        };
+        Relationships: [];
+      };
       agency_access_requests: {
         Row: {
           id: string;
@@ -8288,6 +8309,8 @@ export type Database = {
           roadmap_started_on: string | null;
           service_id: string | null;
           origin_deal_id: string | null;
+          compensation_type: string;
+          performance_pct: number | null;
         };
         ComputedFields: never;
         Insert: {
@@ -8317,6 +8340,8 @@ export type Database = {
           roadmap_started_on?: string | null;
           service_id?: string | null;
           origin_deal_id?: string | null;
+          compensation_type?: string;
+          performance_pct?: number | null;
         };
         Update: {
           agency_id?: string;
@@ -8345,6 +8370,8 @@ export type Database = {
           roadmap_started_on?: string | null;
           service_id?: string | null;
           origin_deal_id?: string | null;
+          compensation_type?: string;
+          performance_pct?: number | null;
         };
         Relationships: [
           {
@@ -11923,6 +11950,10 @@ isOneToOne: false
       [_ in never]: never;
     };
     Functions: {
+      finance_projection: { Args: { p_agency?: string | null }; Returns: Json };
+      deal_set_compensation: { Args: { p_deal: string; p_type: string; p_pct?: number | null }; Returns: boolean };
+      personality_save: { Args: { p_type: string; p_scores: Json }; Returns: boolean };
+      works_on_platform: { Args: Record<PropertyKey, never>; Returns: boolean };
       content_takedown: { Args: { p_content: string; p_reason: string }; Returns: boolean };
       content_declare_level: { Args: { p_content: string; p_level: number }; Returns: boolean };
       onda_set: { Args: { p_creator: string; p_on: boolean }; Returns: boolean };

@@ -15,6 +15,7 @@ import { HeroWorkShortcuts } from "@/components/hero-work/HeroWorkShortcuts";
 import { loadHeroShortcutData } from "@/lib/hero-work/summary";
 import { HeroPendingNotice } from "@/components/creator/HeroPendingNotice";
 import { HeroSegmentsForm } from "@/components/team/HeroSegmentsForm";
+import { PersonalityCta } from "@/components/personality/PersonalityCta";
 import { LegalLinks } from "@/components/legal/LegalLinks";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
@@ -171,6 +172,7 @@ export default async function ProfilePage() {
               <HeroSegmentsForm initialSegments={mySegments?.data?.segments ?? []} initialLevel={mySegments?.data?.level ?? null} />
             </section>
           ) : null}
+          {heroOwner ? <PersonalityCta userId={user.id} /> : null}
           <HeroProfileEditor
             profile={heroProfile}
             active={heroOwner}

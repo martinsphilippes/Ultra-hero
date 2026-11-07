@@ -362,3 +362,20 @@ export async function confirmDealAction(input: z.input<typeof confirmSchema>): P
     return agencyFail(error);
   }
 }
+
+/** 0128: como o projeto paga — permuta, valor fixo ou performance (% sobre o resultado). */
+export async function setDealCompensationAction(input: { dealId: string; type: string; pct?: number | null }): Promise<{ ok: true } | { ok: false; error: string }> {
+  const parsed = z
+    .object({ dealId: z.uuid(), type: z.enum(["barter", "fixed", "performance"]), pct: z.number().min(0).max(100).nullable().optional() })
+    .safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_input");
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("deal_set_compensation", { p_deal: parsed.data.dealId, p_type: parsed.data.type, p_pct: parsed.data.pct ?? null });
+    if (error) return agencyFail(error);
+    revalidatePath(`/agencia/negocios/${parsed.data.dealId}`);
+    return { ok: true };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}

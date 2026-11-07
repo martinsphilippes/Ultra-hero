@@ -1,0 +1,128 @@
+{
+  "title": "Test de personalidad",
+  "description": "32 frases rápidas. Responde por lo que eres hoy, no por lo que te gustaría ser. Ayuda a armar equipos y a combinar el Hero correcto con cada marca.",
+  "scale": {
+    "1": "Totalmente en desacuerdo",
+    "2": "En desacuerdo",
+    "3": "Neutral",
+    "4": "De acuerdo",
+    "5": "Totalmente de acuerdo"
+  },
+  "progress": "{done} de {total} respondidas",
+  "submit": "Ver mi resultado",
+  "missing": "Responde todas las frases para ver el resultado.",
+  "resultTitle": "Tu perfil: {name}",
+  "resultType": "Tipo {type}",
+  "axes": {
+    "EI": "Energía: Extroversión × Introversión",
+    "SN": "Percepción: Concreto × Intuitivo",
+    "TF": "Decisión: Razón × Sentimiento",
+    "JP": "Estilo: Planificado × Flexible"
+  },
+  "again": "Rehacer el test",
+  "saved": "Resultado guardado en tu perfil.",
+  "notAllowed": "El test es para quien trabaja en la plataforma (agencia, marca o Hero).",
+  "cta": "Hacer el test de personalidad",
+  "ctaHint": "32 frases, 3 minutos. Tu equipo ve el resultado.",
+  "myType": "Tu perfil: {name} ({type})",
+  "questions": {
+    "e1": "Gano energía conversando con mucha gente.",
+    "e2": "En una reunión, suelo decir enseguida lo que pienso.",
+    "e3": "Me gusta estar en el centro de la acción y los eventos.",
+    "e4": "Hago amistad fácilmente con quien acabo de conocer.",
+    "i1": "Después de un día lleno de gente, necesito un tiempo a solas.",
+    "i2": "Prefiero pensar bien antes de hablar en público.",
+    "i3": "Rindo mejor trabajando concentrado y en silencio.",
+    "i4": "Prefiero pocas conversaciones profundas a muchas rápidas.",
+    "s1": "Confío más en hechos y números que en presentimientos.",
+    "s2": "Me gustan las instrucciones claras, paso a paso.",
+    "s3": "Presto atención a los detalles prácticos del ahora.",
+    "s4": "Prefiero mejorar lo que funciona a inventar desde cero.",
+    "n1": "Pienso en posibilidades y en lo que puede venir.",
+    "n2": "Me gustan las ideas nuevas, aunque no sepa si funcionarán.",
+    "n3": "Veo relaciones entre cosas que parecen no tenerla.",
+    "n4": "Me interesa más el sentido de las cosas que los detalles.",
+    "t1": "Decido por la lógica, aunque desagrade a alguien.",
+    "t2": "Doy retorno directo, sin rodeos.",
+    "t3": "En un conflicto, busco lo justo, no lo que agrada.",
+    "t4": "Analizo pros y contras antes de involucrarme.",
+    "f1": "Tengo muy en cuenta cómo se sentirán las personas.",
+    "f2": "Busco armonía en el equipo antes que nada.",
+    "f3": "Me pongo en el lugar del otro con facilidad.",
+    "f4": "Decido por lo que creo correcto para las personas.",
+    "j1": "Me gusta planificar y cumplir lo planificado.",
+    "j2": "Termino las tareas mucho antes del plazo.",
+    "j3": "Me siento mejor con todo organizado y definido.",
+    "j4": "Hago listas y sigo su orden.",
+    "p1": "Prefiero dejar las opciones abiertas hasta el último momento.",
+    "p2": "Me adapto bien cuando los planes cambian de repente.",
+    "p3": "Trabajo mejor improvisando y bajo presión.",
+    "p4": "Empiezo varias cosas a la vez, según la inspiración."
+  },
+  "types": {
+    "ISTJ": {
+      "name": "Guardián",
+      "body": "Confiable y metódico: cumple plazos y cuida los detalles."
+    },
+    "ISFJ": {
+      "name": "Protector",
+      "body": "Atento y leal: cuida de las personas y de las entregas."
+    },
+    "INFJ": {
+      "name": "Consejero",
+      "body": "Visionario y sensible: ve el propósito e inspira con calma."
+    },
+    "INTJ": {
+      "name": "Estratega",
+      "body": "Planifica el largo plazo y resuelve problemas complejos."
+    },
+    "ISTP": {
+      "name": "Artesano",
+      "body": "Práctico y hábil: resuelve en el momento, con las manos en la masa."
+    },
+    "ISFP": {
+      "name": "Artista",
+      "body": "Sensible y creativo: expresa valores por la estética."
+    },
+    "INFP": {
+      "name": "Idealista",
+      "body": "Guiado por valores: escribe, crea y defiende causas."
+    },
+    "INTP": {
+      "name": "Pensador",
+      "body": "Curioso y analítico: entiende cómo funcionan las cosas."
+    },
+    "ESTP": {
+      "name": "Realizador",
+      "body": "Acción y energía: cierra negocios y resuelve bajo presión."
+    },
+    "ESFP": {
+      "name": "Animador",
+      "body": "Carismático y divertido: conecta con el público al instante."
+    },
+    "ENFP": {
+      "name": "Inspirador",
+      "body": "Entusiasta de ideas y personas: involucra y motiva."
+    },
+    "ENTP": {
+      "name": "Innovador",
+      "body": "Cuestionador y rápido: crea salidas nuevas para todo."
+    },
+    "ESTJ": {
+      "name": "Organizador",
+      "body": "Estructura equipos y procesos y hace que las cosas pasen."
+    },
+    "ESFJ": {
+      "name": "Anfitrión",
+      "body": "Acogedor y servicial: cuida el clima y las relaciones."
+    },
+    "ENFJ": {
+      "name": "Mentor",
+      "body": "Lidera con el ejemplo y desarrolla a las personas."
+    },
+    "ENTJ": {
+      "name": "Comandante",
+      "body": "Decidido y estratégico: lidera grandes proyectos."
+    }
+  }
+}

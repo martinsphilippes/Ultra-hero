@@ -11,6 +11,7 @@ import { getUser } from "@/lib/auth/session";
 import { listAccessRequests, listTeam, listTeamInvites } from "@/lib/agency/queries";
 import { AccessRequestCard } from "@/components/team/AccessRequestCard";
 import { isMemberLevel, levelRank } from "@/lib/team/levels";
+import { createClient } from "@/lib/supabase/server";
 import { AGENCY_ROLES } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
 import { InvitesGate } from "@/components/invites/InvitesGate";
@@ -41,6 +42,10 @@ export default async function AgencyTeamPage() {
     listTeamSectors(ctx.agency.id),
     listAccessRequests(ctx.agency.id),
   ]);
+  // 0128: tipo de personalidade de cada um (o Adm vê o da equipe)
+  const personality = new Map(
+    (((await (await createClient()).from("personality_results").select("user_id, type").in("user_id", team.map((m) => m.userId))).data ?? []) as { user_id: string; type: string }[]).map((r) => [r.user_id, r.type]),
+  );
   const locked = ctx.agency.isDemo;
 
   return (
@@ -98,6 +103,11 @@ export default async function AgencyTeamPage() {
                   </span>
                 </div>
                 <RoleBadge role={m.role} />
+                {personality.get(m.userId) ? (
+                  <Badge variant="info" size="sm">
+                    {personality.get(m.userId)}
+                  </Badge>
+                ) : null}
                 {isMemberLevel(m.level) ? (
                   <Badge variant="neutral" size="sm">
                     {tl(`${m.level}.title`)}

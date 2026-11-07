@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, CheckCheck, ChevronRight, MessagesSquare } from "lucide-react";
+import { playChime } from "@/lib/sound/chime";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Sheet, Spinner } from "@/components/ui";
@@ -86,6 +87,8 @@ export function NotificationBell({ userId, initialUnread, allHref, messages }: P
       .channel(`inbox-${userId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "inbox_notifications", filter: `user_id=eq.${userId}` }, (payload) => {
         setUnread((n) => n + 1);
+        // 0128: som de aviso próprio do Ultra (assobio curto)
+        playChime();
         const kind = (payload.new as { kind?: string } | null)?.kind;
         // aviso de mensagem nova: a conversa também mudou
         if (kind === "message_received") void refreshMessages();

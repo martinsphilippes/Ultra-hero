@@ -4,7 +4,7 @@ import { AlertTriangle, ArrowRightLeft, CheckCircle2, MessageSquarePlus, Save, U
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { addActivityAction, confirmDealAction, createDealAction, moveDealAction, setDealTeamAction, updateDealAction } from "@/app/agencia/negocios/actions";
+import { addActivityAction, confirmDealAction, createDealAction, moveDealAction, setDealCompensationAction, setDealTeamAction, updateDealAction } from "@/app/agencia/negocios/actions";
 import { Button, Checkbox, DatePicker, DateRangePicker, Dialog, EntityCard, EntitySelect, FormField, IconButton, Input, SegmentedControl, Select, Textarea, useToast } from "@/components/ui";
 import { campaignHeroIds, heroNames } from "@/lib/deals/client-label";
 import { hasCloseWonPending, type CloseWonPending } from "@/lib/deals/next-step";
@@ -33,7 +33,10 @@ export function DealForm({
   talents = [],
   services = [],
   prefill,
+  compensation,
 }: {
+  /** 0128: como o projeto paga (permuta, valor fixo ou performance com %). */
+  compensation?: { type: string; pct: number | null };
   initial: DealValues;
   dealId: string | null;
   brands: { id: string; name: string; logoUrl?: string | null }[];
@@ -66,6 +69,11 @@ export function DealForm({
   const [pending, start] = useTransition();
   const set = <K extends keyof DealValues>(k: K, value: DealValues[K]) => setV((cur) => ({ ...cur, [k]: value }));
   const disabled = pending || !canEdit;
+  const tc = useTranslations("projection.compensation");
+  const [compType, setCompType] = useState<"barter" | "fixed" | "performance">(
+    compensation?.type === "barter" || compensation?.type === "performance" ? compensation.type : "fixed",
+  );
+  const [compPct, setCompPct] = useState(compensation?.pct != null ? String(compensation.pct) : "");
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -88,6 +96,13 @@ export function DealForm({
             campaignTalentIds: castOn ? campaignHeroIds(castIds) : [],
           });
       if (!result.ok) return setError(result.error);
+      // 0128: como o projeto paga (gestor+; o banco confere)
+      const savedId = dealId ?? result.id;
+      if (savedId && canSetOwner) {
+        const pct = compType === "performance" ? Number(compPct.replace(",", ".")) : null;
+        const comp = await setDealCompensationAction({ dealId: savedId, type: compType, pct: pct !== null && Number.isFinite(pct) ? pct : null });
+        if (!comp.ok) toast({ title: comp.error, variant: "error" });
+      }
       toast({ title: result.message, variant: "success" });
       // falha parcial: o negócio existe; os Heros que não entraram são adicionados depois na aba Heros
       if (result.castFailed && result.castFailed.length > 0) {
@@ -203,6 +218,25 @@ export function DealForm({
         <p role="alert" className="type-body-sm text-danger">
           {error}
         </p>
+      ) : null}
+      {canSetOwner ? (
+        <FormField label={tc("label")} hint={tc("hint")}>
+          <div className="flex flex-col gap-2">
+            <SegmentedControl<"barter" | "fixed" | "performance">
+              value={compType}
+              onValueChange={setCompType}
+              aria-label={tc("label")}
+              options={[
+                { value: "barter", label: tc("barter") },
+                { value: "fixed", label: tc("fixed") },
+                { value: "performance", label: tc("performance") },
+              ]}
+            />
+            {compType === "performance" ? (
+              <Input inputMode="decimal" value={compPct} onChange={(e) => setCompPct(e.target.value)} placeholder={tc("pctPlaceholder")} aria-label={tc("pct")} disabled={disabled} data-testid="deal-performance-pct" />
+            ) : null}
+          </div>
+        </FormField>
       ) : null}
       {canEdit ? (
         <Button type="submit" leadingIcon={<Save />} loading={pending} className="w-fit" data-testid="deal-save">

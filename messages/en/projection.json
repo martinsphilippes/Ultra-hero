@@ -1,0 +1,19 @@
+{
+  "title": "Annual projection",
+  "hint": "Fees closed in the last 12 months + what is open in the pipeline. Barter is not included.",
+  "forYou": "Projection for you",
+  "forAgency": "Agency projection",
+  "split": "{won} closed · {open} open",
+  "bySegment": "Projection by segment",
+  "yours": "your segment",
+  "empty": "No amounts recorded in deals yet.",
+  "compensation": {
+    "label": "How the project pays",
+    "hint": "Barter (product or service), fixed fee or performance (% of results).",
+    "barter": "Barter",
+    "fixed": "Fixed fee",
+    "performance": "Performance",
+    "pct": "Percentage",
+    "pctPlaceholder": "% of results, e.g. 10"
+  }
+}
