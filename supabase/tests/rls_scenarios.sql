@@ -18918,5 +18918,40 @@ delete from public.content where id::text like 'c1270000-%';
 delete from public.creator_profiles where id::text like 'c1270000-%';
 delete from auth.users where id::text like 'c1270000-%';
 
+-- ================================================================ S128 · Teste de personalidade, pagamento do projeto e projeção (0128)
+\ir ../migrations/0128_personalidade_projecao.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('c1280000-0000-4000-8000-000000000001', 'adm@s128.test'),
+  ('c1280000-0000-4000-8000-000000000002', 'colab@s128.test'),
+  ('c1280000-0000-4000-8000-000000000003', 'consumidor@s128.test');
+insert into public.agencies (id, slug, name) values ('c1280000-0000-4000-8000-0000000000a1', 's128-ag', 'Agência S128');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('c1280000-0000-4000-8000-0000000000a1', 'c1280000-0000-4000-8000-000000000001', 'admin', 'Adm S128'),
+  ('c1280000-0000-4000-8000-0000000000a1', 'c1280000-0000-4000-8000-000000000002', 'staff', 'Colab S128');
+
+select tests.login('c1280000-0000-4000-8000-000000000003', 'consumidor@s128.test');
+select tests.expect_error('S128 consumidor comum não faz o teste', $$select public.personality_save('INTJ', '{}'::jsonb)$$, 'forbidden');
+select tests.expect_error('S128 consumidor não vê projeção', $$select public.finance_projection(null)$$, 'forbidden');
+select tests.login('c1280000-0000-4000-8000-000000000002', 'colab@s128.test');
+select tests.expect_error('S128 tipo inválido recusado', $$select public.personality_save('XYZW', '{}'::jsonb)$$, 'invalid_input');
+select public.personality_save('ENFP', '{"EI": 60}'::jsonb);
+select tests.ok('S128 o colaborador vê o próprio resultado e a projeção da agência sem erro',
+  (select type from public.personality_results where user_id = 'c1280000-0000-4000-8000-000000000002') = 'ENFP'
+  and (public.finance_projection('c1280000-0000-4000-8000-0000000000a1') ? 'mine'));
+select tests.login('c1280000-0000-4000-8000-000000000001', 'adm@s128.test');
+select tests.ok('S128 o Adm da agência vê o resultado da equipe',
+  (select count(*) from public.personality_results where user_id = 'c1280000-0000-4000-8000-000000000002') = 1);
+select tests.login('c1280000-0000-4000-8000-000000000003', 'consumidor@s128.test');
+select tests.ok('S128 quem é de fora não vê o resultado dos outros',
+  (select count(*) from public.personality_results where user_id = 'c1280000-0000-4000-8000-000000000002') = 0
+  and not has_function_privilege('anon', 'public.finance_projection(uuid)', 'execute'));
+
+select tests.su();
+delete from public.personality_results where user_id::text like 'c1280000-%';
+delete from public.agency_members where agency_id::text like 'c1280000-%';
+delete from public.agencies where id::text like 'c1280000-%';
+delete from auth.users where id::text like 'c1280000-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;
