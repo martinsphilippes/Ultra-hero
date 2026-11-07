@@ -60,9 +60,9 @@ export function OndaWindow({ bar = "purple", children, className, bodyClassName 
     <div className={cn("relative border-2 border-[#0c0c20] bg-white text-[#0c0c20] shadow-[5px_5px_0_#0c0c20]", className)}>
       <div className={cn("flex h-7 items-center justify-between border-b-2 border-[#0c0c20] px-3", BAR[bar])} aria-hidden="true">
         <span className="flex gap-1.5">
-          <span className="size-2.5 rounded-full bg-[#ffd84d]" />
-          <span className="size-2.5 rounded-full bg-[#ffd84d]" />
-          <span className="size-2.5 rounded-full bg-[#ffd84d]" />
+          {[0, 1, 2].map((i) => (
+            <span key={i} className={cn("size-2.5 rounded-full", bar === "yellow" ? "bg-[#0c0c20]" : "bg-[#ffd84d]")} />
+          ))}
         </span>
         <span className={cn("text-xs font-bold", bar === "yellow" ? "text-[#0c0c20]" : "text-white")}>x</span>
       </div>
