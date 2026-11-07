@@ -2,6 +2,7 @@
 
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { EmptyState } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
@@ -24,7 +25,7 @@ type Props = {
   month: number;
   /** Hoje (YYYY-MM-DD) no fuso, calculado no servidor (evita divergência na hidratação). */
   today: string;
-  /** Rota da agenda (navegação de mês por ?mes=YYYY-MM, carga completa, como antes). */
+  /** Rota da agenda (navegação de mês por ?mes=YYYY-MM, sem recarregar e sem rolar para o topo). */
   base: string;
   /** Filtros que acompanham a troca de mês. */
   extraParams?: Record<string, string | undefined>;
@@ -59,6 +60,13 @@ export function AgendaCalendar({ events, timeZone, portal, year, month, today, b
   const range = useMemo(() => gridRange(year, month), [year, month]);
   const byDay = useMemo(() => groupEventsByDay(events, timeZone, range), [events, timeZone, range]);
   const [selected, setSelected] = useState(() => initialDay(year, month, today, byDay.keys(), requestedDay));
+  // troca de mês sem recarregar a página (Link com scroll={false}, para a tela não pular para o topo): o componente
+  // continua montado, então o dia escolhido é recalculado aqui quando o mês ou o ?dia= mudam
+  const [shown, setShown] = useState(`${year}-${month}-${requestedDay ?? ""}`);
+  if (shown !== `${year}-${month}-${requestedDay ?? ""}`) {
+    setShown(`${year}-${month}-${requestedDay ?? ""}`);
+    setSelected(initialDay(year, month, today, byDay.keys(), requestedDay));
+  }
   const buttons = useRef(new Map<string, HTMLButtonElement>());
   const editor = useEventEditor();
   const setEditorDay = editor?.setSelectedDay;
@@ -117,9 +125,9 @@ export function AgendaCalendar({ events, timeZone, portal, year, month, today, b
   return (
     <section className="flex flex-col gap-4" data-testid="agenda-calendar">
       <nav aria-label={t("monthNav")} className="flex items-center justify-between gap-2" data-testid="month-nav">
-        <a href={href(prev.year, prev.month)} className={link} aria-label={t("prevMonth")} data-testid="agenda-prev">
+        <Link scroll={false} href={href(prev.year, prev.month)} className={link} aria-label={t("prevMonth")} data-testid="agenda-prev">
           <ChevronLeft className="size-5" aria-hidden="true" />
-        </a>
+        </Link>
         <h2 id={titleId} className="flex-1 text-center text-base font-semibold text-fg first-letter:uppercase" aria-live="polite">
           {monthLabel}
         </h2>
@@ -128,13 +136,13 @@ export function AgendaCalendar({ events, timeZone, portal, year, month, today, b
             {t("today")}
           </button>
         ) : (
-          <a href={href(Number(today.slice(0, 4)), Number(today.slice(5, 7)), today)} className={cn(link, "px-3 text-sm font-medium")} data-testid="agenda-today">
+          <Link scroll={false} href={href(Number(today.slice(0, 4)), Number(today.slice(5, 7)), today)} className={cn(link, "px-3 text-sm font-medium")} data-testid="agenda-today">
             {t("today")}
-          </a>
+          </Link>
         )}
-        <a href={href(next.year, next.month)} className={link} aria-label={t("nextMonth")} data-testid="agenda-next">
+        <Link scroll={false} href={href(next.year, next.month)} className={link} aria-label={t("nextMonth")} data-testid="agenda-next">
           <ChevronRight className="size-5" aria-hidden="true" />
-        </a>
+        </Link>
       </nav>
 
       <div role="grid" aria-labelledby={titleId} aria-readonly="true" className="flex flex-col gap-1" data-testid="agenda-grid">

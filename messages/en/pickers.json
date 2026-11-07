@@ -81,5 +81,11 @@
     "owner": "Brand owner: enters the brand portal and invites their own team.",
     "brandStaff": "Brand team: enters the brand portal and follows the campaigns.",
     "creator": "Hero: enters the Hero Portal (consultations, calendar, deliverables)."
+  },
+  "search": {
+    "label": "Search by name",
+    "placeholder": "Search by name ({count})",
+    "results": "Search results",
+    "empty": "No one with that name."
   }
 }

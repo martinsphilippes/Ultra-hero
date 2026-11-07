@@ -81,5 +81,11 @@
     "owner": "Dueño de la marca: entra al portal de la marca e invita a su propio equipo.",
     "brandStaff": "Equipo de la marca: entra al portal de la marca y sigue las campañas.",
     "creator": "Hero: entra al Portal del Hero (consultas, agenda, entregas)."
+  },
+  "search": {
+    "label": "Buscar por nombre",
+    "placeholder": "Buscar por nombre ({count})",
+    "results": "Resultados de la búsqueda",
+    "empty": "Nadie con ese nombre."
   }
 }

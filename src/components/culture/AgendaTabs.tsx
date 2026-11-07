@@ -17,6 +17,7 @@ export function AgendaTabs({ base, active }: Props) {
   const item = (key: "agenda" | "cultura", href: string, icon: ReactNode, label: string) => (
     <Link
       href={href}
+      scroll={false}
       aria-current={active === key ? "page" : undefined}
       data-testid={`agenda-tab-${key}`}
       className={cn(

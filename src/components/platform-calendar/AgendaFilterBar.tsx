@@ -37,7 +37,8 @@ export function AgendaFilterBar({ base, params, filters, collections, showMode =
     if (merged.cal && merged.cal !== "all") next.set("cal", merged.cal);
     if (merged.territorio) next.set("territorio", merged.territorio);
     if (merged.colecao) next.set("colecao", merged.colecao);
-    start(() => router.push(`${base}?${next.toString()}`));
+    // scroll: false: trocar o filtro não pode jogar a tela para o topo (pedido da Groscove, 07/11)
+    start(() => router.push(`${base}?${next.toString()}`, { scroll: false }));
   }
 
   const canFilter = filters.mode !== "mine";
