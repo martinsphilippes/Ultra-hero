@@ -167,7 +167,9 @@ export function postProgress(states: readonly PostState[]): { done: number; tota
 
 // ------------------------------------------------------------------ concluir
 
-export const FINALIZE_PROBLEMS = ["representative", "summary", "actions", "followUp", "project"] as const;
+export const FINALIZE_PROBLEMS = ["heldAt", "representative", "summary", "actions", "followUp", "project"] as const;
+/** Folga para concluir: a reunião precisa ter acontecido (até 1 hora à frente, como no banco). */
+export const HELD_AT_SLACK_MS = 60 * 60 * 1000;
 export type FinalizeProblem = (typeof FINALIZE_PROBLEMS)[number];
 export const SUMMARY_MIN = 10;
 
@@ -176,15 +178,21 @@ export function actionReady(a: Pick<MeetingAction, "title" | "ownerKind" | "owne
   return a.title.trim().length >= 2 && Boolean(a.dueOn) && (a.ownerKind === "talent" || Boolean(a.ownerId));
 }
 
-/** O que ainda falta para concluir a ata (mesmas regras do banco: meeting_incomplete). */
-export function finalizeProblems(m: {
-  representativeId: string | null;
-  notes: Notes;
-  followUpOn: string | null;
-  actions: readonly Pick<MeetingAction, "title" | "ownerKind" | "ownerId" | "dueOn">[];
-  registerIdea: boolean;
-}): FinalizeProblem[] {
+/** O que ainda falta para concluir a ata (mesmas regras do banco: meeting_incomplete e invalid_date). */
+export function finalizeProblems(
+  m: {
+    heldAt?: string | null;
+    representativeId: string | null;
+    notes: Notes;
+    followUpOn: string | null;
+    actions: readonly Pick<MeetingAction, "title" | "ownerKind" | "ownerId" | "dueOn">[];
+    registerIdea: boolean;
+  },
+  now: number = Date.now(),
+): FinalizeProblem[] {
   const out: FinalizeProblem[] = [];
+  const held = m.heldAt ? Date.parse(m.heldAt) : Number.NaN;
+  if (Number.isFinite(held) && held > now + HELD_AT_SLACK_MS) out.push("heldAt");
   if (!m.representativeId) out.push("representative");
   if ((m.notes.summary ?? "").trim().length < SUMMARY_MIN) out.push("summary");
   if (!m.actions.some(actionReady)) out.push("actions");
@@ -195,10 +203,32 @@ export function finalizeProblems(m: {
 
 // ------------------------------------------------------------------ dado sensível
 
-/** CPF e dados bancários não entram na ata (mesma regra do banco: sensitive_data). */
+/** Dígito verificador do CPF (11 dígitos; sequência repetida não vale). */
+export function isCpf(digits: string): boolean {
+  if (!/^\d{11}$/.test(digits) || /^(\d)\1{10}$/.test(digits)) return false;
+  const check = (len: number) => {
+    let sum = 0;
+    for (let i = 0; i < len; i++) sum += Number(digits[i]) * (len + 1 - i);
+    const r = (sum * 10) % 11;
+    return r === 10 ? 0 : r;
+  };
+  return check(9) === Number(digits[9]) && check(10) === Number(digits[10]);
+}
+
+/**
+ * CPF e dados bancários não entram na ata (mesma regra do banco: sensitive_data): CPF citado pelo nome, 11 dígitos
+ * no formato de CPF que fecham o dígito verificador (telefone não fecha), agência e conta com número em qualquer
+ * ordem, ou conta corrente/poupança com número. Sem lookbehind (Safari antigo não aceita).
+ */
 export function hasSensitiveData(text: string | null | undefined): boolean {
-  const s = text ?? "";
-  return /\d{3}\.\d{3}\.\d{3}-\d{2}/.test(s) || /cpf\D{0,4}\d{11}/i.test(s) || /ag[eê]ncia\D{0,6}\d{3,5}[^\n]{0,30}conta\D{0,6}\d{4,}/i.test(s);
+  const s = (text ?? "").toLowerCase();
+  if (!s) return false;
+  if (/cpf\D{0,15}\d{3}/.test(s) || /\d{3}\.\d{3}\.\d{3}-\d{2}/.test(s)) return true;
+  for (const m of s.matchAll(/(?:^|\D)(\d{3}[.\s]?\d{3}[.\s]?\d{3}[-.\s/]?\d{2})(?!\d)/g)) {
+    if (isCpf(m[1].replace(/\D/g, ""))) return true;
+  }
+  if (/(ag[eê]ncia|\bag\.?)\s*[:nº°#]*\s*\d{3,5}/.test(s) && /(conta|c\/c|\bcc\b)\D{0,20}\d{4,}/.test(s)) return true;
+  return /(conta[ -]corrente|conta[ -]poupan[cç]a|c\/c|\bcc\b)\D{0,6}\d{4,}/.test(s);
 }
 
 // ------------------------------------------------------------------ assunto, arquivo e prazos
@@ -215,6 +245,22 @@ export function meetingTime(iso: string): string {
   const parts = new Intl.DateTimeFormat("en-GB", { timeZone: MEETING_TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(iso));
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "00";
   return `${get("hour")}:${get("minute")}`;
+}
+
+/** "AAAA-MM-DD" + "HH:mm" no fuso de São Paulo → instante ISO (com o deslocamento do dia). */
+export function meetingInstant(day: string, time: string): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || !/^\d{2}:\d{2}$/.test(time)) return null;
+  const [y, mo, d] = day.split("-").map(Number);
+  const [hh, mm] = time.split(":").map(Number);
+  const guess = Date.UTC(y, mo - 1, d, hh, mm);
+  const offset = (at: number) => {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: MEETING_TZ, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).formatToParts(new Date(at));
+    const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? "0");
+    return (Date.UTC(get("year"), get("month") - 1, get("day"), get("hour"), get("minute")) - at) / 60_000;
+  };
+  let off = offset(guess);
+  off = offset(guess - off * 60_000);
+  return new Date(guess - off * 60_000).toISOString();
 }
 
 /** AAAA-MM-DD + n dias (sem fuso: a chave é lida como data pura). */

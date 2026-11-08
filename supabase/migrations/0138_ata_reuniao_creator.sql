@@ -6,7 +6,7 @@
 --     I encaminhamentos com responsável e prazo · J resumo executivo · K formalização + checklist pós-reunião.
 --   Concluir a ata exige representante, resumo, data de follow-up e ao menos um encaminhamento com responsável e
 --   prazo ("toda reunião precisa terminar com próximos passos claros"). Ao concluir:
---     - os formatos marcados vão para o relacionamento do Hero (aba Relacionamento);
+--     - o interesse em cada formato vai para o relacionamento do Hero (aba Relacionamento);
 --     - o interesse na ação aberta vira a resposta do Hero, sem nunca passar por cima do que ele mesmo respondeu;
 --     - o projeto autoral entra em "Projetos autorais" quando a equipe marca (uma vez só);
 --     - o follow-up entra na agenda da agência (dia inteiro, só a equipe vê) e quem ficou com encaminhamento é avisado;
@@ -14,6 +14,8 @@
 --   Ata é documento interno: só a equipe da agência (staff+) lê; o Hero não vê. CPF e dados bancários não entram
 --   (o guia manda tratar por canal seguro): o banco recusa com sensitive_data.
 --   Concluída, a ata só muda no checklist, no follow-up e nos encaminhamentos; gestor+ pode reabrir para corrigir.
+--   Relacionamento e resposta da ação só mudam na primeira conclusão e se não houver reunião concluída mais nova;
+--   o que a equipe escreve (observações, categorias) fica na ata e não aparece para o Hero.
 --   Leitura e escrita só pelas funções abaixo (tabelas sem acesso direto do app).
 -- =============================================================================
 
@@ -72,8 +74,10 @@ create index if not exists creator_meeting_actions_open_idx on public.creator_me
 create index if not exists creator_meeting_actions_owner_idx on public.creator_meeting_actions (owner_id, due_on) where status = 'pending';
 
 -- resposta da ação registrada pela equipe na reunião (null = o próprio Hero respondeu no portal)
-alter table public.talent_action_responses add column if not exists meeting_id uuid
-  constraint talent_action_responses_meeting_fk references public.creator_meetings (id) on delete set null;
+alter table public.talent_action_responses add column if not exists meeting_id uuid;
+alter table public.talent_action_responses drop constraint if exists talent_action_responses_meeting_fk;
+alter table public.talent_action_responses add constraint talent_action_responses_meeting_fk
+  foreign key (meeting_id) references public.creator_meetings (id) on delete cascade;
 
 do $$
 declare t text;
@@ -130,13 +134,39 @@ alter table public.inbox_notifications add constraint inbox_notifications_entity
 
 -- 3) validação ------------------------------------------------------------------------------------------------------------------
 -- CPF e dados bancários não entram na ata (o guia manda tratar por canal seguro)
+create or replace function public.creator_meeting_is_cpf(d text)
+returns boolean language plpgsql immutable set search_path = '' as $$
+declare s int; r int; i int;
+begin
+  if d is null or d !~ '^\d{11}$' or d ~ '^(\d)\1{10}$' then return false; end if;
+  s := 0;
+  for i in 1..9 loop s := s + substr(d, i, 1)::int * (11 - i); end loop;
+  r := (s * 10) % 11; if r = 10 then r := 0; end if;
+  if r <> substr(d, 10, 1)::int then return false; end if;
+  s := 0;
+  for i in 1..10 loop s := s + substr(d, i, 1)::int * (12 - i); end loop;
+  r := (s * 10) % 11; if r = 10 then r := 0; end if;
+  return r = substr(d, 11, 1)::int;
+end $$;
+revoke execute on function public.creator_meeting_is_cpf(text) from public, anon;
+grant execute on function public.creator_meeting_is_cpf(text) to authenticated, service_role;
+
 create or replace function public.creator_meeting_text_ok(p text)
-returns boolean language sql immutable set search_path = '' as $$
-  select p is null or not (
-    p ~ '\d{3}\.\d{3}\.\d{3}-\d{2}'
-    or p ~* 'cpf\D{0,4}\d{11}'
-    or p ~* 'ag[eê]ncia\D{0,6}\d{3,5}[^\n]{0,30}conta\D{0,6}\d{4,}')
-$$;
+returns boolean language plpgsql immutable set search_path = '' as $$
+declare v text := lower(coalesce(p, '')); m text[];
+begin
+  if v = '' then return true; end if;
+  -- CPF citado pelo nome ou no formato 000.000.000-00 (mesmo com dígito errado)
+  if v ~ 'cpf\D{0,15}\d{3}' or v ~ '\d{3}\.\d{3}\.\d{3}-\d{2}' then return false; end if;
+  -- 11 dígitos no formato de CPF (com ou sem pontuação) que fecham o dígito verificador; telefone não fecha
+  for m in select regexp_matches(v, '(?<!\d)\d{3}[.\s]?\d{3}[.\s]?\d{3}[-.\s/]?\d{2}(?!\d)', 'g') loop
+    if public.creator_meeting_is_cpf(regexp_replace(m[1], '\D', '', 'g')) then return false; end if;
+  end loop;
+  -- dados bancários: agência e conta com número (em qualquer ordem, até em linhas separadas) ou conta corrente/poupança
+  if v ~ '(ag[eê]ncia|\mag\.?)\s*[:nº°#]*\s*\d{3,5}' and v ~ '(conta|c/c|\mcc\M)\D{0,20}\d{4,}' then return false; end if;
+  if v ~ '(conta[ -]corrente|conta[ -]poupan[cç]a|c/c|\mcc\M)\D{0,6}\d{4,}' then return false; end if;
+  return true;
+end $$;
 revoke execute on function public.creator_meeting_text_ok(text) from public, anon;
 grant execute on function public.creator_meeting_text_ok(text) to authenticated, service_role;
 
@@ -259,7 +289,10 @@ declare
 begin
   if p_data is null or jsonb_typeof(p_data) <> 'object' then raise exception 'invalid_input' using errcode = '22023'; end if;
   select * into m from public.creator_meetings x where x.id = p_id for update;
-  if m.id is null or not public.agency_can(m.agency_id, 'staff') then raise exception 'forbidden' using errcode = '42501'; end if;
+  if m.id is null or not public.agency_can(m.agency_id, 'staff')
+     or not exists (select 1 from public.talent_profiles t where t.id = m.talent_id and t.agency_id = m.agency_id and t.archived_at is null) then
+    raise exception 'forbidden' using errcode = '42501';
+  end if;
   -- campo que não veio fica como está (null explícito apaga); encaminhamentos só mudam quando a lista vem
   v_data := to_jsonb(m) || p_data;
 
@@ -276,7 +309,10 @@ begin
     raise exception 'invalid_input' using errcode = '22023';
   end;
   v_checks := public.creator_meeting_checks_clean(v_data -> 'checks');
-  if v_sender is not null and not public.creator_meeting_member_ok(m.agency_id, v_sender) then raise exception 'invalid_input' using errcode = '22023'; end if;
+  -- pessoa nova precisa ser da equipe ativa; a que já estava (mesmo tendo saído) fica
+  if v_sender is not null and v_sender is distinct from m.sender_id and not public.creator_meeting_member_ok(m.agency_id, v_sender) then
+    raise exception 'invalid_input' using errcode = '22023';
+  end if;
   if v_sent is not null and (v_sent < date '2020-01-01' or v_sent > current_date + 366) then raise exception 'invalid_date' using errcode = '22023'; end if;
 
   if m.status = 'draft' then
@@ -293,7 +329,7 @@ begin
     if v_mode not in ('online', 'in_person') or char_length(v_participants) > 500 or char_length(v_full) > 160
        or (v_contact is not null and v_contact not in ('yes', 'no')) or char_length(v_fix) > 300
        or (v_interest is not null and v_interest not in ('yes', 'no', 'depends'))
-       or (v_rep is not null and not public.creator_meeting_member_ok(m.agency_id, v_rep))
+       or (v_rep is not null and v_rep is distinct from m.representative_id and not public.creator_meeting_member_ok(m.agency_id, v_rep))
        or (v_action is not null and not exists (select 1 from public.creator_actions x where x.key = v_action and x.agency_id = m.agency_id)) then
       raise exception 'invalid_input' using errcode = '22023';
     end if;
@@ -361,12 +397,18 @@ begin
     end if;
     if not public.creator_meeting_text_ok(v_title) then raise exception 'sensitive_data' using errcode = '22023'; end if;
     if v_kind = 'talent' then v_owner := null; end if;
-    if v_owner is not null and not public.creator_meeting_member_ok(m.agency_id, v_owner) then raise exception 'invalid_input' using errcode = '22023'; end if;
     if v_due is not null and (v_due < date '2020-01-01' or v_due > current_date + 730) then raise exception 'invalid_date' using errcode = '22023'; end if;
     v_old := null;
     if v_aid is not null then
       select * into v_old from public.creator_meeting_actions x where x.id = v_aid and x.meeting_id = m.id;
       if v_old.id is null then raise exception 'invalid_input' using errcode = '22023'; end if;
+    end if;
+    -- responsável novo precisa ser da equipe ativa; o que já estava (mesmo tendo saído) fica
+    if v_owner is not null and (v_old.id is null or v_old.owner_id is distinct from v_owner)
+       and not public.creator_meeting_member_ok(m.agency_id, v_owner) then
+      raise exception 'invalid_input' using errcode = '22023';
+    end if;
+    if v_old.id is not null then
       update public.creator_meeting_actions
       set position = v_pos, title = v_title, owner_kind = v_kind, owner_id = v_owner, due_on = v_due, status = v_status,
           done_at = case when v_status = 'done' then coalesce(v_old.done_at, now()) end,
@@ -384,10 +426,15 @@ begin
     if m.status = 'final' and v_owner is not null and v_owner <> auth.uid() and v_status = 'pending'
        and (v_old.id is null or v_old.owner_id is distinct from v_owner) then
       perform public.inbox_notify(v_owner, 'creator_meeting_action', v_link, jsonb_build_object('talent', left(v_name, 80), 'count', 1),
-        m.agency_id, 'creator_meeting', m.id, 'creator_meeting_action:' || v_aid::text || ':' || v_owner::text);
+        m.agency_id, 'creator_meeting', m.id, 'creator_meeting:' || m.id::text || ':' || v_owner::text);
     end if;
   end loop;
   delete from public.creator_meeting_actions x where x.meeting_id = m.id and not (x.id = any (v_keep));
+  -- concluída nunca fica sem próximo passo com responsável e prazo
+  if m.status = 'final' and not exists (select 1 from public.creator_meeting_actions x
+      where x.meeting_id = m.id and x.due_on is not null and (x.owner_kind = 'talent' or x.owner_id is not null)) then
+    raise exception 'meeting_incomplete' using errcode = 'P0001';
+  end if;
 
   perform public.audit_log('creator_meeting.save', 'creator_meeting', m.id::text, null,
     jsonb_build_object('status', m.status, 'actions', v_pos), null, 'agency');
@@ -399,36 +446,57 @@ grant execute on function public.creator_meeting_save(uuid, jsonb) to authentica
 create or replace function public.creator_meeting_finalize(p_id uuid)
 returns void language plpgsql security definer set search_path = '' as $$
 declare m public.creator_meetings%rowtype; v_name text; v_link text; v_ready int; v_idea uuid; v_event uuid; v_start timestamptz; r record;
+        v_first boolean; v_newest boolean; v_cur jsonb; v_merge jsonb;
 begin
   select * into m from public.creator_meetings x where x.id = p_id for update;
-  if m.id is null or not public.agency_can(m.agency_id, 'staff') then raise exception 'forbidden' using errcode = '42501'; end if;
+  if m.id is null or not public.agency_can(m.agency_id, 'staff')
+     or not exists (select 1 from public.talent_profiles t where t.id = m.talent_id and t.agency_id = m.agency_id and t.archived_at is null) then
+    raise exception 'forbidden' using errcode = '42501';
+  end if;
   if m.status <> 'draft' then raise exception 'meeting_final' using errcode = 'P0001'; end if;
+  -- só se conclui reunião que já aconteceu
+  if m.held_at > now() + interval '1 hour' then raise exception 'invalid_date' using errcode = '22023'; end if;
   select count(*) into v_ready from public.creator_meeting_actions x
-  where x.meeting_id = m.id and x.due_on is not null and (x.owner_kind = 'talent' or x.owner_id is not null);
+  where x.meeting_id = m.id and x.due_on is not null
+    and (x.owner_kind = 'talent' or public.creator_meeting_member_ok(m.agency_id, x.owner_id));
   if m.representative_id is null or char_length(coalesce(m.notes ->> 'summary', '')) < 10 or m.follow_up_on is null or v_ready = 0
      or (m.register_idea and (char_length(coalesce(m.notes ->> 'project_name', '')) < 3 or char_length(coalesce(m.notes ->> 'project_concept', '')) < 10)) then
     raise exception 'meeting_incomplete' using errcode = 'P0001';
   end if;
   select t.display_name into v_name from public.talent_profiles t where t.id = m.talent_id;
   v_link := '/agencia/casting/' || m.talent_id::text || '/reunioes/' || m.id::text;
+  -- relacionamento e resposta da ação mudam só na primeira conclusão e se não há reunião concluída mais nova
+  -- (reabrir para corrigir a ata não volta o que o Hero ou uma reunião mais nova já disseram)
+  v_first := m.finalized_at is null;
+  v_newest := not exists (select 1 from public.creator_meetings x
+                          where x.talent_id = m.talent_id and x.id <> m.id and x.finalized_at is not null and x.held_at > m.held_at);
 
-  -- D. formatos → relacionamento do Hero (o que ele disse por último vale)
-  if m.formats <> '{}'::jsonb then
+  -- D. formatos → relacionamento: vai o interesse; a observação continua a que já estava (a da ata é interna)
+  if v_first and v_newest and m.formats <> '{}'::jsonb then
+    select rel.formats into v_cur from public.talent_relationship rel where rel.talent_id = m.talent_id for update;
+    v_merge := coalesce(v_cur, '{}'::jsonb);
+    for r in select key, value from jsonb_each(m.formats) loop
+      v_merge := v_merge || jsonb_build_object(r.key,
+        jsonb_build_object('interest', r.value ->> 'interest', 'note', coalesce(v_cur -> r.key ->> 'note', '')));
+    end loop;
     insert into public.talent_relationship (talent_id, formats, updated_at, updated_by)
-    values (m.talent_id, m.formats, now(), auth.uid())
-    on conflict (talent_id) do update
-      set formats = public.talent_relationship.formats || excluded.formats, updated_at = now(), updated_by = auth.uid();
+    values (m.talent_id, v_merge, now(), auth.uid())
+    on conflict (talent_id) do update set formats = excluded.formats, updated_at = now(), updated_by = auth.uid();
   end if;
 
-  -- E. resposta da ação aberta: nunca por cima do que o próprio Hero respondeu no portal
-  if m.action_key is not null and m.action_interest is not null then
+  -- E. interesse na ação ainda aberta: nunca por cima do que o Hero respondeu no portal nem de reunião mais nova.
+  --    Categorias e disponibilidade ficam na ata (a lista da equipe lê de lá); o Hero vê só o interesse.
+  if v_first and v_newest and m.action_key is not null and m.action_interest is not null
+     and exists (select 1 from public.creator_actions a where a.key = m.action_key and a.agency_id = m.agency_id and a.active
+                 and current_date between a.starts_on and a.ends_on) then
     insert into public.talent_action_responses (talent_id, action_key, interest, categories, availability, notes, updated_at, updated_by, meeting_id)
-    values (m.talent_id, m.action_key, m.action_interest, left(coalesce(m.notes ->> 'action_categories', ''), 300),
-            left(coalesce(m.notes ->> 'action_availability', ''), 500), '', now(), auth.uid(), m.id)
+    values (m.talent_id, m.action_key, m.action_interest, '', '', '', now(), auth.uid(), m.id)
     on conflict (talent_id, action_key) do update
-      set interest = excluded.interest, categories = excluded.categories, availability = excluded.availability,
+      set interest = excluded.interest, categories = '', availability = '', notes = '',
           updated_at = now(), updated_by = auth.uid(), meeting_id = excluded.meeting_id
-      where public.talent_action_responses.meeting_id is not null;
+      where public.talent_action_responses.meeting_id is not null
+        and coalesce((select x.held_at from public.creator_meetings x where x.id = public.talent_action_responses.meeting_id),
+                     '-infinity'::timestamptz) <= m.held_at;
   end if;
 
   -- F. projeto autoral (uma vez só por ata)
@@ -458,24 +526,25 @@ begin
     returning id into v_event;
   end if;
 
-  -- I. quem ficou com encaminhamento é avisado (uma vez por pessoa e ata)
+  -- I. quem da equipe ativa ficou com encaminhamento é avisado (uma vez por pessoa e ata)
   for r in select x.owner_id, count(*) as n from public.creator_meeting_actions x
            where x.meeting_id = m.id and x.owner_id is not null and x.status = 'pending' and x.owner_id <> auth.uid()
+             and public.creator_meeting_member_ok(m.agency_id, x.owner_id)
            group by x.owner_id loop
     perform public.inbox_notify(r.owner_id, 'creator_meeting_action', v_link, jsonb_build_object('talent', left(v_name, 80), 'count', r.n),
       m.agency_id, 'creator_meeting', m.id, 'creator_meeting:' || m.id::text || ':' || r.owner_id::text);
   end loop;
 
-  -- última conversa com o Hero no casting
-  update public.talent_profiles set last_contact_at = m.held_at
-  where id = m.talent_id and (last_contact_at is null or last_contact_at < m.held_at);
+  -- última conversa com o Hero no casting (nunca no futuro)
+  update public.talent_profiles set last_contact_at = least(m.held_at, now())
+  where id = m.talent_id and (last_contact_at is null or last_contact_at < least(m.held_at, now()));
 
   update public.creator_meetings
   set status = 'final', finalized_at = now(), finalized_by = auth.uid(), idea_id = coalesce(m.idea_id, v_idea), calendar_event_id = v_event,
       updated_at = now(), updated_by = auth.uid()
   where id = m.id;
   perform public.audit_log('creator_meeting.finalize', 'creator_meeting', m.id::text, null,
-    jsonb_build_object('talent_id', m.talent_id, 'formats', m.formats <> '{}'::jsonb, 'action_key', m.action_key, 'idea_id', v_idea), null, 'agency');
+    jsonb_build_object('talent_id', m.talent_id, 'first', v_first, 'newest', v_newest, 'action_key', m.action_key, 'idea_id', v_idea), null, 'agency');
 end $$;
 revoke execute on function public.creator_meeting_finalize(uuid) from public, anon;
 grant execute on function public.creator_meeting_finalize(uuid) to authenticated, service_role;
@@ -486,7 +555,10 @@ returns void language plpgsql security definer set search_path = '' as $$
 declare m public.creator_meetings%rowtype;
 begin
   select * into m from public.creator_meetings x where x.id = p_id for update;
-  if m.id is null or not public.agency_can(m.agency_id, 'manager') then raise exception 'forbidden' using errcode = '42501'; end if;
+  if m.id is null or not public.agency_can(m.agency_id, 'manager')
+     or not exists (select 1 from public.talent_profiles t where t.id = m.talent_id and t.agency_id = m.agency_id) then
+    raise exception 'forbidden' using errcode = '42501';
+  end if;
   if m.status <> 'final' then raise exception 'invalid_state' using errcode = 'P0001'; end if;
   -- finalized_at fica: a ata já foi concluída uma vez (não pode mais ser apagada)
   update public.creator_meetings set status = 'draft', updated_at = now(), updated_by = auth.uid() where id = p_id;
@@ -502,7 +574,8 @@ declare m public.creator_meetings%rowtype;
 begin
   select * into m from public.creator_meetings x where x.id = p_id for update;
   if m.id is null or not public.agency_can(m.agency_id, 'staff')
-     or (m.created_by is distinct from auth.uid() and not public.agency_can(m.agency_id, 'manager')) then
+     or (m.created_by is distinct from auth.uid() and not public.agency_can(m.agency_id, 'manager'))
+     or not exists (select 1 from public.talent_profiles t where t.id = m.talent_id and t.agency_id = m.agency_id) then
     raise exception 'forbidden' using errcode = '42501';
   end if;
   if m.status <> 'draft' or m.finalized_at is not null then raise exception 'meeting_final' using errcode = 'P0001'; end if;
@@ -516,7 +589,10 @@ create or replace function public.creator_meeting_action_set(p_action uuid, p_st
 returns void language plpgsql security definer set search_path = '' as $$
 declare v_agency uuid;
 begin
-  select m.agency_id into v_agency from public.creator_meeting_actions x join public.creator_meetings m on m.id = x.meeting_id where x.id = p_action;
+  select m.agency_id into v_agency from public.creator_meeting_actions x
+  join public.creator_meetings m on m.id = x.meeting_id
+  join public.talent_profiles t on t.id = m.talent_id and t.agency_id = m.agency_id
+  where x.id = p_action;
   if v_agency is null or not public.agency_can(v_agency, 'staff') then raise exception 'forbidden' using errcode = '42501'; end if;
   if p_status is null or p_status not in ('pending', 'done') then raise exception 'invalid_input' using errcode = '22023'; end if;
   update public.creator_meeting_actions
@@ -646,10 +722,13 @@ begin
     'action', jsonb_build_object('key', v_a.key, 'title', v_a.title, 'summary', v_a.summary, 'starts_on', v_a.starts_on,
       'ends_on', v_a.ends_on, 'active', v_a.active, 'event_id', v_a.calendar_event_id),
     'answers', coalesce((select jsonb_agg(jsonb_build_object('talent_id', t.id, 'name', t.display_name, 'photo_url', t.photo_url,
-        'interest', r.interest, 'categories', r.categories, 'availability', r.availability, 'notes', r.notes, 'updated_at', r.updated_at,
-        'from_meeting', r.meeting_id is not null)
+        'interest', r.interest,
+        'categories', case when r.meeting_id is null then r.categories else coalesce(mt.notes ->> 'action_categories', '') end,
+        'availability', case when r.meeting_id is null then r.availability else coalesce(mt.notes ->> 'action_availability', '') end,
+        'notes', r.notes, 'updated_at', r.updated_at, 'from_meeting', r.meeting_id is not null)
         order by case r.interest when 'yes' then 0 when 'depends' then 1 else 2 end, r.updated_at desc)
       from public.talent_action_responses r join public.talent_profiles t on t.id = r.talent_id
+      left join public.creator_meetings mt on mt.id = r.meeting_id
       where r.action_key = v_a.key and t.agency_id = v_a.agency_id and t.archived_at is null), '[]'::jsonb));
 end $$;
 revoke execute on function public.creator_action_answers(text) from public, anon;

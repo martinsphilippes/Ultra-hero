@@ -46,6 +46,7 @@
     "invalidTitle": "Cada próximo paso necesita al menos 2 letras."
   },
   "problems": {
+    "heldAt": "Fecha y hora de la reunión (A): la reunión todavía no ocurrió. Concluye después.",
     "representative": "Representante responsable (A)",
     "summary": "Resumen ejecutivo (J)",
     "actions": "Un próximo paso con responsable y plazo (I)",

@@ -34,6 +34,7 @@ import {
   finalizeProblems,
   hasSensitiveData,
   meetingDay,
+  meetingInstant,
   meetingTime,
   postChecklist,
   postProgress,
@@ -247,6 +248,7 @@ export function MeetingEditor({ meeting, memberOptions, today }: { meeting: Meet
     if (shortTitle) return setError(t("editor.invalidTitle"));
     if (kind === "finalize") {
       const missing = finalizeProblems({
+        heldAt: meetingInstant(state.heldDate, state.heldTime),
         representativeId: state.representativeId,
         notes: state.notes,
         followUpOn: state.followUpOn,

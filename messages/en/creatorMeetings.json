@@ -46,6 +46,7 @@
     "invalidTitle": "Each next step needs at least 2 letters."
   },
   "problems": {
+    "heldAt": "Meeting date and time (A): the meeting hasn't happened yet. Finish it afterwards.",
     "representative": "Representative in charge (A)",
     "summary": "Executive summary (J)",
     "actions": "A next step with an owner and a due date (I)",

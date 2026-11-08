@@ -46,6 +46,7 @@
     "invalidTitle": "Cada encaminhamento precisa de pelo menos 2 letras."
   },
   "problems": {
+    "heldAt": "Data e horário da reunião (A): a reunião ainda não aconteceu. Conclua depois dela.",
     "representative": "Representante responsável (A)",
     "summary": "Resumo executivo (J)",
     "actions": "Um encaminhamento com responsável e prazo (I)",

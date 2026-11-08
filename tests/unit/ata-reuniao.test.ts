@@ -9,7 +9,9 @@ import {
   dueBucket,
   finalizeProblems,
   hasSensitiveData,
+  isCpf,
   meetingDay,
+  meetingInstant,
   meetingFileName,
   meetingText,
   meetingTime,
@@ -84,6 +86,16 @@ describe("concluir a ata", () => {
     expect(actionReady({ title: "Pedir media kit", ownerKind: "team", ownerId: "u1", dueOn: null })).toBe(false);
     expect(actionReady({ title: "Enviar media kit", ownerKind: "talent", ownerId: null, dueOn: "2026-11-10" })).toBe(true);
   });
+  it("reunião que ainda não aconteceu não conclui (até 1 hora de folga)", () => {
+    const now = Date.parse("2026-11-08T12:00:00Z");
+    const ok = { representativeId: "u1", notes: { summary: "Interesse em CPA." }, followUpOn: "2026-11-15", registerIdea: false, actions: [{ title: "Ligar", ownerKind: "talent" as const, ownerId: null, dueOn: "2026-11-10" }] };
+    expect(finalizeProblems({ ...ok, heldAt: "2026-11-08T12:30:00Z" }, now)).toEqual([]);
+    expect(finalizeProblems({ ...ok, heldAt: "2026-11-09T12:00:00Z" }, now)).toEqual(["heldAt"]);
+  });
+  it("hora da reunião em São Paulo vira o instante certo", () => {
+    expect(meetingInstant("2026-11-08", "10:00")).toBe("2026-11-08T13:00:00.000Z");
+    expect(meetingInstant("2026-11-08", "")).toBeNull();
+  });
   it("pronto para concluir; registrar projeto exige nome e conceito", () => {
     const ok = {
       representativeId: "u1",
@@ -98,17 +110,31 @@ describe("concluir a ata", () => {
 });
 
 describe("dado sensível fica fora da ata", () => {
-  it("CPF e dados bancários são pegos; telefone e texto comum não", () => {
+  it("dígito verificador do CPF", () => {
+    expect(isCpf("52998224725")).toBe(true);
+    expect(isCpf("52998224724")).toBe(false);
+    expect(isCpf("11111111111")).toBe(false);
+    expect(isCpf("11987654321")).toBe(false);
+  });
+  it("CPF (com ou sem pontuação) e dados bancários são pegos; telefone, seguidores e valores não", () => {
     expect(hasSensitiveData("CPF dele: 123.456.789-10")).toBe(true);
     expect(hasSensitiveData("cpf 12345678910")).toBe(true);
+    expect(hasSensitiveData("documento 52998224725")).toBe(true);
+    expect(hasSensitiveData("529 982 247 25")).toBe(true);
     expect(hasSensitiveData("Banco Itaú agência 1234 conta 56789-0")).toBe(true);
-    expect(hasSensitiveData("Tel (11) 98765-4321 / 11987654321")).toBe(false);
+    expect(hasSensitiveData("Agência: 1234\nConta: 56789-0")).toBe(true);
+    expect(hasSensitiveData("conta 56789-0 e agência 1234")).toBe(true);
+    expect(hasSensitiveData("Ag. 1234 C/C 12345-6")).toBe(true);
+    expect(hasSensitiveData("conta corrente 12345-6")).toBe(true);
+    expect(hasSensitiveData("Tel (11) 98765-4321 / 11987654321 / 11 98765 4321")).toBe(false);
     expect(hasSensitiveData("A agência 2024 tem conta no Instagram")).toBe(false);
-    expect(hasSensitiveData("Cachê de R$ 5.000 por reels")).toBe(false);
+    expect(hasSensitiveData("A conta tem 12000 seguidores")).toBe(false);
+    expect(hasSensitiveData("Cachê de R$ 5.000 por reels; 1.234.567 seguidores")).toBe(false);
   });
   it("a mesma regra está no banco", () => {
-    expect(sql).toContain(String.raw`p ~ '\d{3}\.\d{3}\.\d{3}-\d{2}'`);
-    expect(sql).toContain(String.raw`p ~* 'cpf\D{0,4}\d{11}'`);
+    expect(sql).toContain("create or replace function public.creator_meeting_is_cpf(d text)");
+    expect(sql).toContain(String.raw`if v ~ 'cpf\D{0,15}\d{3}' or v ~ '\d{3}\.\d{3}\.\d{3}-\d{2}' then return false; end if;`);
+    expect(sql).toContain(String.raw`v ~ '(conta[ -]corrente|conta[ -]poupan[cç]a|c/c|\mcc\M)\D{0,6}\d{4,}'`);
     expect(sql).toContain("raise exception 'sensitive_data'");
   });
 });
@@ -191,6 +217,17 @@ describe("migração 0138", () => {
   it("a ata nunca passa por cima da resposta que o próprio Hero deu no portal", () => {
     expect(sql).toContain("where public.talent_action_responses.meeting_id is not null");
     expect(sql).toContain("meeting_id = null");
+  });
+  it("só a primeira conclusão (e da reunião mais nova) mexe no relacionamento; nota da equipe não vai para o Hero", () => {
+    expect(sql).toContain("v_first := m.finalized_at is null;");
+    expect(sql).toContain("if v_first and v_newest and m.formats <> '{}'::jsonb then");
+    expect(sql).toContain("'note', coalesce(v_cur -> r.key ->> 'note', '')");
+    expect(sql).toContain("values (m.talent_id, m.action_key, m.action_interest, '', '', '', now(), auth.uid(), m.id)");
+  });
+  it("concluída nunca fica sem próximo passo; quem saiu da equipe não trava nem é avisado", () => {
+    expect(sql).toContain("-- concluída nunca fica sem próximo passo com responsável e prazo");
+    expect(sql).toContain("v_sender is distinct from m.sender_id and not public.creator_meeting_member_ok");
+    expect(sql).toContain("and public.creator_meeting_member_ok(m.agency_id, x.owner_id)\n           group by x.owner_id loop");
   });
   it("campo que não veio fica como está (encaminhamentos só mudam quando a lista vem)", () => {
     expect(sql).toContain("v_data := to_jsonb(m) || p_data;");
