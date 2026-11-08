@@ -167,7 +167,8 @@
         "unauthenticated": "Sign in to continue.",
         "generic": "Could not complete. Please try again.",
         "upload_rights_required": "Before your first upload, confirm that you hold the rights to the photo."
-      }
+      },
+      "quickEdit": "Change photo"
     },
     "links": {
       "interests": {

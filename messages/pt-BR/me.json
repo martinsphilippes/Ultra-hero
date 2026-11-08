@@ -167,7 +167,8 @@
         "unauthenticated": "Entre para continuar.",
         "generic": "Não foi possível concluir. Tente de novo.",
         "upload_rights_required": "Antes do primeiro envio, confirme que você tem os direitos sobre a foto."
-      }
+      },
+      "quickEdit": "Trocar foto"
     },
     "links": {
       "interests": {

@@ -12,6 +12,9 @@ import { HeroBio } from "@/components/discover/personalities/HeroBio";
 import { HeroPageViewTracker } from "@/components/discover/personalities/HeroPageViewTracker";
 import { LibraryHighlights } from "@/components/discover/personalities/LibraryHighlights";
 import { FollowButton } from "@/components/heroes/FollowButton";
+import { AvatarQuickEdit } from "@/components/creator/AvatarQuickEdit";
+import { getAvatarPhotoState } from "@/lib/avatar/availability";
+import { getUser } from "@/lib/auth/session";
 import { ReportBlockActions } from "@/components/moderation/ReportBlockActions";
 import { ChefHighlights } from "@/components/recipes/catalog/ChefHighlights";
 import { AvatarInitials, Badge } from "@/components/ui";
@@ -82,6 +85,11 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
     ...(hub.commerceEnabled && !follow.nativeApp ? [{ key: "products", value: hub.products.length, label: statLabel("products", hub.products.length) }] : []),
   ];
 
+  // lápis na foto (pedido de 08/11/2026): só o dono da página, com o envio de foto ligado
+  const user = await getUser();
+  const ownsPage = user ? Boolean((await supabase.from("creator_profiles").select("id").eq("id", creator.id).eq("user_id", user.id).maybeSingle()).data) : false;
+  const canEditPhoto = ownsPage && (await getAvatarPhotoState()).upload === "ready";
+
   const ondaSb = await createClient();
   const ondaAdmin = (await ondaSb.rpc("is_groscove_admin")).data === true;
   const ondaOn = ondaAdmin ? Boolean((await ondaSb.from("creator_profiles").select("onda").eq("id", creator.id).maybeSingle()).data?.onda) : false;
@@ -101,10 +109,13 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
       {/* Cabeçalho no formato do Instagram: foto pequena, nome e números lado a lado; o que importa são os posts. */}
       <header className="flex flex-col gap-3">
         <div className="flex items-center gap-5">
-          <span data-testid="hero-page-avatar" className="relative inline-flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-elevated text-2xl font-bold uppercase text-fg-muted sm:size-24 sm:text-3xl">
-            {/* só foto real (enviada pelo Hero, 0031, ou a oficial); sem foto ou se não carrega: as iniciais */}
-            <AvatarImage src={creator.avatar_url} alt="" fallback={<AvatarInitials name={creator.name} />} fill priority sizes="96px" className="object-cover" />
-          </span>
+          <div className="relative shrink-0">
+            <span data-testid="hero-page-avatar" className="relative inline-flex size-20 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-elevated text-2xl font-bold uppercase text-fg-muted sm:size-24 sm:text-3xl">
+              {/* só foto real (enviada pelo Hero, 0031, ou a oficial); sem foto ou se não carrega: as iniciais */}
+              <AvatarImage src={creator.avatar_url} alt="" fallback={<AvatarInitials name={creator.name} />} fill priority sizes="96px" className="object-cover" />
+            </span>
+            {canEditPhoto ? <AvatarQuickEdit /> : null}
+          </div>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <h1 className="truncate text-xl font-semibold text-fg">{creator.name}</h1>
