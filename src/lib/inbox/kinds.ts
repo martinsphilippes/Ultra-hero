@@ -90,6 +90,8 @@ export const INBOX_KINDS = [
   "creator_idea_received",
   "creator_idea_updated",
   "creator_action_answered",
+  // Plano de projetos (0137): responsável ou apoio de um projeto
+  "group_project_assigned",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 

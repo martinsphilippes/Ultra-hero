@@ -45,6 +45,7 @@ import {
   Waves,
   Compass,
   Orbit,
+  ListChecks,
   CalendarCheck,
   IdCard,
   Images,
@@ -131,6 +132,8 @@ const ICONS: Record<string, LucideIcon> = {
   // Como trabalhamos e Universos (0136)
   howWeWork: Compass,
   universes: Orbit,
+  // Plano de projetos (0137)
+  groupProjects: ListChecks,
 };
 
 function isActive(pathname: string, href: string, root: string) {

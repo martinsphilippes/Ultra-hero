@@ -31,7 +31,7 @@ export function canSeeValues(role: AgencyRole | null, platformAdmin = false): bo
 }
 
 // ---------------------------------------------------------------- menus por papel (6.2 e 6.3)
-export const AGENCY_NAV = ["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "ondaDigital", "notifications", "settings", "team", "finance", "history", "profile"] as const;
+export const AGENCY_NAV = ["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "ondaDigital", "groupProjects", "notifications", "settings", "team", "finance", "history", "profile"] as const;
 export type AgencyNavKey = (typeof AGENCY_NAV)[number];
 
 /** Itens do menu da agência (P1a: + Pipeline para todos, o colaborador vê só os negócios dele;
@@ -45,6 +45,8 @@ export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false, op
   if (agencyCan(role, "manager", platformAdmin)) keys.splice(keys.indexOf("agenda") + 1, 0, "sponsorships");
   // Onda Digital (0132): os pedidos das marcas chegam só à Groscove
   if (opts.groscove || platformAdmin) keys.splice(keys.indexOf("brands") + 1, 0, "ondaDigital");
+  // Plano de projetos (0137): os projetos do grupo, só para a equipe da Groscove
+  if (opts.groscove || platformAdmin) keys.splice(keys.indexOf("ondaDigital") + 1, 0, "groupProjects");
   if (agencyCan(role, "manager", platformAdmin)) keys.push("settings");
   // Adm: equipe, financeiro simulado e histórico (auditoria da agência)
   if (agencyCan(role, "admin", platformAdmin)) keys.push("team", "finance", "history");

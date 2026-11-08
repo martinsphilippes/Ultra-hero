@@ -19418,5 +19418,110 @@ update public.agencies set slug = 'groscove' where slug = 'groscove-antes-s136';
 delete from auth.users where id::text like 'c1360000-%';
 drop table tests.s136;
 
+-- ================================================================ S137 · Plano de projetos da Groscove: ficha, responsáveis e microetapas (0137)
+\ir ../migrations/0137_plano_de_projetos.sql
+select tests.su();
+select tests.ok('S137 os 25 projetos da ordem oficial entram com 30 microetapas cada, na prioridade do PDF',
+  (select count(*) from public.group_projects where agency_id = public.groscove_agency_id()) = 25
+  and (select count(*) from public.group_project_steps s join public.group_projects p on p.id = s.project_id where p.agency_id = public.groscove_agency_id()) = 750
+  and (select priority from public.group_projects where agency_id = public.groscove_agency_id() and number = 20) = 'urgent'
+  and (select name from public.group_projects where agency_id = public.groscove_agency_id() and number = 1) = '4WAY - Escola de Inglês');
+update public.agencies set slug = 'groscove-antes-s137' where slug = 'groscove';
+insert into auth.users (id, email) values
+  ('c1370000-0000-4000-8000-000000000001', 'gestor@groscove-s137.test'),
+  ('c1370000-0000-4000-8000-000000000002', 'colab@groscove-s137.test'),
+  ('c1370000-0000-4000-8000-000000000003', 'dono@groscove-s137.test'),
+  ('c1370000-0000-4000-8000-000000000004', 'pessoa@s137.test'),
+  ('c1370000-0000-4000-8000-000000000005', 'gestor@outra-s137.test');
+insert into public.agencies (id, slug, name) values ('c1370000-0000-4000-8000-0000000000a1', 'groscove', 'Groscove S137'),
+  ('c1370000-0000-4000-8000-0000000000a2', 's137-outra', 'Outra S137');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('c1370000-0000-4000-8000-0000000000a1', 'c1370000-0000-4000-8000-000000000001', 'manager', 'Gestor S137'),
+  ('c1370000-0000-4000-8000-0000000000a1', 'c1370000-0000-4000-8000-000000000002', 'staff', 'Colab S137'),
+  ('c1370000-0000-4000-8000-0000000000a1', 'c1370000-0000-4000-8000-000000000003', 'staff', 'Dono S137'),
+  ('c1370000-0000-4000-8000-0000000000a2', 'c1370000-0000-4000-8000-000000000005', 'manager', 'Gestor Outra S137');
+insert into public.group_projects (id, agency_id, number, name, category, score, priority, objective, plan, stage_goals) values
+  ('c1370000-0000-4000-8000-0000000000f1', 'c1370000-0000-4000-8000-0000000000a1', 7, 'Projeto S137', 'Teste', 3.5, 'important', 'Objetivo S137',
+   '{"what":"O quê"}'::jsonb, array['m1', 'm2', 'm3', 'm4', 'm5']);
+insert into public.group_project_steps (project_id, stage, position, title)
+select 'c1370000-0000-4000-8000-0000000000f1', ((i - 1) / 6) + 1, ((i - 1) % 6) + 1, 'Microetapa ' || i from generate_series(1, 30) i;
+
+select tests.login('c1370000-0000-4000-8000-000000000004', 'pessoa@s137.test');
+select tests.expect_error('S137 quem não é da Groscove não vê a lista', $$select public.group_projects_list()$$, 'forbidden');
+select tests.expect_error('S137 nem a ficha', $$select public.group_project_get(7)$$, 'forbidden');
+select tests.expect_error('S137 nem as tabelas', $$select count(*) from public.group_projects$$, 'permission denied');
+select tests.login('c1370000-0000-4000-8000-000000000005', 'gestor@outra-s137.test');
+select tests.expect_error('S137 gestor de outra agência não vê o plano da Groscove', $$select public.group_projects_list()$$, 'forbidden');
+select tests.expect_error('S137 nem muda a ficha', $$select public.group_project_save('c1370000-0000-4000-8000-0000000000f1', '{"priority":"urgent"}'::jsonb)$$, 'forbidden');
+
+select tests.login('c1370000-0000-4000-8000-000000000002', 'colab@groscove-s137.test');
+select tests.ok('S137 o colaborador da Groscove vê a lista com o progresso',
+  jsonb_array_length(public.group_projects_list()) = 1 and (public.group_projects_list() -> 0 ->> 'total')::int = 30);
+select tests.ok('S137 e a ficha, sem poder editar nem marcar (não é responsável nem apoio)',
+  (public.group_project_get(7) ->> 'name') = 'Projeto S137' and not (public.group_project_get(7) ->> 'can_edit')::boolean
+  and not (public.group_project_get(7) ->> 'can_mark')::boolean and jsonb_array_length(public.group_project_get(7) -> 'steps') = 30);
+select tests.ok('S137 projeto que não existe volta vazio', public.group_project_get(99) is null);
+select tests.expect_error('S137 o colaborador não marca microetapa de projeto que não é dele',
+  $$select public.group_project_step_set('c1370000-0000-4000-8000-0000000000f1', 1, 1, 'done', '')$$, 'forbidden');
+select tests.expect_error('S137 nem edita a ficha', $$select public.group_project_save('c1370000-0000-4000-8000-0000000000f1', '{"score":5}'::jsonb)$$, 'forbidden');
+
+select tests.login('c1370000-0000-4000-8000-000000000001', 'gestor@groscove-s137.test');
+select tests.expect_error('S137 responsável de fora da Groscove é recusado',
+  $$select public.group_project_save('c1370000-0000-4000-8000-0000000000f1', '{"owner_id":"c1370000-0000-4000-8000-000000000004"}'::jsonb)$$, 'invalid_input');
+select tests.expect_error('S137 prioridade fora da lista é recusada',
+  $$select public.group_project_save('c1370000-0000-4000-8000-0000000000f1', '{"priority":"altissima"}'::jsonb)$$, 'invalid_input');
+select tests.expect_error('S137 nota acima de 5 é recusada', $$select public.group_project_save('c1370000-0000-4000-8000-0000000000f1', '{"score":6}'::jsonb)$$, 'invalid_input');
+select tests.expect_error('S137 metas precisam ser 5', $$select public.group_project_save('c1370000-0000-4000-8000-0000000000f1', '{"stage_goals":["a","b"]}'::jsonb)$$, 'invalid_input');
+select tests.expect_error('S137 campo do 5W2H fora da lista é recusado',
+  $$select public.group_project_save('c1370000-0000-4000-8000-0000000000f1', '{"plan":{"budget":"x"}}'::jsonb)$$, 'invalid_input');
+select public.group_project_save('c1370000-0000-4000-8000-0000000000f1', jsonb_build_object('owner_id', 'c1370000-0000-4000-8000-000000000003',
+  'support_ids', jsonb_build_array('c1370000-0000-4000-8000-000000000002'), 'priority', 'urgent', 'score', 4.75,
+  'plan', jsonb_build_object('when', 'Até março'), 'due_on', '2027-03-31'));
+select tests.ok('S137 o gestor define responsável, apoio, prioridade, nota e prazo sem apagar o resto do 5W2H',
+  (public.group_project_get(7) ->> 'owner_id') = 'c1370000-0000-4000-8000-000000000003'
+  and (public.group_project_get(7) ->> 'priority') = 'urgent' and (public.group_project_get(7) ->> 'score')::numeric = 4.75
+  and (public.group_project_get(7) -> 'plan' ->> 'what') = 'O quê' and (public.group_project_get(7) -> 'plan' ->> 'when') = 'Até março'
+  and (public.group_project_get(7) ->> 'can_edit')::boolean);
+select tests.su();
+select tests.ok('S137 responsável e apoio recebem o aviso; o gestor que salvou, não',
+  (select count(*) from public.inbox_notifications where user_id = 'c1370000-0000-4000-8000-000000000003' and kind = 'group_project_assigned' and params ->> 'role' = 'owner') = 1
+  and (select count(*) from public.inbox_notifications where user_id = 'c1370000-0000-4000-8000-000000000002' and kind = 'group_project_assigned' and params ->> 'role' = 'support') = 1
+  and (select count(*) from public.inbox_notifications where user_id = 'c1370000-0000-4000-8000-000000000001' and kind = 'group_project_assigned') = 0);
+select tests.login('c1370000-0000-4000-8000-000000000001', 'gestor@groscove-s137.test');
+select public.group_project_save('c1370000-0000-4000-8000-0000000000f1', jsonb_build_object('owner_id', 'c1370000-0000-4000-8000-000000000003'));
+select tests.su();
+select tests.ok('S137 salvar de novo não repete o aviso',
+  (select count(*) from public.inbox_notifications where user_id = 'c1370000-0000-4000-8000-000000000003' and kind = 'group_project_assigned') = 1);
+
+select tests.login('c1370000-0000-4000-8000-000000000003', 'dono@groscove-s137.test');
+select public.group_project_step_set('c1370000-0000-4000-8000-0000000000f1', 1, 1, 'done', 'Feito na reunião');
+select public.group_project_step_set('c1370000-0000-4000-8000-0000000000f1', 1, 2, 'doing', '');
+select tests.ok('S137 o responsável marca as microetapas e a lista mostra o progresso',
+  (public.group_projects_list() -> 0 ->> 'done')::int = 1 and (public.group_projects_list() -> 0 ->> 'doing')::int = 1
+  and (public.group_project_get(7) ->> 'can_mark')::boolean and not (public.group_project_get(7) ->> 'can_edit')::boolean);
+select tests.expect_error('S137 situação fora da lista é recusada',
+  $$select public.group_project_step_set('c1370000-0000-4000-8000-0000000000f1', 1, 1, 'feito', '')$$, 'invalid_input');
+select tests.expect_error('S137 microetapa que não existe', $$select public.group_project_step_set('c1370000-0000-4000-8000-0000000000f1', 5, 9, 'done', '')$$, 'not_found');
+select tests.expect_error('S137 o responsável não edita a ficha (gestor+)', $$select public.group_project_save('c1370000-0000-4000-8000-0000000000f1', '{"priority":"structural"}'::jsonb)$$, 'forbidden');
+select tests.login('c1370000-0000-4000-8000-000000000002', 'colab@groscove-s137.test');
+select public.group_project_step_set('c1370000-0000-4000-8000-0000000000f1', 2, 1, 'done', '');
+select tests.ok('S137 o apoio também marca', (public.group_projects_list() -> 0 ->> 'done')::int = 2);
+
+select tests.su();
+select tests.ok('S137 nada novo para anon',
+  not has_function_privilege('anon', 'public.group_projects_list()', 'execute')
+  and not has_function_privilege('anon', 'public.group_project_get(int)', 'execute')
+  and not has_function_privilege('anon', 'public.group_project_save(uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.group_project_step_set(uuid, int, int, text, text)', 'execute')
+  and not has_function_privilege('anon', 'public.group_project_members()', 'execute')
+  and not has_table_privilege('authenticated', 'public.group_project_steps', 'select'));
+
+delete from public.inbox_notifications where user_id::text like 'c1370000-%';
+delete from public.group_projects where agency_id::text like 'c1370000-%';
+delete from public.agency_members where agency_id::text like 'c1370000-%';
+delete from public.agencies where id::text like 'c1370000-%';
+update public.agencies set slug = 'groscove' where slug = 'groscove-antes-s137';
+delete from auth.users where id::text like 'c1370000-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

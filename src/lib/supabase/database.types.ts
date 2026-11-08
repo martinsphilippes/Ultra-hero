@@ -9,6 +9,102 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      group_project_steps: {
+        Row: {
+          project_id: string;
+          stage: number;
+          position: number;
+          title: string;
+          status: string;
+          note: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          project_id: string;
+          stage: number;
+          position: number;
+          title: string;
+          status?: string;
+          note?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          project_id?: string;
+          stage?: number;
+          position?: number;
+          title?: string;
+          status?: string;
+          note?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
+      group_projects: {
+        Row: {
+          id: string;
+          agency_id: string;
+          number: number;
+          name: string;
+          category: string;
+          score: number;
+          priority: string;
+          objective: string;
+          plan: Json;
+          stage_goals: string[];
+          owner_id: string | null;
+          support_ids: string[];
+          status: string;
+          due_on: string | null;
+          notes: string;
+          created_at: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          agency_id: string;
+          number: number;
+          name: string;
+          category?: string;
+          score?: number;
+          priority: string;
+          objective?: string;
+          plan?: Json;
+          stage_goals?: string[];
+          owner_id?: string | null;
+          support_ids?: string[];
+          status?: string;
+          due_on?: string | null;
+          notes?: string;
+          created_at?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          agency_id?: string;
+          number?: number;
+          name?: string;
+          category?: string;
+          score?: number;
+          priority?: string;
+          objective?: string;
+          plan?: Json;
+          stage_goals?: string[];
+          owner_id?: string | null;
+          support_ids?: string[];
+          status?: string;
+          due_on?: string | null;
+          notes?: string;
+          created_at?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
       creator_project_ideas: {
         Row: {
           id: string;
@@ -12400,6 +12496,12 @@ isOneToOne: false
       [_ in never]: never;
     };
     Functions: {
+      group_project_step_set: { Args: { p_project: string; p_stage: number; p_position: number; p_status: string; p_note: string }; Returns: undefined };
+      group_project_save: { Args: { p_id: string; p_data: Json }; Returns: undefined };
+      group_project_get: { Args: { p_number: number }; Returns: Json };
+      group_projects_list: { Args: Record<PropertyKey, never>; Returns: Json };
+      group_project_members: { Args: Record<PropertyKey, never>; Returns: Json };
+      group_project_can_edit: { Args: Record<PropertyKey, never>; Returns: boolean };
       creator_universe_catalog: { Args: Record<PropertyKey, never>; Returns: Json };
       creator_action_answers: { Args: { p_action: string }; Returns: Json };
       creator_idea_update: { Args: { p_id: string; p_status: string; p_note: string }; Returns: undefined };

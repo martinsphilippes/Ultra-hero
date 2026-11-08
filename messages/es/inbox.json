@@ -298,6 +298,10 @@
     "creator_action_answered": {
       "title": "{talent} respondió: {action}",
       "body": "{interest, select, yes {Le interesa.} depends {Depende de las marcas y condiciones.} other {Esta vez no.}} Ver todas las respuestas."
+    },
+    "group_project_assigned": {
+      "title": "{role, select, owner {Eres el responsable de un proyecto} other {Entraste como apoyo en un proyecto}}",
+      "body": "{project}. Mira la ficha y las microetapas en el Plan de proyectos."
     }
   }
 }

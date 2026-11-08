@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "title": "Plan de proyectos"
+  },
+  "title": "Plan de proyectos",
+  "description": "Los proyectos de Groscove en el orden oficial, con prioridad, ficha 5W2H y las 30 microetapas de cada uno.",
+  "summary": "{count} proyectos · {percent}% de las microetapas completadas",
+  "priorities": {
+    "urgent": {
+      "label": "Urgente",
+      "hint": "Proteger y aumentar los ingresos recurrentes"
+    },
+    "important": {
+      "label": "Importante",
+      "hint": "Conseguir dinero a corto plazo"
+    },
+    "structural": {
+      "label": "Estructural",
+      "hint": "Construir la infraestructura que permite que la operación crezca"
+    },
+    "circumstantial": {
+      "label": "Circunstancial",
+      "hint": "Estudiar y validar sin perder el foco en los tres niveles anteriores"
+    }
+  },
+  "filters": {
+    "label": "Filtrar por prioridad",
+    "all": "Todos ({count})"
+  },
+  "score": "Nota {score}",
+  "progress": "{done} de {total} · {percent}%",
+  "owner": "Responsable: {name}",
+  "ownerNone": "Responsable por definir",
+  "statuses": {
+    "active": "En curso",
+    "paused": "En pausa",
+    "done": "Completado",
+    "cancelled": "Cancelado"
+  },
+  "readOnly": "Solo los gestores editan la ficha. El responsable y el apoyo marcan las microetapas.",
+  "empty": "Ningún proyecto con esta prioridad.",
+  "detail": {
+    "back": "Plan de proyectos",
+    "objective": "Objetivo final",
+    "people": "Responsable y apoyo",
+    "owner": "Responsable",
+    "support": "Apoyo",
+    "toDefine": "Por definir en la reunión",
+    "plan": "Ficha 5W2H",
+    "execution": "Plan de ejecución",
+    "stageGoal": "Meta de la etapa",
+    "stageProgress": "{done} de 6",
+    "notes": "Notas",
+    "due": "Plazo final",
+    "noDue": "Plazo por definir",
+    "edit": "Editar ficha",
+    "updated": "Actualizado el {date}"
+  },
+  "plan": {
+    "what": "¿Qué?",
+    "why": "¿Por qué?",
+    "where": "¿Dónde?",
+    "when": "¿Cuándo?",
+    "who": "¿Quién?",
+    "how": "¿Cómo?",
+    "how_much": "¿Cuánto?"
+  },
+  "stages": {
+    "structuring": "Estructuración",
+    "planning": "Planificación",
+    "preparation": "Preparación",
+    "execution": "Ejecución",
+    "conclusion": "Conclusión"
+  },
+  "step": {
+    "todo": "Por hacer",
+    "doing": "En curso",
+    "done": "Completada",
+    "toggle": "Cambiar la situación de: {title}",
+    "note": "Anotar",
+    "saveNote": "Guardar nota",
+    "hint": "Toca el círculo para avanzar: por hacer → en curso → completada."
+  },
+  "editor": {
+    "title": "Editar ficha",
+    "name": "Nombre del proyecto",
+    "category": "Categoría",
+    "score": "Nota (0 a 5)",
+    "priority": "Prioridad",
+    "status": "Situación",
+    "due": "Plazo final",
+    "owner": "Responsable",
+    "support": "Apoyo",
+    "none": "Por definir",
+    "objective": "Objetivo final",
+    "goals": "Metas de las etapas",
+    "notes": "Notas",
+    "save": "Guardar ficha",
+    "saved": "Ficha guardada"
+  }
+}

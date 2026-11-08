@@ -129,6 +129,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "brands", href: "/agencia/marcas" },
     // Onda Digital (0132): pedidos das marcas, só para a Groscove
     { key: "ondaDigital", href: "/agencia/onda-digital" },
+    // Plano de projetos (0137): os 25 projetos do grupo, só para a Groscove
+    { key: "groupProjects", href: "/agencia/plano-de-projetos" },
     { key: "notifications", href: "/agencia/notificacoes" },
     { key: "settings", href: "/agencia/configuracoes" },
     { key: "team", href: "/agencia/equipe" },

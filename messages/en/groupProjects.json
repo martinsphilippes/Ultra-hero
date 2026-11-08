@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "title": "Projects plan"
+  },
+  "title": "Projects plan",
+  "description": "Groscove's projects in the official order, with priority, 5W2H sheet and the 30 micro-steps of each one.",
+  "summary": "{count} projects · {percent}% of micro-steps done",
+  "priorities": {
+    "urgent": {
+      "label": "Urgent",
+      "hint": "Protect and grow recurring revenue"
+    },
+    "important": {
+      "label": "Important",
+      "hint": "Bring in money in the short term"
+    },
+    "structural": {
+      "label": "Structural",
+      "hint": "Build the infrastructure that lets the operation grow"
+    },
+    "circumstantial": {
+      "label": "Circumstantial",
+      "hint": "Study and validate without taking focus off the other three levels"
+    }
+  },
+  "filters": {
+    "label": "Filter by priority",
+    "all": "All ({count})"
+  },
+  "score": "Score {score}",
+  "progress": "{done} of {total} · {percent}%",
+  "owner": "Owner: {name}",
+  "ownerNone": "Owner to be defined",
+  "statuses": {
+    "active": "In progress",
+    "paused": "Paused",
+    "done": "Done",
+    "cancelled": "Cancelled"
+  },
+  "readOnly": "Only managers edit the sheet. The owner and support mark the micro-steps.",
+  "empty": "No project with this priority.",
+  "detail": {
+    "back": "Projects plan",
+    "objective": "Final goal",
+    "people": "Owner and support",
+    "owner": "Owner",
+    "support": "Support",
+    "toDefine": "To be defined in the meeting",
+    "plan": "5W2H sheet",
+    "execution": "Execution plan",
+    "stageGoal": "Stage goal",
+    "stageProgress": "{done} of 6",
+    "notes": "Notes",
+    "due": "Deadline",
+    "noDue": "Deadline to be defined",
+    "edit": "Edit sheet",
+    "updated": "Updated on {date}"
+  },
+  "plan": {
+    "what": "What?",
+    "why": "Why?",
+    "where": "Where?",
+    "when": "When?",
+    "who": "Who?",
+    "how": "How?",
+    "how_much": "How much?"
+  },
+  "stages": {
+    "structuring": "Structuring",
+    "planning": "Planning",
+    "preparation": "Preparation",
+    "execution": "Execution",
+    "conclusion": "Conclusion"
+  },
+  "step": {
+    "todo": "To do",
+    "doing": "In progress",
+    "done": "Done",
+    "toggle": "Change the status of: {title}",
+    "note": "Add note",
+    "saveNote": "Save note",
+    "hint": "Tap the circle to move forward: to do → in progress → done."
+  },
+  "editor": {
+    "title": "Edit sheet",
+    "name": "Project name",
+    "category": "Category",
+    "score": "Score (0 to 5)",
+    "priority": "Priority",
+    "status": "Status",
+    "due": "Deadline",
+    "owner": "Owner",
+    "support": "Support",
+    "none": "To be defined",
+    "objective": "Final goal",
+    "goals": "Stage goals",
+    "notes": "Notes",
+    "save": "Save sheet",
+    "saved": "Sheet saved"
+  }
+}
