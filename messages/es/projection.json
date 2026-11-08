@@ -1,6 +1,6 @@
 {
   "title": "Proyección",
-  "lead": "Valores de campaña: negocios cerrados y en negociación, acuerdos y cupos libres de patrocinio y las convocatorias abiertas de las marcas. El canje no cuenta.",
+  "lead": "Valores de campaña: negocios cerrados y en negociación, acuerdos y cupos libres de patrocinio y las convocatorias abiertas de las marcas. Canje y performance aparecen aparte, por el valor estimado.",
   "periodLabel": "Período de la proyección",
   "total": "Total",
   "segment": {
@@ -30,13 +30,9 @@
     "title": "Proyección {period}",
     "open": "Ver proyección"
   },
-  "compensation": {
-    "label": "Cómo paga el proyecto",
-    "hint": "Canje (producto o servicio), valor fijo o performance (% sobre el resultado).",
-    "barter": "Canje",
-    "fixed": "Valor fijo",
-    "performance": "Performance",
-    "pct": "Porcentaje",
-    "pctPlaceholder": "% sobre el resultado, ej.: 10"
-  }
+  "extras": {
+    "barter": "En canje (estimado)",
+    "performance": "En performance (estimado)"
+  },
+  "extrasLine": "+ {value} en canje y performance (estimado)"
 }

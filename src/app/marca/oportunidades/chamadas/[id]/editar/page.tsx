@@ -52,6 +52,7 @@ export default async function EditBrandCallPage({ params }: Props) {
           budgetDisplay: call.budgetDisplay,
           valueModel: call.valueModel,
           maxHeroes: call.maxHeroes,
+          compensation: call.compensation,
           respondDate: respond.date,
           respondTime: respond.time,
           audience: call.audience,

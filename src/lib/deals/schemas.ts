@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { briefSchema, EMPTY_BRIEF } from "@/lib/brief/brief";
+import { compensationDbSchema } from "@/lib/compensation/schema";
 import { AGE_BANDS, NETWORKS, UFS } from "@/lib/talent/vocab";
 import { VALUE_MODELS } from "@/lib/value-model/model";
 import { ACTIVITY_KINDS, AVAILABILITY_KINDS, DELIVERABLE_KINDS, FORMATS, OBJECTIVES, TALENT_RESPONSES } from "./vocab";
@@ -85,6 +86,11 @@ export const brandRequestSchema = z.object({
   valueModel: z.enum(VALUE_MODELS),
   maxHeroes: z.number().int().min(1).max(50).nullable(),
   budgetNote: z.string().trim().max(300),
+  /**
+   * 0140: forma de pagamento (valor, permuta e/ou performance), no formato do banco. Sem ela, fica a gravada (campanha de
+   * um acordo segue a do acordo). Sem dinheiro ("money": false), o valor vai vazio, modelo fixo e sem máximo.
+   */
+  compensation: compensationDbSchema.optional(),
   /** 0101: campanha criada a partir de um evento da agenda (vínculo gravado depois de salvar, ainda no rascunho). */
   calendarEventId: z.union([z.literal(""), uuid]).optional(),
   /** 0101: segmentos sugeridos pelo território do evento (slugs; o banco resolve na agência e não sobrescreve). */

@@ -31,6 +31,7 @@ import { getOrigin } from "@/lib/auth/origin";
 import { getUser } from "@/lib/auth/session";
 import { getBrandContext } from "@/lib/brand-portal/server";
 import { briefDefined, briefToDraft } from "@/lib/brief/brief";
+import { MONEY_ONLY } from "@/lib/compensation/model";
 import { getBrandCampaign, getDealOffer, getRequestBudget, listMessages } from "@/lib/deals/queries";
 import { dealBrandKey } from "@/lib/messaging/logic";
 import { markConversationRead } from "@/lib/messaging/queries";
@@ -213,6 +214,8 @@ export default async function BrandCampaignPage({ params }: Props) {
             valueModel: budget?.valueModel ?? "fixo",
             maxHeroes: budget?.maxHeroes ?? null,
             budgetNote: budget?.note ?? "",
+            // 0140: forma de pagamento gravada (valor, permuta e/ou performance); sem linha, só valor
+            compensation: budget?.compensation ?? { ...MONEY_ONLY },
             briefDraft: briefToDraft(request.brief),
           }}
           creatorName={detail.requestedTalent?.name ?? null}

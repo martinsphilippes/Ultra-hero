@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { plusDays } from "@/lib/calendar/ics";
+import { PERF_KINDS, parseCompensation, type Compensation, type PerfKind } from "@/lib/compensation/model";
 import { toZonedIso } from "@/lib/deals/schemas";
 import { NETWORKS, type Network } from "@/lib/talent/vocab";
 import { heroChoiceSchema, toHeroInfo, type HeroInfo } from "./hero-pick";
@@ -163,9 +164,47 @@ function toCore(r: Row): SponsorshipCore {
 
 // ---------------------------------------------------------------- 0088: cotas, propostas e rodadas
 const cents = (v: unknown): number | null => (v === null || v === undefined || v === "" ? null : Number(v));
+const isRow = (v: unknown): v is Row => Boolean(v) && typeof v === "object" && !Array.isArray(v);
+
+/**
+ * 0140: forma de pagamento lida das RPCs (ausente = só valor). Quem não lê valores (gestor, equipe, Hero) recebe a forma
+ * sem números (compensation_public: rate e estimativas null); a performance continua lá, sem o número (rate 0 = oculto,
+ * mostrada com canValues=false).
+ */
+export function readCompensation(v: unknown): Compensation {
+  const c = parseCompensation(v);
+  if (c.performance || !isRow(v)) return c;
+  const p = isRow(v.performance) ? v.performance : null;
+  if (!p || (p.rate !== null && p.rate !== undefined) || !(PERF_KINDS as readonly string[]).includes(String(p.kind))) return c;
+  return {
+    money: typeof v.money === "boolean" ? v.money : true,
+    barter: c.barter,
+    performance: { kind: p.kind as PerfKind, rate: 0, measure: typeof p.measure === "string" ? p.measure.trim() : "", estimateCents: null },
+  };
+}
+
+/** A forma sem nenhum número (o Hero nunca vê valores; o servidor já corta, aqui é a segunda trava). */
+export function compensationWithoutValues(c: Compensation): Compensation {
+  return {
+    money: c.money,
+    barter: c.barter ? { offer: c.barter.offer, valueCents: null } : null,
+    performance: c.performance ? { ...c.performance, rate: 0, estimateCents: null } : null,
+  };
+}
 
 // 0108: valueModel (fixo do evento | por marca) e askCents = quanto ESTA marca paga pelo valor pedido
-export type SponsorshipTier = { id: string; name: string; priceCents: number | null; perks: string[]; slots: number; full: boolean; valueModel: "fixo" | "por_marca"; askCents: number | null };
+// 0140: compensation = como a marca paga a cota (sem dinheiro: priceCents/askCents null e a permuta/performance)
+export type SponsorshipTier = {
+  id: string;
+  name: string;
+  priceCents: number | null;
+  perks: string[];
+  slots: number;
+  full: boolean;
+  valueModel: "fixo" | "por_marca";
+  askCents: number | null;
+  compensation: Compensation;
+};
 
 function toTier(r: Row): SponsorshipTier {
   return {
@@ -177,6 +216,7 @@ function toTier(r: Row): SponsorshipTier {
     full: r.full === true,
     valueModel: r.value_model === "fixo" ? "fixo" : "por_marca",
     askCents: r.ask_cents === undefined ? cents(r.price_cents) : cents(r.ask_cents),
+    compensation: readCompensation(r.compensation),
   };
 }
 
@@ -185,8 +225,10 @@ export type NegotiationRound = {
   seq: number;
   side: Side;
   action: RoundAction;
-  /** null para quem não lê valor (gestor) e na recusa */
+  /** null para quem não lê valor (gestor), na recusa e sem dinheiro (0140) */
   amountCents: number | null;
+  /** 0140: forma de pagamento da rodada (sem números para quem não lê valor) */
+  compensation: Compensation;
   perks: string[] | null;
   audience: SponsorshipPublic | null;
   note: string;
@@ -205,6 +247,7 @@ function toRounds(v: unknown): NegotiationRound[] {
     side: r.side === "agency" ? "agency" : "brand",
     action: oneOf(ROUND_ACTIONS, r.action, "propose"),
     amountCents: cents(r.amount_cents),
+    compensation: readCompensation(r.compensation),
     perks: Array.isArray(r.perks) ? strings(r.perks) : null,
     audience: publicFromDb(r.audience),
     note: text(r.note),
@@ -224,8 +267,12 @@ export type NegotiationProposal = {
   status: ProposalStatus;
   awaiting: Side | null;
   askedCents: number | null;
+  /** null para quem não lê valor e quando a proposta é sem dinheiro (0140) */
   amountCents: number | null;
   perks: string[];
+  /** 0140: forma de pagamento proposta e a acordada (sem números para quem não lê valor) */
+  compensation: Compensation;
+  agreedCompensation: Compensation | null;
   agreedCents: number | null;
   agreedPerks: string[] | null;
   agreedSide: Side | null;
@@ -250,6 +297,8 @@ function toProposal(r: Row): NegotiationProposal {
     askedCents: cents(r.asked_cents),
     amountCents: cents(r.amount_cents),
     perks: strings(r.perks),
+    compensation: readCompensation(r.compensation),
+    agreedCompensation: isRow(r.agreed_compensation) ? readCompensation(r.agreed_compensation) : null,
     agreedCents: cents(r.agreed_cents),
     agreedPerks: Array.isArray(r.agreed_perks) ? strings(r.agreed_perks) : null,
     agreedSide: r.agreed_side === "agency" || r.agreed_side === "brand" ? r.agreed_side : null,
@@ -267,6 +316,16 @@ function toProposal(r: Row): NegotiationProposal {
 /** Há rodada da equipe esperando o dono? */
 export function hasPendingOwner(p: Pick<NegotiationProposal, "history">): boolean {
   return p.history.some((r) => r.state === "pending_owner");
+}
+
+/** O que vale agora: o acordado (acordo fechado) ou o proposto na última rodada enviada. */
+export function proposalTerms(p: Pick<NegotiationProposal, "status" | "amountCents" | "perks" | "compensation" | "agreedCents" | "agreedPerks" | "agreedCompensation">): {
+  amountCents: number | null;
+  perks: string[];
+  compensation: Compensation;
+} {
+  if (p.status !== "agreed") return { amountCents: p.amountCents, perks: p.perks, compensation: p.compensation };
+  return { amountCents: p.agreedCents, perks: p.agreedPerks ?? p.perks, compensation: p.agreedCompensation ?? p.compensation };
 }
 
 export type BrandNegotiation = { role: "owner" | "staff"; canPropose: boolean; tiers: SponsorshipTier[]; proposals: NegotiationProposal[] };
@@ -296,6 +355,8 @@ export type AgencyTier = {
   valueModel: "fixo" | "por_marca";
   askCents: number | null;
   coveredCents: number | null;
+  /** 0140: como a marca paga a cota (números só para o Adm). Sem dinheiro, a cota nunca está "sem valor". */
+  compensation: Compensation;
 };
 
 export type AgencySponsorshipRow = Pick<SponsorshipCore, "id" | "title" | "location" | "startsAt" | "endsAt" | "allDay" | "respondBy"> & {
@@ -408,6 +469,7 @@ export function toAgencySponsorshipDetail(data: unknown): AgencySponsorshipDetai
       valueModel: z.value_model === "fixo" ? ("fixo" as const) : ("por_marca" as const),
       askCents: cents(z.ask_cents),
       coveredCents: cents(z.covered_cents),
+      compensation: readCompensation(z.compensation),
     })),
     proposals: arr(d.proposals).map(toProposal),
     brands: arr(d.brands).map((b) => ({
@@ -504,8 +566,9 @@ export function brandCanRespond(s: Pick<BrandSponsorship, "status" | "myResponse
 export type TalentSponsorship = Pick<SponsorshipCore, "id" | "title" | "location" | "startsAt" | "endsAt" | "allDay" | "respondBy" | "expectedReach" | "perks" | "public"> & {
   status: SponsorshipStatus;
   sponsors: string[];
-  /** 0088: o que ficou combinado com cada marca (o que o creator vai fazer). Nunca valor. */
-  agreements: { brand: string; tier: string; perks: string[] }[];
+  /** 0088: o que ficou combinado com cada marca (o que o Hero vai fazer). Nunca valor.
+   *  0140: + a forma de pagamento acordada, sem números (ex.: permuta de 50 caixas de bebida). */
+  agreements: { brand: string; tier: string; perks: string[]; compensation: Compensation }[];
 };
 
 export function toTalentSponsorships(data: unknown): TalentSponsorship[] {
@@ -522,6 +585,6 @@ export function toTalentSponsorships(data: unknown): TalentSponsorship[] {
     status: oneOf(SPONSORSHIP_STATUSES, r.status, "open"),
     sponsors: strings(r.sponsors),
     public: publicFromDb(r.public),
-    agreements: arr(r.agreements).map((a) => ({ brand: text(a.brand), tier: text(a.tier), perks: strings(a.perks) })),
+    agreements: arr(r.agreements).map((a) => ({ brand: text(a.brand), tier: text(a.tier), perks: strings(a.perks), compensation: compensationWithoutValues(readCompensation(a.compensation)) })),
   }));
 }

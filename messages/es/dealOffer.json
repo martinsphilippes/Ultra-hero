@@ -42,7 +42,8 @@
   },
   "acceptDialog": {
     "title": "¿Aceptar estos términos?",
-    "hint": "Pasan a ser el valor acordado de la campaña. Después del acuerdo, cambiar el presupuesto es con la solicitud de cambio."
+    "hint": "Pasan a ser el valor acordado de la campaña. Después del acuerdo, cambiar el presupuesto es con la solicitud de cambio.",
+    "hintNoMoney": "Pasan a ser la forma de pago acordada de la campaña, sin dinero: solo canje y/o performance."
   },
   "counterDialog": {
     "title": "Hacer contrapropuesta",

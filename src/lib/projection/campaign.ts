@@ -1,7 +1,8 @@
 // Projeção de campanhas (0139): tipos e regras puras da aba "Projeção" do Financeiro (agência e Hero).
 // Valores em centavos. Cada bloco separa o que já fechou, o que está em negociação e o que está aberto para buscar.
+// 0140: permuta e performance vêm à parte, pelo valor estimado (os números grandes seguem só em dinheiro).
 
-export type ProjectionBucket = { won: number; open: number; available: number };
+export type ProjectionBucket = { won: number; open: number; available: number; barter: number; performance: number };
 export type ProjectionSegment = ProjectionBucket & { name: string; mine: boolean };
 export type CampaignProjection = {
   year: number | null;
@@ -18,14 +19,17 @@ export type CampaignProjection = {
 
 export const BUCKET_KEYS = ["won", "open", "available"] as const;
 export type BucketKey = (typeof BUCKET_KEYS)[number];
+/** À parte do dinheiro: permuta e performance estimadas. */
+export const EXTRA_KEYS = ["barter", "performance"] as const;
+export type ExtraKey = (typeof EXTRA_KEYS)[number];
 
-const EMPTY: ProjectionBucket = { won: 0, open: 0, available: 0 };
+const EMPTY: ProjectionBucket = { won: 0, open: 0, available: 0, barter: 0, performance: 0 };
 const cents = (v: unknown) => (typeof v === "number" && Number.isFinite(v) && v > 0 ? Math.round(v) : 0);
 
 function parseBucket(v: unknown): ProjectionBucket {
   if (!v || typeof v !== "object") return { ...EMPTY };
   const r = v as Record<string, unknown>;
-  return { won: cents(r.won), open: cents(r.open), available: cents(r.available) };
+  return { won: cents(r.won), open: cents(r.open), available: cents(r.available), barter: cents(r.barter), performance: cents(r.performance) };
 }
 
 /** JSON do banco → projeção (o que vier estranho vira zero). */
@@ -47,12 +51,18 @@ export function parseProjection(v: unknown): CampaignProjection | null {
   };
 }
 
-export function bucketTotal(b: ProjectionBucket): number {
+/** Total em dinheiro (fechado + em negociação + aberto); permuta e performance ficam fora. */
+export function bucketTotal(b: Pick<ProjectionBucket, BucketKey>): number {
   return b.won + b.open + b.available;
 }
 
+/** Permuta + performance estimadas (à parte do dinheiro). */
+export function extrasTotal(b: Pick<ProjectionBucket, ExtraKey>): number {
+  return b.barter + b.performance;
+}
+
 /** Fatia de cada parte no total (0–100), para a barra; sem valor, tudo zero. */
-export function bucketShares(b: ProjectionBucket): Record<BucketKey, number> {
+export function bucketShares(b: Pick<ProjectionBucket, BucketKey>): Record<BucketKey, number> {
   const total = bucketTotal(b);
   if (total === 0) return { won: 0, open: 0, available: 0 };
   return { won: (b.won / total) * 100, open: (b.open / total) * 100, available: (b.available / total) * 100 };

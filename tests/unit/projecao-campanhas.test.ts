@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { bucketShares, bucketTotal, parseProjection, parseYearParam, projectionYears, segmentHint, yearHref } from "@/lib/projection/campaign";
+import { bucketShares, bucketTotal, extrasTotal, parseProjection, parseYearParam, projectionYears, segmentHint, yearHref } from "@/lib/projection/campaign";
 
 // Projeção de campanhas (0139, pedido de 08/11/2026): "no seu segmento" e "para você", ano com filtro, tudo de campanha.
 
@@ -36,15 +36,16 @@ describe("segmentos no cartão", () => {
 
 describe("números", () => {
   it("total = fechado + em negociação + oportunidades abertas; a barra divide em partes", () => {
-    const b = { won: 5000, open: 3000, available: 2000 };
+    const b = { won: 5000, open: 3000, available: 2000, barter: 700, performance: 300 };
     expect(bucketTotal(b)).toBe(10000);
+    expect(extrasTotal(b)).toBe(1000);
     expect(bucketShares(b)).toEqual({ won: 50, open: 30, available: 20 });
     expect(bucketShares({ won: 0, open: 0, available: 0 })).toEqual({ won: 0, open: 0, available: 0 });
   });
   it("leitura do banco: valor estranho vira zero e o total da agência só vem para o Adm", () => {
     const p = parseProjection({
       year: 2026,
-      mine: { won: 100, open: "x", available: -5 },
+      mine: { won: 100, open: "x", available: -5, barter: 40000, performance: "y" },
       segment: { won: 300 },
       platform: {},
       agency: null,
@@ -52,9 +53,9 @@ describe("números", () => {
       my_segments: ["Música", 3],
       years: [2026, "2027"],
     });
-    expect(p?.mine).toEqual({ won: 100, open: 0, available: 0 });
+    expect(p?.mine).toEqual({ won: 100, open: 0, available: 0, barter: 40000, performance: 0 });
     expect(p?.agency).toBeNull();
-    expect(p?.segments).toEqual([{ name: "Música", won: 300, open: 0, available: 0, mine: true }]);
+    expect(p?.segments).toEqual([{ name: "Música", won: 300, open: 0, available: 0, barter: 0, performance: 0, mine: true }]);
     expect(p?.mySegments).toEqual(["Música"]);
     expect(p?.years).toEqual([2026]);
     expect(parseProjection(null)).toBeNull();

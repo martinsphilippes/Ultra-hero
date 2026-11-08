@@ -1,6 +1,6 @@
 {
   "title": "Projection",
-  "lead": "Campaign values: closed deals and deals in negotiation, sponsorship agreements and open sponsorship slots, and brands' open calls. Barter doesn't count.",
+  "lead": "Campaign values: closed and in-negotiation deals, sponsorship agreements and free slots, and the brands' open calls. Barter and performance show separately, at the estimated value.",
   "periodLabel": "Projection period",
   "total": "Total",
   "segment": {
@@ -30,13 +30,9 @@
     "title": "Projection {period}",
     "open": "See projection"
   },
-  "compensation": {
-    "label": "How the project pays",
-    "hint": "Barter (product or service), fixed fee or performance (% of results).",
-    "barter": "Barter",
-    "fixed": "Fixed fee",
-    "performance": "Performance",
-    "pct": "Percentage",
-    "pctPlaceholder": "% of results, e.g. 10"
-  }
+  "extras": {
+    "barter": "In barter (estimated)",
+    "performance": "In performance (estimated)"
+  },
+  "extrasLine": "+ {value} in barter and performance (estimated)"
 }

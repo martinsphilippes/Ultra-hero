@@ -3,20 +3,25 @@
 import { Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { CompensationFields } from "@/components/compensation/CompensationFields";
 import { Button, Checkbox, FormField, Input, MoneyInput, Textarea } from "@/components/ui";
+import { MONEY_ONLY, draftFrom, draftToCompensation, type Compensation } from "@/lib/compensation/model";
 import { parseBrlToCents } from "@/lib/deals/schemas";
-import { centsToBrl } from "@/lib/money/brl-input";
-import { EMPTY_PUBLIC, MAX_AMOUNT_CENTS, MAX_PERKS, amountValid, composePerks, priceDiff, proposalPerksValid, publicIsEmpty, type SponsorshipPublic } from "@/lib/sponsorship/negotiation";
+import { brlToCents, centsToBrl } from "@/lib/money/brl-input";
+import { EMPTY_PUBLIC, MAX_AMOUNT_CENTS, MAX_PERKS, composePerks, priceDiff, proposalPerksValid, publicIsEmpty, termsAmount, type SponsorshipPublic } from "@/lib/sponsorship/negotiation";
 import { AudienceFields } from "./AudienceFields";
 import { DiffText } from "./NegotiationView";
 
-export type ComposedTerms = { amountCents: number; perks: string[]; note: string; public: SponsorshipPublic | null };
+/** amountCents: null quando a forma de pagamento não tem dinheiro (0140: só permuta e/ou performance). */
+export type ComposedTerms = { amountCents: number | null; compensation: Compensation; perks: string[]; note: string; public: SponsorshipPublic | null };
 
 type Props = {
   /** contrapartidas de referência (da cota ou da última rodada): marcar/desmarcar */
   basePerks: string[];
   askedCents: number | null;
   initialCents: number | null;
+  /** 0140: forma de pagamento de partida — a da cota (proposta da marca) ou a da proposta atual (contraproposta) */
+  initialCompensation?: Compensation;
   /** a marca pode indicar o público que lhe interessa */
   withAudience: boolean;
   initialPublic?: SponsorshipPublic | null;
@@ -29,9 +34,13 @@ type Props = {
 // Proposta / contraproposta (0088): valor (MoneyInput) com a diferença em relação ao pedido (R$ e %), contrapartidas
 // da cota para marcar/desmarcar, pedidos novos (ex.: "post no feed", "mais 2 stories"), mensagem e, para a marca,
 // o "público que me interessa" (opcional, mesmos campos da campanha).
-export function TermsComposer({ basePerks, askedCents, initialCents, withAudience, initialPublic = null, submitLabel, pending, onSubmit, onCancel }: Props) {
+// 0140: forma de pagamento (Valor, Permuta, Performance, combináveis) já preenchida com a da cota ou da proposta; o
+// valor só aparece (e só vai) com "Valor" marcado.
+export function TermsComposer({ basePerks, askedCents, initialCents, initialCompensation = MONEY_ONLY, withAudience, initialPublic = null, submitLabel, pending, onSubmit, onCancel }: Props) {
   const t = useTranslations("sponsorship.negotiation.composer");
+  const tc = useTranslations("compensation");
   const [amountText, setAmountText] = useState(centsToBrl(initialCents));
+  const [comp, setComp] = useState(() => draftFrom(initialCompensation, centsToBrl));
   const [kept, setKept] = useState<string[]>(basePerks);
   const [extras, setExtras] = useState<string[]>([]);
   const [draftExtra, setDraftExtra] = useState("");
@@ -51,14 +60,18 @@ export function TermsComposer({ basePerks, askedCents, initialCents, withAudienc
 
   function submit() {
     setError(null);
-    if (!amountValid(cents ?? null)) return setError(t("amountInvalid"));
+    const checked = draftToCompensation(comp, brlToCents);
+    if (!checked.ok) return setError(tc(`errors.${checked.error}`));
+    const amount = termsAmount(checked.value.money, cents);
+    if (amount === undefined) return setError(t("amountInvalid"));
     const perks = composePerks(basePerks, kept, draftExtra.trim() ? [...extras, draftExtra] : extras);
     if (!proposalPerksValid(perks)) return setError(t("perksInvalid", { max: MAX_PERKS }));
-    onSubmit({ amountCents: cents as number, perks, note: note.trim(), public: withAudience && showPublic && !publicIsEmpty(pub) ? pub : null });
+    onSubmit({ amountCents: amount, compensation: checked.value, perks, note: note.trim(), public: withAudience && showPublic && !publicIsEmpty(pub) ? pub : null });
   }
 
-  return (
-    <div className="flex flex-col gap-4" data-testid="terms-composer">
+  // o valor proposto e a diferença em relação ao pedido: só com "Valor" marcado
+  const moneyFields = (
+    <>
       <FormField label={t("amount")} hint={askedCents === null ? t("amountHintNoAsk") : undefined} required>
         <MoneyInput value={amountText} maxCents={MAX_AMOUNT_CENTS} onValueChange={(text) => setAmountText(text)} disabled={pending} inputSize="lg" data-testid="composer-amount" />
       </FormField>
@@ -67,6 +80,12 @@ export function TermsComposer({ basePerks, askedCents, initialCents, withAudienc
           {diff.cents === 0 ? t("sameAsAsked") : <DiffText cents={diff.cents} pct={diff.pct} />}
         </p>
       ) : null}
+    </>
+  );
+
+  return (
+    <div className="flex flex-col gap-4" data-testid="terms-composer">
+      <CompensationFields idPrefix="composer" draft={comp} onChange={setComp} disabled={pending} money={moneyFields} hint={t("compHint")} />
       <fieldset className="flex flex-col gap-1">
         <legend className="mb-1 text-sm font-medium text-fg">{t("perks")}</legend>
         {basePerks.map((p) => (

@@ -16,6 +16,7 @@ import { TrackingPanel } from "@/components/media/TrackingPanel";
 import { ConflictAlert } from "@/components/offer/ConflictAlert";
 import { CounterofferPanel } from "@/components/offer/CounterofferPanel";
 import { RightsView } from "@/components/offer/RightsView";
+import { CompensationView } from "@/components/compensation/CompensationView";
 import { OpportunityRespond } from "@/components/talent/OpportunityRespond";
 import { Avatar, Badge, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
@@ -193,6 +194,8 @@ export default async function OpportunityPage({ params, searchParams }: Props) {
               <span className="font-mono text-lg font-semibold native:hidden">{fee !== null ? formatCents(fee, locale) : <span className="font-sans text-sm font-normal text-fg-muted">{to("card.noFee")}</span>}</span>
               <span className="hidden type-caption text-fg-muted native:inline">{to("card.feeOnWeb")}</span>
               {fee !== null ? <span className="block type-caption text-fg-muted native:hidden">{t("feeHint")}</span> : null}
+              {/* 0140: permuta e performance do negócio (sem os valores da marca) */}
+              <CompensationView compensation={o.deal.compensation} canValues={false} className="mt-1.5" />
             </dd>
           </div>
           <div className="flex flex-col gap-1 sm:col-span-2">

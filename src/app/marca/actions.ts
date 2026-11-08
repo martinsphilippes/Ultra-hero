@@ -16,8 +16,8 @@ import { createClient } from "@/lib/supabase/server";
 import { linkToEvent } from "@/lib/culture/link";
 
 // Portal da marca: o dono convida e remove a equipe (a RPC confere e audita). Propostas de campanha
-// (0066): salvar rascunho, enviar à agência e cancelar; o valor oferecido vai à tabela de valor
-// (campaign_request_budgets), que só a própria marca e o Adm da agência leem.
+// (0066): salvar rascunho, enviar à agência e cancelar; o valor oferecido e a forma de pagamento (0140) vão à tabela
+// de valor (campaign_request_budgets), que só a própria marca e o Adm da agência leem.
 
 export type BrandPortalResult = { ok: true; message: string; link?: string; emailed?: boolean; id?: string } | { ok: false; error: string };
 
@@ -25,8 +25,10 @@ export async function saveRequestAction(input: BrandRequestInput): Promise<Brand
   const ctx = await requireBrand();
   if (!ctx.role) return agencyFail("forbidden");
   const parsed = brandRequestSchema.safeParse(input);
-  if (!parsed.success) return agencyFail("invalid_input");
+  if (!parsed.success) return agencyFail(parsed.error.issues.some((i) => i.path[0] === "compensation") ? "invalid_compensation" : "invalid_input");
   const d = parsed.data;
+  // 0140: forma de pagamento (sem ela, o banco mantém a gravada); sem dinheiro, sem valor, modelo fixo e sem máximo
+  const money = d.compensation?.money ?? true;
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.rpc("brand_request_save", {
@@ -51,10 +53,11 @@ export async function saveRequestAction(input: BrandRequestInput): Promise<Brand
         deliverables: d.deliverables,
         notes: d.notes,
         brief: briefPayload(d.brief),
-        budget_max_cents: d.budgetMaxCents === null ? "" : String(d.budgetMaxCents),
-        value_model: d.valueModel,
-        max_heroes: d.valueModel === "por_heroi" && d.maxHeroes !== null ? String(d.maxHeroes) : "",
+        budget_max_cents: !money || d.budgetMaxCents === null ? "" : String(d.budgetMaxCents),
+        value_model: money ? d.valueModel : "fixo",
+        max_heroes: money && d.valueModel === "por_heroi" && d.maxHeroes !== null ? String(d.maxHeroes) : "",
         budget_note: d.budgetNote,
+        ...(d.compensation ? { compensation: d.compensation } : {}),
       },
     });
     if (error) return agencyFail(error);

@@ -2,6 +2,7 @@ import { CalendarDays, Handshake } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AgendaCalendar } from "@/components/calendar/AgendaCalendar";
 import { FeedCard } from "@/components/calendar/FeedCard";
+import { CompensationView } from "@/components/compensation/CompensationView";
 import { PublicChips } from "@/components/sponsorship/NegotiationView";
 import { SponsorshipStatusBadge, sponsorshipWhen } from "@/components/sponsorship/SponsorshipView";
 import { EmptyState } from "@/components/ui";
@@ -94,6 +95,7 @@ export async function AgencyAgenda({ sp, groscove, filters }: { sp: { mes?: stri
                 </span>
                 <PublicChips value={o.public} label={tsp("public")} />
                 {/* 0088: o que ficou combinado com cada marca (o que o Hero vai fazer); nunca o valor da marca */}
+                {/* 0140: + a forma de pagamento acordada (permuta, performance), sem números */}
                 {o.agreements.map((a) => (
                   <div key={`${a.brand}-${a.tier}`} className="mt-1 flex flex-col gap-1 rounded-xl bg-accent-soft p-3" data-testid="office-sponsorship-agreement">
                     <span className="text-sm font-semibold text-fg">{tsp("agreement", { brand: a.brand, tier: a.tier })}</span>
@@ -102,6 +104,7 @@ export async function AgencyAgenda({ sp, groscove, filters }: { sp: { mes?: stri
                         <li key={x}>{x}</li>
                       ))}
                     </ul>
+                    <CompensationView compensation={a.compensation} canValues={false} className="mt-1" />
                   </div>
                 ))}
               </li>

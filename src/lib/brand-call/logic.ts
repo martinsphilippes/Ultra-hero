@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { VALUE_MODELS, type ValueModel } from "@/lib/value-model/model";
+import { PERF_KINDS, parseCompensation, type Compensation, type PerfKind } from "@/lib/compensation/model";
+import { compensationDbSchema } from "@/lib/compensation/schema";
 import { requestDeliverablesSchema, toZonedIso, type RequestDeliverable } from "@/lib/deals/schemas";
 import { DELIVERABLE_KINDS, OBJECTIVES, type Objective } from "@/lib/deals/vocab";
 import {
@@ -18,6 +20,8 @@ import { NETWORKS, type Network } from "@/lib/talent/vocab";
 // mesmo motor da 0088 com a direção invertida). Lógica pura testada em tests/unit/chamada-marca.test.ts; o banco
 // confere tudo de novo (checks e RPCs). Aqui ficam o formulário, as entregas somadas, o alcance somado, a verba
 // como a agência vê, quem pode o quê e a leitura das RPCs fechadas.
+// 0140: forma de pagamento (valor, permuta e/ou performance) na chamada, na proposta, no acordo e em cada rodada; sem
+// dinheiro não há verba nem valor (o acordo pode ser só permuta/performance). Números só para a marca e o Adm.
 
 export const CALL_STATUSES = ["draft", "open", "closed", "contracted", "cancelled"] as const;
 export type CallStatus = (typeof CALL_STATUSES)[number];
@@ -149,8 +153,15 @@ export const callFormSchema = z.object({
   agencyIds: z.array(z.uuid()).max(200),
   /** 0101: chamada aberta a partir de um evento da agenda (vínculo gravado no rascunho, antes de publicar). */
   calendarEventId: z.union([z.literal(""), z.uuid()]).optional(),
+  /** 0140: forma de pagamento (valor, permuta e/ou performance) no formato do banco; ausente = o banco mantém a atual. */
+  compensation: compensationDbSchema.optional(),
 });
 export type CallFormInput = z.infer<typeof callFormSchema>;
+
+/** Tem dinheiro? Sem a forma de pagamento (formato antigo) é "só valor", como tudo que já existia. */
+export function hasMoney(v: { compensation?: { money: boolean } | null }): boolean {
+  return v.compensation?.money ?? true;
+}
 
 export type CallFormError = "title" | "period" | "budget" | "maxHeroes" | "respond" | "respondAfterPeriod" | "deliverables" | "networks" | "agencies";
 
@@ -174,15 +185,18 @@ export function respondByIso(date: string, time: string): string | null {
 /**
  * Confere o formulário. forPublish = o que o banco exige para publicar (prazo no futuro e dentro do período, entregas,
  * redes, agências escolhidas). O rascunho só precisa de título, período e verba coerente.
+ * 0140: sem dinheiro (só permuta e/ou performance) não há verba nem modelo de valor a conferir.
  */
 export function validateCall(v: CallFormInput, forPublish: boolean, now: Date = new Date()): CallFormError | null {
   if (v.title.trim().length < 3) return "title";
   const end = v.endsOn || v.startsOn;
   if (!v.startsOn || end < v.startsOn) return "period";
-  if (v.budgetDisplay !== "open" && v.budgetCents === null) return "budget";
-  if (v.valueModel === "por_heroi") {
-    if (v.budgetCents === null || v.budgetCents < 1 || v.budgetDisplay === "open") return "budget";
-    if (v.maxHeroes === null) return "maxHeroes";
+  if (hasMoney(v)) {
+    if (v.budgetDisplay !== "open" && v.budgetCents === null) return "budget";
+    if (v.valueModel === "por_heroi") {
+      if (v.budgetCents === null || v.budgetCents < 1 || v.budgetDisplay === "open") return "budget";
+      if (v.maxHeroes === null) return "maxHeroes";
+    }
   }
   if (!forPublish) return null;
   if (v.deliverables.length === 0) return "deliverables";
@@ -195,8 +209,9 @@ export function validateCall(v: CallFormInput, forPublish: boolean, now: Date = 
   return null;
 }
 
-/** p_data de brand_call_save (snake_case). */
+/** p_data de brand_call_save (snake_case). Sem dinheiro: sem verba, "a combinar", fixo e sem máximo (o banco força o mesmo). */
 export function callToDb(v: CallFormInput): Record<string, unknown> {
+  const money = hasMoney(v);
   return {
     title: v.title.replace(/\s+/g, " ").trim(),
     objective: v.objective,
@@ -212,14 +227,23 @@ export function callToDb(v: CallFormInput): Record<string, unknown> {
     creators_wanted: v.creatorsWanted,
     niches: v.niches,
     networks: v.networks,
-    budget_cents: v.budgetDisplay === "open" && v.budgetCents === null ? null : v.budgetCents,
-    budget_display: v.budgetDisplay,
-    value_model: v.valueModel,
-    max_heroes: v.valueModel === "por_heroi" ? v.maxHeroes : null,
+    budget_cents: money ? v.budgetCents : null,
+    budget_display: money ? v.budgetDisplay : "open",
+    value_model: money ? v.valueModel : "fixo",
+    max_heroes: money && v.valueModel === "por_heroi" ? v.maxHeroes : null,
     respond_by: respondByIso(v.respondDate, v.respondTime),
     audience: v.audience,
     agency_ids: v.audience === "selected" ? v.agencyIds : [],
+    ...(v.compensation ? { compensation: v.compensation } : {}),
   };
+}
+
+/** Contraproposta: pelo menos uma entrega; valor só quando há dinheiro; por Hero pede o máximo (também só com dinheiro). */
+export function counterTermsOk(d: { money: boolean; amountCents: number | null; deliverables: readonly unknown[]; valueModel?: ValueModel | null; maxHeroes?: number | null }): boolean {
+  if (d.deliverables.length === 0) return false;
+  if (!d.money) return true;
+  if (d.amountCents === null) return false;
+  return d.valueModel !== "por_heroi" || (d.maxHeroes ?? null) !== null;
 }
 
 // ---------------------------------------------------------------- quem pode o quê
@@ -266,6 +290,23 @@ export function callBrandControls(c: { status: CallStatus; approval: CallApprova
 }
 
 // ---------------------------------------------------------------- comparação lado a lado
+export type ProposalTerms = { model: ValueModel; amountCents: number | null; maxHeroes: number | null; compensation: Compensation };
+
+/**
+ * O que vale numa proposta: o acordo congela modelo, valor, máximo e forma de pagamento (0096/0140). Sem dinheiro (só
+ * permuta e/ou performance) não há valor: fica fora de "menor valor", da diferença para a verba e do custo por mil.
+ */
+export function proposalTerms(
+  p: Pick<CallProposal, "status" | "valueModel" | "amountCents" | "maxHeroes" | "compensation" | "agreedValueModel" | "agreedCents" | "agreedMaxHeroes" | "agreedCompensation">,
+): ProposalTerms {
+  const agreed = p.status === "agreed";
+  const compensation = (agreed ? p.agreedCompensation : null) ?? p.compensation;
+  if (!compensation.money) return { model: "fixo", amountCents: null, maxHeroes: null, compensation };
+  return agreed && p.agreedValueModel
+    ? { model: p.agreedValueModel, amountCents: p.agreedCents, maxHeroes: p.agreedMaxHeroes, compensation }
+    : { model: p.valueModel, amountCents: p.amountCents, maxHeroes: p.maxHeroes, compensation };
+}
+
 export type CompareInput = { id: string; amountCents: number | null; reach: number | null; creators: number; pieces: number; deliverBy: string | null };
 export type CompareFlags = { cheapest: boolean; widestReach: boolean; mostPieces: boolean; costPerThousand: number | null };
 
@@ -298,6 +339,35 @@ const cents = (v: unknown): number | null => (v === null || v === undefined || v
 const strings = (v: unknown): string[] => (Array.isArray(v) ? v.map(String) : []);
 const oneOf = <T extends string>(list: readonly T[], v: unknown, fallback: T): T => ((list as readonly string[]).includes(String(v)) ? (v as T) : fallback);
 const networksOf = (v: unknown): Network[] => strings(v).filter((n): n is Network => (NETWORKS as readonly string[]).includes(n));
+const obj = (v: unknown): Row | null => (v && typeof v === "object" && !Array.isArray(v) ? (v as Row) : null);
+
+/** Regra da performance sem o número (quem não lê valores): o tipo e como mede continuam, o número não. */
+const HIDDEN_RATE = 0;
+
+/**
+ * Forma de pagamento lida do banco (0140). Quem não lê valores recebe a regra sem os números (compensation_public:
+ * rate e estimativas nulos): a performance continua aparecendo (tipo e como mede), só sem o número.
+ */
+export function compensationOf(v: unknown): Compensation {
+  const c = parseCompensation(v);
+  const r = obj(v);
+  const p = obj(r?.performance);
+  if (c.performance || !r || !p || (p.rate !== null && p.rate !== undefined) || !(PERF_KINDS as readonly string[]).includes(String(p.kind))) return c;
+  return {
+    money: typeof r.money === "boolean" ? r.money : true,
+    barter: c.barter,
+    performance: { kind: p.kind as PerfKind, rate: HIDDEN_RATE, measure: typeof p.measure === "string" ? p.measure.trim() : "", estimateCents: null },
+  };
+}
+
+/** Para quem não lê valores (gestor, equipe da agência, Hero): o tipo e as descrições, nunca os números (R$ ou %). */
+export function compensationWithoutValues(c: Compensation): Compensation {
+  return {
+    money: c.money,
+    barter: c.barter ? { offer: c.barter.offer, valueCents: null } : null,
+    performance: c.performance ? { kind: c.performance.kind, rate: HIDDEN_RATE, measure: c.performance.measure, estimateCents: null } : null,
+  };
+}
 
 export function toDeliverables(v: unknown): RequestDeliverable[] {
   return arr(v)
@@ -330,6 +400,8 @@ export type BrandCall = {
   maxHeroes: number | null;
   /** só para a marca e o Adm da agência (na forma escolhida); null para os outros */
   budgetCents: number | null;
+  /** 0140: forma de pagamento (valor, permuta, performance); gestor e Hero recebem sem os números */
+  compensation: Compensation;
   respondBy: string | null;
   status: CallStatus;
   closedReason: "deadline" | "decision" | null;
@@ -359,6 +431,7 @@ export function toCall(r: Row): BrandCall {
     valueModel: r.value_model === "por_heroi" ? "por_heroi" : "fixo",
     maxHeroes: r.value_model === "por_heroi" && cents(r.max_heroes) !== null ? num(r.max_heroes) : null,
     budgetCents: cents(r.budget_cents),
+    compensation: compensationOf(r.compensation),
     respondBy: str(r.respond_by),
     status: oneOf(CALL_STATUSES, r.status, "draft"),
     closedReason: r.closed_reason === "deadline" || r.closed_reason === "decision" ? r.closed_reason : null,
@@ -377,6 +450,8 @@ export type CallRound = {
   amountCents: number | null;
   valueModel: ValueModel | null;
   maxHeroes: number | null;
+  /** 0140: forma de pagamento da rodada (sem os números para quem não lê valores) */
+  compensation: Compensation;
   deliverables: RequestDeliverable[] | null;
   deliverBy: string | null;
   note: string;
@@ -397,6 +472,7 @@ function toRounds(v: unknown): CallRound[] {
     amountCents: cents(r.amount_cents),
     valueModel: r.value_model === "por_heroi" ? "por_heroi" : r.value_model === "fixo" ? "fixo" : null,
     maxHeroes: cents(r.max_heroes),
+    compensation: compensationOf(r.compensation),
     deliverables: Array.isArray(r.deliverables) ? toDeliverables(r.deliverables) : null,
     deliverBy: str(r.deliver_by),
     note: text(r.note),
@@ -444,6 +520,9 @@ export type CallProposal = {
   maxHeroes: number | null;
   agreedValueModel: ValueModel | null;
   agreedMaxHeroes: number | null;
+  /** 0140: forma de pagamento da proposta (começa com a da chamada) e a acordada, congelada */
+  compensation: Compensation;
+  agreedCompensation: Compensation | null;
   hasAmount: boolean;
   deliverables: RequestDeliverable[];
   deliverBy: string | null;
@@ -474,6 +553,8 @@ function toProposal(q: Row): CallProposal {
     maxHeroes: cents(q.max_heroes),
     agreedValueModel: q.agreed_value_model === "por_heroi" ? "por_heroi" : q.agreed_value_model === "fixo" ? "fixo" : null,
     agreedMaxHeroes: cents(q.agreed_max_heroes),
+    compensation: compensationOf(q.compensation),
+    agreedCompensation: obj(q.agreed_compensation) ? compensationOf(q.agreed_compensation) : null,
     hasAmount: q.has_amount === true || cents(q.amount_cents) !== null,
     deliverables: toDeliverables(q.deliverables),
     deliverBy: str(q.deliver_by),
@@ -568,11 +649,14 @@ export type AgencyBrandCallRow = BrandCall & {
   proposal: { id: string; status: ProposalStatus; awaiting: Side | null } | null;
 };
 
-export function toAgencyBrandCalls(v: unknown): AgencyBrandCallRow[] {
+/** Lista da agência. canValues = false (gestor): a forma de pagamento chega sem os números, mesmo que o banco mande. */
+export function toAgencyBrandCalls(v: unknown, canValues = true): AgencyBrandCallRow[] {
   return arr(v).map((r) => {
     const p = r.proposal && typeof r.proposal === "object" ? (r.proposal as Row) : null;
+    const call = toCall(r);
     return {
-      ...toCall(r),
+      ...call,
+      compensation: canValues ? call.compensation : compensationWithoutValues(call.compensation),
       viewStatus: oneOf(AGENCY_VIEW_STATUSES, r.view_status, "closed"),
       interests: num(r.interests),
       proposal: p ? { id: text(p.id), status: oneOf(PROPOSAL_STATUSES, p.status, "closed"), awaiting: p.awaiting === "agency" || p.awaiting === "brand" ? p.awaiting : null } : null,
@@ -591,15 +675,29 @@ export type AgencyBrandCallDetail = {
   candidates: CallCandidate[];
 };
 
+/** Sem permissão para valores: a forma de pagamento da proposta, do acordo e de cada rodada sem os números. */
+function proposalWithoutValues(p: CallProposal): CallProposal {
+  return {
+    ...p,
+    compensation: compensationWithoutValues(p.compensation),
+    agreedCompensation: p.agreedCompensation ? compensationWithoutValues(p.agreedCompensation) : null,
+    history: p.history.map((r) => ({ ...r, compensation: compensationWithoutValues(r.compensation) })),
+  };
+}
+
 export function toAgencyBrandCallDetail(v: unknown): AgencyBrandCallDetail | null {
   if (!v || typeof v !== "object" || Array.isArray(v)) return null;
   const d = v as Row;
   const c = (d.call ?? {}) as Row;
   if (!c.id) return null;
+  const canValues = d.can_values === true;
+  const call = toCall(c);
+  const proposals = arr(d.proposals).map(toProposal);
+  // o banco já tira os números do gestor; aqui de novo, para nunca chegarem à tela
   return {
-    canValues: d.can_values === true,
-    call: toCall(c),
-    proposals: arr(d.proposals).map(toProposal),
+    canValues,
+    call: canValues ? call : { ...call, compensation: compensationWithoutValues(call.compensation) },
+    proposals: canValues ? proposals : proposals.map(proposalWithoutValues),
     interests: arr(d.interests).map((i) => ({ talentId: text(i.talent_id), name: text(i.name), message: text(i.message), createdAt: text(i.created_at) })),
     candidates: arr(d.candidates).map((t) => ({ id: text(t.id), name: text(t.name), networks: strings(t.networks), interested: t.interested === true })),
   };
@@ -607,12 +705,15 @@ export function toAgencyBrandCallDetail(v: unknown): AgencyBrandCallDetail | nul
 
 export type TalentBrandCall = BrandCall & { myNetworks: string[]; myInterest: { message: string; at: string } | null; chosen: boolean };
 
+/** Pedidos vistos pelo Hero: nunca a verba nem os números da forma de pagamento (só o tipo e as descrições). */
 export function toTalentBrandCalls(v: unknown): TalentBrandCall[] {
   return arr(v).map((r) => {
     const i = r.my_interest && typeof r.my_interest === "object" ? (r.my_interest as Row) : null;
+    const call = toCall(r);
     return {
-      ...toCall(r),
+      ...call,
       budgetCents: null,
+      compensation: compensationWithoutValues(call.compensation),
       myNetworks: strings(r.my_networks),
       myInterest: i ? { message: text(i.message), at: text(i.at) } : null,
       chosen: r.chosen === true,

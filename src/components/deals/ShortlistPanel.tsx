@@ -19,6 +19,8 @@ import { CONSULT_DAYS, TALENT_RESPONSES, type TalentResponse } from "@/lib/deals
 import type { Conflict, Counteroffer } from "@/lib/offer/counteroffer";
 import { CastBuilderButton } from "@/components/casting/CastBuilderDialog";
 import { ValueTermsView } from "@/components/value-model/ValueTermsView";
+import { CompensationView } from "@/components/compensation/CompensationView";
+import { isMoneyOnly } from "@/lib/compensation/model";
 import type { DealValueTerms } from "@/lib/deals/queries";
 import { SuggestHeroesDialog, type Candidate } from "./SuggestHeroesDialog";
 import { TalentStatusBadge } from "./StatusBadges";
@@ -54,6 +56,7 @@ type Props = {
 export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit, isAdmin, documents, conflicts = {}, counteroffers = {}, canDecideFee = false, canDecideDate = false, canInvite = false, valueTerms = null, canCast = false }: Props) {
   const t = useTranslations("agency.deal.talents");
   const tv = useTranslations("valueModel");
+  const tcomp = useTranslations("compensation");
   const tr = useTranslations("commercial.reasons");
   const locale = useLocale() as Locale;
   const { toast } = useToast();
@@ -64,6 +67,8 @@ export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit,
   const [recording, setRecording] = useState<DealTalentRow | null>(null);
   const [feeFor, setFeeFor] = useState<DealTalentRow | null>(null);
   const open = isPreConfirmation(stage);
+  // valor em dinheiro do negócio (0096); 0140: sem "Valor" na forma de pagamento não há valor nem modelo por Hero
+  const cashTerms = valueTerms !== null && valueTerms.compensation.money && (valueTerms.hasValue || valueTerms.valueModel === "por_heroi");
   const active = rows.filter((r) => !["declined", "removed"].includes(r.status));
   const consultable = active.filter((r) => ["suggested", "declined"].includes(r.status) || r.status === "suggested");
 
@@ -81,14 +86,16 @@ export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit,
 
   return (
     <div className="flex flex-col gap-4" data-testid="shortlist-panel">
-      {valueTerms && (valueTerms.hasValue || valueTerms.valueModel === "por_heroi") ? (
+      {valueTerms && (cashTerms || !isMoneyOnly(valueTerms.compensation)) ? (
         <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4" aria-labelledby="deal-value-terms" data-testid="deal-value-terms">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex flex-col gap-0.5">
               <h2 id="deal-value-terms" className="text-sm font-semibold text-fg">
-                {tv("view.title")}
+                {isMoneyOnly(valueTerms.compensation) ? tv("view.title") : tcomp("label")}
               </h2>
-              <ValueTermsView model={valueTerms.valueModel} amountCents={valueTerms.valueCents} maxHeroes={valueTerms.maxHeroes} canValues={isAdmin} />
+              {cashTerms ? <ValueTermsView model={valueTerms.valueModel} amountCents={valueTerms.valueCents} maxHeroes={valueTerms.maxHeroes} canValues={isAdmin} /> : null}
+              {/* 0140: permuta/performance do negócio (números só para o Adm) */}
+              <CompensationView compensation={valueTerms.compensation} canValues={isAdmin} className="mt-1" />
             </div>
             {valueTerms.valueModel === "por_heroi" && valueTerms.maxHeroes !== null ? (
               <Badge size="sm" variant={valueTerms.activeHeroes >= valueTerms.maxHeroes ? "warning" : "neutral"} data-testid="deal-value-slots">
@@ -96,7 +103,7 @@ export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit,
               </Badge>
             ) : null}
           </div>
-          {canCast && canEdit && open && valueTerms.valueModel === "fixo" ? (
+          {canCast && canEdit && open && valueTerms.valueModel === "fixo" && valueTerms.hasValue ? (
             <>
               <p className="type-caption text-fg-muted">{tv("cast.fixedHint")}</p>
               <CastBuilderButton dealId={dealId} currentIds={active.map((r) => r.talentId)} maxHeroes={null} budgetCents={valueTerms.valueCents} />

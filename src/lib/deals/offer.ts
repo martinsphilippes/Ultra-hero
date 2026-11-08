@@ -1,6 +1,8 @@
 // Negociação da proposta da marca no negócio (0106): rodadas de aceite/contraproposta/recusa entre a agência (Adm) e
 // a marca (dono). Lógica pura, espelho de public.deal_offer_state / deal_offer_brand_terms; o banco confere tudo de novo.
-import { isValueModel, type ValueModel } from "@/lib/value-model/model";
+// 0140: cada termo traz a forma de pagamento (valor, permuta e/ou performance); sem dinheiro, não há valor.
+import { parseCompensation, type Compensation, type CompensationDb } from "@/lib/compensation/model";
+import { isValueModel, validateTerms, type ValueModel, type ValueTermsError } from "@/lib/value-model/model";
 
 export type OfferSide = "agency" | "brand";
 export type OfferAction = "accept" | "counter" | "decline";
@@ -11,6 +13,8 @@ export type OfferTerms = {
   maxHeroes: number | null;
   periodStart: string | null;
   periodEnd: string | null;
+  /** 0140: forma de pagamento; sem permissão para valores (gestor, equipe), chega sem os números. */
+  compensation: Compensation;
 };
 
 export type OfferRound = OfferTerms & {
@@ -60,13 +64,101 @@ export function offerStatus(view: Pick<OfferView, "open" | "rounds">): OfferStat
   return last.action === "decline" ? "brand_declined" : "brand_countered";
 }
 
+/** Termos na mesa: o acordo; na vez da marca, a última contraproposta da agência; na vez da agência, os da marca. */
+export function termsOnTable(view: Pick<OfferView, "agreed" | "turn" | "rounds" | "brandTerms" | "agreedTerms">): OfferTerms | null {
+  if (view.agreed) return view.agreedTerms;
+  if (view.turn === "brand") return [...view.rounds].sort((a, b) => b.seq - a.seq).find((r) => r.side === "agency" && r.action === "counter") ?? null;
+  return view.brandTerms ?? view.agreedTerms;
+}
+
+/**
+ * Pode aceitar? A marca aceita a contraproposta da agência. A agência só aceita termos da marca com valor ou, desde a
+ * 0140, sem dinheiro nenhum (só permuta/performance); com "Valor" marcado e sem valor, contrapropõe (espelho de
+ * agency_deal_offer_reply).
+ */
+export function canAcceptOffer(portal: OfferSide, brandTerms: OfferTerms | null): boolean {
+  if (portal === "brand") return true;
+  if (!brandTerms) return false;
+  return !brandTerms.compensation.money || (brandTerms.amountCents ?? 0) > 0;
+}
+
+/** Resposta da tela (já conferida pelo zod da ação): termos da contraproposta e a forma de pagamento no formato do banco. */
+export type OfferReplyInput = {
+  dealId: string;
+  action: OfferAction;
+  amountCents: number | null;
+  valueModel: ValueModel;
+  maxHeroes: number | null;
+  /** "" = mantém o período da campanha */
+  periodStart: string;
+  periodEnd: string;
+  note: string;
+  /** 0140: obrigatória na contraproposta (sem ela o banco entenderia "só valor"); aceite e recusa não usam. */
+  compensation: CompensationDb | null;
+};
+
+export type OfferReplyArgs = {
+  p_deal: string;
+  p_action: OfferAction;
+  p_amount_cents: number | null;
+  p_value_model: ValueModel | null;
+  p_max_heroes: number | null;
+  p_period_start: string | null;
+  p_period_end: string | null;
+  p_note: string | null;
+  p_compensation: CompensationDb | null;
+};
+
+export type OfferReplyError = ValueTermsError | "invalid_compensation";
+
+/**
+ * Resposta → argumentos de agency_deal_offer_reply / brand_deal_offer_reply. Contraproposta: a forma de pagamento vai
+ * SEMPRE; com "Valor" marcado, o valor é obrigatório (e por Hero, o máximo); sem dinheiro, vai sem valor, no modelo fixo
+ * e sem máximo (o banco faz o mesmo). Aceite e recusa não levam termos.
+ */
+export function offerReplyArgs(d: OfferReplyInput): { ok: true; args: OfferReplyArgs } | { ok: false; error: OfferReplyError } {
+  const counter = d.action === "counter";
+  let money = false;
+  if (counter) {
+    if (!d.compensation) return { ok: false, error: "invalid_compensation" };
+    money = d.compensation.money;
+    if (money) {
+      const problem = validateTerms({ model: d.valueModel, amountCents: d.amountCents, maxHeroes: d.valueModel === "por_heroi" ? d.maxHeroes : null }, { requireAmount: true });
+      if (problem) return { ok: false, error: problem };
+    }
+    if (d.periodEnd && (!d.periodStart || d.periodEnd < d.periodStart)) return { ok: false, error: "invalid_input" };
+  }
+  return {
+    ok: true,
+    args: {
+      p_deal: d.dealId,
+      p_action: d.action,
+      p_amount_cents: money ? d.amountCents : null,
+      p_value_model: counter ? (money ? d.valueModel : "fixo") : null,
+      p_max_heroes: money && d.valueModel === "por_heroi" ? d.maxHeroes : null,
+      p_period_start: counter && d.periodStart ? d.periodStart : null,
+      p_period_end: counter && d.periodStart ? d.periodEnd || d.periodStart : null,
+      p_note: d.note || null,
+      p_compensation: counter ? d.compensation : null,
+    },
+  };
+}
+
 const num = (v: unknown): number | null => (v === null || v === undefined || v === "" || !Number.isFinite(Number(v)) ? null : Number(v));
 const str = (v: unknown): string | null => (typeof v === "string" && v !== "" ? v : null);
 const side = (v: unknown): OfferSide | null => (v === "agency" || v === "brand" ? v : null);
 
 function toTerms(r: Record<string, unknown>): OfferTerms {
   const model: ValueModel = isValueModel(r.value_model) ? r.value_model : "fixo";
-  return { amountCents: num(r.amount_cents), valueModel: model, maxHeroes: model === "por_heroi" ? num(r.max_heroes) : null, periodStart: str(r.period_start), periodEnd: str(r.period_end) };
+  return {
+    amountCents: num(r.amount_cents),
+    valueModel: model,
+    maxHeroes: model === "por_heroi" ? num(r.max_heroes) : null,
+    periodStart: str(r.period_start),
+    periodEnd: str(r.period_end),
+    // rodadas e propostas de antes da 0140 (sem a chave) são "só valor"
+    compensation: parseCompensation(r.compensation),
+  };
 }
 
 /** JSON de public.deal_offer_rounds_json → visão da tela (tolerante a campos ausentes). */

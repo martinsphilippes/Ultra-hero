@@ -4,6 +4,8 @@ import { AlertTriangle, ArrowRightLeft, CheckCircle2, MessageSquarePlus, Save, U
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
+import { CompensationFields } from "@/components/compensation/CompensationFields";
+import { CompensationView } from "@/components/compensation/CompensationView";
 import { addActivityAction, confirmDealAction, createDealAction, moveDealAction, setDealCompensationAction, setDealTeamAction, updateDealAction } from "@/app/agencia/negocios/actions";
 import { Button, Checkbox, DatePicker, DateRangePicker, Dialog, EntityCard, EntitySelect, FormField, IconButton, Input, SegmentedControl, Select, Textarea, useToast } from "@/components/ui";
 import { campaignHeroIds, heroNames } from "@/lib/deals/client-label";
@@ -12,6 +14,8 @@ import { canConfirm, DEAL_OUTCOMES, moveNeedsNote, nextStages, type DealOutcome,
 import { ACTIVITY_KINDS, type ActivityKind } from "@/lib/deals/vocab";
 import { serviceFitsClient, type ClientKind } from "@/lib/roadmap/vocab";
 import { brandOption, memberOption, talentOption } from "@/lib/ui/entity";
+import { draftFrom, draftToCompensation, MONEY_ONLY, toDb, type Compensation } from "@/lib/compensation/model";
+import { brlToCents, centsToBrl } from "@/lib/money/brl-input";
 
 /** Membro da agência para as listas; `role` (admin|manager|staff) e `jobTitle` vêm de listTeam. */
 export type Member = { userId: string; name: string; role?: string | null; jobTitle?: string | null };
@@ -34,9 +38,12 @@ export function DealForm({
   services = [],
   prefill,
   compensation,
+  canSetCompensation,
 }: {
-  /** 0128: como o projeto paga (permuta, valor fixo ou performance com %). */
-  compensation?: { type: string; pct: number | null };
+  /** 0140: forma de pagamento (valor, permuta e/ou performance, combináveis). */
+  compensation?: Compensation;
+  /** Quem muda a forma de pagamento: ao lançar, o gestor; depois, só o Adm (padrão: quem escolhe o responsável). */
+  canSetCompensation?: boolean;
   initial: DealValues;
   dealId: string | null;
   brands: { id: string; name: string; logoUrl?: string | null }[];
@@ -69,15 +76,18 @@ export function DealForm({
   const [pending, start] = useTransition();
   const set = <K extends keyof DealValues>(k: K, value: DealValues[K]) => setV((cur) => ({ ...cur, [k]: value }));
   const disabled = pending || !canEdit;
-  const tc = useTranslations("projection.compensation");
-  const [compType, setCompType] = useState<"barter" | "fixed" | "performance">(
-    compensation?.type === "barter" || compensation?.type === "performance" ? compensation.type : "fixed",
-  );
-  const [compPct, setCompPct] = useState(compensation?.pct != null ? String(compensation.pct) : "");
+  const tc = useTranslations("compensation");
+  const [comp, setComp] = useState(() => draftFrom(compensation ?? MONEY_ONLY, centsToBrl));
+  // grava a forma só quando ela muda (editar o título não pode reescrever a forma de pagamento)
+  const [savedComp] = useState(() => JSON.stringify(toDb(compensation ?? MONEY_ONLY)));
+  const setsCompensation = canSetCompensation ?? canSetOwner;
 
   function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+    // 0140: a forma de pagamento é conferida antes de gravar o negócio
+    const checked = setsCompensation ? draftToCompensation(comp, brlToCents) : null;
+    if (checked && !checked.ok) return setError(tc(`errors.${checked.error}`));
     start(async () => {
       const result = dealId
         ? await updateDealAction({ dealId, title: v.title, talentBrief: v.talentBrief, expectedStart: v.expectedStart, expectedEnd: v.expectedEnd, ...(canSetOwner ? { ownerId: v.ownerId } : {}) })
@@ -96,12 +106,11 @@ export function DealForm({
             campaignTalentIds: castOn ? campaignHeroIds(castIds) : [],
           });
       if (!result.ok) return setError(result.error);
-      // 0128: como o projeto paga (gestor+; o banco confere)
+      // 0140: forma de pagamento (gestor+; o banco confere de novo)
       const savedId = dealId ?? result.id;
-      if (savedId && canSetOwner) {
-        const pct = compType === "performance" ? Number(compPct.replace(",", ".")) : null;
-        const comp = await setDealCompensationAction({ dealId: savedId, type: compType, pct: pct !== null && Number.isFinite(pct) ? pct : null });
-        if (!comp.ok) toast({ title: comp.error, variant: "error" });
+      if (savedId && checked?.ok && JSON.stringify(toDb(checked.value)) !== savedComp) {
+        const saved = await setDealCompensationAction({ dealId: savedId, compensation: toDb(checked.value) });
+        if (!saved.ok) toast({ title: saved.error, variant: "error" });
       }
       toast({ title: result.message, variant: "success" });
       // falha parcial: o negócio existe; os Heros que não entraram são adicionados depois na aba Heros
@@ -219,24 +228,16 @@ export function DealForm({
           {error}
         </p>
       ) : null}
-      {canSetOwner ? (
-        <FormField label={tc("label")} hint={tc("hint")}>
-          <div className="flex flex-col gap-2">
-            <SegmentedControl<"barter" | "fixed" | "performance">
-              value={compType}
-              onValueChange={setCompType}
-              aria-label={tc("label")}
-              options={[
-                { value: "barter", label: tc("barter") },
-                { value: "fixed", label: tc("fixed") },
-                { value: "performance", label: tc("performance") },
-              ]}
-            />
-            {compType === "performance" ? (
-              <Input inputMode="decimal" value={compPct} onChange={(e) => setCompPct(e.target.value)} placeholder={tc("pctPlaceholder")} aria-label={tc("pct")} disabled={disabled} data-testid="deal-performance-pct" />
-            ) : null}
-          </div>
-        </FormField>
+      {setsCompensation ? (
+        // 0140: o valor em dinheiro do negócio é o cachê de cada Hero (aba Heros); aqui só marca que tem dinheiro
+        <CompensationFields idPrefix="deal" draft={comp} onChange={setComp} disabled={disabled} hint={tc("dealHint")} />
+      ) : compensation ? (
+        // gestor e equipe: a forma de pagamento sem números (quem ajusta é o Adm)
+        <div className="flex flex-col gap-1.5" data-testid="deal-compensation-view">
+          <span className="text-sm font-medium text-fg">{tc("label")}</span>
+          <CompensationView compensation={compensation} canValues={false} always />
+          <span className="type-caption text-fg-muted">{tc("adminOnly")}</span>
+        </div>
       ) : null}
       {canEdit ? (
         <Button type="submit" leadingIcon={<Save />} loading={pending} className="w-fit" data-testid="deal-save">

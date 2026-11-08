@@ -1,5 +1,6 @@
 import "server-only";
 import { toBrief, type Brief } from "@/lib/brief/brief";
+import { parseCompensation, withoutNumbers, type Compensation } from "@/lib/compensation/model";
 import type { ValueModel } from "@/lib/value-model/model";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
@@ -316,16 +317,37 @@ export async function getRequest(id: string): Promise<RequestRow | null> {
   return toRequest(data as unknown as Record<string, unknown>);
 }
 
+/** Orçamento oferecido pela marca e a forma de pagamento (0140: valor, permuta e/ou performance). */
+export type RequestBudget = { min: number | null; max: number | null; note: string; valueModel: ValueModel; maxHeroes: number | null; compensation: Compensation };
+
 /** Orçamento oferecido pela marca (tabela de valor: só a marca dona e o Adm recebem a linha). */
-export async function getRequestBudget(requestId: string): Promise<{ min: number | null; max: number | null; note: string; valueModel: ValueModel; maxHeroes: number | null } | null> {
+export async function getRequestBudget(requestId: string): Promise<RequestBudget | null> {
   const supabase = await createClient();
-  const { data } = await supabase.from("campaign_request_budgets").select("budget_min_cents, budget_max_cents, note, value_model, max_heroes").eq("request_id", requestId).maybeSingle();
+  const budgets = () => supabase.from("campaign_request_budgets");
+  let { data, error } = await budgets().select("budget_min_cents, budget_max_cents, note, value_model, max_heroes, compensation").eq("request_id", requestId).maybeSingle();
+  // sem a 0140 ainda (coluna inexistente): o valor de sempre, como "só valor" — sem isso a tela perderia o valor gravado
+  if (error && isMissingSchema(error)) {
+    const old = await budgets().select("budget_min_cents, budget_max_cents, note, value_model, max_heroes").eq("request_id", requestId).maybeSingle();
+    data = old.data ? { ...old.data, compensation: null } : null;
+    error = old.error;
+  }
+  if (error || !data) return null;
   // 0096: modelo de valor — fixo (total do evento) ou por Hero (valor por Hero × máximo de Heros)
-  return data ? { min: data.budget_min_cents, max: data.budget_max_cents, note: data.note, valueModel: data.value_model === "por_heroi" ? "por_heroi" : "fixo", maxHeroes: data.max_heroes } : null;
+  return {
+    min: data.budget_min_cents,
+    max: data.budget_max_cents,
+    note: data.note,
+    valueModel: data.value_model === "por_heroi" ? "por_heroi" : "fixo",
+    maxHeroes: data.max_heroes,
+    compensation: parseCompensation(data.compensation),
+  };
 }
 
-/** 0096: modelo do valor do negócio (gestor+): modelo e máximo; valor e teto só para o Adm. */
-export type DealValueTerms = { valueModel: ValueModel; maxHeroes: number | null; activeHeroes: number; hasValue: boolean; valueCents: number | null; ceilingCents: number | null };
+/**
+ * 0096: modelo do valor do negócio (gestor+): modelo e máximo; valor e teto só para o Adm.
+ * 0140: forma de pagamento do negócio (para o gestor, sem os números de permuta e performance).
+ */
+export type DealValueTerms = { valueModel: ValueModel; maxHeroes: number | null; activeHeroes: number; hasValue: boolean; valueCents: number | null; ceilingCents: number | null; compensation: Compensation };
 
 export async function getDealValueTerms(dealId: string): Promise<DealValueTerms | null> {
   const supabase = await createClient();
@@ -340,6 +362,7 @@ export async function getDealValueTerms(dealId: string): Promise<DealValueTerms 
     hasValue: r.has_value === true,
     valueCents: n(r.value_cents),
     ceilingCents: n(r.ceiling_cents),
+    compensation: parseCompensation(r.compensation),
   };
 }
 
@@ -547,7 +570,8 @@ export type Opportunity = {
   respondedAt: string | null;
   responseNote: string;
   termsReady: boolean;
-  deal: { id: string; title: string; talentBrief: string; expectedStart: string | null; expectedEnd: string | null; status: string; confirmedAt: string | null };
+  /** 0140: forma de pagamento do negócio, sem números (o Hero vê o tipo, o que vem de permuta e a regra da performance). */
+  deal: { id: string; title: string; talentBrief: string; expectedStart: string | null; expectedEnd: string | null; status: string; confirmedAt: string | null; compensation: Compensation };
   request: { objective: string | null; product: string; desiredAt: string | null; durationMinutes: number | null; format: string | null; location: string; networks: string[]; deliverables: RequestRow["deliverables"]; notes: string; brief: Brief } | null;
   brand: { id: string; name: string; logoUrl: string | null };
   deliverables: { id: string; kind: string; network: string | null; title: string; brief: string; dueAt: string | null; publishAt: string | null; status: string }[];
@@ -572,7 +596,7 @@ export async function listOpportunities(dealTalentId?: string): Promise<{ availa
         respondedAt: (o.responded_at as string | null) ?? null,
         responseNote: String(o.response_note ?? ""),
         termsReady: Boolean(o.terms_ready),
-        deal: { id: String(deal.id), title: String(deal.title), talentBrief: String(deal.talent_brief ?? ""), expectedStart: (deal.expected_start as string | null) ?? null, expectedEnd: (deal.expected_end as string | null) ?? null, status: String(deal.status), confirmedAt: (deal.confirmed_at as string | null) ?? null },
+        deal: { id: String(deal.id), title: String(deal.title), talentBrief: String(deal.talent_brief ?? ""), expectedStart: (deal.expected_start as string | null) ?? null, expectedEnd: (deal.expected_end as string | null) ?? null, status: String(deal.status), confirmedAt: (deal.confirmed_at as string | null) ?? null, compensation: withoutNumbers(parseCompensation(deal.compensation)) },
         request: req
           ? { objective: (req.objective as string | null) ?? null, product: String(req.product ?? ""), desiredAt: (req.desired_at as string | null) ?? null, durationMinutes: (req.duration_minutes as number | null) ?? null, format: (req.format as string | null) ?? null, location: String(req.location ?? ""), networks: (req.networks as string[]) ?? [], deliverables: Array.isArray(req.deliverables) ? (req.deliverables as RequestRow["deliverables"]) : [], notes: String(req.notes ?? ""), brief: toBrief(req.brief) }
           : null,

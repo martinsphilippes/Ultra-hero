@@ -811,6 +811,7 @@ export type Database = {
           target_states: string[];
           title: string;
           updated_at: string;
+          compensation: Json;
         };
         ComputedFields: never;
         Insert: {
@@ -855,6 +856,7 @@ export type Database = {
           target_states?: string[];
           title: string;
           updated_at?: string;
+          compensation?: Json;
         };
         Update: {
           calendar_event_id?: string | null;
@@ -898,6 +900,7 @@ export type Database = {
           target_states?: string[];
           title?: string;
           updated_at?: string;
+          compensation?: Json;
         };
         Relationships: [];
       };
@@ -988,6 +991,8 @@ export type Database = {
           status: string;
           updated_at: string;
           updated_by: string | null;
+          compensation: Json;
+          agreed_compensation: Json | null;
         };
         ComputedFields: never;
         Insert: {
@@ -1020,6 +1025,8 @@ export type Database = {
           status?: string;
           updated_at?: string;
           updated_by?: string | null;
+          compensation?: Json;
+          agreed_compensation?: Json | null;
         };
         Update: {
           agreed_max_heroes?: number | null;
@@ -1051,6 +1058,8 @@ export type Database = {
           status?: string;
           updated_at?: string;
           updated_by?: string | null;
+          compensation?: Json;
+          agreed_compensation?: Json | null;
         };
         Relationships: [];
       };
@@ -1311,6 +1320,7 @@ export type Database = {
           seq: number;
           side: string;
           value_model: string | null;
+          compensation: Json;
         };
         ComputedFields: never;
         Insert: {
@@ -1331,6 +1341,7 @@ export type Database = {
           seq: number;
           side: string;
           value_model?: string | null;
+          compensation?: Json;
         };
         Update: {
           action?: string;
@@ -1350,6 +1361,7 @@ export type Database = {
           seq?: number;
           side?: string;
           value_model?: string | null;
+          compensation?: Json;
         };
         Relationships: [];
       };
@@ -1377,6 +1389,7 @@ export type Database = {
           seq: number;
           side: string;
           state: string;
+          compensation: Json;
         };
         ComputedFields: never;
         Insert: {
@@ -1402,6 +1415,7 @@ export type Database = {
           seq: number;
           side: string;
           state?: string;
+          compensation?: Json;
         };
         Update: {
           max_heroes?: number | null;
@@ -1426,6 +1440,7 @@ export type Database = {
           seq?: number;
           side?: string;
           state?: string;
+          compensation?: Json;
         };
         Relationships: [];
       };
@@ -8996,8 +9011,7 @@ export type Database = {
           roadmap_started_on: string | null;
           service_id: string | null;
           origin_deal_id: string | null;
-          compensation_type: string;
-          performance_pct: number | null;
+          compensation: Json;
         };
         ComputedFields: never;
         Insert: {
@@ -9027,8 +9041,7 @@ export type Database = {
           roadmap_started_on?: string | null;
           service_id?: string | null;
           origin_deal_id?: string | null;
-          compensation_type?: string;
-          performance_pct?: number | null;
+          compensation?: Json;
         };
         Update: {
           agency_id?: string;
@@ -9057,8 +9070,7 @@ export type Database = {
           roadmap_started_on?: string | null;
           service_id?: string | null;
           origin_deal_id?: string | null;
-          compensation_type?: string;
-          performance_pct?: number | null;
+          compensation?: Json;
         };
         Relationships: [
           {
@@ -10903,6 +10915,7 @@ export type Database = {
           request_id: string;
           updated_at: string;
           updated_by: string | null;
+          compensation: Json;
         };
         ComputedFields: never;
         Insert: {
@@ -10918,6 +10931,7 @@ export type Database = {
           request_id: string;
           updated_at?: string;
           updated_by?: string | null;
+          compensation?: Json;
         };
         Update: {
           max_heroes?: number | null;
@@ -10932,6 +10946,7 @@ export type Database = {
           request_id?: string;
           updated_at?: string;
           updated_by?: string | null;
+          compensation?: Json;
         };
         Relationships: [
           {
@@ -11258,6 +11273,7 @@ export type Database = {
           price_updated_by: string | null;
           slots: number;
           updated_at: string;
+          compensation: Json;
         };
         ComputedFields: never;
         Insert: {
@@ -11274,6 +11290,7 @@ export type Database = {
           price_updated_by?: string | null;
           slots?: number;
           updated_at?: string;
+          compensation?: Json;
         };
         Update: {
           value_model?: string;
@@ -11289,6 +11306,7 @@ export type Database = {
           price_updated_by?: string | null;
           slots?: number;
           updated_at?: string;
+          compensation?: Json;
         };
         Relationships: [
           {
@@ -11314,7 +11332,7 @@ export type Database = {
           agreed_cents: number | null;
           agreed_perks: string[] | null;
           agreed_side: string | null;
-          amount_cents: number;
+          amount_cents: number | null;
           asked_cents: number | null;
           awaiting: string | null;
           brand_id: string;
@@ -11331,6 +11349,8 @@ export type Database = {
           status: string;
           tier_id: string;
           updated_at: string;
+          compensation: Json;
+          agreed_compensation: Json | null;
         };
         ComputedFields: never;
         Insert: {
@@ -11339,7 +11359,7 @@ export type Database = {
           agreed_cents?: number | null;
           agreed_perks?: string[] | null;
           agreed_side?: string | null;
-          amount_cents: number;
+          amount_cents: number | null;
           asked_cents?: number | null;
           awaiting?: string | null;
           brand_id: string;
@@ -11356,6 +11376,8 @@ export type Database = {
           status?: string;
           tier_id: string;
           updated_at?: string;
+          compensation?: Json;
+          agreed_compensation?: Json | null;
         };
         Update: {
           agency_id?: string;
@@ -11363,7 +11385,7 @@ export type Database = {
           agreed_cents?: number | null;
           agreed_perks?: string[] | null;
           agreed_side?: string | null;
-          amount_cents?: number;
+          amount_cents?: number | null;
           asked_cents?: number | null;
           awaiting?: string | null;
           brand_id?: string;
@@ -11380,6 +11402,8 @@ export type Database = {
           status?: string;
           tier_id?: string;
           updated_at?: string;
+          compensation?: Json;
+          agreed_compensation?: Json | null;
         };
         Relationships: [
           {
@@ -11434,6 +11458,7 @@ export type Database = {
           seq: number;
           side: string;
           state: string;
+          compensation: Json;
         };
         ComputedFields: never;
         Insert: {
@@ -11457,6 +11482,7 @@ export type Database = {
           seq: number;
           side: string;
           state?: string;
+          compensation?: Json;
         };
         Update: {
           action?: string;
@@ -11479,6 +11505,7 @@ export type Database = {
           seq?: number;
           side?: string;
           state?: string;
+          compensation?: Json;
         };
         Relationships: [
           {
@@ -12691,7 +12718,7 @@ isOneToOne: false
       email_domain_generic: { Args: { p_domain: string }; Returns: boolean };
       is_groscove_member: { Args: Record<PropertyKey, never>; Returns: boolean };
       finance_projection: { Args: { p_agency?: string | null }; Returns: Json };
-      deal_set_compensation: { Args: { p_deal: string; p_type: string; p_pct?: number | null }; Returns: boolean };
+      deal_compensation_set: { Args: { p_deal: string; p_compensation: Json }; Returns: Json };
       personality_save: { Args: { p_type: string; p_scores: Json }; Returns: boolean };
       works_on_platform: { Args: Record<PropertyKey, never>; Returns: boolean };
       content_takedown: { Args: { p_content: string; p_reason: string }; Returns: boolean };
@@ -12728,7 +12755,7 @@ isOneToOne: false
       brand_call_save: { Args: { p_brand: string; p_id: string | null; p_data: Json }; Returns: string };
       brand_call_submit: { Args: { p_id: string; p_note: string }; Returns: string };
       brand_call_review: { Args: { p_id: string; p_decision: string; p_note: string }; Returns: string };
-      brand_call_reply: { Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_deliverables: Json | null; p_deliver_by: string | null; p_note: string; p_value_model?: string | null; p_max_heroes?: number | null }; Returns: string };
+      brand_call_reply: { Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_deliverables: Json | null; p_deliver_by: string | null; p_note: string; p_value_model?: string | null; p_max_heroes?: number | null; p_compensation?: Json | null }; Returns: string };
       brand_call_round_review: { Args: { p_round: string; p_decision: string; p_note: string }; Returns: string };
       brand_call_decide: { Args: { p_id: string; p_action: string; p_proposals: string[]; p_note: string }; Returns: undefined };
       brand_call_deadline_scan: { Args: Record<PropertyKey, never>; Returns: number };
@@ -12736,8 +12763,8 @@ isOneToOne: false
       agency_brand_call_proposal_send: { Args: { p_proposal: string }; Returns: string };
       agency_brand_call_proposal_discard: { Args: { p_proposal: string }; Returns: undefined };
       deal_value_terms: { Args: { p_deal: string }; Returns: Json };
-      agency_deal_offer_reply: { Args: { p_deal: string; p_action: string; p_amount_cents?: number | null; p_value_model?: string | null; p_max_heroes?: number | null; p_period_start?: string | null; p_period_end?: string | null; p_note?: string | null }; Returns: string };
-      brand_deal_offer_reply: { Args: { p_deal: string; p_action: string; p_amount_cents?: number | null; p_value_model?: string | null; p_max_heroes?: number | null; p_period_start?: string | null; p_period_end?: string | null; p_note?: string | null }; Returns: string };
+      agency_deal_offer_reply: { Args: { p_deal: string; p_action: string; p_amount_cents?: number | null; p_value_model?: string | null; p_max_heroes?: number | null; p_period_start?: string | null; p_period_end?: string | null; p_note?: string | null; p_compensation?: Json | null }; Returns: string };
+      brand_deal_offer_reply: { Args: { p_deal: string; p_action: string; p_amount_cents?: number | null; p_value_model?: string | null; p_max_heroes?: number | null; p_period_start?: string | null; p_period_end?: string | null; p_note?: string | null; p_compensation?: Json | null }; Returns: string };
       deal_offer_rounds_json: { Args: { p_deal: string }; Returns: Json };
       // 0108: condições de pagamento
       agency_payment_plan_save: { Args: { p_deal: string; p_data: Json }; Returns: Json };
@@ -12753,7 +12780,7 @@ isOneToOne: false
       terms_text_without_payment: { Args: { p: string }; Returns: string };
       agency_cast_inputs: { Args: { p_agency: string; p_deal?: string | null; p_call?: string | null }; Returns: Json };
       agency_deal_cast_apply: { Args: { p_deal: string; p_items: Json }; Returns: Json };
-      agency_brand_call_reply: { Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_deliverables: Json | null; p_deliver_by: string | null; p_note: string; p_value_model?: string | null; p_max_heroes?: number | null }; Returns: string };
+      agency_brand_call_reply: { Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_deliverables: Json | null; p_deliver_by: string | null; p_note: string; p_value_model?: string | null; p_max_heroes?: number | null; p_compensation?: Json | null }; Returns: string };
       talent_brand_call_interest: { Args: { p_call: string; p_message: string }; Returns: undefined };
       brand_calls_list: { Args: { p_brand: string }; Returns: Json };
       brand_call_detail: { Args: { p_id: string }; Returns: Json };
@@ -12853,15 +12880,15 @@ isOneToOne: false
       sponsorship_perks_valid: { Args: { p: string[] }; Returns: boolean };
       sponsorship_deadline_scan: { Args: Record<PropertyKey, never>; Returns: number };
       brand_sponsorship_propose: {
-        Args: { p_id: string; p_brand: string; p_tier: string; p_action: string; p_amount_cents: number | null; p_perks: string[] | null; p_note: string; p_audience: Json | null };
+        Args: { p_id: string; p_brand: string; p_tier: string; p_action: string; p_amount_cents: number | null; p_perks: string[] | null; p_note: string; p_audience: Json | null; p_compensation?: Json | null };
         Returns: string;
       };
       brand_sponsorship_reply: {
-        Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_perks: string[] | null; p_note: string; p_audience: Json | null };
+        Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_perks: string[] | null; p_note: string; p_audience: Json | null; p_compensation?: Json | null };
         Returns: string;
       };
       brand_sponsorship_round_review: { Args: { p_round: string; p_decision: string; p_note: string }; Returns: string };
-      agency_sponsorship_reply: { Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_perks: string[] | null; p_note: string }; Returns: string };
+      agency_sponsorship_reply: { Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_perks: string[] | null; p_note: string; p_compensation?: Json | null }; Returns: string };
       brand_sponsorship_negotiation: { Args: { p_id: string; p_brand: string }; Returns: Json };
       sponsorship_proposal_perks_valid: { Args: { p: string[] }; Returns: boolean };
       sponsorship_audience_valid: { Args: { p: Json }; Returns: boolean };

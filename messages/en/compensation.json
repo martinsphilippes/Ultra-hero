@@ -1,0 +1,58 @@
+{
+  "label": "Payment type",
+  "hint": "Pick one or more. E.g. cash + barter, or cash + % of sales.",
+  "kinds": {
+    "money": "Cash",
+    "barter": "Barter",
+    "performance": "Performance"
+  },
+  "barter": {
+    "offer": "What is offered in barter",
+    "offerPlaceholder": "E.g. product kit + 2 hotel nights",
+    "value": "Estimated barter value",
+    "valueHint": "Total in R$, optional. Helps with the invoice (barter is taxed too) and with the Projection."
+  },
+  "performance": {
+    "kind": "Rule",
+    "kinds": {
+      "percent": "% of sales",
+      "per_sale": "R$ per sale",
+      "per_lead": "R$ per sign-up"
+    },
+    "ratePercent": "Percentage of sales",
+    "ratePercentPlaceholder": "E.g. 10",
+    "rateMoney": {
+      "per_sale": "Amount per sale",
+      "per_lead": "Amount per sign-up"
+    },
+    "measure": "How it is tracked",
+    "measurePlaceholder": "E.g. coupon HERO10 or tracked link",
+    "estimate": "Total estimate",
+    "estimateHint": "How much it should bring in R$, optional. Counts in the Projection."
+  },
+  "errors": {
+    "none_selected": "Pick at least one payment type: cash, barter or performance.",
+    "barter_offer": "Describe what is offered in barter (3 to 300 characters).",
+    "barter_value": "Check the estimated barter value.",
+    "perf_rate": "Check the performance rule: a percentage from 0.01 to 100 or an amount in R$.",
+    "perf_measure": "Describe how performance is tracked (e.g. coupon or link).",
+    "perf_estimate": "Check the performance estimate.",
+    "invalid_compensation": "Check the payment type."
+  },
+  "view": {
+    "noMoney": "no cash",
+    "barterValue": "estimated at {value}",
+    "perfPercent": "{rate}% of sales",
+    "perfPerSale": "{value} per sale",
+    "perfPerLead": "{value} per sign-up",
+    "perfKindOnly": {
+      "percent": "% of sales",
+      "per_sale": "amount per sale",
+      "per_lead": "amount per sign-up"
+    },
+    "perfMeasure": "tracked by {measure}",
+    "perfEstimate": "estimate of {value}"
+  },
+  "dealHint": "Pick one or more. The cash amount is each Hero's fee, in the Heroes tab.",
+  "adminOnly": "Only the Admin changes the payment type and sees the amounts."
+}

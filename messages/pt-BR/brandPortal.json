@@ -175,7 +175,7 @@
         "audience": "2. Público",
         "when": "3. Período e formato",
         "deliverables": "4. Redes e entregáveis",
-        "budget": "5. Valor e observações"
+        "budget": "5. Pagamento e observações"
       },
       "forCreator": "Proposta endereçada a {name}. A agência pode sugerir outros Heros.",
       "title": "Nome da campanha",
@@ -222,6 +222,7 @@
       "budgetAgreedHint": "Valor acordado no patrocínio (não muda aqui).",
       "budgetNegotiatingHint": "Patrocínio: o valor sai da negociação na oportunidade.",
       "budgetNegotiatingPlaceholder": "A combinar",
+      "compensationAgreedHint": "Forma de pagamento acordada (não muda aqui).",
       "valueErrors": {
         "value_per_hero_required": "No valor por Hero, informe quanto cada Hero recebe.",
         "max_heroes_required": "No valor por Hero, informe o máximo de Heros (de 1 a 50)."

@@ -4,6 +4,7 @@ import { CalendarDays, Clock, MapPin, Target, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { CompensationView } from "@/components/compensation/CompensationView";
 import { ValueTermsView } from "@/components/value-model/ValueTermsView";
 import { PublicChips } from "@/components/sponsorship/NegotiationView";
 import { Badge, Button, Dialog, FormField, Textarea, useToast } from "@/components/ui";
@@ -11,22 +12,31 @@ import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { callInterestAction } from "@/lib/brand-call/actions";
 import type { BrandCall } from "@/lib/brand-call/logic";
+import { isMoneyOnly } from "@/lib/compensation/model";
 import { BudgetText, DeliverablesText } from "./shared";
 
 type Props = {
   call: BrandCall;
-  /** marca e Adm da agência leem a verba; os outros veem "a combinar" / "visível só ao Adm"; o creator não vê a linha */
+  /**
+   * marca e Adm da agência leem a verba; os outros veem "a combinar" / "visível só ao Adm"; o Hero não vê a linha da
+   * verba. A forma de pagamento (permuta, performance) aparece para todos; os números só com "values".
+   */
   budget: "values" | "masked" | "none";
   showBrand?: boolean;
 };
 
-// Resumo da chamada da marca (0089): a necessidade, o período, o local, o público, as entregas, quantos creators,
-// nichos, redes, a verba (conforme quem lê) e o prazo para propostas. Serve à marca, à agência e ao creator.
+// Resumo da chamada da marca (0089): a necessidade, o período, o local, o público, as entregas, quantos Heros,
+// nichos, redes, a forma de pagamento e a verba (conforme quem lê) e o prazo para propostas. Serve à marca, à agência
+// e ao Hero. 0140: sem dinheiro não há linha de verba (nem "a combinar"): só a permuta e/ou a performance.
 export function CallSummary({ call, budget, showBrand = false }: Props) {
   const t = useTranslations("brandCall.summary");
+  const tc = useTranslations("compensation");
   const to = useTranslations("commercial.objectives");
   const tn = useTranslations("mediaKit.networks");
   const locale = useLocale() as Locale;
+  const comp = call.compensation;
+  const showPayment = !isMoneyOnly(comp);
+  const showBudget = budget !== "none" && comp.money;
   const period = call.endsOn && call.endsOn !== call.startsOn ? `${formatPlainDate(call.startsOn, locale)} – ${formatPlainDate(call.endsOn, locale)}` : formatPlainDate(call.startsOn, locale);
   const row = "flex items-start gap-2 type-body-sm text-fg";
   const icon = "mt-0.5 size-4 shrink-0 text-fg-muted";
@@ -85,17 +95,27 @@ export function CallSummary({ call, budget, showBrand = false }: Props) {
         </div>
       ) : null}
       <PublicChips value={call.public} label={t("public")} />
-      {budget !== "none" ? (
-        <div className="flex flex-col gap-0.5 border-t border-border pt-3">
-          <span className="type-caption text-fg-muted">{t("budget")}</span>
-          {call.valueModel === "por_heroi" ? (
-            <ValueTermsView model="por_heroi" amountCents={call.budgetCents} maxHeroes={call.maxHeroes} canValues={budget === "values"} />
-          ) : (
-            <span className="text-base font-semibold text-fg">
-              <BudgetText display={call.budgetDisplay} cents={call.budgetCents} canValues={budget === "values"} />
-            </span>
-          )}
-          {budget === "values" && call.budgetDisplay !== "open" ? <span className="type-caption text-fg-muted">{t(`budgetShown.${call.budgetDisplay}`)}</span> : null}
+      {showPayment || showBudget ? (
+        <div className="flex flex-col gap-3 border-t border-border pt-3" data-testid="call-payment">
+          {showPayment ? (
+            <div className="flex flex-col gap-1">
+              <span className="type-caption text-fg-muted">{tc("label")}</span>
+              <CompensationView compensation={comp} canValues={budget === "values"} />
+            </div>
+          ) : null}
+          {showBudget ? (
+            <div className="flex flex-col gap-0.5">
+              <span className="type-caption text-fg-muted">{t("budget")}</span>
+              {call.valueModel === "por_heroi" ? (
+                <ValueTermsView model="por_heroi" amountCents={call.budgetCents} maxHeroes={call.maxHeroes} canValues={budget === "values"} />
+              ) : (
+                <span className="text-base font-semibold text-fg">
+                  <BudgetText display={call.budgetDisplay} cents={call.budgetCents} canValues={budget === "values"} />
+                </span>
+              )}
+              {budget === "values" && call.budgetDisplay !== "open" ? <span className="type-caption text-fg-muted">{t(`budgetShown.${call.budgetDisplay}`)}</span> : null}
+            </div>
+          ) : null}
         </div>
       ) : null}
     </section>

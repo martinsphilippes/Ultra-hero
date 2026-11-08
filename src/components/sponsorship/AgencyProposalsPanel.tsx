@@ -4,12 +4,14 @@ import { Handshake, MessageSquareReply, ThumbsDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
+import { CompensationView } from "@/components/compensation/CompensationView";
 import { Button, Dialog, FormField, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
+import { isMoneyOnly, toDb } from "@/lib/compensation/model";
 import { formatCents } from "@/lib/deals/schemas";
 import { agencyReplyActions, proposalBadge } from "@/lib/sponsorship/negotiation";
 import { agencyReplySponsorshipAction, type SponsorshipResult } from "@/lib/sponsorship/actions";
-import type { AgencyTier, NegotiationProposal } from "@/lib/sponsorship/vocab";
+import { proposalTerms, type AgencyTier, type NegotiationProposal } from "@/lib/sponsorship/vocab";
 import { MoneyWithDiff, NegotiationTimeline, ProposalBadgeView } from "./NegotiationView";
 import { TermsComposer, type ComposedTerms } from "./TermsComposer";
 
@@ -17,6 +19,8 @@ type Props = { proposals: NegotiationProposal[]; tiers: AgencyTier[]; canValues:
 
 // Agência (0088): propostas por marca com a linha do tempo da negociação. Só o Adm vê valores e responde (aceitar,
 // recusar com nota, contrapropor); gestor vê situação, contrapartidas e público indicado.
+// 0140: a forma de pagamento proposta (permuta, performance) aparece para todos; os números, só para o Adm. Proposta
+// sem dinheiro não tem valor; a contraproposta parte da forma atual.
 export function AgencyProposalsPanel({ proposals, tiers, canValues, timeZone }: Props) {
   const t = useTranslations("sponsorship.negotiation");
   const locale = useLocale() as Locale;
@@ -42,7 +46,10 @@ export function AgencyProposalsPanel({ proposals, tiers, canValues, timeZone }: 
   }
 
   const counter = (p: NegotiationProposal, terms: ComposedTerms) =>
-    run(() => agencyReplySponsorshipAction({ proposalId: p.id, action: "counter", amountCents: terms.amountCents, perks: terms.perks, note: terms.note, public: null }));
+    run(() =>
+      agencyReplySponsorshipAction({ proposalId: p.id, action: "counter", amountCents: terms.amountCents, compensation: toDb(terms.compensation), perks: terms.perks, note: terms.note, public: null }),
+    );
+  const confirmComp = confirm?.kind === "accept" ? confirm.proposal.compensation : null;
 
   if (proposals.length === 0) return <p className="rounded-2xl border border-border bg-surface p-4 type-body-sm text-fg-muted">{t("agencyEmpty")}</p>;
 
@@ -52,8 +59,8 @@ export function AgencyProposalsPanel({ proposals, tiers, canValues, timeZone }: 
         const state = { status: p.status, awaiting: p.awaiting, pendingOwner: false };
         const actions = agencyReplyActions(state, canValues);
         const tier = tiers.find((x) => x.id === p.tierId);
-        const amount = p.status === "agreed" ? p.agreedCents : p.amountCents;
-        const perks = p.status === "agreed" ? (p.agreedPerks ?? p.perks) : p.perks;
+        // vale o acordado (acordo fechado) ou o proposto agora; sem dinheiro, sem valor (0140)
+        const { amountCents: amount, perks, compensation } = proposalTerms(p);
         const live = p.status === "open";
         return (
           <section key={p.id} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4" data-testid="agency-proposal" data-status={p.status}>
@@ -63,6 +70,7 @@ export function AgencyProposalsPanel({ proposals, tiers, canValues, timeZone }: 
               <span className="type-caption text-fg-muted">{t("tierLabel", { name: p.tierName })}</span>
             </div>
             {canValues && amount !== null ? <MoneyWithDiff cents={amount} askedCents={p.askedCents} size="lg" /> : null}
+            <CompensationView compensation={compensation} canValues={canValues} />
             {!canValues ? <p className="type-caption text-fg-muted">{t("valuesAdminOnly")}</p> : null}
             <ul className="flex list-disc flex-col gap-1 pl-6 type-body-sm text-fg">
               {perks.map((x) => (
@@ -70,13 +78,13 @@ export function AgencyProposalsPanel({ proposals, tiers, canValues, timeZone }: 
               ))}
             </ul>
             {p.endReason ? <p className="type-body-sm text-fg-muted">{t(`endReasonAgency.${p.endReason}`)}</p> : null}
-            {p.status === "agreed" && p.requestId ? <p className="type-caption text-fg-muted">{t("agencyAgreedHint")}</p> : null}
+            {p.status === "agreed" && p.requestId ? <p className="type-caption text-fg-muted">{compensation.money ? t("agencyAgreedHint") : t("agencyAgreedHintNoCash")}</p> : null}
             {live || p.history.length <= 2 ? (
-              <NegotiationTimeline rounds={p.history} basePerks={tier?.perks ?? []} timeZone={timeZone} viewer="agency" brandName={p.brandName} />
+              <NegotiationTimeline rounds={p.history} basePerks={tier?.perks ?? []} timeZone={timeZone} viewer="agency" brandName={p.brandName} canValues={canValues} />
             ) : (
               <details>
                 <summary className="inline-flex min-h-11 cursor-pointer items-center text-sm font-medium text-accent-text">{t("history", { count: p.history.length })}</summary>
-                <NegotiationTimeline rounds={p.history} basePerks={tier?.perks ?? []} timeZone={timeZone} viewer="agency" brandName={p.brandName} />
+                <NegotiationTimeline rounds={p.history} basePerks={tier?.perks ?? []} timeZone={timeZone} viewer="agency" brandName={p.brandName} canValues={canValues} />
               </details>
             )}
             {live && p.awaiting === "brand" ? <p className="type-body-sm text-fg-muted">{t("waitingBrandAgency")}</p> : null}
@@ -99,6 +107,7 @@ export function AgencyProposalsPanel({ proposals, tiers, canValues, timeZone }: 
                 basePerks={p.perks}
                 askedCents={p.askedCents}
                 initialCents={p.amountCents}
+                initialCompensation={p.compensation}
                 withAudience={false}
                 submitLabel={t("sendCounter")}
                 pending={pending}
@@ -125,7 +134,13 @@ export function AgencyProposalsPanel({ proposals, tiers, canValues, timeZone }: 
         }}
         title={confirm ? t(`confirm.agency_${confirm.kind}.title`) : ""}
         description={
-          confirm?.kind === "accept" ? t("confirm.agency_accept.body", { brand: confirm.proposal.brandName, amount: formatCents(confirm.proposal.amountCents ?? 0, locale) }) : confirm ? t("confirm.agency_decline.body") : undefined
+          confirm?.kind === "accept"
+            ? confirm.proposal.amountCents !== null
+              ? t("confirm.agency_accept.body", { brand: confirm.proposal.brandName, amount: formatCents(confirm.proposal.amountCents, locale) })
+              : t("confirm.agency_accept.bodyNoCash", { brand: confirm.proposal.brandName })
+            : confirm
+              ? t("confirm.agency_decline.body")
+              : undefined
         }
         footer={
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -144,6 +159,8 @@ export function AgencyProposalsPanel({ proposals, tiers, canValues, timeZone }: 
         }
       >
         <div className="flex flex-col gap-2">
+          {/* 0140: o que fica combinado além do valor (permuta, performance) — só o Adm aceita, e ele lê os números */}
+          {confirmComp && !isMoneyOnly(confirmComp) ? <CompensationView compensation={confirmComp} canValues={canValues} className="rounded-xl border border-border p-3" /> : null}
           <FormField label={confirm?.kind === "decline" ? t("declineNote") : t("noteOptional")} required={confirm?.kind === "decline"}>
             <Textarea value={note} maxLength={500} rows={2} onChange={(e) => setNote(e.target.value)} disabled={pending} />
           </FormField>

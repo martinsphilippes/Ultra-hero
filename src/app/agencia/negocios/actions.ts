@@ -5,6 +5,8 @@ import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { dispatchWorkEmails } from "@/lib/email/outbox";
 import { agencyFail } from "@/lib/agency/errors";
+import type { CompensationDb } from "@/lib/compensation/model";
+import { compensationDbSchema } from "@/lib/compensation/schema";
 import { requireAgency } from "@/lib/agency/server";
 import { activitySchema, confirmSchema, consultSchema, dealCreateSchema, dealMoveSchema, dealUpdateSchema, deliverablesSchema, feeSchema, recordResponseSchema } from "@/lib/deals/schemas";
 import { campaignHeroIds } from "@/lib/deals/client-label";
@@ -363,15 +365,13 @@ export async function confirmDealAction(input: z.input<typeof confirmSchema>): P
   }
 }
 
-/** 0128: como o projeto paga — permuta, valor fixo ou performance (% sobre o resultado). */
-export async function setDealCompensationAction(input: { dealId: string; type: string; pct?: number | null }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const parsed = z
-    .object({ dealId: z.uuid(), type: z.enum(["barter", "fixed", "performance"]), pct: z.number().min(0).max(100).nullable().optional() })
-    .safeParse(input);
-  if (!parsed.success) return agencyFail("invalid_input");
+/** 0140: forma de pagamento do negócio — valor, permuta e/ou performance (combináveis). Gestor+; o banco confere de novo. */
+export async function setDealCompensationAction(input: { dealId: string; compensation: CompensationDb }): Promise<{ ok: true } | { ok: false; error: string }> {
+  const parsed = z.object({ dealId: z.uuid(), compensation: compensationDbSchema }).safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_compensation");
   try {
     const supabase = await createClient();
-    const { error } = await supabase.rpc("deal_set_compensation", { p_deal: parsed.data.dealId, p_type: parsed.data.type, p_pct: parsed.data.pct ?? null });
+    const { error } = await supabase.rpc("deal_compensation_set", { p_deal: parsed.data.dealId, p_compensation: parsed.data.compensation });
     if (error) return agencyFail(error);
     revalidatePath(`/agencia/negocios/${parsed.data.dealId}`);
     return { ok: true };

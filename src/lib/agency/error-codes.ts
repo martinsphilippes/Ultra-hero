@@ -1,5 +1,7 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // forma de pagamento (0140): valor, permuta e performance
+  "invalid_compensation",
   // ata de reunião (0138): CPF/dados bancários no texto, falta o mínimo para concluir, ata já concluída
   "sensitive_data",
   "meeting_incomplete",

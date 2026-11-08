@@ -11,12 +11,15 @@ import { dispatchWorkEmails } from "@/lib/email/outbox";
 import { createClient } from "@/lib/supabase/server";
 import { linkToEvent } from "@/lib/culture/link";
 import { VALUE_MODELS } from "@/lib/value-model/model";
+import { compensationDbSchema } from "@/lib/compensation/schema";
 import { getTalentContext } from "@/lib/talent/server";
-import { CALL_DECISIONS, MAX_PROPOSAL_TALENTS, callFormSchema, callToDb, mediaKitUrlValid, validateCall, type CallFormInput } from "./logic";
+import { CALL_DECISIONS, MAX_PROPOSAL_TALENTS, callFormSchema, callToDb, counterTermsOk, hasMoney, mediaKitUrlValid, validateCall, type CallFormInput } from "./logic";
 
 // Chamada da marca (0089). Marca: a equipe monta e pede ao dono; o dono publica, decide e aprova rodadas. Agência:
 // gestor+ monta a proposta, só o Adm grava valor, envia e responde. Creator: "Tenho interesse". As RPCs conferem
 // tudo de novo e geram os avisos (sino e fila de e-mail, que sai depois da resposta).
+// 0140: chamada, proposta e contraproposta levam a forma de pagamento (valor, permuta e/ou performance); sem dinheiro
+// não vai valor nem modelo por Hero, e o acordo pode sair só com permuta/performance.
 
 export type BrandCallResult = { ok: true; message: string; id?: string; status?: string } | { ok: false; error: string };
 
@@ -34,6 +37,8 @@ const isoDate = z.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)]
 export async function saveBrandCallAction(input: CallFormInput, publish: boolean): Promise<BrandCallResult> {
   const ctx = await requireBrand();
   if (!ctx.role) return agencyFail("forbidden");
+  // 0140: forma de pagamento inválida tem mensagem própria (o banco confere de novo)
+  if (input?.compensation !== undefined && !compensationDbSchema.safeParse(input.compensation).success) return agencyFail("invalid_compensation");
   const parsed = callFormSchema.safeParse(input);
   if (!parsed.success) return agencyFail("invalid_input");
   const v = parsed.data;
@@ -145,12 +150,36 @@ const termsSchema = z.object({
   /** 0096: a contraproposta pode mudar o modelo de valor e o máximo de Heros (sem informar, ficam como estão). */
   valueModel: z.enum(VALUE_MODELS).nullable().optional(),
   maxHeroes: z.number().int().min(1).max(50).nullable().optional(),
+  /** 0140: a contraproposta pode mudar a forma de pagamento (sem informar, fica a atual). Sem dinheiro, sem valor. */
+  compensation: compensationDbSchema.nullable().optional(),
 });
 
 function termsValid(d: z.infer<typeof termsSchema>): boolean {
   if (d.action !== "counter") return true;
-  if (d.amountCents === null || d.deliverables.length === 0) return false;
-  return d.valueModel !== "por_heroi" || (d.maxHeroes ?? null) !== null;
+  return counterTermsOk({ money: hasMoney(d), amountCents: d.amountCents, deliverables: d.deliverables, valueModel: d.valueModel, maxHeroes: d.maxHeroes });
+}
+
+/** Argumentos da resposta (marca ou agência): só a contraproposta leva termos; sem dinheiro, sem valor nem modelo por Hero. */
+function replyArgs(d: z.infer<typeof termsSchema>) {
+  const counter = d.action === "counter";
+  const money = hasMoney(d);
+  return {
+    p_proposal: d.proposalId,
+    p_action: d.action,
+    p_amount_cents: counter && money ? d.amountCents : null,
+    p_deliverables: counter ? (d.deliverables as never) : null,
+    p_deliver_by: counter && d.deliverBy ? d.deliverBy : null,
+    p_note: d.note,
+    p_value_model: counter ? (money ? (d.valueModel ?? null) : "fixo") : null,
+    p_max_heroes: counter && money && d.valueModel === "por_heroi" ? (d.maxHeroes ?? null) : null,
+    p_compensation: counter ? ((d.compensation ?? null) as never) : null,
+  };
+}
+
+/** Erro de validação: forma de pagamento inválida tem mensagem própria. */
+function termsFail(input: unknown) {
+  const c = input && typeof input === "object" ? (input as { compensation?: unknown }).compensation : undefined;
+  return agencyFail(c !== undefined && c !== null && !compensationDbSchema.safeParse(c).success ? "invalid_compensation" : "invalid_input");
 }
 
 /** Marca responde à proposta da agência (equipe: aceitar/contrapropor vão para o dono). */
@@ -158,20 +187,12 @@ export async function brandCallReplyAction(input: z.input<typeof termsSchema>): 
   const ctx = await requireBrand();
   if (!ctx.role) return agencyFail("forbidden");
   const parsed = termsSchema.safeParse(input);
-  if (!parsed.success || !termsValid(parsed.data)) return agencyFail("invalid_input");
+  if (!parsed.success) return termsFail(input);
+  if (!termsValid(parsed.data)) return agencyFail("invalid_input");
   const d = parsed.data;
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("brand_call_reply", {
-      p_proposal: d.proposalId,
-      p_action: d.action,
-      p_amount_cents: d.action === "counter" ? d.amountCents : null,
-      p_deliverables: d.action === "counter" ? (d.deliverables as never) : null,
-      p_deliver_by: d.action === "counter" && d.deliverBy ? d.deliverBy : null,
-      p_note: d.note,
-      p_value_model: d.action === "counter" ? (d.valueModel ?? null) : null,
-      p_max_heroes: d.action === "counter" && d.valueModel === "por_heroi" ? (d.maxHeroes ?? null) : null,
-    } as never);
+    const { data, error } = await supabase.rpc("brand_call_reply", replyArgs(d));
     if (error) return agencyFail(error);
     refresh();
     revalidatePath("/marca/campanhas");
@@ -219,14 +240,19 @@ const proposalSchema = z.object({
   deliverBy: isoDate,
   note: z.string().trim().max(1000),
   send: z.boolean(),
+  /** 0140: forma de pagamento da proposta (só o Adm muda; sem ela o banco mantém a da proposta ou a da chamada). */
+  compensation: compensationDbSchema.nullable().optional(),
 });
 
-/** Gestor+ salva o rascunho; o Adm grava o valor e, com send, envia à marca. */
+/** Gestor+ salva o rascunho; o Adm grava o valor e a forma de pagamento e, com send, envia à marca. */
 export async function saveCallProposalAction(input: z.input<typeof proposalSchema>): Promise<BrandCallResult> {
   const ctx = await requireAgency("manager");
   const parsed = proposalSchema.safeParse(input);
-  if (!parsed.success || parsed.data.talents.some((x) => !mediaKitUrlValid(x.mediaKitUrl))) return agencyFail("invalid_input");
+  if (!parsed.success) return termsFail(input);
+  if (parsed.data.talents.some((x) => !mediaKitUrlValid(x.mediaKitUrl))) return agencyFail("invalid_input");
   const d = parsed.data;
+  // sem dinheiro (só permuta/performance): sem valor, modelo fixo e sem máximo (o banco força o mesmo)
+  const money = hasMoney(d);
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.rpc("agency_brand_call_proposal_save", {
@@ -234,11 +260,12 @@ export async function saveCallProposalAction(input: z.input<typeof proposalSchem
       p_agency: ctx.agency.id,
       p_data: {
         talents: d.talents.map((x) => ({ talent_id: x.talentId, deliverables: x.deliverables, media_kit_url: x.mediaKitUrl })),
-        amount_cents: d.amountCents,
-        value_model: d.valueModel,
-        max_heroes: d.valueModel === "por_heroi" ? d.maxHeroes : null,
+        amount_cents: money ? d.amountCents : null,
+        value_model: money ? d.valueModel : "fixo",
+        max_heroes: money && d.valueModel === "por_heroi" ? d.maxHeroes : null,
         deliver_by: d.deliverBy || null,
         note: d.note,
+        ...(d.compensation ? { compensation: d.compensation } : {}),
       } as never,
     });
     if (error) return agencyFail(error);
@@ -280,21 +307,13 @@ export async function discardCallProposalAction(input: z.input<typeof proposalId
 export async function agencyCallReplyAction(input: z.input<typeof termsSchema>): Promise<BrandCallResult> {
   await requireAgency("admin");
   const parsed = termsSchema.safeParse(input);
-  if (!parsed.success || !termsValid(parsed.data)) return agencyFail("invalid_input");
+  if (!parsed.success) return termsFail(input);
+  if (!termsValid(parsed.data)) return agencyFail("invalid_input");
   const d = parsed.data;
   if (d.action === "decline" && d.note.length < 3) return agencyFail("note_required");
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("agency_brand_call_reply", {
-      p_proposal: d.proposalId,
-      p_action: d.action,
-      p_amount_cents: d.action === "counter" ? d.amountCents : null,
-      p_deliverables: d.action === "counter" ? (d.deliverables as never) : null,
-      p_deliver_by: d.action === "counter" && d.deliverBy ? d.deliverBy : null,
-      p_note: d.note,
-      p_value_model: d.action === "counter" ? (d.valueModel ?? null) : null,
-      p_max_heroes: d.action === "counter" && d.valueModel === "por_heroi" ? (d.maxHeroes ?? null) : null,
-    } as never);
+    const { data, error } = await supabase.rpc("agency_brand_call_reply", replyArgs(d));
     if (error) return agencyFail(error);
     refresh();
     await dispatchWorkEmails();

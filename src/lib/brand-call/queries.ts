@@ -18,6 +18,7 @@ import {
 
 // Leituras fechadas da chamada da marca (0089): o banco decide o escopo (a própria marca; gestor+ da agência do
 // alvo, valor só para o Adm; o creator da agência do alvo, sem valor). Sem a migração: { available: false }.
+// 0140: a forma de pagamento vem junto (sem os números para quem não lê valores).
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
@@ -43,11 +44,12 @@ export async function listCallAgencyOptions(brandId: string): Promise<AgencyOpti
   return toAgencyOptions(data);
 }
 
-export async function listAgencyBrandCalls(agencyId: string): Promise<{ available: boolean; items: AgencyBrandCallRow[] }> {
+/** canValues = false (gestor): a forma de pagamento (0140) volta sem os números, mesmo que o banco os mande. */
+export async function listAgencyBrandCalls(agencyId: string, opts: { canValues?: boolean } = {}): Promise<{ available: boolean; items: AgencyBrandCallRow[] }> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("agency_brand_calls", { p_agency: agencyId });
   if (error) return { available: !isMissingSchema(error), items: [] };
-  return { available: true, items: toAgencyBrandCalls(data) };
+  return { available: true, items: toAgencyBrandCalls(data, opts.canValues ?? true) };
 }
 
 export async function getAgencyBrandCall(id: string, agencyId: string): Promise<AgencyBrandCallDetail | null> {

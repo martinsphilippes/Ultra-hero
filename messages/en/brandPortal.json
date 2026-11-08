@@ -175,7 +175,7 @@
         "audience": "2. Audience",
         "when": "3. Period and format",
         "deliverables": "4. Networks and deliverables",
-        "budget": "5. Value and notes"
+        "budget": "5. Payment and notes"
       },
       "forCreator": "Proposal addressed to {name}. The agency may suggest other heroes.",
       "title": "Campaign name",
@@ -222,6 +222,7 @@
       "budgetAgreedHint": "Amount agreed in the sponsorship (can't change here).",
       "budgetNegotiatingHint": "Sponsorship: the amount comes from the negotiation on the opportunity.",
       "budgetNegotiatingPlaceholder": "To be agreed",
+      "compensationAgreedHint": "Payment type agreed (can't change here).",
       "valueErrors": {
         "value_per_hero_required": "For a per-hero value, enter what each hero receives.",
         "max_heroes_required": "For a per-hero value, enter the maximum number of heroes (1 to 50)."

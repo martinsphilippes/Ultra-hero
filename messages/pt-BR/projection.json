@@ -1,6 +1,6 @@
 {
   "title": "Projeção",
-  "lead": "Valores de campanha: negócios fechados e em negociação, acordos e cotas livres de patrocínio e as chamadas abertas das marcas. Permuta não entra.",
+  "lead": "Valores de campanha: negócios fechados e em negociação, acordos e cotas livres de patrocínio e as chamadas abertas das marcas. Permuta e performance aparecem à parte, pelo valor estimado.",
   "periodLabel": "Período da projeção",
   "total": "Total",
   "segment": {
@@ -30,13 +30,9 @@
     "title": "Projeção {period}",
     "open": "Ver projeção"
   },
-  "compensation": {
-    "label": "Como o projeto paga",
-    "hint": "Permuta (troca por produto ou serviço), valor fixo ou performance (% sobre o resultado).",
-    "barter": "Permuta",
-    "fixed": "Valor fixo",
-    "performance": "Performance",
-    "pct": "Porcentagem",
-    "pctPlaceholder": "% sobre o resultado, ex.: 10"
-  }
+  "extras": {
+    "barter": "Em permuta (estimado)",
+    "performance": "Em performance (estimado)"
+  },
+  "extrasLine": "+ {value} em permuta e performance (estimado)"
 }

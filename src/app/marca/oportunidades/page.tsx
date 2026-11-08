@@ -12,6 +12,7 @@ import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { listBrandCalls } from "@/lib/brand-call/queries";
 import { getBrandContext } from "@/lib/brand-portal/server";
 import { formatCents } from "@/lib/deals/schemas";
+import { tiersPaySummary } from "@/lib/sponsorship/negotiation";
 import { listBrandSponsorships } from "@/lib/sponsorship/queries";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Oportunidades de patrocínio que a agência ofereceu a esta marca (0085): as abertas primeiro, com a resposta da
 // marca. 0088: o valor PEDIDO (a menor cota com vaga, ou "Valor a combinar") e em quem está a vez da negociação.
+// 0140: cotas sem dinheiro aparecem como "Permuta"/"Performance" (nunca "a combinar"), ao lado do menor valor.
 // Nunca as respostas nem as propostas de outras marcas.
 // 0089: aba "Minhas chamadas" (?aba=chamadas) — a necessidade que parte da marca, com as propostas das agências.
 type Props = { searchParams: Promise<{ aba?: string }> };
@@ -44,7 +46,12 @@ export default async function BrandSponsorshipsPage({ searchParams }: Props) {
     />
   );
   if (tab === "calls") return <BrandCallsTab tabs={tabs} brandId={ctx.brand.id} canCreate={Boolean(ctx.role)} />;
-  const [t, locale, list] = await Promise.all([getTranslations("sponsorship.brand"), getLocale() as Promise<Locale>, listBrandSponsorships(ctx.brand.id)]);
+  const [t, tc, locale, list] = await Promise.all([
+    getTranslations("sponsorship.brand"),
+    getTranslations("compensation.kinds"),
+    getLocale() as Promise<Locale>,
+    listBrandSponsorships(ctx.brand.id),
+  ]);
   if (!list.available) {
     return (
       <div className="rounded-2xl border border-border bg-surface" data-testid="module-unavailable">
@@ -52,12 +59,12 @@ export default async function BrandSponsorshipsPage({ searchParams }: Props) {
       </div>
     );
   }
+  // ex.: "A partir de R$ 3.000,00 · Permuta", "Permuta · Performance", "Valor a combinar"
   const priceLine = (tiers: (typeof list.items)[number]["tiers"]) => {
-    const priced = tiers.filter((z) => !z.full && z.priceCents !== null).map((z) => z.priceCents as number);
-    if (tiers.length > 0 && tiers.every((z) => z.full)) return t("allTiersFull");
-    if (priced.length === 0) return t("priceToCombine");
-    const min = Math.min(...priced);
-    return tiers.filter((z) => !z.full).length > 1 ? t("priceFrom", { amount: formatCents(min, locale) }) : formatCents(min, locale);
+    const s = tiersPaySummary(tiers);
+    if (s.full) return t("allTiersFull");
+    const money = s.price ? (s.price.from ? t("priceFrom", { amount: formatCents(s.price.cents, locale) }) : formatCents(s.price.cents, locale)) : s.toCombine ? t("priceToCombine") : null;
+    return [money, ...s.kinds.map((k) => tc(k))].filter(Boolean).join(" · ");
   };
   return (
     <div className="flex flex-col gap-5" data-testid="brand-sponsorships">

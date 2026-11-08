@@ -12297,6 +12297,12 @@ drop table t_s94;
 -- o acordo congela, conta como vencedora, cria a campanha com valor/contrapartidas/público e respeita o limite da cota;
 -- cota esgotada encerra as outras; prazo vencido não aceita proposta nova; creator vê o acordo sem valor. S14 segue 18.
 \ir ../migrations/0088_patrocinio_cotas_negociacao.sql
+-- banco que já tem a 0140 (forma de pagamento): a migração acima recria as assinaturas antigas ao lado das novas; dentro
+-- da transação de teste, volta ao estado dela (o S140 aplica a 0140 de novo)
+drop function if exists public.brand_sponsorship_propose(uuid, uuid, uuid, text, bigint, text[], text, jsonb, jsonb);
+drop function if exists public.brand_sponsorship_reply(uuid, text, bigint, text[], text, jsonb, jsonb);
+drop function if exists public.agency_sponsorship_reply(uuid, text, bigint, text[], text, jsonb);
+drop function if exists public.sponsorship_terms_check(bigint, text[], jsonb);
 select tests.su();
 insert into auth.users (id, email) values
   ('95000000-0000-4000-8000-000000000951', 's95-adm@test.local'),
@@ -12659,6 +12665,11 @@ drop table t_s95;
 -- de teste, volta ao estado da 0089 (o S103 aplica a 0096 de novo)
 drop function if exists public.brand_call_reply(uuid, text, bigint, jsonb, date, text, text, int);
 drop function if exists public.agency_brand_call_reply(uuid, text, bigint, jsonb, date, text, text, int);
+-- banco que já tem a 0140 (forma de pagamento): a migração acima recria as assinaturas antigas ao lado das novas; dentro
+-- da transação de teste, volta ao estado dela (o S140 aplica a 0140 de novo)
+drop function if exists public.brand_call_reply(uuid, text, bigint, jsonb, date, text, text, int, jsonb);
+drop function if exists public.agency_brand_call_reply(uuid, text, bigint, jsonb, date, text, text, int, jsonb);
+drop function if exists public.brand_call_terms_check(bigint, jsonb, jsonb);
 select tests.su();
 insert into auth.users (id, email) values
   ('96000000-0000-4000-8000-000000000961', 's96-adm-a@test.local'),
@@ -14588,6 +14599,10 @@ delete from auth.users where id::text like 'a1020000-%';
 -- nunca cachê; o gestor lê modelo/máximo sem valor e o montador sem nenhum R$ (só o Adm vê cachês); outra marca/agência, colaborador
 -- e visitante não leem nada; o creator não vê modelo nem valor; S14 segue 18.
 \ir ../migrations/0096_modelo_valor_montador_elenco.sql
+-- banco que já tem a 0140 (forma de pagamento): a migração acima recria as assinaturas antigas ao lado das novas; dentro
+-- da transação de teste, volta ao estado dela (o S140 aplica a 0140 de novo)
+drop function if exists public.brand_call_reply(uuid, text, bigint, jsonb, date, text, text, int, jsonb);
+drop function if exists public.agency_brand_call_reply(uuid, text, bigint, jsonb, date, text, text, int, jsonb);
 select tests.su();
 insert into auth.users (id, email) values
   ('b1030000-0000-4000-8000-000000000001','s103-adm-a@test.local'),('b1030000-0000-4000-8000-000000000002','s103-gestor-a@test.local'),
@@ -16000,6 +16015,12 @@ select tests.ok('S111 validação de entregáveis conhece groscove_ultra',
 -- oferecido (por Hero sem dividir pelo máximo) e o período, e leva o negócio a 'negotiation'. Gestor lê só a
 -- situação (sem valor nem nota); outra marca, quem não é de nada e o visitante não leem. S14 segue 18.
 \ir ../migrations/0106_negociacao_proposta_marca.sql
+-- banco que já tem a 0140 (forma de pagamento): a migração acima recria as assinaturas antigas ao lado das novas; dentro
+-- da transação de teste, volta ao estado dela (o S140 aplica a 0140 de novo)
+drop function if exists public.agency_deal_offer_reply(uuid, text, bigint, text, int, date, date, text, jsonb);
+drop function if exists public.brand_deal_offer_reply(uuid, text, bigint, text, int, date, date, text, jsonb);
+drop function if exists public.deal_offer_record(uuid, text, text, bigint, text, int, date, date, text, jsonb);
+drop function if exists public.deal_offer_terms_check(bigint, text, int, date, date, jsonb);
 select tests.su();
 insert into auth.users (id, email) values
   ('a1120000-0000-4000-8000-000000000001', 's112-adm@test.local'),
@@ -16542,6 +16563,9 @@ drop table tests.s113;
 -- Aviso de repasse (Hero e Adm), negócio perdido cancela o previsto, cliente só Hero fica fora. Cotas: modelo fixo
 -- (pedido por marca = o que falta ÷ vagas) ou por marca; proposta acima do total é recusada. S14 segue 18.
 \ir ../migrations/0108_condicoes_pagamento.sql
+-- banco que já tem a 0140 (forma de pagamento): a migração acima recria as assinaturas antigas ao lado das novas; dentro
+-- da transação de teste, volta ao estado dela (o S140 aplica a 0140 de novo)
+drop function if exists public.brand_sponsorship_propose(uuid, uuid, uuid, text, bigint, text[], text, jsonb, jsonb);
 select tests.su();
 insert into auth.users (id, email) values
   ('a1140000-0000-4000-8000-000000000001', 's114-adm@test.local'),
@@ -19942,6 +19966,239 @@ delete from public.agency_members where agency_id::text like 'c1390000-%';
 delete from public.agencies where id::text like 'c1390000-%';
 delete from auth.users where id::text like 'c1390000-%';
 drop table tests.s139;
+
+-- ================================================================ S140 · Forma de pagamento: valor, permuta e performance (0140)
+-- Negócio e oportunidade podem ser pagos em valor, permuta e/ou performance (combináveis). Permuta: o que oferece + valor
+-- estimado; performance: regra (% das vendas, R$ por venda/cadastro) + como mede + estimativa. Sem dinheiro, os fluxos
+-- não exigem valor: campanha da marca, aceite e contraproposta no negócio, chamada (proposta e acordo) e cota de patrocínio
+-- (proposta e acordo); a campanha herda a forma acordada; gestor, equipe e Hero leem a forma sem números; a Projeção soma
+-- permuta e performance à parte. Último cenário: os dados ficam para o rollback do fim.
+\ir ../migrations/0140_forma_de_pagamento.sql
+select tests.su();
+create temp table t_s140 (k text primary key, v text);
+grant all on t_s140 to anon, authenticated, service_role;
+
+select tests.ok('S140 regra: só valor, permuta com o que oferece, performance com regra e como mede; nada marcado ou campo errado não vale',
+  public.compensation_valid('{"money": true, "barter": null, "performance": null}')
+  and public.compensation_valid('{"money": false, "barter": {"offer": "Kit de produtos", "value_cents": 30000}, "performance": null}')
+  and public.compensation_valid('{"money": true, "barter": null, "performance": {"kind": "percent", "rate": 7.5, "measure": "cupom HERO10", "estimate_cents": null}}')
+  and not public.compensation_valid('{"money": false, "barter": null, "performance": null}')
+  and not public.compensation_valid('{"money": false, "barter": {"offer": "ab", "value_cents": null}, "performance": null}')
+  and not public.compensation_valid('{"money": true, "barter": null, "performance": {"kind": "percent", "rate": 101, "measure": "cupom", "estimate_cents": null}}')
+  and not public.compensation_valid('{"money": true, "barter": null, "performance": {"kind": "percent", "rate": 1.234, "measure": "cupom", "estimate_cents": null}}')
+  and not public.compensation_valid('{"money": true, "barter": null, "performance": {"kind": "per_sale", "rate": 10.5, "measure": "link", "estimate_cents": null}}')
+  and not public.compensation_valid('{"money": true, "barter": null, "performance": {"kind": "percent", "rate": 10, "measure": "", "estimate_cents": null}}')
+  and not public.compensation_valid('{"money": true, "extra": 1}')
+  and public.compensation_clean('{"money": false, "barter": {"offer": "  Kit  "}}') = '{"money": false, "barter": {"offer": "Kit", "value_cents": null}, "performance": null}'::jsonb
+  and public.compensation_clean(null) = '{"money": true, "barter": null, "performance": null}'::jsonb
+  and public.compensation_public('{"money": true, "barter": {"offer": "Kit", "value_cents": 9}, "performance": {"kind": "percent", "rate": 5, "measure": "cupom", "estimate_cents": 7}}')
+      = '{"money": true, "barter": {"offer": "Kit", "value_cents": null}, "performance": {"kind": "percent", "rate": null, "measure": "cupom", "estimate_cents": null}}'::jsonb);
+select tests.expect_error('S140 forma sem nada marcado é recusada', $q$select public.compensation_clean('{"money": false}')$q$, 'invalid_compensation');
+select tests.ok('S140 estrutura: colunas novas no lugar do tipo único; nada novo para o visitante; S14 segue 18',
+  not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'deals' and column_name in ('compensation_type', 'performance_pct'))
+  and not exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'deal_set_compensation')
+  and (select count(*) from information_schema.columns where table_schema = 'public' and column_name = 'compensation'
+       and table_name in ('deals', 'campaign_request_budgets', 'deal_offer_rounds', 'brand_calls', 'brand_call_proposals', 'brand_call_rounds',
+                          'sponsorship_tiers', 'sponsorship_proposals', 'sponsorship_rounds')) = 9
+  and not has_function_privilege('anon', 'public.deal_compensation_set(uuid, jsonb)', 'execute')
+  and not has_function_privilege('authenticated', 'public.deal_offer_record(uuid, text, text, bigint, text, int, date, date, text, jsonb)', 'execute')
+  and (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname in ('agency_deal_offer_reply', 'brand_deal_offer_reply', 'brand_call_reply',
+       'agency_brand_call_reply', 'brand_sponsorship_propose', 'brand_sponsorship_reply', 'agency_sponsorship_reply', 'brand_call_terms_check',
+       'sponsorship_terms_check', 'deal_offer_terms_check', 'deal_offer_record')) = 11
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+insert into auth.users (id, email) values
+  ('c1400000-0000-4000-8000-000000000001', 'adm@s140.test'), ('c1400000-0000-4000-8000-000000000002', 'gestor@s140.test'), ('c1400000-0000-4000-8000-000000000003', 'colab@s140.test'), ('c1400000-0000-4000-8000-000000000004', 'hero@s140.test'), ('c1400000-0000-4000-8000-000000000005', 'dona@s140.test'), ('c1400000-0000-4000-8000-000000000006', 'dono2@s140.test');
+insert into public.agencies (id, slug, name) values ('c1400000-0000-4000-8000-0000000000a1', 's140', 'Agência S140');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('c1400000-0000-4000-8000-0000000000a1', 'c1400000-0000-4000-8000-000000000001', 'admin', 'Adm S140'), ('c1400000-0000-4000-8000-0000000000a1', 'c1400000-0000-4000-8000-000000000002', 'manager', 'Gestor S140'), ('c1400000-0000-4000-8000-0000000000a1', 'c1400000-0000-4000-8000-000000000003', 'staff', 'Colab S140');
+insert into public.brands (id, slug, name, site_url) values ('c1400000-0000-4000-8000-0000000000b1', 's140-marca', 'Marca S140', 'https://marca.s140.test'), ('c1400000-0000-4000-8000-0000000000b2', 's140-marca-dois', 'Marca Dois S140', 'https://dois.s140.test');
+insert into public.agency_brands (agency_id, brand_id) values ('c1400000-0000-4000-8000-0000000000a1', 'c1400000-0000-4000-8000-0000000000b1'), ('c1400000-0000-4000-8000-0000000000a1', 'c1400000-0000-4000-8000-0000000000b2');
+insert into public.brand_members (brand_id, user_id, role, display_name) values ('c1400000-0000-4000-8000-0000000000b1', 'c1400000-0000-4000-8000-000000000005', 'owner', 'Dona S140'), ('c1400000-0000-4000-8000-0000000000b2', 'c1400000-0000-4000-8000-000000000006', 'owner', 'Dono Dois S140');
+insert into public.talent_profiles (id, agency_id, display_name, user_id, catalog_visible, consent_at) values
+  ('c1400000-0000-4000-8000-0000000000e1', 'c1400000-0000-4000-8000-0000000000a1', 'Hero Um S140', 'c1400000-0000-4000-8000-000000000004', true, now() - interval '30 days'),
+  ('c1400000-0000-4000-8000-0000000000e2', 'c1400000-0000-4000-8000-0000000000a1', 'Hero Dois S140', null, true, now() - interval '30 days');
+insert into public.deals (id, agency_id, brand_id, title, stage, brand_visible, owner_id) values ('c1400000-0000-4000-8000-0000000000d1', 'c1400000-0000-4000-8000-0000000000a1', 'c1400000-0000-4000-8000-0000000000b1', 'Negócio S140', 'shortlist', true, 'c1400000-0000-4000-8000-000000000002');
+
+-- 1) negócio da agência: o gestor informa ao lançar (valor + permuta + performance); depois só o Adm ajusta; colaborador nunca
+select tests.login('c1400000-0000-4000-8000-000000000002', 'gestor@s140.test');
+select tests.expect_error('S140 forma inválida no negócio é recusada', $q$select public.deal_compensation_set('c1400000-0000-4000-8000-0000000000d1', '{"money": true, "barter": {"offer": ""}}')$q$, 'invalid_compensation');
+select public.deal_compensation_set('c1400000-0000-4000-8000-0000000000d1', '{"money": true, "barter": {"offer": "Kit de skincare", "value_cents": 30000},
+  "performance": {"kind": "percent", "rate": 10, "measure": "cupom HERO10", "estimate_cents": 50000}}');
+select tests.expect_error('S140 depois de lançado, o gestor não muda os valores (só o Adm)', $q$select public.deal_compensation_set('c1400000-0000-4000-8000-0000000000d1', '{"money": true, "barter": null, "performance": null}')$q$, 'forbidden');
+select tests.login('c1400000-0000-4000-8000-000000000003', 'colab@s140.test');
+select tests.expect_error('S140 colaborador não muda a forma de pagamento', $q$select public.deal_compensation_set('c1400000-0000-4000-8000-0000000000d1', '{"money": true}')$q$, 'forbidden');
+select tests.login('c1400000-0000-4000-8000-000000000001', 'adm@s140.test');
+select tests.ok('S140 o Adm ajusta a forma do negócio', (public.deal_compensation_set('c1400000-0000-4000-8000-0000000000d1', '{"money": true, "barter": {"offer": "Kit de skincare", "value_cents": 30000},
+  "performance": {"kind": "percent", "rate": 10, "measure": "cupom HERO10", "estimate_cents": 50000}}') ->> 'money')::boolean);
+select tests.su();
+select tests.ok('S140 negócio guarda valor + permuta + performance e registra na auditoria',
+  (select (compensation ->> 'money')::boolean and compensation -> 'barter' ->> 'offer' = 'Kit de skincare' and (compensation -> 'performance' ->> 'rate')::numeric = 10
+   from public.deals where id = 'c1400000-0000-4000-8000-0000000000d1')
+  and exists (select 1 from public.admin_audit where action = 'deal.compensation' and resource_id = 'c1400000-0000-4000-8000-0000000000d1'));
+
+-- 2) campanha da marca só com permuta: sem valor, modelo fixo; o negócio nasce com a permuta; a agência aceita sem valor
+select tests.login('c1400000-0000-4000-8000-000000000005', 'dona@s140.test');
+insert into t_s140 values ('req', jsonb_build_object('title', 'Campanha S140', 'objective', 'awareness', 'period_start', (current_date + 20)::text,
+  'period_end', (current_date + 30)::text, 'networks', jsonb_build_array('instagram'), 'deliverables', '[{"kind":"post","quantity":1,"network":"instagram"}]'::jsonb)::text);
+insert into t_s140 values ('r1', public.brand_request_save(null, 'c1400000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s140 where k = 'req')
+  || '{"value_model": "por_heroi", "budget_max_cents": 200000, "max_heroes": 2,
+       "compensation": {"money": false, "barter": {"offer": "Kit de produtos + jantar", "value_cents": 40000}, "performance": null}}')::text);
+insert into t_s140 values ('r2', public.brand_request_save(null, 'c1400000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s140 where k = 'req') || '{"title": "Campanha valor S140", "budget_note": "a combinar"}')::text);
+insert into t_s140 values ('d2', public.brand_request_submit((select v::uuid from t_s140 where k = 'r1'))::text);
+insert into t_s140 values ('d3', public.brand_request_submit((select v::uuid from t_s140 where k = 'r2'))::text);
+select tests.su();
+select tests.ok('S140 campanha só com permuta: valor, modelo por Hero e máximo descartados; o negócio nasce com a permuta',
+  (select budget_max_cents is null and budget_min_cents is null and value_model = 'fixo' and max_heroes is null
+          and not (compensation ->> 'money')::boolean and compensation -> 'barter' ->> 'offer' = 'Kit de produtos + jantar'
+   from public.campaign_request_budgets where request_id = (select v::uuid from t_s140 where k = 'r1'))
+  and (select not (compensation ->> 'money')::boolean and (compensation -> 'barter' ->> 'value_cents')::bigint = 40000 from public.deals where id = (select v::uuid from t_s140 where k = 'd2'))
+  and (select (compensation ->> 'money')::boolean from public.deals where id = (select v::uuid from t_s140 where k = 'd3')));
+select tests.login('c1400000-0000-4000-8000-000000000001', 'adm@s140.test');
+select tests.ok('S140 a agência aceita a proposta só com permuta (sem valor)', public.agency_deal_offer_reply((select v::uuid from t_s140 where k = 'd2'), 'accept') = 'agreed');
+select tests.expect_error('S140 proposta em dinheiro sem valor segue sem aceite (contraproposta)', $q$select public.agency_deal_offer_reply((select v::uuid from t_s140 where k = 'd3'), 'accept')$q$, 'invalid_state');
+select tests.ok('S140 contraproposta da agência: valor + permuta',
+  public.agency_deal_offer_reply((select v::uuid from t_s140 where k = 'd3'), 'counter', 300000, 'fixo', null, null, null, 'proposta S140',
+    '{"money": true, "barter": {"offer": "Kit", "value_cents": 10000}, "performance": null}') = 'countered');
+select tests.login('c1400000-0000-4000-8000-000000000005', 'dona@s140.test');
+select tests.ok('S140 contraproposta da marca só com permuta: o valor enviado é descartado',
+  public.brand_deal_offer_reply((select v::uuid from t_s140 where k = 'd3'), 'counter', 999, 'por_heroi', 3, null, null, 'só permuta',
+    '{"money": false, "barter": {"offer": "Kit", "value_cents": 10000}, "performance": null}') = 'countered');
+select tests.login('c1400000-0000-4000-8000-000000000001', 'adm@s140.test');
+select tests.ok('S140 a agência aceita a contraproposta só com permuta', public.agency_deal_offer_reply((select v::uuid from t_s140 where k = 'd3'), 'accept') = 'agreed');
+select tests.su();
+select tests.ok('S140 acordos sem valor: rodadas sem valor, campanha e negócio com a forma acordada',
+  (select amount_cents is null and value_model = 'fixo' and compensation -> 'barter' ->> 'offer' = 'Kit de produtos + jantar'
+   from public.deal_offer_rounds where deal_id = (select v::uuid from t_s140 where k = 'd2') and action = 'accept')
+  and (select amount_cents is null and value_model = 'fixo' and max_heroes is null from public.deal_offer_rounds where deal_id = (select v::uuid from t_s140 where k = 'd3') and side = 'brand' and action = 'counter')
+  and (select amount_cents = 300000 and (compensation ->> 'money')::boolean from public.deal_offer_rounds where deal_id = (select v::uuid from t_s140 where k = 'd3') and side = 'agency' and action = 'counter')
+  and (select budget_max_cents is null and not (compensation ->> 'money')::boolean from public.campaign_request_budgets where request_id = (select v::uuid from t_s140 where k = 'r2'))
+  and (select not (compensation ->> 'money')::boolean and compensation -> 'barter' ->> 'offer' = 'Kit' from public.deals where id = (select v::uuid from t_s140 where k = 'd3')));
+select tests.login('c1400000-0000-4000-8000-000000000002', 'gestor@s140.test');
+select tests.ok('S140 gestor lê o acordo do negócio com a permuta, sem números',
+  (select j -> 'agreed_terms' -> 'compensation' -> 'barter' ->> 'offer' = 'Kit' and j -> 'agreed_terms' -> 'compensation' -> 'barter' -> 'value_cents' = 'null'::jsonb
+   from public.deal_offer_rounds_json((select v::uuid from t_s140 where k = 'd3')) j));
+
+-- 3) chamada da marca sem dinheiro (permuta + R$ por venda): proposta e acordo sem valor; a campanha herda
+select tests.login('c1400000-0000-4000-8000-000000000005', 'dona@s140.test');
+insert into t_s140 values ('c1', public.brand_call_save('c1400000-0000-4000-8000-0000000000b1', null, jsonb_build_object('title', 'Chamada S140', 'objective', 'launch', 'description', 'Teste',
+  'starts_on', (current_date + 20)::text, 'ends_on', (current_date + 30)::text, 'location', '', 'deliverables', '[{"kind":"reels","quantity":1,"network":"instagram"}]'::jsonb,
+  'creators_wanted', 2, 'niches', jsonb_build_array('Beleza'), 'networks', jsonb_build_array('instagram'), 'budget_cents', 200000, 'budget_display', 'exact',
+  'respond_by', (now() + interval '10 days')::text, 'audience', 'my_agencies', 'value_model', 'por_heroi', 'max_heroes', 2,
+  'compensation', '{"money": false, "barter": {"offer": "Produtos da linha nova", "value_cents": 25000},
+                    "performance": {"kind": "per_sale", "rate": 1500, "measure": "link rastreado", "estimate_cents": null}}'::jsonb))::text);
+select public.brand_call_submit((select v::uuid from t_s140 where k = 'c1'), null);
+select tests.su();
+select tests.ok('S140 chamada sem dinheiro: sem verba, modelo fixo, publicada com a forma',
+  (select budget_cents is null and budget_display = 'open' and value_model = 'fixo' and max_heroes is null and status = 'open'
+          and compensation -> 'performance' ->> 'kind' = 'per_sale' from public.brand_calls where id = (select v::uuid from t_s140 where k = 'c1')));
+select tests.login('c1400000-0000-4000-8000-000000000001', 'adm@s140.test');
+insert into t_s140 values ('p1', public.agency_brand_call_proposal_save((select v::uuid from t_s140 where k = 'c1'), 'c1400000-0000-4000-8000-0000000000a1',
+  '{"talents": [{"talent_id": "c1400000-0000-4000-8000-0000000000e1", "deliverables": [{"kind": "reels", "quantity": 1}]}]}')::text);
+select public.agency_brand_call_proposal_send((select v::uuid from t_s140 where k = 'p1'));
+select tests.su();
+select tests.ok('S140 proposta da agência herda a forma da chamada e vai sem valor',
+  (select amount_cents is null and sent_at is not null and compensation = (select c.compensation from public.brand_calls c where c.id = (select v::uuid from t_s140 where k = 'c1'))
+   from public.brand_call_proposals where id = (select v::uuid from t_s140 where k = 'p1')));
+select tests.login('c1400000-0000-4000-8000-000000000002', 'gestor@s140.test');
+select tests.ok('S140 gestor lê a forma da chamada sem números',
+  (select d -> 'call' -> 'compensation' -> 'barter' ->> 'offer' = 'Produtos da linha nova' and d -> 'call' -> 'compensation' -> 'barter' -> 'value_cents' = 'null'::jsonb
+          and d -> 'call' -> 'compensation' -> 'performance' -> 'rate' = 'null'::jsonb
+   from public.agency_brand_call_detail((select v::uuid from t_s140 where k = 'c1'), 'c1400000-0000-4000-8000-0000000000a1') d));
+select tests.login('c1400000-0000-4000-8000-000000000005', 'dona@s140.test');
+select tests.ok('S140 a marca aceita a proposta só com permuta e performance', public.brand_call_reply((select v::uuid from t_s140 where k = 'p1'), 'accept', null, null, null, null) = 'agreed');
+select tests.su();
+select tests.ok('S140 acordo da chamada sem valor: forma acordada e campanha herdada',
+  (select status = 'agreed' and agreed_cents is null and agreed_compensation -> 'barter' ->> 'offer' = 'Produtos da linha nova' from public.brand_call_proposals where id = (select v::uuid from t_s140 where k = 'p1'))
+  and (select b.budget_max_cents is null and b.compensation -> 'performance' ->> 'measure' = 'link rastreado'
+       from public.campaign_request_budgets b join public.brand_call_proposals q on q.request_id = b.request_id where q.id = (select v::uuid from t_s140 where k = 'p1')));
+select tests.login('c1400000-0000-4000-8000-000000000004', 'hero@s140.test');
+select tests.ok('S140 o Hero vê a forma da chamada sem números',
+  (select x -> 'compensation' -> 'barter' ->> 'offer' = 'Produtos da linha nova' and x -> 'compensation' -> 'barter' -> 'value_cents' = 'null'::jsonb
+   from jsonb_array_elements(public.talent_brand_calls()) x where x ->> 'id' = (select v from t_s140 where k = 'c1')));
+
+-- 4) patrocínio: cota só com permuta; a marca aceita a cota como é; a agência fecha sem dinheiro
+select tests.login('c1400000-0000-4000-8000-000000000001', 'adm@s140.test');
+insert into t_s140 values ('o1', public.agency_sponsorship_save('c1400000-0000-4000-8000-0000000000a1', null, jsonb_build_object('talent_id', 'c1400000-0000-4000-8000-0000000000e1', 'title', 'Evento S140', 'location', 'São Paulo',
+  'starts_at', now() + interval '10 days', 'ends_at', now() + interval '10 days 4 hours', 'all_day', false, 'expected_reach', '2 mil pessoas',
+  'networks', jsonb_build_array('instagram'), 'respond_by', now() + interval '5 days', 'audience', 'selected', 'brand_ids', jsonb_build_array('c1400000-0000-4000-8000-0000000000b1', 'c1400000-0000-4000-8000-0000000000b2'), 'publish', true,
+  'tiers', jsonb_build_array(
+    jsonb_build_object('name', 'Cota Bebidas', 'price_cents', 500000, 'slots', 2, 'perks', jsonb_build_array('Logo no palco'),
+      'compensation', '{"money": false, "barter": {"offer": "50 caixas de bebida", "value_cents": 300000}, "performance": null}'::jsonb),
+    jsonb_build_object('name', 'Cota Ouro', 'price_cents', 100000, 'slots', 1, 'perks', jsonb_build_array('Menção no palco')))))::text);
+select tests.su();
+insert into t_s140 select 'tier_b', id::text from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s140 where k = 'o1') and name = 'Cota Bebidas';
+insert into t_s140 select 'tier_o', id::text from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s140 where k = 'o1') and name = 'Cota Ouro';
+select tests.ok('S140 cota só com permuta fica sem preço; a de dinheiro guarda o preço; oportunidade aberta',
+  (select price_cents is null and compensation -> 'barter' ->> 'offer' = '50 caixas de bebida' from public.sponsorship_tiers where id = (select v::uuid from t_s140 where k = 'tier_b'))
+  and (select price_cents = 100000 and (compensation ->> 'money')::boolean from public.sponsorship_tiers where id = (select v::uuid from t_s140 where k = 'tier_o'))
+  and (select status = 'open' from public.sponsorship_opportunities where id = (select v::uuid from t_s140 where k = 'o1')));
+select tests.login('c1400000-0000-4000-8000-000000000005', 'dona@s140.test');
+select tests.expect_error('S140 proposta em dinheiro sem valor segue recusada',
+  $q$select public.brand_sponsorship_propose((select v::uuid from t_s140 where k = 'o1'), 'c1400000-0000-4000-8000-0000000000b1', (select v::uuid from t_s140 where k = 'tier_o'), 'propose', null, array['Menção no palco'], null, null)$q$, 'invalid_input');
+insert into t_s140 values ('sp1', public.brand_sponsorship_propose((select v::uuid from t_s140 where k = 'o1'), 'c1400000-0000-4000-8000-0000000000b1', (select v::uuid from t_s140 where k = 'tier_b'), 'accept_asked', null, null, null, null)::text);
+select tests.su();
+select tests.ok('S140 a marca aceita a cota só com permuta como é: acordo direto, sem valor; a campanha herda a permuta',
+  (select status = 'agreed' and amount_cents is null and agreed_cents is null and (agreed_compensation -> 'barter' ->> 'value_cents')::bigint = 300000
+   from public.sponsorship_proposals where id = (select v::uuid from t_s140 where k = 'sp1'))
+  and (select b.budget_max_cents is null and b.compensation -> 'barter' ->> 'offer' = '50 caixas de bebida'
+       from public.campaign_request_budgets b join public.sponsorship_proposals q on q.request_id = b.request_id where q.id = (select v::uuid from t_s140 where k = 'sp1')));
+select tests.login('c1400000-0000-4000-8000-000000000006', 'dono2@s140.test');
+insert into t_s140 values ('sp2', public.brand_sponsorship_propose((select v::uuid from t_s140 where k = 'o1'), 'c1400000-0000-4000-8000-0000000000b2', (select v::uuid from t_s140 where k = 'tier_o'), 'propose', 70000, array['Menção no palco'], 'pago em ingressos', null,
+  '{"money": false, "barter": {"offer": "Ingressos VIP", "value_cents": 50000}, "performance": null}')::text);
+select tests.su();
+select tests.ok('S140 outra marca propõe permuta na cota de dinheiro: o valor enviado é descartado',
+  (select status = 'open' and awaiting = 'agency' and amount_cents is null and compensation -> 'barter' ->> 'offer' = 'Ingressos VIP'
+   from public.sponsorship_proposals where id = (select v::uuid from t_s140 where k = 'sp2')));
+select tests.login('c1400000-0000-4000-8000-000000000001', 'adm@s140.test');
+select tests.ok('S140 a agência fecha o patrocínio sem dinheiro', public.agency_sponsorship_reply((select v::uuid from t_s140 where k = 'sp2'), 'accept', null, null, null) = 'agreed');
+select tests.su();
+select tests.ok('S140 acordo do patrocínio sem valor: forma acordada e campanha herdada',
+  (select status = 'agreed' and agreed_cents is null and (agreed_compensation -> 'barter' ->> 'value_cents')::bigint = 50000 from public.sponsorship_proposals where id = (select v::uuid from t_s140 where k = 'sp2'))
+  and (select b.budget_max_cents is null and b.compensation -> 'barter' ->> 'offer' = 'Ingressos VIP'
+       from public.campaign_request_budgets b join public.sponsorship_proposals q on q.request_id = b.request_id where q.id = (select v::uuid from t_s140 where k = 'sp2')));
+
+-- 4a) revisão: número inteiro vindo como 30000.0 é gravado inteiro; alteração de verba em campanha só com permuta passa a ter
+-- dinheiro; a campanha do patrocínio acordado vira negócio com a permuta, sem contar duas vezes na Projeção
+select tests.ok('S140 número inteiro com casa decimal (30000.0) é gravado como inteiro e a leitura não quebra',
+  public.compensation_clean('{"money": false, "barter": {"offer": "Kit", "value_cents": 30000.0}, "performance": {"kind": "per_sale", "rate": 1500.0, "measure": "link", "estimate_cents": 9000.00}}')
+    = '{"money": false, "barter": {"offer": "Kit", "value_cents": 30000}, "performance": {"kind": "per_sale", "rate": 1500, "measure": "link", "estimate_cents": 9000}}'::jsonb
+  and public.compensation_barter_cents('{"barter": {"value_cents": 30000.0}}') = 30000 and public.compensation_perf_cents('{"performance": {"estimate_cents": 9000.00}}') = 9000);
+select tests.login('c1400000-0000-4000-8000-000000000005', 'dona@s140.test');
+insert into t_s140 values ('bc', (public.brand_budget_change_create((select v::uuid from t_s140 where k = 'r1'), 100000, 'Adicionar dinheiro à permuta', '[]'::jsonb) ->> 'id'));
+select tests.login('c1400000-0000-4000-8000-000000000001', 'adm@s140.test');
+select public.agency_budget_change_decide((select v::uuid from t_s140 where k = 'bc'), 'propose', 'ok', null, null);
+select tests.login('c1400000-0000-4000-8000-000000000005', 'dona@s140.test');
+select public.brand_budget_change_answer((select v::uuid from t_s140 where k = 'bc'), 'confirm', null);
+select tests.su();
+select tests.ok('S140 verba em dinheiro acordada numa campanha só com permuta: a forma passa a ter dinheiro e mantém a permuta',
+  (select budget_max_cents = 100000 and (compensation ->> 'money')::boolean and compensation -> 'barter' ->> 'offer' = 'Kit de produtos + jantar'
+   from public.campaign_request_budgets where request_id = (select v::uuid from t_s140 where k = 'r1'))
+  and (select (compensation ->> 'money')::boolean and compensation -> 'barter' ->> 'offer' = 'Kit de produtos + jantar' from public.deals where id = (select v::uuid from t_s140 where k = 'd2')));
+insert into t_s140 select 'sp1_req', request_id::text from public.sponsorship_proposals where id = (select v::uuid from t_s140 where k = 'sp1');
+select tests.login('c1400000-0000-4000-8000-000000000005', 'dona@s140.test');
+select public.brand_request_save((select v::uuid from t_s140 where k = 'sp1_req'), 'c1400000-0000-4000-8000-0000000000b1', jsonb_build_object('objective', 'awareness', 'networks', jsonb_build_array('instagram'),
+  'deliverables', '[{"kind":"post","quantity":1,"network":"instagram"}]'::jsonb, 'period_start', (current_date + 20)::text, 'period_end', (current_date + 30)::text));
+insert into t_s140 values ('sp1_deal', public.brand_request_submit((select v::uuid from t_s140 where k = 'sp1_req'))::text);
+select tests.su();
+select tests.ok('S140 o negócio do patrocínio acordado nasce com a permuta do acordo',
+  (select compensation -> 'barter' ->> 'offer' = '50 caixas de bebida' and not (compensation ->> 'money')::boolean from public.deals where id = (select v::uuid from t_s140 where k = 'sp1_deal')));
+
+-- 4b) o Hero consultado vê a forma de pagamento do negócio, sem números
+select tests.su();
+insert into public.deal_talents (agency_id, deal_id, talent_id, status, consulted_at) values ('c1400000-0000-4000-8000-0000000000a1', 'c1400000-0000-4000-8000-0000000000d1', 'c1400000-0000-4000-8000-0000000000e1', 'consulted', now());
+select tests.login('c1400000-0000-4000-8000-000000000004', 'hero@s140.test');
+select tests.ok('S140 o Hero vê no negócio a permuta e a performance, sem números',
+  (select o -> 'deal' -> 'compensation' -> 'barter' ->> 'offer' = 'Kit de skincare' and o -> 'deal' -> 'compensation' -> 'barter' -> 'value_cents' = 'null'::jsonb
+          and o -> 'deal' -> 'compensation' -> 'performance' -> 'rate' = 'null'::jsonb and o -> 'deal' -> 'compensation' -> 'performance' ->> 'measure' = 'cupom HERO10'
+   from jsonb_array_elements(public.talent_opportunities()) o where o -> 'deal' ->> 'id' = 'c1400000-0000-4000-8000-0000000000d1'));
+
+-- 5) Projeção: permuta e performance estimadas à parte (o dinheiro segue igual)
+select tests.login('c1400000-0000-4000-8000-000000000001', 'adm@s140.test');
+select tests.ok('S140 Projeção da agência soma permuta (negócios + acordo + vaga livre da cota) e performance à parte',
+  (select (j -> 'agency' ->> 'barter')::bigint = 30000 + 40000 + 10000 + 300000 + 300000 + 50000 and (j -> 'agency' ->> 'performance')::bigint = 50000
+          and (j -> 'agency' ->> 'won')::bigint = 0 and (j -> 'agency' ->> 'open')::bigint = 0 and (j -> 'agency' ->> 'available')::bigint = 0
+   from public.campaign_projection('c1400000-0000-4000-8000-0000000000a1', null) j));
 
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

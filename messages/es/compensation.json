@@ -1,0 +1,58 @@
+{
+  "label": "Forma de pago",
+  "hint": "Marca una o más. Ej.: valor + canje, o valor + % de las ventas.",
+  "kinds": {
+    "money": "Valor",
+    "barter": "Canje",
+    "performance": "Performance"
+  },
+  "barter": {
+    "offer": "Qué se ofrece en canje",
+    "offerPlaceholder": "Ej.: kit de productos + 2 noches de hotel",
+    "value": "Valor estimado del canje",
+    "valueHint": "Total en R$, opcional. Ayuda con la factura (el canje también tributa) y con la Proyección."
+  },
+  "performance": {
+    "kind": "Regla",
+    "kinds": {
+      "percent": "% de las ventas",
+      "per_sale": "R$ por venta",
+      "per_lead": "R$ por registro"
+    },
+    "ratePercent": "Porcentaje sobre las ventas",
+    "ratePercentPlaceholder": "Ej.: 10",
+    "rateMoney": {
+      "per_sale": "Valor por venta",
+      "per_lead": "Valor por registro"
+    },
+    "measure": "Cómo se mide",
+    "measurePlaceholder": "Ej.: cupón HERO10 o enlace rastreado",
+    "estimate": "Estimación total",
+    "estimateHint": "Cuánto debería rendir en R$, opcional. Entra en la Proyección."
+  },
+  "errors": {
+    "none_selected": "Marca al menos una forma de pago: valor, canje o performance.",
+    "barter_offer": "Cuenta qué se ofrece en canje (de 3 a 300 caracteres).",
+    "barter_value": "Revisa el valor estimado del canje.",
+    "perf_rate": "Revisa la regla de performance: porcentaje de 0,01 a 100 o un valor en R$.",
+    "perf_measure": "Cuenta cómo se mide la performance (ej.: cupón o enlace).",
+    "perf_estimate": "Revisa la estimación de performance.",
+    "invalid_compensation": "Revisa la forma de pago."
+  },
+  "view": {
+    "noMoney": "sin dinero",
+    "barterValue": "estimado en {value}",
+    "perfPercent": "{rate}% de las ventas",
+    "perfPerSale": "{value} por venta",
+    "perfPerLead": "{value} por registro",
+    "perfKindOnly": {
+      "percent": "% de las ventas",
+      "per_sale": "valor por venta",
+      "per_lead": "valor por registro"
+    },
+    "perfMeasure": "se mide por {measure}",
+    "perfEstimate": "estimación de {value}"
+  },
+  "dealHint": "Marca una o más. El valor en dinero es el caché de cada Hero, en la pestaña Heroes.",
+  "adminOnly": "Solo el Adm ajusta la forma de pago y ve los valores."
+}

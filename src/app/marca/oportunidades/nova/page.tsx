@@ -8,6 +8,7 @@ import { getBrandContext } from "@/lib/brand-portal/server";
 import { plusDays } from "@/lib/calendar/ics";
 import { localDay } from "@/lib/today/logic";
 import { EMPTY_PUBLIC } from "@/lib/sponsorship/negotiation";
+import { MONEY_ONLY } from "@/lib/compensation/model";
 import { FromEventNotice } from "@/components/culture/EventCommerce";
 import { callPrefill } from "@/lib/culture/prefill";
 import { eventForProposal } from "@/lib/culture/from-event";
@@ -55,6 +56,8 @@ export default async function NewBrandCallPage({ searchParams }: Props) {
     budgetDisplay: "open",
     valueModel: "fixo",
     maxHeroes: null,
+    // 0140: começa só com "Valor"; a marca pode somar (ou trocar por) permuta e performance
+    compensation: MONEY_ONLY,
     respondDate: plusDays(today, 7),
     respondTime: "18:00",
     audience: agencies.some((a) => a.serves) ? "my_agencies" : "all",

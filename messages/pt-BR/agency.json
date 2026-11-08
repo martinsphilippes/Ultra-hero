@@ -425,7 +425,8 @@
     "action_closed": "Esta ação já foi encerrada.",
     "sensitive_data": "Tire CPF e dados bancários da ata. Esses dados seguem o procedimento interno seguro, não a ata.",
     "meeting_incomplete": "Para concluir, a ata precisa de representante, resumo executivo, data de follow-up e ao menos um encaminhamento com responsável e prazo.",
-    "meeting_final": "Esta ata já foi concluída."
+    "meeting_final": "Esta ata já foi concluída.",
+    "invalid_compensation": "Confira a forma de pagamento: marque valor, permuta ou performance e preencha o que cada uma pede."
   },
   "casting": {
     "title": "Casting",

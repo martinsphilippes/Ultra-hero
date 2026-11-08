@@ -116,6 +116,18 @@ describe("formas dos formulários", () => {
     expect(brandRequestSchema.safeParse({ ...base, maxHeroes: 0 }).success).toBe(false);
     expect(brandRequestSchema.safeParse({ ...base, maxHeroes: 51 }).success).toBe(false);
   });
+
+  it("0140: forma de pagamento opcional no formato do banco; sem dinheiro vale, sem nenhuma forma não", () => {
+    const base = { id: null, talentId: "", title: "", objective: "", product: "", targetAudience: "", targetAgeBands: [], targetStates: [], regionNote: "", periodStart: "", periodEnd: "", desiredTime: "", durationMinutes: "", format: "", location: "", networks: [], deliverables: [], notes: "", budgetMaxCents: null, valueModel: "fixo", maxHeroes: null, budgetNote: "" };
+    const barter = { money: false, barter: { offer: "Kit de produtos", value_cents: 30_000 }, performance: null };
+    expect(brandRequestSchema.safeParse({ ...base, compensation: barter }).success).toBe(true);
+    expect(brandRequestSchema.safeParse({ ...base, compensation: { money: true, barter: null, performance: { kind: "per_sale", rate: 2_000, measure: "link", estimate_cents: null } } }).success).toBe(true);
+    expect(brandRequestSchema.safeParse({ ...base, compensation: { money: false, barter: null, performance: null } }).success).toBe(false);
+    expect(brandRequestSchema.safeParse({ ...base, compensation: { ...barter, barter: { offer: "ok", value_cents: null } } }).success).toBe(false);
+    expect(brandRequestSchema.safeParse({ ...base, compensation: { ...barter, extra: 1 } }).success).toBe(false);
+    const parsed = brandRequestSchema.safeParse(base);
+    expect(parsed.success && parsed.data.compensation).toBeUndefined();
+  });
 });
 
 describe("erros, menus e travas", () => {

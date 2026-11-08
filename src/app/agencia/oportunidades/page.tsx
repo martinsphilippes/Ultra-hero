@@ -12,6 +12,7 @@ import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
 import { listAgencyBrandCalls } from "@/lib/brand-call/queries";
+import { compensationKinds } from "@/lib/compensation/model";
 import { listAgencySponsorships } from "@/lib/sponsorship/queries";
 
 export const dynamic = "force-dynamic";
@@ -121,9 +122,10 @@ export default async function AgencySponsorshipsPage({ searchParams }: Props) {
 }
 
 // Pedidos de marcas (0089): as abertas primeiro; a verba só para o Adm (na forma escolhida pela marca), a situação da
-// própria proposta e quantos creators demonstraram interesse. Nunca quem mais foi convidado nem quantas propostas há.
+// própria proposta e quantos Heros demonstraram interesse. Nunca quem mais foi convidado nem quantas propostas há.
+// 0140: a linha da verba soma a permuta e a performance ("Até R$ X + Permuta"); sem dinheiro, só elas (sem "a combinar").
 async function BrandCallsTab({ tabs, agencyId, canValues }: { tabs: ReactNode; agencyId: string; canValues: boolean }) {
-  const [t, locale, list] = await Promise.all([getTranslations("brandCall.agency"), getLocale() as Promise<Locale>, listAgencyBrandCalls(agencyId)]);
+  const [t, locale, list] = await Promise.all([getTranslations("brandCall.agency"), getLocale() as Promise<Locale>, listAgencyBrandCalls(agencyId, { canValues })]);
   return (
     <div className="flex flex-col gap-5" data-testid="agency-brand-calls">
       <PageHeader title={t("title")} description={t("description")} />
@@ -163,7 +165,7 @@ async function BrandCallsTab({ tabs, agencyId, canValues }: { tabs: ReactNode; a
                   {c.endsOn !== c.startsOn ? ` – ${formatPlainDate(c.endsOn, locale)}` : ""} · {t("creatorsWanted", { count: c.creatorsWanted })}
                 </span>
                 <span className="type-caption text-fg-muted">
-                  <BudgetText display={c.budgetDisplay} cents={c.budgetCents} canValues={canValues} />
+                  <BudgetText display={c.budgetDisplay} cents={c.budgetCents} canValues={canValues} kinds={compensationKinds(c.compensation)} />
                   {c.viewStatus === "open" && c.respondBy ? ` · ${t("respondUntil", { date: formatDateTime(c.respondBy, locale) })}` : ""}
                 </span>
               </Link>

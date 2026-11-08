@@ -3,6 +3,7 @@ import { ArrowLeft, Pencil } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CompensationView } from "@/components/compensation/CompensationView";
 import { AgencyProposalsPanel } from "@/components/sponsorship/AgencyProposalsPanel";
 import { HeroCard } from "@/components/sponsorship/HeroCard";
 import { PublicChips } from "@/components/sponsorship/NegotiationView";
@@ -16,10 +17,11 @@ import { formatDateTime } from "@/i18n/format";
 import { listAgencyBrands } from "@/lib/agency/queries";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
+import { draftFrom } from "@/lib/compensation/model";
 import { formatCents } from "@/lib/deals/schemas";
 import { centsToBrl } from "@/lib/money/brl-input";
 import { choiceFromHeroInfo } from "@/lib/sponsorship/hero-pick";
-import { EMPTY_PUBLIC, tierTotalCents } from "@/lib/sponsorship/negotiation";
+import { EMPTY_PUBLIC, tierMissingPrice, tierTotalCents } from "@/lib/sponsorship/negotiation";
 import { getAgencySponsorship } from "@/lib/sponsorship/queries";
 import { canDecide, localParts, responseCounts, type AgencySponsorshipBrand } from "@/lib/sponsorship/vocab";
 
@@ -37,6 +39,8 @@ const RESPONSE_VARIANT: Record<"interested" | "declined" | "pending", BadgeVaria
 // Ficha da oportunidade (0085), gestor+: o Hero (0095), resumo, marca por marca (quis, recusou, sem resposta; quem e
 // quando; a campanha que nasceu do interesse), a decisão e a edição enquanto rascunho ou aberta. Rascunho: painel com
 // publicar (exige o consentimento do Hero; atalhos da ficha e dos Documentos) e descartar.
+// 0140: cada cota mostra como a marca paga (Valor, Permuta, Performance); sem dinheiro, nada de "sem valor pedido".
+// Números da permuta/performance só para o Adm.
 export default async function AgencySponsorshipPage({ params }: Props) {
   const ctx = await requireAgency("manager");
   const { id } = await params;
@@ -111,18 +115,25 @@ export default async function AgencySponsorshipPage({ params }: Props) {
                   {t("tierAgreed", { agreed: z.agreed, slots: z.slots })}
                 </Badge>
               </span>
-              <span className={z.hasPrice ? "text-base font-semibold text-fg" : "type-body-sm text-warning"}>
-                {canValues ? (z.priceCents !== null ? formatCents(z.priceCents, locale) : t("tierNoPrice")) : z.hasPrice ? t("tierPriceSet") : t("tierNoPriceManager")}
-              </span>
-              {/* 0108: modelo de valor da cota; no fixo, quanto já foi coberto e a parte de cada nova marca */}
-              <span className="type-caption text-fg-muted" data-testid="tier-model">
-                {tvm(`tierModel.${z.valueModel}`)}
-                {canValues && z.priceCents !== null
-                  ? z.valueModel === "fixo"
-                    ? ` · ${tvm("tierCovered", { covered: formatCents(z.coveredCents ?? 0, locale), total: formatCents(z.priceCents, locale) })}${z.askCents !== null ? ` · ${tvm("tierShare", { value: formatCents(z.askCents, locale) })}` : ""}`
-                    : ` · ${tvm("tierTotal", { value: formatCents(tierTotalCents({ valueModel: z.valueModel, priceCents: z.priceCents, slots: z.slots }) ?? 0, locale) })}`
-                  : ""}
-              </span>
+              {/* 0140: valor e modelo só quando a cota pede dinheiro */}
+              {z.compensation.money ? (
+                <>
+                  <span className={tierMissingPrice(z) ? "type-body-sm text-warning" : "text-base font-semibold text-fg"}>
+                    {canValues ? (z.priceCents !== null ? formatCents(z.priceCents, locale) : t("tierNoPrice")) : z.hasPrice ? t("tierPriceSet") : t("tierNoPriceManager")}
+                  </span>
+                  {/* 0108: modelo de valor da cota; no fixo, quanto já foi coberto e a parte de cada nova marca */}
+                  <span className="type-caption text-fg-muted" data-testid="tier-model">
+                    {tvm(`tierModel.${z.valueModel}`)}
+                    {canValues && z.priceCents !== null
+                      ? z.valueModel === "fixo"
+                        ? ` · ${tvm("tierCovered", { covered: formatCents(z.coveredCents ?? 0, locale), total: formatCents(z.priceCents, locale) })}${z.askCents !== null ? ` · ${tvm("tierShare", { value: formatCents(z.askCents, locale) })}` : ""}`
+                        : ` · ${tvm("tierTotal", { value: formatCents(tierTotalCents({ valueModel: z.valueModel, priceCents: z.priceCents, slots: z.slots }) ?? 0, locale) })}`
+                      : ""}
+                  </span>
+                </>
+              ) : null}
+              {/* 0140: permuta e performance de cada marca (gestor vê sem números) */}
+              <CompensationView compensation={z.compensation} canValues={canValues} />
               <ul className="flex list-disc flex-col gap-1 pl-5 type-body-sm text-fg">
                 {z.perks.map((x) => (
                   <li key={x}>{x}</li>
@@ -188,7 +199,16 @@ export default async function AgencySponsorshipPage({ params }: Props) {
                 endTime: o.allDay ? "12:00" : end.time,
                 allDay: o.allDay,
                 expectedReach: o.expectedReach,
-                tiers: o.tiers.map((z) => ({ id: z.id, name: z.name, priceText: centsToBrl(z.priceCents), perksText: z.perks.join("\n"), slots: z.slots, valueModel: z.valueModel })),
+                tiers: o.tiers.map((z) => ({
+                  id: z.id,
+                  name: z.name,
+                  priceText: centsToBrl(z.priceCents),
+                  perksText: z.perks.join("\n"),
+                  slots: z.slots,
+                  valueModel: z.valueModel,
+                  // 0140: a forma de pagamento gravada (gestor recebe sem números e só vê; o Adm edita)
+                  compensation: draftFrom(z.compensation, centsToBrl),
+                })),
                 public: o.public ?? EMPTY_PUBLIC,
                 networks: o.networks,
                 respondDate: respond.date,

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { MONEY_ONLY } from "@/lib/compensation/model";
 import { parseBrlToCents } from "@/lib/deals/schemas";
 import { inboxKindEmails } from "@/lib/inbox/kinds";
 import {
@@ -8,6 +9,7 @@ import {
   canProposeOnTier,
   composePerks,
   needsOwnerApproval,
+  newTierDraft,
   perksDiff,
   priceDiff,
   proposalBadge,
@@ -59,7 +61,7 @@ describe("contrapartidas da proposta", () => {
 });
 
 describe("cotas da agência", () => {
-  const draft = (p: Partial<TierDraft>): TierDraft => ({ id: null, name: "Master", priceText: "10.000,00", perksText: "Logo na camiseta\n3 stories ao vivo", slots: 1, valueModel: "por_marca", ...p });
+  const draft = (p: Partial<TierDraft>): TierDraft => ({ ...newTierDraft("Master"), priceText: "10.000,00", perksText: "Logo na camiseta\n3 stories ao vivo", ...p });
   it("Adm grava o valor; gestor não envia valor", () => {
     const adm = validateTiers([draft({}), draft({ name: "Apoio", priceText: "", slots: 2 })], parseBrlToCents, parsePerks, true);
     expect(adm.ok && adm.tiers.map((x) => x.priceCents)).toEqual([1_000_000, null]);
@@ -140,9 +142,9 @@ describe("leituras fechadas", () => {
     expect(n?.role).toBe("staff");
     expect(n?.proposals[0].history[0].state).toBe("pending_owner");
   });
-  it("creator: o que foi acordado, sem valor", () => {
+  it("Hero: o que foi acordado, sem valor (sem forma de pagamento = só valor, que ele não vê)", () => {
     const [o] = toTalentSponsorships([{ id: "o1", title: "Maratona", status: "open", sponsors: ["Beta"], agreements: [{ brand: "Beta", tier: "Master", perks: ["Logo"] }] }]);
-    expect(o.agreements).toEqual([{ brand: "Beta", tier: "Master", perks: ["Logo"] }]);
-    expect(JSON.stringify(o)).not.toMatch(/cents/);
+    expect(o.agreements).toEqual([{ brand: "Beta", tier: "Master", perks: ["Logo"], compensation: MONEY_ONLY }]);
+    expect(JSON.stringify(o)).not.toMatch(/cents/i);
   });
 });

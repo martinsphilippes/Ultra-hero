@@ -1,9 +1,14 @@
 import { z } from "zod";
+import { MONEY_ONLY, draftFrom, draftToCompensation, toDb, type Compensation, type CompensationDb, type CompensationDraft, type CompensationError } from "@/lib/compensation/model";
+import { compensationDbSchema } from "@/lib/compensation/schema";
+import { centsToBrl } from "@/lib/money/brl-input";
 import { AGE_BANDS, UFS, type AgeBand } from "@/lib/talent/vocab";
 
 // Cotas e negociação do patrocínio (0088), lógica pura testada em tests/unit/patrocinio-negociacao.test.ts.
 // O banco confere tudo de novo (checks e RPCs); aqui ficam o formulário das cotas, a diferença em relação ao pedido,
 // as contrapartidas da proposta, o público e quem pode fazer o quê em cada situação.
+// 0140: cada cota diz como a marca paga (Valor, Permuta e/ou Performance, por marca); sem dinheiro, a cota não tem
+// valor pedido e a proposta não leva valor (acordo só com permuta/performance).
 
 export const MAX_PERKS = 10;
 
@@ -41,6 +46,68 @@ export function priceDiff(askedCents: number | null, proposedCents: number | nul
 /** Valor de uma proposta é válido? (inteiro, de R$ 0,01 até o teto do banco) */
 export function amountValid(cents: number | null | undefined): cents is number {
   return typeof cents === "number" && Number.isInteger(cents) && cents >= 1 && cents <= MAX_AMOUNT_CENTS;
+}
+
+// ---------------------------------------------------------------- forma de pagamento (0140)
+/**
+ * Valor que vai com a proposta/contraproposta: com dinheiro, o digitado (precisa ser válido); sem dinheiro, nenhum
+ * (o banco descarta o valor de quem não paga em dinheiro). undefined = valor inválido.
+ */
+export function termsAmount(money: boolean, cents: number | null | undefined): number | null | undefined {
+  if (!money) return null;
+  return amountValid(cents) ? cents : undefined;
+}
+
+/** Chave do nome da rodada (sponsorship.negotiation.*): aceitar uma cota sem dinheiro é "aceitou como está". */
+export function roundActionKey(r: { action: RoundAction; compensation: Compensation }): string {
+  return r.action === "accept_asked" && !r.compensation.money ? "action.accept_as_is" : `action.${r.action}`;
+}
+
+/** "Aceitar como está" (accept_asked): a cota precisa de contrapartidas e, quando pede dinheiro, do valor pedido. */
+export function canAcceptAsked(t: { askCents: number | null; perks: readonly string[]; compensation: Compensation }): boolean {
+  return t.perks.length > 0 && (!t.compensation.money || t.askCents !== null);
+}
+
+/** A cota pede dinheiro e ainda não tem valor ("a combinar")? Cota sem dinheiro nunca está sem valor. */
+export function tierMissingPrice(t: { compensation: Compensation; hasPrice: boolean }): boolean {
+  return t.compensation.money && !t.hasPrice;
+}
+
+export type TiersPaySummary = {
+  full: boolean;
+  /** menor valor entre as cotas com vaga que pedem dinheiro; from = há mais de uma cota com dinheiro */
+  price: { cents: number; from: boolean } | null;
+  /** só dinheiro ainda sem valor (ou nenhuma cota): "Valor a combinar" */
+  toCombine: boolean;
+  /** formas sem dinheiro presentes nas cotas com vaga, na ordem de leitura */
+  kinds: ("barter" | "performance")[];
+};
+
+/** Resumo da lista da marca: menor valor pedido, "a combinar" e as formas sem dinheiro (permuta, performance). */
+export function tiersPaySummary(tiers: readonly { full: boolean; priceCents: number | null; compensation: Compensation }[]): TiersPaySummary {
+  const open = tiers.filter((z) => !z.full);
+  if (tiers.length > 0 && open.length === 0) return { full: true, price: null, toCombine: false, kinds: [] };
+  const cash = open.filter((z) => z.compensation.money);
+  const priced = cash.filter((z) => z.priceCents !== null).map((z) => z.priceCents as number);
+  const kinds = (["barter", "performance"] as const).filter((k) => open.some((z) => z.compensation[k] !== null));
+  return {
+    full: false,
+    price: priced.length > 0 ? { cents: Math.min(...priced), from: cash.length > 1 } : null,
+    toCombine: priced.length === 0 && (cash.length > 0 || open.length === 0),
+    kinds: [...kinds],
+  };
+}
+
+/**
+ * Leitura de um rascunho sem os números (o gestor vê a forma da cota, mas o servidor não manda valores, % nem
+ * estimativas): tipo, o que é oferecido em permuta e como a performance é medida.
+ */
+export function compensationPreview(d: CompensationDraft): Compensation {
+  return {
+    money: d.money || (!d.barter && !d.performance),
+    barter: d.barter ? { offer: d.barterOffer.trim(), valueCents: null } : null,
+    performance: d.performance ? { kind: d.perfKind, rate: 0, measure: d.perfMeasure.trim(), estimateCents: null } : null,
+  };
 }
 
 // ---------------------------------------------------------------- contrapartidas
@@ -133,7 +200,13 @@ export function publicChips(p: SponsorshipPublic | null): string[] {
 // entram completam, até "slots"); "por_marca" = valor por marca × quantidade de marcas (o padrão, comportamento antigo).
 export const TIER_MODELS = ["fixo", "por_marca"] as const;
 export type TierModel = (typeof TIER_MODELS)[number];
-export type TierDraft = { id: string | null; name: string; priceText: string; perksText: string; slots: number; valueModel: TierModel };
+/** 0140: compensation = como a marca paga esta cota (por marca): Valor (priceText), Permuta, Performance. Só o Adm edita. */
+export type TierDraft = { id: string | null; name: string; priceText: string; perksText: string; slots: number; valueModel: TierModel; compensation: CompensationDraft };
+
+/** Cota nova do formulário: só valor, por marca, uma marca. */
+export function newTierDraft(name = ""): TierDraft {
+  return { id: null, name, priceText: "", perksText: "", slots: 1, valueModel: "por_marca", compensation: draftFrom(MONEY_ONLY, centsToBrl) };
+}
 
 /** Total da cota: fixo = o próprio valor; por marca = valor × quantidade de marcas (teto). */
 export function tierTotalCents(t: { valueModel: TierModel; priceCents: number | null; slots: number }): number | null {
@@ -160,21 +233,25 @@ export const tierSchema = z.object({
   slots: z.number().int().min(1).max(MAX_TIER_SLOTS),
   // sem o campo (formato antigo) = por marca, o comportamento de antes
   valueModel: z.enum(TIER_MODELS).default("por_marca"),
+  // 0140: forma de pagamento da cota (formato do banco). null = não mexe: o gestor não envia (o banco ignora a dele)
+  compensation: compensationDbSchema.nullable().default(null),
 });
 export type TierInput = z.infer<typeof tierSchema>;
 
-export type TierError = "name" | "nameRepeated" | "price" | "perks" | "slots";
+export type TierError = "name" | "nameRepeated" | "price" | "perks" | "slots" | "compensation";
+export type TierCheck = { ok: true; tiers: TierInput[] } | { ok: false; index: number; error: TierError | "count"; reason?: CompensationError };
 
 /**
  * Confere as cotas digitadas. parsePrice converte o texto em centavos (null = vazio, undefined = inválido);
- * canValues=false (gestor) ignora o valor. Devolve as cotas prontas ou o primeiro erro (com o índice).
+ * canValues=false (gestor) ignora o valor e a forma de pagamento. Devolve as cotas prontas ou o primeiro erro (com o
+ * índice; na forma de pagamento, o motivo em `reason`). 0140: cota sem dinheiro não tem valor pedido.
  */
 export function validateTiers(
   drafts: readonly TierDraft[],
   parsePrice: (text: string) => number | null | undefined,
   parsePerks: (text: string) => string[],
   canValues: boolean,
-): { ok: true; tiers: TierInput[] } | { ok: false; index: number; error: TierError | "count" } {
+): TierCheck {
   if (drafts.length < 1 || drafts.length > MAX_TIERS) return { ok: false, index: -1, error: "count" };
   const names = new Set<string>();
   const tiers: TierInput[] = [];
@@ -184,15 +261,21 @@ export function validateTiers(
     if (names.has(name.toLowerCase())) return { ok: false, index, error: "nameRepeated" };
     names.add(name.toLowerCase());
     let priceCents: number | null = null;
+    let compensation: CompensationDb | null = null;
     if (canValues) {
-      const parsed = parsePrice(d.priceText);
-      if (parsed === undefined || (parsed !== null && !amountValid(parsed))) return { ok: false, index, error: "price" };
-      priceCents = parsed;
+      const comp = draftToCompensation(d.compensation, (text) => parsePrice(text) ?? null);
+      if (!comp.ok) return { ok: false, index, error: "compensation", reason: comp.error };
+      compensation = toDb(comp.value);
+      if (comp.value.money) {
+        const parsed = parsePrice(d.priceText);
+        if (parsed === undefined || (parsed !== null && !amountValid(parsed))) return { ok: false, index, error: "price" };
+        priceCents = parsed;
+      }
     }
     const perks = parsePerks(d.perksText);
     if (!perksValid(perks)) return { ok: false, index, error: "perks" };
     if (!Number.isInteger(d.slots) || d.slots < 1 || d.slots > MAX_TIER_SLOTS) return { ok: false, index, error: "slots" };
-    tiers.push({ id: d.id, name, priceCents, perks, slots: d.slots, valueModel: d.valueModel });
+    tiers.push({ id: d.id, name, priceCents, perks, slots: d.slots, valueModel: d.valueModel, compensation });
   }
   return { ok: true, tiers };
 }

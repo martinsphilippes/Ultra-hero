@@ -6,30 +6,41 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
 import { Button, Checkbox, DatePicker, DateRangePicker, FormField, Input, QuantityInput, Select, Textarea, useToast } from "@/components/ui";
 import { AudienceFields } from "@/components/sponsorship/AudienceFields";
+import { CompensationFields } from "@/components/compensation/CompensationFields";
 import { saveBrandCallAction } from "@/lib/brand-call/actions";
 import { MAX_CREATORS_WANTED, MAX_NICHES, parseNiches, validateCall, type AgencyOption, type CallAudience, type CallFormInput } from "@/lib/brand-call/logic";
+import { draftFrom, draftToCompensation, MONEY_ONLY, toDb, type Compensation } from "@/lib/compensation/model";
 import { OBJECTIVES } from "@/lib/deals/vocab";
-import { brlToCents } from "@/lib/money/brl-input";
+import { brlToCents, centsToBrl } from "@/lib/money/brl-input";
 import { NETWORKS, type Network } from "@/lib/talent/vocab";
 import { ValueModelFields } from "@/components/value-model/ValueModelFields";
 import { DeliverableGroupsEditor, useGroupsError } from "@/components/deals/DeliverableGroupsEditor";
 import { expandDeliverableGroups, groupDeliverables } from "@/lib/deals/deliverable-groups";
 
-export type CallFormValues = Omit<CallFormInput, "niches" | "budgetCents"> & { nichesText: string; budgetText: string };
+export type CallFormValues = Omit<CallFormInput, "niches" | "budgetCents" | "compensation"> & {
+  nichesText: string;
+  budgetText: string;
+  /** 0140: forma de pagamento (sem ela, só valor: o padrão de sempre) */
+  compensation?: Compensation;
+};
 
 type Props = { initial: CallFormValues; agencies: AgencyOption[]; role: "owner" | "staff" };
 
 // Chamada da marca (0089), formulário da marca: o que precisa (título, objetivo, período, local, público, entregas,
-// nº de creators, nichos, redes), a verba e como mostrá-la às agências, o prazo para propostas e quem vê. "Salvar
-// rascunho" guarda; "Publicar" (dono) publica, e na equipe vira "Pedir aprovação ao dono" (0081). Mobile first.
+// nº de Heros, nichos, redes), a forma de pagamento (0140: valor, permuta e/ou performance; a verba e como mostrá-la
+// às agências só com "Valor" marcado), o prazo para propostas e quem vê. "Salvar rascunho" guarda; "Publicar" (dono)
+// publica, e na equipe vira "Pedir aprovação ao dono" (0081). Mobile first.
 export function BrandCallForm({ initial, agencies, role }: Props) {
   const t = useTranslations("brandCall.form");
+  const tc = useTranslations("compensation");
   const tdp = useTranslations("common.datePicker");
   const to = useTranslations("commercial.objectives");
   const tn = useTranslations("mediaKit.networks");
   const router = useRouter();
   const { toast } = useToast();
   const [v, setV] = useState(initial);
+  // 0140: o que a marca oferece; desligar "Valor" esconde a verba (o que foi digitado volta se ligar de novo)
+  const [comp, setComp] = useState(() => draftFrom(initial.compensation ?? MONEY_ONLY, centsToBrl));
   // entregáveis em linhas (vários tipos × várias redes); viram itens tipo × rede ao salvar
   const [groups, setGroups] = useState(() => groupDeliverables(initial.deliverables));
   const groupsError = useGroupsError();
@@ -42,13 +53,20 @@ export function BrandCallForm({ initial, agencies, role }: Props) {
     setError(null);
     const expanded = expandDeliverableGroups(groups);
     if (!expanded.ok) return setError(groupsError(expanded, groups));
-    const budgetCents = brlToCents(v.budgetText);
+    const checked = draftToCompensation(comp, brlToCents);
+    if (!checked.ok) return setError(tc(`errors.${checked.error}`));
+    // sem dinheiro (só permuta/performance): sem verba, "a combinar", fixo e sem máximo
+    const money = checked.value.money;
+    const budgetCents = money ? brlToCents(v.budgetText) : null;
     const input: CallFormInput = {
       ...v,
       deliverables: expanded.items,
       niches: parseNiches(v.nichesText),
       budgetCents: v.budgetDisplay === "open" && budgetCents === null ? null : budgetCents,
-      maxHeroes: v.valueModel === "por_heroi" ? v.maxHeroes : null,
+      budgetDisplay: money ? v.budgetDisplay : "open",
+      valueModel: money ? v.valueModel : "fixo",
+      maxHeroes: money && v.valueModel === "por_heroi" ? v.maxHeroes : null,
+      compensation: toDb(checked.value),
     };
     delete (input as Partial<CallFormValues>).nichesText;
     delete (input as Partial<CallFormValues>).budgetText;
@@ -133,29 +151,40 @@ export function BrandCallForm({ initial, agencies, role }: Props) {
         <h2 id="bc-budget" className="text-base font-semibold text-fg">
           {t("blocks.budget")}
         </h2>
-        <ValueModelFields
+        <CompensationFields
           idPrefix="brand-call"
-          model={v.valueModel}
-          onModelChange={(m) =>
-            setV((cur) => ({ ...cur, valueModel: m, maxHeroes: m === "por_heroi" ? (cur.maxHeroes ?? cur.creatorsWanted) : null, budgetDisplay: m === "por_heroi" && cur.budgetDisplay === "open" ? "exact" : cur.budgetDisplay }))
-          }
-          amountText={v.budgetText}
-          onAmountChange={(text) => set("budgetText", text)}
-          maxHeroes={v.maxHeroes}
-          onMaxHeroesChange={(n) => set("maxHeroes", n)}
+          draft={comp}
+          onChange={setComp}
           disabled={pending}
-          amountHint={t("budgetHint")}
-          amountTestId="brand-call-budget"
+          money={
+            <>
+              <ValueModelFields
+                idPrefix="brand-call"
+                model={v.valueModel}
+                onModelChange={(m) =>
+                  setV((cur) => ({ ...cur, valueModel: m, maxHeroes: m === "por_heroi" ? (cur.maxHeroes ?? cur.creatorsWanted) : null, budgetDisplay: m === "por_heroi" && cur.budgetDisplay === "open" ? "exact" : cur.budgetDisplay }))
+                }
+                amountText={v.budgetText}
+                onAmountChange={(text) => set("budgetText", text)}
+                maxHeroes={v.maxHeroes}
+                onMaxHeroesChange={(n) => set("maxHeroes", n)}
+                disabled={pending}
+                amountHint={t("budgetHint")}
+                amountTestId="brand-call-budget"
+              />
+              <FormField label={t("budgetDisplay")}>
+                <Select value={v.budgetDisplay} onChange={(e) => set("budgetDisplay", e.target.value as CallFormValues["budgetDisplay"])} disabled={pending} data-testid="brand-call-budget-display">
+                  {(v.valueModel === "por_heroi" ? (["exact", "up_to"] as const) : (["exact", "up_to", "open"] as const)).map((d) => (
+                    <option key={d} value={d}>
+                      {t(`budgetDisplays.${d}`)}
+                    </option>
+                  ))}
+                </Select>
+              </FormField>
+            </>
+          }
         />
-        <FormField label={t("budgetDisplay")}>
-          <Select value={v.budgetDisplay} onChange={(e) => set("budgetDisplay", e.target.value as CallFormValues["budgetDisplay"])} disabled={pending} data-testid="brand-call-budget-display">
-            {(v.valueModel === "por_heroi" ? (["exact", "up_to"] as const) : (["exact", "up_to", "open"] as const)).map((d) => (
-              <option key={d} value={d}>
-                {t(`budgetDisplays.${d}`)}
-              </option>
-            ))}
-          </Select>
-        </FormField>
+        {!comp.money ? <p className="type-caption text-fg-muted">{t("noMoneyHint")}</p> : null}
       </section>
 
       <section className={block} aria-labelledby="bc-who">

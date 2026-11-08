@@ -6,21 +6,24 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { saveRequestAction, submitRequestAction } from "@/app/marca/actions";
 import { BriefFields } from "@/components/brief/BriefFields";
+import { CompensationFields } from "@/components/compensation/CompensationFields";
+import { CompensationView } from "@/components/compensation/CompensationView";
 import { DeliverableGroupsEditor, useGroupsError } from "@/components/deals/DeliverableGroupsEditor";
 import { Button, Checkbox, DateRangePicker, Dialog, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
 import { briefValid, draftToBrief } from "@/lib/brief/brief";
+import { draftFrom } from "@/lib/compensation/model";
 import { expandDeliverableGroups, groupDeliverables } from "@/lib/deals/deliverable-groups";
-import { parseBrlToCents, type BrandRequestInput } from "@/lib/deals/schemas";
+import type { BrandRequestInput } from "@/lib/deals/schemas";
+import { centsToBrl } from "@/lib/money/brl-input";
 import { ValueModelFields } from "@/components/value-model/ValueModelFields";
 import { askApprovalAction } from "@/lib/selection/actions";
-import { validateTerms } from "@/lib/value-model/model";
 import { FORMATS, OBJECTIVES } from "@/lib/deals/vocab";
 import { AGE_BANDS, NETWORKS, UFS } from "@/lib/talent/vocab";
 
 // Valores vazios ficam num módulo comum (campaign-form.ts): uma página do servidor que importasse a
 // constante deste arquivo "use client" receberia só uma referência de cliente, sem os campos.
 export { EMPTY_CAMPAIGN, type CampaignFormValues } from "@/lib/brand-portal/campaign-form";
-import type { CampaignFormValues } from "@/lib/brand-portal/campaign-form";
+import { campaignValuePayload, type CampaignFormValues } from "@/lib/brand-portal/campaign-form";
 
 /**
  * submitMode (0081): "submit" = o diretor envia à agência; "ask" = a equipe pede aprovação interna ao diretor;
@@ -40,9 +43,11 @@ type Props = {
   valueMode?: "editable" | "frozen" | "hidden";
 };
 
-// Proposta de campanha da marca em 5 blocos (objetivo, público, período e formato, entregáveis, valor e
+// Proposta de campanha da marca em 5 blocos (objetivo, público, período e formato, entregáveis, pagamento e
 // observações). "Salvar rascunho" e "Enviar à agência" são ações explícitas; enviar exige título,
 // objetivo, data de início, pelo menos uma rede e um entregável (a RPC confere de novo).
+// 0140: forma de pagamento — Valor (os campos de dinheiro de sempre), Permuta e/ou Performance; pode não ter dinheiro.
+// Campanha de um acordo (chamada, patrocínio acordado): a forma de pagamento do acordo, só leitura.
 export function CampaignForm({ initial, creatorName, canEdit, submitMode = "submit", sponsorshipBudget = null, valueMode = "editable" }: Props) {
   const t = useTranslations("brandPortal.campaigns.form");
   const tdp = useTranslations("common.datePicker");
@@ -51,11 +56,14 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
   const tc = useTranslations("commercial");
   const tn = useTranslations("mediaKit.networks");
   const tb = useTranslations("brief");
+  const tcomp = useTranslations("compensation");
   const router = useRouter();
   const { toast } = useToast();
   const [v, setV] = useState(initial);
   // entregáveis em linhas (vários tipos × várias redes); viram itens tipo × rede ao salvar (formato do banco igual)
   const [groups, setGroups] = useState(() => groupDeliverables(initial.deliverables));
+  // 0140: rascunho da forma de pagamento (textos digitados); vira o formato do banco ao salvar
+  const [comp, setComp] = useState(() => draftFrom(initial.compensation, centsToBrl));
   const groupsError = useGroupsError();
   const [error, setError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
@@ -63,20 +71,17 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
   const set = <K extends keyof CampaignFormValues>(k: K, value: CampaignFormValues[K]) => setV((cur) => ({ ...cur, [k]: value }));
   const disabled = pending || !canEdit;
   const toggle = <T extends string>(list: T[], item: T, on: boolean): T[] => (on ? Array.from(new Set([...list, item])) : list.filter((x) => x !== item));
+  // valor travado pelo acordo (chamada ou patrocínio acordado): forma de pagamento só para ler; sem dinheiro, sem campo de valor
+  const agreed = valueMode === "frozen" || (valueMode === "hidden" && sponsorshipBudget === "agreed");
+  const agreedMoney = !agreed || initial.compensation.money;
 
   function payload(): BrandRequestInput | null {
-    const cents = parseBrlToCents(v.budgetText);
-    if (cents === undefined) {
-      setError(t("budgetInvalid"));
+    // forma de pagamento, valor e modelo (sem "Valor" marcado, os campos de dinheiro escondidos não contam)
+    const value = campaignValuePayload(v, comp, valueMode);
+    if (!value.ok) {
+      const e = value.error;
+      setError(e.kind === "compensation" ? tcomp(`errors.${e.code}`) : e.kind === "value" ? t(`valueErrors.${e.code}`) : t("budgetInvalid"));
       return null;
-    }
-    // 0096: por Hero exige o valor por Hero e o máximo de Heros (o banco confere de novo)
-    if (valueMode === "editable") {
-      const problem = validateTerms({ model: v.valueModel, amountCents: cents, maxHeroes: v.maxHeroes });
-      if (problem === "value_per_hero_required" || problem === "max_heroes_required") {
-        setError(t(`valueErrors.${problem}`));
-        return null;
-      }
     }
     const expanded = expandDeliverableGroups(groups);
     if (!expanded.ok) {
@@ -91,7 +96,8 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
     const rest: Partial<CampaignFormValues> = { ...v };
     delete rest.budgetText;
     delete rest.briefDraft;
-    return { ...(rest as Omit<CampaignFormValues, "budgetText" | "briefDraft">), deliverables: expanded.items, budgetMaxCents: cents, maxHeroes: v.valueModel === "por_heroi" ? v.maxHeroes : null, brief };
+    delete rest.compensation;
+    return { ...(rest as Omit<CampaignFormValues, "budgetText" | "briefDraft" | "compensation">), deliverables: expanded.items, brief, ...value.value };
   }
 
   const complete = v.title.trim().length >= 3 && v.objective !== "" && v.periodStart !== "" && v.networks.length > 0 && groups.length > 0;
@@ -125,6 +131,23 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
   }
 
   const block = "flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5";
+  // campos de dinheiro de sempre (modelo, valor, máximo de Heros): congelados na chamada acordada; na campanha livre,
+  // só aparecem com "Valor" marcado na forma de pagamento
+  const valueFields = (
+    <ValueModelFields
+      idPrefix="campaign"
+      model={v.valueModel}
+      onModelChange={(m) => setV((cur) => ({ ...cur, valueModel: m, maxHeroes: m === "por_heroi" ? (cur.maxHeroes ?? 3) : null }))}
+      amountText={v.budgetText}
+      onAmountChange={(text) => set("budgetText", text)}
+      maxHeroes={v.maxHeroes}
+      onMaxHeroesChange={(n) => set("maxHeroes", n)}
+      disabled={disabled}
+      frozen={valueMode === "frozen"}
+      amountHint={valueMode === "frozen" ? t("budgetAgreedHint") : undefined}
+      amountTestId="campaign-budget"
+    />
+  );
 
   return (
     <form
@@ -257,37 +280,35 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
         <h2 id="cf-budget" className="text-base font-semibold text-fg">
           {t("blocks.budget")}
         </h2>
+        {agreed ? (
+          <div className="flex flex-col gap-1.5" data-testid="campaign-compensation-agreed">
+            <span className="text-sm font-medium text-fg">{tcomp("label")}</span>
+            <CompensationView compensation={initial.compensation} always />
+            <p className="type-caption text-fg-muted">{t("compensationAgreedHint")}</p>
+          </div>
+        ) : null}
         {valueMode === "hidden" ? (
-          <div className="grid gap-4 sm:grid-cols-[14rem_1fr]">
-            <FormField label={t("budget")} hint={sponsorshipBudget === "agreed" ? t("budgetAgreedHint") : sponsorshipBudget === "negotiating" ? t("budgetNegotiatingHint") : t("budgetHint")}>
-              <MoneyInput
-                value={v.budgetText}
-                maxCents={10_000_000_000}
-                onValueChange={(text) => set("budgetText", text)}
-                disabled={disabled || sponsorshipBudget === "agreed"}
-                placeholder={sponsorshipBudget === "negotiating" ? t("budgetNegotiatingPlaceholder") : undefined}
-                data-testid="campaign-budget"
-              />
-            </FormField>
+          <div className={agreedMoney ? "grid gap-4 sm:grid-cols-[14rem_1fr]" : "flex flex-col gap-4"}>
+            {agreedMoney ? (
+              <FormField label={t("budget")} hint={sponsorshipBudget === "agreed" ? t("budgetAgreedHint") : sponsorshipBudget === "negotiating" ? t("budgetNegotiatingHint") : t("budgetHint")}>
+                <MoneyInput
+                  value={v.budgetText}
+                  maxCents={10_000_000_000}
+                  onValueChange={(text) => set("budgetText", text)}
+                  disabled={disabled || sponsorshipBudget === "agreed"}
+                  placeholder={sponsorshipBudget === "negotiating" ? t("budgetNegotiatingPlaceholder") : undefined}
+                  data-testid="campaign-budget"
+                />
+              </FormField>
+            ) : null}
             <FormField label={t("budgetNote")}>
               <Input value={v.budgetNote} maxLength={300} onChange={(e) => set("budgetNote", e.target.value)} disabled={disabled} />
             </FormField>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            <ValueModelFields
-              idPrefix="campaign"
-              model={v.valueModel}
-              onModelChange={(m) => setV((cur) => ({ ...cur, valueModel: m, maxHeroes: m === "por_heroi" ? (cur.maxHeroes ?? 3) : null }))}
-              amountText={v.budgetText}
-              onAmountChange={(text) => set("budgetText", text)}
-              maxHeroes={v.maxHeroes}
-              onMaxHeroesChange={(n) => set("maxHeroes", n)}
-              disabled={disabled}
-              frozen={valueMode === "frozen"}
-              amountHint={valueMode === "frozen" ? t("budgetAgreedHint") : undefined}
-              amountTestId="campaign-budget"
-            />
+            {/* chamada acordada: o valor congelado (sem dinheiro no acordo, nenhum); campanha livre: Valor/Permuta/Performance */}
+            {valueMode === "frozen" ? (agreedMoney ? valueFields : null) : <CompensationFields idPrefix="campaign" draft={comp} onChange={setComp} disabled={disabled} money={valueFields} />}
             <FormField label={t("budgetNote")}>
               <Input value={v.budgetNote} maxLength={300} onChange={(e) => set("budgetNote", e.target.value)} disabled={disabled} />
             </FormField>

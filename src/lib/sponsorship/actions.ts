@@ -9,8 +9,9 @@ import { requireBrand } from "@/lib/brand-portal/server";
 import { dispatchWorkEmails } from "@/lib/email/outbox";
 import { createClient } from "@/lib/supabase/server";
 import { linkToEvent } from "@/lib/culture/link";
+import { compensationDbSchema } from "@/lib/compensation/schema";
 import { PICKER_PAGE_SIZE, heroChoiceToDb, parseOpportunityHeroes, type OpportunityHeroPage } from "./hero-pick";
-import { REPLY_ACTIONS, amountValid, proposalPerksValid, publicSchema, publicToDb } from "./negotiation";
+import { REPLY_ACTIONS, proposalPerksValid, publicSchema, publicToDb, termsAmount } from "./negotiation";
 import { SPONSORSHIP_DECISIONS, SPONSORSHIP_RESPONSES, sponsorshipInstants, sponsorshipSchema, type SponsorshipInput } from "./vocab";
 
 // Oportunidade de patrocínio (0085): a agência (gestor+) publica e decide; a marca (dono ou equipe) responde.
@@ -58,7 +59,17 @@ export async function saveSponsorshipAction(input: SponsorshipInput): Promise<Sp
         audience: d.audience,
         brand_ids: d.audience === "selected" ? d.brandIds : [],
         // 0088: cotas (o banco ignora o valor de quem não é Adm) e público do evento
-        tiers: d.tiers.map((x) => ({ id: x.id, name: x.name, price_cents: x.priceCents, perks: x.perks, slots: x.slots, value_model: x.valueModel })),
+        // 0140: forma de pagamento da cota, só do Adm (o banco ignora a do gestor); ausente = mantém a gravada (null
+        // zeraria para "só valor"). Sem dinheiro, sem valor pedido (o banco também força).
+        tiers: d.tiers.map((x) => ({
+          id: x.id,
+          name: x.name,
+          price_cents: x.compensation && !x.compensation.money ? null : x.priceCents,
+          perks: x.perks,
+          slots: x.slots,
+          value_model: x.valueModel,
+          ...(x.compensation ? { compensation: x.compensation } : {}),
+        })),
         target_audience: d.public.targetAudience,
         target_age_bands: d.public.targetAgeBands,
         target_states: d.public.targetStates,
@@ -215,18 +226,25 @@ const termsSchema = z.object({
   perks: z.array(z.string().trim()).max(10),
   note: z.string().trim().max(500),
   public: publicSchema.nullable(),
+  // 0140: forma de pagamento proposta; null = a da cota (proposta) ou a atual da proposta (contraproposta)
+  compensation: compensationDbSchema.nullable().default(null),
 });
+type Terms = z.infer<typeof termsSchema>;
+
+/** Valor que vai à RPC: só com dinheiro (sem forma informada, vale a regra antiga: valor obrigatório). undefined = inválido. */
+const termsCents = (d: Pick<Terms, "amountCents" | "compensation">) => termsAmount(d.compensation?.money ?? true, d.amountCents);
 
 const proposeSchema = termsSchema.extend({ id: z.uuid(), tierId: z.uuid(), action: z.enum(["accept_asked", "propose"]) });
 
-/** Marca: aceitar a cota pelo valor pedido ou fazer proposta. Equipe: vai para o dono aprovar. */
+/** Marca: aceitar a cota como está (pelo valor pedido, ou sem dinheiro) ou fazer proposta. Equipe: vai para o dono aprovar. */
 export async function proposeSponsorshipAction(input: z.input<typeof proposeSchema>): Promise<SponsorshipResult> {
   const ctx = await requireBrand();
   if (!ctx.role) return agencyFail("forbidden");
   const parsed = proposeSchema.safeParse(input);
   if (!parsed.success) return agencyFail("invalid_input");
   const d = parsed.data;
-  if (d.action === "propose" && (!amountValid(d.amountCents) || !proposalPerksValid(d.perks))) return agencyFail("invalid_input");
+  const amount = d.action === "propose" ? termsCents(d) : null;
+  if (d.action === "propose" && (amount === undefined || !proposalPerksValid(d.perks))) return agencyFail("invalid_input");
   try {
     const supabase = await createClient();
     const { error } = await supabase.rpc("brand_sponsorship_propose", {
@@ -234,10 +252,12 @@ export async function proposeSponsorshipAction(input: z.input<typeof proposeSche
       p_brand: ctx.brand.id,
       p_tier: d.tierId,
       p_action: d.action,
-      p_amount_cents: d.action === "propose" ? d.amountCents : null,
+      p_amount_cents: d.action === "propose" ? (amount ?? null) : null,
       p_perks: d.action === "propose" ? d.perks : null,
       p_note: d.note,
       p_audience: d.action === "propose" ? publicToDb(d.public) : null,
+      // aceitar como está = a forma da cota (o banco ignora a enviada)
+      p_compensation: d.action === "propose" ? d.compensation : null,
     });
     if (error) return agencyFail(error);
     revalidatePath("/marca", "layout");
@@ -251,9 +271,20 @@ export async function proposeSponsorshipAction(input: z.input<typeof proposeSche
 
 const replySchema = termsSchema.extend({ proposalId: z.uuid(), action: z.enum(REPLY_ACTIONS) });
 
+/** Contraproposta: valor só com dinheiro (0140: sem dinheiro, nenhum) e ao menos uma contrapartida. */
 function replyValid(d: z.infer<typeof replySchema>): boolean {
   if (d.action !== "counter") return true;
-  return amountValid(d.amountCents) && proposalPerksValid(d.perks);
+  return termsCents(d) !== undefined && proposalPerksValid(d.perks);
+}
+
+/** O que a contraproposta leva à RPC (aceitar e recusar não levam termos: valem os da proposta). */
+function replyTerms(d: z.infer<typeof replySchema>) {
+  const counter = d.action === "counter";
+  return {
+    p_amount_cents: counter ? (termsCents(d) ?? null) : null,
+    p_perks: counter ? d.perks : null,
+    p_compensation: counter ? d.compensation : null,
+  };
 }
 
 /** Marca responde à contraproposta da agência. */
@@ -268,8 +299,7 @@ export async function brandReplySponsorshipAction(input: z.input<typeof replySch
     const { data, error } = await supabase.rpc("brand_sponsorship_reply", {
       p_proposal: d.proposalId,
       p_action: d.action,
-      p_amount_cents: d.action === "counter" ? d.amountCents : null,
-      p_perks: d.action === "counter" ? d.perks : null,
+      ...replyTerms(d),
       p_note: d.note,
       p_audience: d.action === "counter" ? publicToDb(d.public) : null,
     });
@@ -318,8 +348,7 @@ export async function agencyReplySponsorshipAction(input: z.input<typeof replySc
     const { data, error } = await supabase.rpc("agency_sponsorship_reply", {
       p_proposal: d.proposalId,
       p_action: d.action,
-      p_amount_cents: d.action === "counter" ? d.amountCents : null,
-      p_perks: d.action === "counter" ? d.perks : null,
+      ...replyTerms(d),
       p_note: d.note,
     });
     if (error) return agencyFail(error);

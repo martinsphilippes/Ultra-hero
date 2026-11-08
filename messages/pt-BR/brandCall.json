@@ -23,7 +23,9 @@
   "budget": {
     "open": "Verba a combinar",
     "hidden": "Verba visível só ao Adm",
-    "upTo": "Até {amount}"
+    "upTo": "Até {amount}",
+    "noMoney": "{kinds}, sem dinheiro",
+    "withExtras": "{money} + {extras}"
   },
   "summary": {
     "objective": "Objetivo: {value}",
@@ -45,7 +47,7 @@
       "need": "A necessidade",
       "public": "Público",
       "deliverables": "Entregas e Heros",
-      "budget": "Verba",
+      "budget": "Pagamento",
       "who": "Prazo e quem vê"
     },
     "title": "Título",
@@ -87,7 +89,7 @@
     "agencies": "Agências",
     "noAgencies": "Nenhuma agência ativa.",
     "agencyServes": "{name} (atende você)",
-    "ownerHint": "Ao publicar, as agências do alvo são avisadas. Os Heros veem a chamada sem a verba.",
+    "ownerHint": "Ao publicar, as agências do alvo são avisadas. Os Heros veem a chamada sem valores.",
     "staffHint": "O dono da marca aprova antes de publicar.",
     "saveDraft": "Salvar rascunho",
     "publish": "Publicar chamada",
@@ -105,7 +107,8 @@
     },
     "published": "Chamada publicada. As agências foram avisadas.",
     "toOwner": "Enviada ao dono para aprovar.",
-    "saved": "Rascunho salvo."
+    "saved": "Rascunho salvo.",
+    "noMoneyHint": "Sem dinheiro: as agências veem só a permuta e/ou a performance, sem verba."
   },
   "approval": {
     "title": "Publicação",
@@ -136,7 +139,7 @@
     "title": "{count, plural, one {# proposta recebida} other {# propostas recebidas}}",
     "hint": "Compare lado a lado. Arraste para ver as outras.",
     "amount": "Valor",
-    "agreedFrozen": "Acordo fechado: valor e entregas congelados.",
+    "agreedFrozen": "Acordo fechado: pagamento e entregas congelados.",
     "flagCheapest": "Menor valor",
     "flagReach": "Maior alcance",
     "flagPieces": "Mais peças",
@@ -164,7 +167,7 @@
     "closeWithAgreed": "Encerrar com os acordos",
     "ownerOnly": "Só o dono da marca escolhe as vencedoras.",
     "confirmContractTitle": "Contratar as escolhidas?",
-    "confirmContract": "O valor e as entregas ficam congelados, as campanhas são criadas e a chamada fecha para novas propostas.",
+    "confirmContract": "O pagamento e as entregas ficam congelados, as campanhas são criadas e a chamada fecha para novas propostas.",
     "confirmCloseTitle": "Encerrar a chamada?",
     "confirmClose": "As propostas em aberto são encerradas e as agências avisadas.",
     "back": "Voltar",
@@ -222,7 +225,8 @@
       "declined": "Proposta recusada.",
       "sent": "Enviado.",
       "returned": "Devolvido à equipe."
-    }
+    },
+    "deliverablesRequired": "Informe pelo menos uma entrega."
   },
   "agency": {
     "tabsLabel": "Oportunidades",
@@ -260,7 +264,7 @@
     "proposal": {
       "title": "Montar proposta",
       "titleDraft": "Proposta em rascunho",
-      "hintAdmin": "Escolha os Heros, as entregas de cada um e o valor total. Enviar avisa a marca.",
+      "hintAdmin": "Escolha os Heros, as entregas de cada um e a forma de pagamento (valor, permuta e/ou performance). Enviar avisa a marca.",
       "hintManager": "Monte a proposta e salve. O Adm põe o valor e envia.",
       "creators": "Heros do casting (liberados para marcas)",
       "noCandidates": "Nenhum Hero liberado para marcas no casting.",
@@ -286,7 +290,9 @@
       },
       "saved": "Rascunho salvo.",
       "sent": "Proposta enviada à marca.",
-      "discarded": "Rascunho descartado."
+      "discarded": "Rascunho descartado.",
+      "hintManagerNoMoney": "Monte a proposta e salve. O Adm confere a forma de pagamento e envia.",
+      "paymentByAdmin": "Só o Adm muda a forma de pagamento e vê os valores."
     }
   },
   "brand": {

@@ -23,7 +23,9 @@
   "budget": {
     "open": "Budget to be agreed",
     "hidden": "Budget visible to the Admin only",
-    "upTo": "Up to {amount}"
+    "upTo": "Up to {amount}",
+    "noMoney": "{kinds}, no cash",
+    "withExtras": "{money} + {extras}"
   },
   "summary": {
     "objective": "Goal: {value}",
@@ -45,7 +47,7 @@
       "need": "The need",
       "public": "Audience",
       "deliverables": "Deliverables and heroes",
-      "budget": "Budget",
+      "budget": "Payment",
       "who": "Deadline and who sees it"
     },
     "title": "Title",
@@ -87,7 +89,7 @@
     "agencies": "Agencies",
     "noAgencies": "No active agencies.",
     "agencyServes": "{name} (serves you)",
-    "ownerHint": "When you publish, the target agencies are notified. Heroes see the call without the budget.",
+    "ownerHint": "When you publish, the target agencies are notified. Heroes see the call without amounts.",
     "staffHint": "The brand owner approves before publishing.",
     "saveDraft": "Save draft",
     "publish": "Publish call",
@@ -105,7 +107,8 @@
     },
     "published": "Call published. Agencies were notified.",
     "toOwner": "Sent to the owner for approval.",
-    "saved": "Draft saved."
+    "saved": "Draft saved.",
+    "noMoneyHint": "No cash: agencies only see the barter and/or performance, with no budget."
   },
   "approval": {
     "title": "Publishing",
@@ -136,7 +139,7 @@
     "title": "{count, plural, one {# proposal received} other {# proposals received}}",
     "hint": "Compare side by side. Swipe to see the others.",
     "amount": "Amount",
-    "agreedFrozen": "Deal closed: amount and deliverables frozen.",
+    "agreedFrozen": "Deal closed: payment and deliverables frozen.",
     "flagCheapest": "Lowest amount",
     "flagReach": "Widest reach",
     "flagPieces": "Most pieces",
@@ -164,7 +167,7 @@
     "closeWithAgreed": "Close with the deals",
     "ownerOnly": "Only the brand owner chooses the winners.",
     "confirmContractTitle": "Hire the chosen ones?",
-    "confirmContract": "Amount and deliverables are frozen, campaigns are created and the call closes to new proposals.",
+    "confirmContract": "Payment and deliverables are frozen, campaigns are created and the call closes to new proposals.",
     "confirmCloseTitle": "Close the call?",
     "confirmClose": "Open proposals are closed and agencies notified.",
     "back": "Back",
@@ -222,7 +225,8 @@
       "declined": "Proposal declined.",
       "sent": "Sent.",
       "returned": "Sent back to the team."
-    }
+    },
+    "deliverablesRequired": "Enter at least one deliverable."
   },
   "agency": {
     "tabsLabel": "Opportunities",
@@ -260,7 +264,7 @@
     "proposal": {
       "title": "Build proposal",
       "titleDraft": "Draft proposal",
-      "hintAdmin": "Choose the heroes, each one's deliverables and the total amount. Sending notifies the brand.",
+      "hintAdmin": "Choose the heroes, each one's deliverables and the payment type (cash, barter and/or performance). Sending notifies the brand.",
       "hintManager": "Build the proposal and save. The Admin adds the amount and sends it.",
       "creators": "Roster heroes (cleared for brands)",
       "noCandidates": "No hero in the roster is cleared for brands.",
@@ -286,7 +290,9 @@
       },
       "saved": "Draft saved.",
       "sent": "Proposal sent to the brand.",
-      "discarded": "Draft discarded."
+      "discarded": "Draft discarded.",
+      "hintManagerNoMoney": "Build the proposal and save. The Admin checks the payment type and sends it.",
+      "paymentByAdmin": "Only the Admin changes the payment type and sees the amounts."
     }
   },
   "brand": {

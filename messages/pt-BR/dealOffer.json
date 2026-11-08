@@ -42,7 +42,8 @@
   },
   "acceptDialog": {
     "title": "Aceitar estes termos?",
-    "hint": "Eles viram o valor acordado da campanha. Depois do acordo, mudar a verba é pelo pedido de alteração."
+    "hint": "Eles viram o valor acordado da campanha. Depois do acordo, mudar a verba é pelo pedido de alteração.",
+    "hintNoMoney": "Eles viram a forma de pagamento acordada da campanha, sem dinheiro: só permuta e/ou performance."
   },
   "counterDialog": {
     "title": "Fazer contraproposta",

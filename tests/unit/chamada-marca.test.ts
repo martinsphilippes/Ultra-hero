@@ -4,24 +4,32 @@ import {
   brandCallActions,
   budgetView,
   callBrandControls,
+  callFormSchema,
   callProposalBadge,
   callToDb,
   canPickWinner,
   compareFlags,
+  compensationOf,
+  compensationWithoutValues,
+  counterTermsOk,
   deliverablesCount,
+  hasMoney,
   mediaKitUrlValid,
   networksMatch,
   parseNiches,
   periodEndIso,
+  proposalTerms,
   sumDeliverables,
   sumReach,
   talentCallStatus,
   toAgencyBrandCallDetail,
+  toAgencyBrandCalls,
   toBrandCallDetail,
   toTalentBrandCalls,
   validateCall,
   type CallFormInput,
 } from "@/lib/brand-call/logic";
+import { MONEY_ONLY, type CompensationDb } from "@/lib/compensation/model";
 import { EMPTY_PUBLIC } from "@/lib/sponsorship/negotiation";
 
 // Chamada da marca (0089): lógica pura do formulário, das entregas, do alcance, da verba e de quem pode o quê.
@@ -254,5 +262,146 @@ describe("modelo de valor da chamada", () => {
     const [c] = toTalentBrandCalls([{ id: "c", status: "open", respond_by: "2026-11-10T00:00:00Z" }]);
     expect(c.valueModel).toBe("fixo");
     expect(c.maxHeroes).toBeNull();
+  });
+});
+
+// 0140: forma de pagamento (valor, permuta e/ou performance) na chamada, na proposta, no acordo e nas rodadas
+describe("forma de pagamento da chamada", () => {
+  const barterOnly: CompensationDb = { money: false, barter: { offer: "Kit de produtos", value_cents: 30_000 }, performance: null };
+  const perfDb: CompensationDb = { money: false, barter: null, performance: { kind: "percent", rate: 10, measure: "cupom HERO10", estimate_cents: 50_000 } };
+  const withBarter: CompensationDb = { money: true, barter: { offer: "Kit de produtos", value_cents: null }, performance: null };
+
+  it("sem a forma de pagamento (formato antigo) é só valor", () => {
+    expect(hasMoney(base)).toBe(true);
+    expect(hasMoney({ ...base, compensation: barterOnly })).toBe(false);
+    expect(hasMoney({ ...base, compensation: withBarter })).toBe(true);
+  });
+
+  it("sem dinheiro não confere verba nem modelo de valor (lançamento só com permuta/performance)", () => {
+    const noMoney: CallFormInput = { ...base, compensation: barterOnly, budgetCents: null, budgetDisplay: "exact" };
+    expect(validateCall(noMoney, false, now)).toBeNull();
+    expect(validateCall(noMoney, true, now)).toBeNull();
+    expect(validateCall({ ...noMoney, valueModel: "por_heroi", maxHeroes: null }, false, now)).toBeNull();
+    // com dinheiro, a verba continua como antes
+    expect(validateCall({ ...base, compensation: withBarter, budgetCents: null, budgetDisplay: "exact" }, false, now)).toBe("budget");
+    // o resto do formulário continua valendo
+    expect(validateCall({ ...noMoney, deliverables: [] }, true, now)).toBe("deliverables");
+  });
+
+  it("vai ao banco com a forma de pagamento; sem dinheiro vai sem verba, 'a combinar', fixo e sem máximo", () => {
+    const db = callToDb({ ...base, compensation: barterOnly, valueModel: "por_heroi", maxHeroes: 3, budgetDisplay: "exact", budgetCents: 100 });
+    expect(db).toMatchObject({ budget_cents: null, budget_display: "open", value_model: "fixo", max_heroes: null, compensation: barterOnly });
+    expect(callToDb({ ...base, compensation: withBarter })).toMatchObject({ budget_cents: 3_000_000, budget_display: "up_to", compensation: withBarter });
+    // sem a chave, o banco mantém a forma de pagamento atual
+    expect("compensation" in callToDb(base)).toBe(false);
+  });
+
+  it("o formulário confere a forma de pagamento no formato do banco", () => {
+    expect(callFormSchema.safeParse({ ...base, compensation: perfDb }).success).toBe(true);
+    expect(callFormSchema.safeParse({ ...base, compensation: { money: false, barter: null, performance: null } }).success).toBe(false);
+    expect(callFormSchema.safeParse({ ...base, compensation: { ...barterOnly, barter: { offer: "ok", value_cents: null } } }).success).toBe(false);
+  });
+
+  it("contraproposta: entregas sempre; valor só com dinheiro; por Hero pede o máximo", () => {
+    const deliverables = [{ kind: "reels", quantity: 1 }];
+    expect(counterTermsOk({ money: true, amountCents: null, deliverables })).toBe(false);
+    expect(counterTermsOk({ money: false, amountCents: null, deliverables })).toBe(true);
+    expect(counterTermsOk({ money: false, amountCents: null, deliverables: [] })).toBe(false);
+    expect(counterTermsOk({ money: true, amountCents: 100, deliverables, valueModel: "por_heroi", maxHeroes: null })).toBe(false);
+    expect(counterTermsOk({ money: true, amountCents: 100, deliverables, valueModel: "por_heroi", maxHeroes: 2 })).toBe(true);
+  });
+
+  it("leitura: a regra da performance chega sem número para quem não lê valores e continua aparecendo", () => {
+    expect(compensationOf(perfDb)).toEqual({ money: false, barter: null, performance: { kind: "percent", rate: 10, measure: "cupom HERO10", estimateCents: 50_000 } });
+    // compensation_public: rate e estimativas nulos
+    const stripped = compensationOf({ money: false, barter: null, performance: { kind: "per_sale", rate: null, measure: "link", estimate_cents: null } });
+    expect(stripped.money).toBe(false);
+    expect(stripped.performance).toMatchObject({ kind: "per_sale", measure: "link", estimateCents: null });
+    expect(compensationOf({ money: true, barter: { offer: "Kit", value_cents: null }, performance: { kind: "percent", rate: null, measure: "cupom", estimate_cents: null } })).toMatchObject({
+      money: true,
+      barter: { offer: "Kit", valueCents: null },
+      performance: { kind: "percent", measure: "cupom" },
+    });
+    expect(compensationOf(undefined)).toEqual(MONEY_ONLY);
+    expect(compensationOf({ money: false, barter: null, performance: { kind: "bogus", rate: null } })).toEqual(MONEY_ONLY);
+  });
+
+  it("sem permissão para valores: o tipo e as descrições, nunca os números", () => {
+    const c = compensationWithoutValues(compensationOf({ money: true, barter: { offer: "Kit", value_cents: 30_000 }, performance: { kind: "percent", rate: 10, measure: "cupom", estimate_cents: 50_000 } }));
+    expect(c.barter).toEqual({ offer: "Kit", valueCents: null });
+    expect(c.performance).toMatchObject({ kind: "percent", measure: "cupom", estimateCents: null });
+    expect(c.performance?.rate).not.toBe(10);
+  });
+
+  it("marca: forma de pagamento da chamada, da proposta, do acordo e de cada rodada", () => {
+    const d = toBrandCallDetail({
+      role: "owner",
+      call: { id: "c1", status: "open", compensation: barterOnly, budget_display: "open" },
+      proposals: [
+        {
+          id: "p1", status: "agreed", compensation: perfDb, agreed_compensation: perfDb, amount_cents: null,
+          history: [{ id: "r1", side: "agency", action: "propose", compensation: perfDb }, { id: "r2", side: "brand", action: "decline" }],
+        },
+        { id: "p2", status: "open", amount_cents: 900 },
+      ],
+    });
+    expect(d?.call.compensation).toEqual({ money: false, barter: { offer: "Kit de produtos", valueCents: 30_000 }, performance: null });
+    expect(d?.proposals[0].compensation.performance).toMatchObject({ kind: "percent", rate: 10 });
+    expect(d?.proposals[0].agreedCompensation?.money).toBe(false);
+    expect(d?.proposals[0].history[0].compensation.performance?.measure).toBe("cupom HERO10");
+    expect(d?.proposals[0].history[1].compensation).toEqual(MONEY_ONLY);
+    // banco antigo: só valor e sem acordo de forma de pagamento
+    expect(d?.proposals[1]).toMatchObject({ compensation: MONEY_ONLY, agreedCompensation: null });
+  });
+
+  it("agência: o gestor nunca recebe os números da forma de pagamento (mesmo que o banco mande)", () => {
+    const raw = { call: { id: "c1", status: "open", compensation: perfDb }, proposals: [{ id: "p", status: "open", compensation: barterOnly, agreed_compensation: barterOnly, history: [{ id: "r", side: "agency", action: "propose", compensation: barterOnly }] }] };
+    const manager = toAgencyBrandCallDetail({ ...raw, can_values: false });
+    expect(manager?.call.compensation.performance).toMatchObject({ kind: "percent", measure: "cupom HERO10", estimateCents: null });
+    expect(manager?.call.compensation.performance?.rate).not.toBe(10);
+    expect(manager?.proposals[0].compensation.barter).toEqual({ offer: "Kit de produtos", valueCents: null });
+    expect(manager?.proposals[0].agreedCompensation?.barter?.valueCents).toBeNull();
+    expect(manager?.proposals[0].history[0].compensation.barter?.valueCents).toBeNull();
+    const admin = toAgencyBrandCallDetail({ ...raw, can_values: true });
+    expect(admin?.call.compensation.performance?.rate).toBe(10);
+    expect(admin?.proposals[0].compensation.barter?.valueCents).toBe(30_000);
+    // lista: o gestor recebe só o tipo e as descrições
+    const [row] = toAgencyBrandCalls([{ id: "c1", status: "open", compensation: barterOnly }], false);
+    expect(row.compensation).toEqual({ money: false, barter: { offer: "Kit de produtos", valueCents: null }, performance: null });
+    expect(toAgencyBrandCalls([{ id: "c1", status: "open", compensation: barterOnly }])[0].compensation.barter?.valueCents).toBe(30_000);
+  });
+
+  it("Hero: vê a permuta e a performance sem números", () => {
+    const [c] = toTalentBrandCalls([{ id: "c", status: "open", respond_by: "2026-11-10T00:00:00Z", compensation: { money: false, barter: { offer: "Kit", value_cents: 30_000 }, performance: { kind: "per_lead", rate: null, measure: "link", estimate_cents: null } } }]);
+    expect(c.compensation.money).toBe(false);
+    expect(c.compensation.barter).toEqual({ offer: "Kit", valueCents: null });
+    expect(c.compensation.performance).toMatchObject({ kind: "per_lead", measure: "link", estimateCents: null });
+  });
+
+  it("termos da proposta: o acordo congela a forma de pagamento; sem dinheiro não há valor", () => {
+    const p = toBrandCallDetail({
+      role: "owner",
+      call: { id: "c1", status: "open" },
+      proposals: [
+        { id: "a", status: "agreed", amount_cents: null, compensation: barterOnly, agreed_compensation: barterOnly, agreed_value_model: "fixo", agreed_cents: null },
+        { id: "b", status: "open", amount_cents: 2_000_000, value_model: "fixo", compensation: withBarter },
+        { id: "c", status: "agreed", amount_cents: 150_000, value_model: "por_heroi", max_heroes: 2, agreed_value_model: "por_heroi", agreed_max_heroes: 2, agreed_cents: 150_000 },
+      ],
+    })!.proposals;
+    expect(proposalTerms(p[0])).toMatchObject({ model: "fixo", amountCents: null, maxHeroes: null, compensation: { money: false } });
+    expect(proposalTerms(p[1])).toMatchObject({ model: "fixo", amountCents: 2_000_000, compensation: { money: true, barter: { offer: "Kit de produtos" } } });
+    expect(proposalTerms(p[2])).toMatchObject({ model: "por_heroi", amountCents: 150_000, maxHeroes: 2, compensation: MONEY_ONLY });
+    // a forma de pagamento acordada vale mesmo que a atual mude
+    expect(proposalTerms({ ...p[1], status: "agreed", agreedCompensation: compensationOf(barterOnly) })).toMatchObject({ amountCents: null, compensation: { money: false } });
+  });
+
+  it("comparação: proposta só com permuta/performance fica fora de menor valor e do custo por mil", () => {
+    const f = compareFlags([
+      { id: "cash1", amountCents: 2_000_000, reach: 50_000, creators: 1, pieces: 2, deliverBy: null },
+      { id: "cash2", amountCents: 2_200_000, reach: 80_000, creators: 1, pieces: 2, deliverBy: null },
+      { id: "barter", amountCents: null, reach: 100_000, creators: 1, pieces: 2, deliverBy: null },
+    ]);
+    expect(f.cash1.cheapest).toBe(true);
+    expect(f.barter).toMatchObject({ cheapest: false, costPerThousand: null, widestReach: true });
   });
 });

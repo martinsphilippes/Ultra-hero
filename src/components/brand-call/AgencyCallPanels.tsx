@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { CastBuilderButton } from "@/components/casting/CastBuilderDialog";
+import { CompensationFields } from "@/components/compensation/CompensationFields";
+import { CompensationView } from "@/components/compensation/CompensationView";
 import { Badge, Button, Checkbox, DatePicker, FormField, Input, Textarea, useToast } from "@/components/ui";
 import { ValueModelFields } from "@/components/value-model/ValueModelFields";
 import { ValueTermsView } from "@/components/value-model/ValueTermsView";
@@ -20,11 +22,12 @@ import {
   type CallInterest,
   type CallProposal,
 } from "@/lib/brand-call/logic";
+import { draftFrom, draftToCompensation, isMoneyOnly, toDb, type Compensation, type CompensationDb } from "@/lib/compensation/model";
 import type { RequestDeliverable } from "@/lib/deals/schemas";
 import { brlToCents, centsToBrl } from "@/lib/money/brl-input";
 import { DeliverableGroupsEditor, useGroupsError } from "@/components/deals/DeliverableGroupsEditor";
 import { distinctCombos, expandDeliverableGroups, expandValidGroups, groupDeliverables, MAX_DELIVERABLE_COMBOS, newGroup, type DeliverableGroup } from "@/lib/deals/deliverable-groups";
-import { DeliverablesText, TermsFields, type TermsDraft } from "./shared";
+import { DeliverablesText, TermsFields, termsDraftOf, useCounterCheck, type TermsDraft } from "./shared";
 
 // entregas de cada creator em linhas (vários tipos × várias redes); viram itens tipo × rede ao salvar
 type Chosen = { deliverables: DeliverableGroup[]; mediaKitUrl: string };
@@ -39,13 +42,17 @@ type BuilderProps = {
   /** 0096: modelo e máximo da chamada (a proposta começa com eles) */
   callValueModel: ValueModel;
   callMaxHeroes: number | null;
+  /** 0140: forma de pagamento da chamada (a proposta começa com ela; só o Adm muda). Gestor recebe sem os números. */
+  callCompensation: Compensation;
 };
 
-// Proposta da agência para a chamada da marca (0089). Gestor+ escolhe creators do casting liberados para marcas
+// Proposta da agência para a chamada da marca (0089). Gestor+ escolhe Heros do casting liberados para marcas
 // (os interessados primeiro, com a mensagem), entregas de cada um (começa com as pedidas pela marca), link do media
-// kit, prazo de entrega e observações. Só o Adm grava o valor total e envia; o gestor salva o rascunho para o Adm.
-export function AgencyProposalBuilder({ callId, callDeliverables, candidates, interests, draft, canValues, callValueModel, callMaxHeroes }: BuilderProps) {
+// kit, prazo de entrega e observações. Só o Adm grava a forma de pagamento (0140: valor, permuta e/ou performance) e o
+// valor total, e envia; o gestor vê a forma de pagamento sem números e salva o rascunho para o Adm.
+export function AgencyProposalBuilder({ callId, callDeliverables, candidates, interests, draft, canValues, callValueModel, callMaxHeroes, callCompensation }: BuilderProps) {
   const t = useTranslations("brandCall.agency.proposal");
+  const tc = useTranslations("compensation");
   const tv = useTranslations("valueModel");
   const tn = useTranslations("mediaKit.networks");
   const router = useRouter();
@@ -61,6 +68,10 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
   // 0096: a proposta começa com o modelo da chamada (a agência pode propor outro); gestor só vê o que o Adm definiu
   const [valueModel, setValueModel] = useState<ValueModel>(draft?.valueModel ?? callValueModel);
   const [maxHeroes, setMaxHeroes] = useState<number | null>(draft ? draft.maxHeroes : callValueModel === "por_heroi" ? callMaxHeroes : null);
+  // 0140: a proposta começa com a forma de pagamento do rascunho ou da chamada; o gestor só lê (sem números)
+  const current = draft?.compensation ?? callCompensation;
+  const [comp, setComp] = useState(() => draftFrom(current, centsToBrl));
+  const money = canValues ? comp.money : current.money;
   const [deliverBy, setDeliverBy] = useState(draft?.deliverBy ?? "");
   const [note, setNote] = useState(draft?.note ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -93,11 +104,18 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
     const pairs = distinctCombos(order.flatMap((id) => expanded[id]));
     if (pairs > MAX_DELIVERABLE_COMBOS) return setError(tg("tooManyTotal", { count: pairs, max: MAX_DELIVERABLE_COMBOS }));
     if (order.some((id) => !mediaKitUrlValid(picks[id]?.mediaKitUrl ?? ""))) return setError(t("errors.mediaKit"));
-    const amountCents = canValues ? brlToCents(amountText) : null;
-    if (send && amountCents === null) return setError(t("errors.amount"));
-    const model = canValues ? valueModel : (draft?.valueModel ?? "fixo");
-    const max = canValues ? (valueModel === "por_heroi" ? maxHeroes : null) : (draft?.maxHeroes ?? null);
+    // 0140: só o Adm grava a forma de pagamento (o banco ignora a do gestor); sem dinheiro, sem valor nem por Hero
+    let compensation: CompensationDb | undefined;
     if (canValues) {
+      const checked = draftToCompensation(comp, brlToCents);
+      if (!checked.ok) return setError(tc(`errors.${checked.error}`));
+      compensation = toDb(checked.value);
+    }
+    const amountCents = canValues && money ? brlToCents(amountText) : null;
+    if (send && money && amountCents === null) return setError(t("errors.amount"));
+    const model = !money ? "fixo" : canValues ? valueModel : (draft?.valueModel ?? "fixo");
+    const max = !money ? null : canValues ? (valueModel === "por_heroi" ? maxHeroes : null) : (draft?.maxHeroes ?? null);
+    if (canValues && money) {
       const problem = validateTerms({ model, amountCents: send || valueModel === "por_heroi" ? amountCents : null, maxHeroes: max });
       if (problem === "value_per_hero_required" && !send && amountCents === null) {
         // rascunho por Hero pode ficar sem valor; o máximo é obrigatório
@@ -114,6 +132,7 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
         deliverBy: deliverBy || null,
         note,
         send,
+        compensation,
       });
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });
@@ -140,7 +159,7 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
         <h2 id="call-proposal" className="text-base font-semibold text-fg">
           {draft ? t("titleDraft") : t("title")}
         </h2>
-        <p className="type-caption text-fg-muted">{canValues ? t("hintAdmin") : t("hintManager")}</p>
+        <p className="type-caption text-fg-muted">{canValues ? t("hintAdmin") : current.money ? t("hintManager") : t("hintManagerNoMoney")}</p>
       </div>
       <fieldset className="flex flex-col gap-2" data-testid="proposal-candidates">
         <legend className="mb-1 text-sm font-medium text-fg">{t("creators")}</legend>
@@ -179,36 +198,49 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
         </p>
       ) : null}
       {canValues ? (
-        <ValueModelFields
+        <CompensationFields
           idPrefix="proposal"
-          model={valueModel}
-          onModelChange={(m) => {
-            setValueModel(m);
-            setMaxHeroes(m === "por_heroi" ? (maxHeroes ?? callMaxHeroes ?? Math.max(1, order.length)) : null);
-          }}
-          amountText={amountText}
-          onAmountChange={setAmountText}
-          maxHeroes={maxHeroes}
-          onMaxHeroesChange={setMaxHeroes}
+          draft={comp}
+          onChange={setComp}
           disabled={pending}
-          required
-          amountTestId="proposal-amount"
+          money={
+            <ValueModelFields
+              idPrefix="proposal"
+              model={valueModel}
+              onModelChange={(m) => {
+                setValueModel(m);
+                setMaxHeroes(m === "por_heroi" ? (maxHeroes ?? callMaxHeroes ?? Math.max(1, order.length)) : null);
+              }}
+              amountText={amountText}
+              onAmountChange={setAmountText}
+              maxHeroes={maxHeroes}
+              onMaxHeroesChange={setMaxHeroes}
+              disabled={pending}
+              required
+              amountTestId="proposal-amount"
+            />
+          }
         />
       ) : (
-        <FormField label={t("amount")}>
-          <div className="flex min-h-11 flex-col justify-center gap-0.5">
-            <p className="type-body-sm text-fg-muted">{draft?.hasAmount ? t("amountSet") : t("amountByAdmin")}</p>
-            {draft?.valueModel === "por_heroi" ? <ValueTermsView model="por_heroi" amountCents={null} maxHeroes={draft.maxHeroes} canValues={false} /> : null}
-          </div>
-        </FormField>
+        <div className="flex flex-col gap-1.5" data-testid="proposal-payment-readonly">
+          <span className="text-sm font-medium text-fg">{isMoneyOnly(current) ? t("amount") : tc("label")}</span>
+          {!isMoneyOnly(current) ? <CompensationView compensation={current} canValues={false} /> : null}
+          {current.money ? (
+            <div className="flex flex-col gap-0.5">
+              <p className="type-body-sm text-fg-muted">{draft?.hasAmount ? t("amountSet") : t("amountByAdmin")}</p>
+              {draft?.valueModel === "por_heroi" ? <ValueTermsView model="por_heroi" amountCents={null} maxHeroes={draft.maxHeroes} canValues={false} /> : null}
+            </div>
+          ) : null}
+          {!isMoneyOnly(current) ? <p className="type-caption text-fg-muted">{t("paymentByAdmin")}</p> : null}
+        </div>
       )}
-      {canValues && valueModel === "fixo" ? (
+      {canValues && (!money || valueModel === "fixo") ? (
         <CastBuilderButton
           callId={callId}
           maxHeroes={null}
           currentIds={order}
           allowedIds={candidates.map((c) => c.id)}
-          budgetCents={brlToCents(amountText)}
+          budgetCents={money ? brlToCents(amountText) : null}
           onUse={(ids) => {
             setPicks((cur) => {
               const next: Record<string, Chosen> = {};
@@ -249,17 +281,16 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
   );
 }
 
-/** A vez da agência (só Adm): aceitar a contraproposta, contrapropor ou recusar com nota. */
+/** A vez da agência (só Adm): aceitar a contraproposta, contrapropor (com a forma de pagamento, 0140) ou recusar com nota. */
 export function AgencyCallReply({ proposal: p, decided, canValues }: { proposal: CallProposal; decided: boolean; canValues: boolean }) {
   const t = useTranslations("brandCall.negotiation");
-  const tv = useTranslations("valueModel");
   const locale = useLocale() as Locale;
   const router = useRouter();
   const { toast } = useToast();
   const actions = agencyCallActions(p, decided, canValues);
   const [mode, setMode] = useState<"counter" | "decline" | null>(null);
-  const [terms, setTerms] = useState<TermsDraft>({ amountText: centsToBrl(p.amountCents), valueModel: p.valueModel, maxHeroes: p.maxHeroes, deliverables: groupDeliverables(p.deliverables), deliverBy: p.deliverBy ?? "", note: "" });
-  const groupsError = useGroupsError();
+  const [terms, setTerms] = useState<TermsDraft>(() => termsDraftOf(p));
+  const checkCounter = useCounterCheck();
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   if (p.status === "open" && p.awaiting === "agency" && !canValues) return <p className="type-caption text-warning">{t("adminOnly")}</p>;
@@ -268,25 +299,22 @@ export function AgencyCallReply({ proposal: p, decided, canValues }: { proposal:
 
   function reply(action: "accept" | "decline" | "counter") {
     setError(null);
-    const amountCents = action === "counter" ? brlToCents(terms.amountText) : null;
-    if (action === "counter" && (amountCents === null || terms.deliverables.length === 0)) return setError(t("termsRequired"));
-    const expanded = action === "counter" ? expandDeliverableGroups(terms.deliverables) : { ok: true as const, items: [] };
-    if (!expanded.ok) return setError(groupsError(expanded, terms.deliverables));
-    if (action === "counter") {
-      const problem = validateTerms({ model: terms.valueModel, amountCents, maxHeroes: terms.maxHeroes });
-      if (problem === "value_per_hero_required" || problem === "max_heroes_required") return setError(tv(`errors.${problem}`));
-    }
+    // contraproposta: forma de pagamento, entregas e valor (só com "Valor" marcado); aceitar fica nos termos atuais
+    const counter = action === "counter" ? checkCounter(terms) : null;
+    if (counter && !counter.ok) return setError(counter.error);
     if (action === "decline" && terms.note.trim().length < 3) return setError(t("declineNoteRequired"));
+    const c = counter?.ok ? counter.value : null;
     start(async () => {
       const result = await agencyCallReplyAction({
         proposalId: p.id,
         action,
-        amountCents,
-        deliverables: expanded.items,
-        deliverBy: terms.deliverBy || null,
+        amountCents: c ? c.amountCents : null,
+        deliverables: c ? c.deliverables : [],
+        deliverBy: c ? c.deliverBy : null,
         note: terms.note,
-        valueModel: action === "counter" ? terms.valueModel : null,
-        maxHeroes: action === "counter" ? terms.maxHeroes : null,
+        valueModel: c ? c.valueModel : null,
+        maxHeroes: c ? c.maxHeroes : null,
+        compensation: c ? c.compensation : null,
       });
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });

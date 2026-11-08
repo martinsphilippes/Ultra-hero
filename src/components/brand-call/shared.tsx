@@ -2,20 +2,25 @@
 
 import { Building2, Store } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { DeliverableGroupsEditor } from "@/components/deals/DeliverableGroupsEditor";
+import { CompensationFields } from "@/components/compensation/CompensationFields";
+import { CompensationView } from "@/components/compensation/CompensationView";
+import { DeliverableGroupsEditor, useGroupsError } from "@/components/deals/DeliverableGroupsEditor";
 import { Badge, DatePicker, FormField, Textarea, type BadgeVariant } from "@/components/ui";
 import { ValueModelFields } from "@/components/value-model/ValueModelFields";
 import { ValueTermsView } from "@/components/value-model/ValueTermsView";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
-import type { AgencyViewStatus, CallRound, CallStatus } from "@/lib/brand-call/logic";
+import type { AgencyViewStatus, CallProposal, CallRound, CallStatus } from "@/lib/brand-call/logic";
+import { draftFrom, draftToCompensation, isMoneyOnly, toDb, type CompensationDb, type CompensationDraft, type CompKind } from "@/lib/compensation/model";
 import type { RequestDeliverable } from "@/lib/deals/schemas";
 import { formatCents } from "@/lib/deals/schemas";
-import type { DeliverableGroup } from "@/lib/deals/deliverable-groups";
-import type { ValueModel } from "@/lib/value-model/model";
+import { expandDeliverableGroups, groupDeliverables, type DeliverableGroup } from "@/lib/deals/deliverable-groups";
+import { brlToCents, centsToBrl } from "@/lib/money/brl-input";
+import { validateTerms, type ValueModel } from "@/lib/value-model/model";
 
 // Peças da chamada da marca (0089) que servem à marca, à agência e ao creator: selos de situação, entregas em texto (o editor
 // de entregas é o DeliverableGroupsEditor, o mesmo da campanha), o compositor de termos de uma rodada e a linha do tempo.
+// 0140: a rodada leva a forma de pagamento (valor, permuta e/ou performance); sem "Valor" marcado não pede valor.
 
 const CALL_VARIANT: Record<CallStatus, BadgeVariant> = { draft: "neutral", open: "success", closed: "neutral", contracted: "accent", cancelled: "neutral" };
 const AGENCY_VARIANT: Record<AgencyViewStatus, BadgeVariant> = { open: "success", expired: "warning", won: "accent", lost: "neutral", closed: "neutral", cancelled: "neutral" };
@@ -50,24 +55,91 @@ export function DeliverablesText({ items, className }: { items: RequestDeliverab
   );
 }
 
-export type TermsDraft = { amountText: string; valueModel: ValueModel; maxHeroes: number | null; deliverables: DeliverableGroup[]; deliverBy: string; note: string };
+export type TermsDraft = {
+  /** 0140: forma de pagamento da rodada; o valor (e o modelo) só valem com "Valor" marcado */
+  compensation: CompensationDraft;
+  amountText: string;
+  valueModel: ValueModel;
+  maxHeroes: number | null;
+  deliverables: DeliverableGroup[];
+  deliverBy: string;
+  note: string;
+};
 
-/** Termos de uma rodada (contraproposta): valor total, entregas, prazo de entrega e nota. */
+/** A contraproposta começa com os termos atuais da proposta (forma de pagamento, valor, entregas e prazo). */
+export function termsDraftOf(p: CallProposal): TermsDraft {
+  return {
+    compensation: draftFrom(p.compensation, centsToBrl),
+    amountText: centsToBrl(p.amountCents),
+    valueModel: p.valueModel,
+    maxHeroes: p.maxHeroes,
+    deliverables: groupDeliverables(p.deliverables),
+    deliverBy: p.deliverBy ?? "",
+    note: "",
+  };
+}
+
+export type CounterTerms = {
+  amountCents: number | null;
+  deliverables: RequestDeliverable[];
+  deliverBy: string | null;
+  note: string;
+  valueModel: ValueModel;
+  maxHeroes: number | null;
+  compensation: CompensationDb;
+};
+
+/**
+ * Confere a contraproposta antes de enviar: forma de pagamento, entregas, valor (só com "Valor" marcado) e modelo de
+ * valor. Devolve os termos prontos para a ação ou a mensagem de erro.
+ */
+export function useCounterCheck() {
+  const t = useTranslations("brandCall.negotiation");
+  const tc = useTranslations("compensation");
+  const tv = useTranslations("valueModel");
+  const groupsError = useGroupsError();
+  return (terms: TermsDraft): { ok: true; value: CounterTerms } | { ok: false; error: string } => {
+    const comp = draftToCompensation(terms.compensation, brlToCents);
+    if (!comp.ok) return { ok: false, error: tc(`errors.${comp.error}`) };
+    const money = comp.value.money;
+    const amountCents = money ? brlToCents(terms.amountText) : null;
+    if (terms.deliverables.length === 0 || (money && amountCents === null)) return { ok: false, error: t(money ? "termsRequired" : "deliverablesRequired") };
+    const expanded = expandDeliverableGroups(terms.deliverables);
+    if (!expanded.ok) return { ok: false, error: groupsError(expanded, terms.deliverables) };
+    const valueModel: ValueModel = money ? terms.valueModel : "fixo";
+    const maxHeroes = valueModel === "por_heroi" ? terms.maxHeroes : null;
+    if (money) {
+      const problem = validateTerms({ model: valueModel, amountCents, maxHeroes });
+      if (problem === "value_per_hero_required" || problem === "max_heroes_required") return { ok: false, error: tv(`errors.${problem}`) };
+    }
+    return { ok: true, value: { amountCents, deliverables: expanded.items, deliverBy: terms.deliverBy || null, note: terms.note, valueModel, maxHeroes, compensation: toDb(comp.value) } };
+  };
+}
+
+/** Termos de uma rodada (contraproposta): forma de pagamento (com o valor quando há dinheiro), entregas, prazo e nota. */
 export function TermsFields({ value, onChange, disabled, idPrefix }: { value: TermsDraft; onChange: (v: TermsDraft) => void; disabled?: boolean; idPrefix: string }) {
   const t = useTranslations("brandCall.negotiation");
   return (
     <div className="flex flex-col gap-3" data-testid={`${idPrefix}-terms`}>
-      <ValueModelFields
+      <CompensationFields
         idPrefix={idPrefix}
-        model={value.valueModel}
-        onModelChange={(m) => onChange({ ...value, valueModel: m, maxHeroes: m === "por_heroi" ? (value.maxHeroes ?? 3) : null })}
-        amountText={value.amountText}
-        onAmountChange={(text) => onChange({ ...value, amountText: text })}
-        maxHeroes={value.maxHeroes}
-        onMaxHeroesChange={(n) => onChange({ ...value, maxHeroes: n })}
+        draft={value.compensation}
+        onChange={(compensation) => onChange({ ...value, compensation })}
         disabled={disabled}
-        required
-        amountTestId={`${idPrefix}-amount`}
+        money={
+          <ValueModelFields
+            idPrefix={idPrefix}
+            model={value.valueModel}
+            onModelChange={(m) => onChange({ ...value, valueModel: m, maxHeroes: m === "por_heroi" ? (value.maxHeroes ?? 3) : null })}
+            amountText={value.amountText}
+            onAmountChange={(text) => onChange({ ...value, amountText: text })}
+            maxHeroes={value.maxHeroes}
+            onMaxHeroesChange={(n) => onChange({ ...value, maxHeroes: n })}
+            disabled={disabled}
+            required
+            amountTestId={`${idPrefix}-amount`}
+          />
+        }
       />
       <FormField label={t("deliverBy")}>
         <DatePicker value={value.deliverBy} onChange={(v) => onChange({ ...value, deliverBy: v })} disabled={disabled} />
@@ -83,8 +155,24 @@ export function TermsFields({ value, onChange, disabled, idPrefix }: { value: Te
   );
 }
 
-/** Linha do tempo das rodadas: quem, quando, valor (só para quem lê), entregas, prazo e nota. */
-export function CallTimeline({ rounds, viewer, agencyName, brandName }: { rounds: CallRound[]; viewer: "brand" | "agency"; agencyName?: string; brandName?: string }) {
+/**
+ * Linha do tempo das rodadas: quem, quando, valor (só para quem lê), forma de pagamento (0140; números só para quem lê
+ * valores), entregas, prazo e nota.
+ */
+export function CallTimeline({
+  rounds,
+  viewer,
+  agencyName,
+  brandName,
+  canValues = true,
+}: {
+  rounds: CallRound[];
+  viewer: "brand" | "agency";
+  agencyName?: string;
+  brandName?: string;
+  /** marca e Adm da agência leem os números; o gestor vê o tipo e as descrições */
+  canValues?: boolean;
+}) {
   const t = useTranslations("brandCall.negotiation");
   const locale = useLocale() as Locale;
   if (rounds.length === 0) return null;
@@ -110,7 +198,10 @@ export function CallTimeline({ rounds, viewer, agencyName, brandName }: { rounds
               {who}
               {r.actorLabel ? ` · ${r.actorLabel}` : ""} · {formatDateTime(r.createdAt, locale)}
             </span>
-            {r.amountCents !== null || r.valueModel === "por_heroi" ? <ValueTermsView model={r.valueModel ?? "fixo"} amountCents={r.amountCents} maxHeroes={r.maxHeroes} canValues={r.amountCents !== null} /> : null}
+            {r.compensation.money && (r.amountCents !== null || r.valueModel === "por_heroi") ? (
+              <ValueTermsView model={r.valueModel ?? "fixo"} amountCents={r.amountCents} maxHeroes={r.maxHeroes} canValues={r.amountCents !== null} />
+            ) : null}
+            {r.action !== "decline" && !isMoneyOnly(r.compensation) ? <CompensationView compensation={r.compensation} canValues={canValues} /> : null}
             {r.deliverables && r.action !== "accept" ? <DeliverablesText items={r.deliverables} className="type-caption text-fg" /> : null}
             {r.deliverBy && r.action !== "accept" ? <span className="type-caption text-fg-muted">{t("deliverByValue", { date: formatPlainDate(r.deliverBy, locale) })}</span> : null}
             {r.note ? <p className="whitespace-pre-wrap type-body-sm text-fg">“{r.note}”</p> : null}
@@ -127,11 +218,16 @@ export function CallTimeline({ rounds, viewer, agencyName, brandName }: { rounds
   );
 }
 
-/** Verba como texto, conforme quem lê. */
-export function BudgetText({ display, cents, canValues }: { display: "exact" | "up_to" | "open"; cents: number | null; canValues: boolean }) {
+/**
+ * Verba como texto, conforme quem lê. 0140: com `kinds` (as formas de pagamento marcadas), soma permuta e performance
+ * ("Até R$ 30.000 + Permuta"); sem dinheiro, só elas ("Permuta + Performance, sem dinheiro"), nunca "a combinar".
+ */
+export function BudgetText({ display, cents, canValues, kinds }: { display: "exact" | "up_to" | "open"; cents: number | null; canValues: boolean; kinds?: readonly CompKind[] }) {
   const t = useTranslations("brandCall.budget");
+  const tk = useTranslations("compensation.kinds");
   const locale = useLocale() as Locale;
-  if (display === "open") return <span data-testid="call-budget">{t("open")}</span>;
-  if (!canValues || cents === null) return <span data-testid="call-budget">{t("hidden")}</span>;
-  return <span data-testid="call-budget">{display === "up_to" ? t("upTo", { amount: formatCents(cents, locale) }) : formatCents(cents, locale)}</span>;
+  const extras = (kinds ?? []).filter((k) => k !== "money").map((k) => tk(k)).join(" + ");
+  if (kinds && !kinds.includes("money") && extras) return <span data-testid="call-budget">{t("noMoney", { kinds: extras })}</span>;
+  const money = display === "open" ? t("open") : !canValues || cents === null ? t("hidden") : display === "up_to" ? t("upTo", { amount: formatCents(cents, locale) }) : formatCents(cents, locale);
+  return <span data-testid="call-budget">{extras ? t("withExtras", { money, extras }) : money}</span>;
 }

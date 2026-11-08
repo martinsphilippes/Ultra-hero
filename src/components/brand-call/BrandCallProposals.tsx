@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { ProposalBadgeView } from "@/components/sponsorship/NegotiationView";
+import { CompensationView } from "@/components/compensation/CompensationView";
 import { Avatar, Badge, Button, Checkbox, Dialog, EmptyState, FormField, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatNumber, formatPlainDate } from "@/i18n/format";
@@ -16,29 +17,30 @@ import {
   canPickWinner,
   compareFlags,
   deliverablesCount,
+  proposalTerms,
   sumReach,
   type BrandCallDetail,
   type CallProposal,
 } from "@/lib/brand-call/logic";
+import { isMoneyOnly } from "@/lib/compensation/model";
 import { ValueTermsView } from "@/components/value-model/ValueTermsView";
 import { formatCents } from "@/lib/deals/schemas";
-import { ceilingCents, validateTerms } from "@/lib/value-model/model";
-import { brlToCents, centsToBrl } from "@/lib/money/brl-input";
+import { ceilingCents } from "@/lib/value-model/model";
 import { priceDiff } from "@/lib/sponsorship/negotiation";
-import { useGroupsError } from "@/components/deals/DeliverableGroupsEditor";
-import { expandDeliverableGroups, groupDeliverables } from "@/lib/deals/deliverable-groups";
-import { CallTimeline, DeliverablesText, TermsFields, type TermsDraft } from "./shared";
+import { CallTimeline, DeliverablesText, TermsFields, termsDraftOf, useCounterCheck, type TermsDraft } from "./shared";
 
 type Props = { detail: BrandCallDetail };
 
-// Propostas recebidas (0089), lado a lado no celular (rolagem horizontal com encaixe): agência, creators (cartão
-// autorizado, seguidores e link do media kit), alcance somado, entregas, valor (com a diferença em relação à verba),
-// prazo e observações; destaques de menor valor, maior alcance e custo por mil seguidores. Cada proposta abre a
-// negociação (aceitar, contrapropor, recusar; a equipe vai para o dono). O dono escolhe 1+ vencedoras → acordos e
-// campanhas; ou encerra sem contratar. A marca nunca vê rascunhos das agências.
+// Propostas recebidas (0089), lado a lado no celular (rolagem horizontal com encaixe): agência, Heros (cartão
+// autorizado, seguidores e link do media kit), alcance somado, entregas, forma de pagamento e valor (com a diferença em
+// relação à verba), prazo e observações; destaques de menor valor, maior alcance e custo por mil seguidores (0140: só
+// entre as propostas com dinheiro; permuta e performance aparecem à parte). Cada proposta abre a negociação (aceitar,
+// contrapropor, recusar; a equipe vai para o dono). O dono escolhe 1+ vencedoras → acordos e campanhas; ou encerra sem
+// contratar. A marca nunca vê rascunhos das agências.
 export function BrandCallProposals({ detail }: Props) {
   const t = useTranslations("brandCall.compare");
   const td = useTranslations("brandCall.decide");
+  const tc = useTranslations("compensation");
   const locale = useLocale() as Locale;
   const router = useRouter();
   const { toast } = useToast();
@@ -52,13 +54,10 @@ export function BrandCallProposals({ detail }: Props) {
   const [pending, start] = useTransition();
   const visible = proposals.filter((p) => p.status !== "closed" || p.endReason === "decided");
   // 0096: o que se compara é o teto de investimento (por Hero = valor × máximo de Heros); o acordo congela o que foi acordado
-  const termsOf = (p: CallProposal) =>
-    p.status === "agreed" && p.agreedValueModel
-      ? { model: p.agreedValueModel, amountCents: p.agreedCents, maxHeroes: p.agreedMaxHeroes }
-      : { model: p.valueModel, amountCents: p.amountCents, maxHeroes: p.maxHeroes };
+  // 0140: sem dinheiro (só permuta/performance) não há valor a comparar
   const rows = visible.map((p) => ({
     id: p.id,
-    amountCents: ceilingCents(termsOf(p)),
+    amountCents: ceilingCents(proposalTerms(p)),
     reach: sumReach(p.talents.map((x) => x.card)),
     creators: p.talents.length,
     pieces: deliverablesCount(p.agreedDeliverables ?? p.deliverables),
@@ -100,21 +99,25 @@ export function BrandCallProposals({ detail }: Props) {
         {visible.map((p) => {
           const row = rows.find((r) => r.id === p.id);
           const f = flags[p.id];
-          const terms = termsOf(p);
+          const terms = proposalTerms(p);
           const amount = ceilingCents(terms);
-          const callCeiling = ceilingCents({ model: call.valueModel, amountCents: call.budgetCents, maxHeroes: call.maxHeroes });
+          const callCeiling = call.compensation.money ? ceilingCents({ model: call.valueModel, amountCents: call.budgetCents, maxHeroes: call.maxHeroes }) : null;
           const diff = callCeiling !== null && amount !== null ? priceDiff(callCeiling, amount) : null;
+          const onlyMoney = isMoneyOnly(terms.compensation);
           return (
             <li key={p.id} className="flex w-[85%] shrink-0 snap-start flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:w-auto" data-testid="compare-card">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-semibold text-fg">{p.agencyName}</span>
                 <ProposalBadgeView badge={callProposalBadge(p)} viewer="brand" />
               </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="type-caption text-fg-muted">{t("amount")}</span>
-                <span className="text-lg font-semibold text-fg" data-testid="compare-amount">
-                  {amount !== null ? <ValueTermsView model={terms.model} amountCents={terms.amountCents} maxHeroes={terms.maxHeroes} /> : "—"}
-                </span>
+              <div className="flex flex-col gap-1">
+                <span className="type-caption text-fg-muted">{onlyMoney ? t("amount") : tc("label")}</span>
+                {terms.compensation.money ? (
+                  <span className="text-lg font-semibold text-fg" data-testid="compare-amount">
+                    {amount !== null ? <ValueTermsView model={terms.model} amountCents={terms.amountCents} maxHeroes={terms.maxHeroes} /> : "—"}
+                  </span>
+                ) : null}
+                {!onlyMoney ? <CompensationView compensation={terms.compensation} /> : null}
                 {diff && diff.cents !== 0 ? (
                   <span className={`type-caption font-medium ${diff.cents > 0 ? "text-warning" : "text-success"}`} data-testid="compare-diff">
                     {t(diff.cents > 0 ? "aboveBudget" : "belowBudget", { pct: formatNumber(Math.abs(diff.pct), locale, { maximumFractionDigits: 1 }), amount: formatCents(Math.abs(diff.cents), locale) })}
@@ -256,14 +259,9 @@ export function BrandCallProposals({ detail }: Props) {
   );
 }
 
-function initialTerms(p: CallProposal): TermsDraft {
-  return { amountText: centsToBrl(p.amountCents), valueModel: p.valueModel, maxHeroes: p.maxHeroes, deliverables: groupDeliverables(p.deliverables), deliverBy: p.deliverBy ?? "", note: "" };
-}
-
 /** Negociação de uma proposta, do lado da marca: histórico e ações (equipe: aceitar/contrapropor vão para o dono). */
 function ProposalNegotiation({ proposal: p, detail }: { proposal: CallProposal; detail: BrandCallDetail }) {
   const t = useTranslations("brandCall.negotiation");
-  const tv = useTranslations("valueModel");
   const router = useRouter();
   const { toast } = useToast();
   const { role, call } = detail;
@@ -271,8 +269,9 @@ function ProposalNegotiation({ proposal: p, detail }: { proposal: CallProposal; 
   const pendingRound = p.history.find((r) => r.state === "pending_owner") ?? null;
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"counter" | "decline" | null>(null);
-  const [terms, setTerms] = useState<TermsDraft>(() => initialTerms(p));
-  const groupsError = useGroupsError();
+  // 0140: a contraproposta começa com a forma de pagamento atual da proposta (pode trocar, somar ou tirar o dinheiro)
+  const [terms, setTerms] = useState<TermsDraft>(() => termsDraftOf(p));
+  const checkCounter = useCounterCheck();
   const [reviewNote, setReviewNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -289,16 +288,22 @@ function ProposalNegotiation({ proposal: p, detail }: { proposal: CallProposal; 
   }
 
   function reply(action: "accept" | "decline" | "counter") {
-    const amountCents = action === "counter" ? brlToCents(terms.amountText) : null;
-    if (action === "counter" && (amountCents === null || terms.deliverables.length === 0)) return setError(t("termsRequired"));
-    const expanded = action === "counter" ? expandDeliverableGroups(terms.deliverables) : { ok: true as const, items: [] };
-    if (!expanded.ok) return setError(groupsError(expanded, terms.deliverables));
-    if (action === "counter") {
-      const problem = validateTerms({ model: terms.valueModel, amountCents, maxHeroes: terms.maxHeroes });
-      if (problem === "value_per_hero_required" || problem === "max_heroes_required") return setError(tv(`errors.${problem}`));
-    }
+    // contraproposta: forma de pagamento, entregas e valor (só com "Valor" marcado); aceitar fica nos termos atuais
+    const counter = action === "counter" ? checkCounter(terms) : null;
+    if (counter && !counter.ok) return setError(counter.error);
+    const c = counter?.ok ? counter.value : null;
     run(() =>
-      brandCallReplyAction({ proposalId: p.id, action, amountCents, deliverables: expanded.items, deliverBy: terms.deliverBy || null, note: terms.note, valueModel: action === "counter" ? terms.valueModel : null, maxHeroes: action === "counter" ? terms.maxHeroes : null }),
+      brandCallReplyAction({
+        proposalId: p.id,
+        action,
+        amountCents: c ? c.amountCents : null,
+        deliverables: c ? c.deliverables : [],
+        deliverBy: c ? c.deliverBy : null,
+        note: terms.note,
+        valueModel: c ? c.valueModel : null,
+        maxHeroes: c ? c.maxHeroes : null,
+        compensation: c ? c.compensation : null,
+      }),
     );
   }
 

@@ -5,12 +5,25 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
+import { CompensationFields } from "@/components/compensation/CompensationFields";
+import { CompensationView } from "@/components/compensation/CompensationView";
 import { Button, Checkbox, DatePicker, DateRangePicker, FormField, Input, MoneyInput, NumberInput, QuantityInput, SegmentedControl, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { fichaLinks, formActions, publishBlock, type HeroChoice } from "@/lib/sponsorship/hero-pick";
 import { formatCents, parseBrlToCents } from "@/lib/deals/schemas";
 import { saveSponsorshipAction, type OpportunityHeroSearchResult } from "@/lib/sponsorship/actions";
-import { MAX_AMOUNT_CENTS, MAX_TIER_SLOTS, MAX_TIERS, tierShareCents, tierTotalCents, validateTiers, type TierDraft, type TierModel } from "@/lib/sponsorship/negotiation";
+import {
+  MAX_AMOUNT_CENTS,
+  MAX_TIER_SLOTS,
+  MAX_TIERS,
+  compensationPreview,
+  newTierDraft,
+  tierShareCents,
+  tierTotalCents,
+  validateTiers,
+  type TierDraft,
+  type TierModel,
+} from "@/lib/sponsorship/negotiation";
 import { MAX_PERKS, parsePerks, type SponsorshipAudience, type SponsorshipInput } from "@/lib/sponsorship/vocab";
 import { NETWORKS, type Network } from "@/lib/talent/vocab";
 import { AudienceFields } from "./AudienceFields";
@@ -39,8 +52,11 @@ type Props = {
 // descrição, alcance, redes, prazo para responder e quem vê. 0088: cotas (1 a 3: nome, valor pedido só para o Adm,
 // contrapartidas uma por linha e quantas marcas levam) e o público do evento (mesmos campos da campanha). Mobile
 // first: um campo por linha no celular, botões grandes.
+// 0140: em cada cota, a forma de pagamento (como a marca paga, por marca: Valor, Permuta, Performance), definida pelo
+// Adm como o valor pedido; sem "Valor", a cota não tem valor pedido.
 export function SponsorshipForm({ initial, brands, status = "new", heroLocked = false, search, canValues, lockedTierIds = [] }: Props) {
   const t = useTranslations("sponsorship.agency.form");
+  const tc = useTranslations("compensation");
   const tdp = useTranslations("common.datePicker");
   const tn = useTranslations("mediaKit.networks");
   const router = useRouter();
@@ -69,6 +85,7 @@ export function SponsorshipForm({ initial, brands, status = "new", heroLocked = 
       const n = checked.index + 1;
       if (checked.error === "count") return setError(t("tiers.errors.count", { max: MAX_TIERS }));
       if (checked.error === "perks") return setError(t("tiers.errors.perks", { n, max: MAX_PERKS }));
+      if (checked.error === "compensation") return setError(t("tiers.errors.compensation", { n, reason: tc(`errors.${checked.reason ?? "invalid_compensation"}`) }));
       return setError(t(`tiers.errors.${checked.error}`, { n, max: MAX_TIER_SLOTS }));
     }
     const rest: Partial<SponsorshipFormValues> = { ...v };
@@ -160,7 +177,8 @@ export function SponsorshipForm({ initial, brands, status = "new", heroLocked = 
                 <Input value={tier.name} maxLength={40} placeholder={t("tiers.namePlaceholder")} onChange={(e) => setTier({ name: e.target.value })} disabled={pending} />
               </FormField>
               {/* 0108: valor fixo do evento (as marcas completam) | valor por marca × quantidade de marcas */}
-              <TierValueFields tier={tier} canValues={canValues} disabled={pending} onChange={setTier} />
+              {/* 0140: dentro da forma de pagamento da cota (Valor, Permuta, Performance) */}
+              <TierValueFields tier={tier} index={i} canValues={canValues} disabled={pending} onChange={setTier} />
               <FormField label={t("tiers.perks")} hint={t("perksHint", { max: MAX_PERKS })}>
                 <Textarea value={tier.perksText} rows={3} placeholder={t("perksPlaceholder")} onChange={(e) => setTier({ perksText: e.target.value })} disabled={pending} />
               </FormField>
@@ -173,7 +191,7 @@ export function SponsorshipForm({ initial, brands, status = "new", heroLocked = 
           );
         })}
         {v.tiers.length < MAX_TIERS ? (
-          <Button type="button" variant="secondary" leadingIcon={<Plus />} className="self-start" onClick={() => set("tiers", [...v.tiers, { id: null, name: "", priceText: "", perksText: "", slots: 1, valueModel: "por_marca" }])} disabled={pending}>
+          <Button type="button" variant="secondary" leadingIcon={<Plus />} className="self-start" onClick={() => set("tiers", [...v.tiers, newTierDraft()])} disabled={pending}>
             {t("tiers.add")}
           </Button>
         ) : null}
@@ -255,7 +273,9 @@ export function SponsorshipForm({ initial, brands, status = "new", heroLocked = 
 // 0108: modelo de valor da cota, no mesmo visual do ValueModelFields da área das marcas: "Valor fixo do evento" (total
 // da cota, que as marcas que entram completam) ou "Valor por marca" (× quantidade de marcas = teto). O gestor vê o
 // modelo e as vagas, mas o valor fica com o Adm.
-function TierValueFields({ tier, canValues, disabled, onChange }: { tier: TierDraft; canValues: boolean; disabled: boolean; onChange: (patch: Partial<TierDraft>) => void }) {
+// 0140: para o Adm, modelo e valor ficam dentro da forma de pagamento (só com "Valor" marcado), ao lado da permuta e da
+// performance de cada marca. O gestor vê a forma gravada sem números; sem dinheiro, nada de "o Adm define o valor".
+function TierValueFields({ tier, index, canValues, disabled, onChange }: { tier: TierDraft; index: number; canValues: boolean; disabled: boolean; onChange: (patch: Partial<TierDraft>) => void }) {
   const t = useTranslations("sponsorship.tierValue");
   const locale = useLocale() as Locale;
   const fixed = tier.valueModel === "fixo";
@@ -263,39 +283,71 @@ function TierValueFields({ tier, canValues, disabled, onChange }: { tier: TierDr
   const cents = typeof price === "number" && price > 0 ? price : null;
   const total = tierTotalCents({ valueModel: tier.valueModel, priceCents: cents, slots: tier.slots });
   const share = tierShareCents({ valueModel: tier.valueModel, priceCents: cents, slots: tier.slots });
+  const preview = compensationPreview(tier.compensation);
+  const cash = canValues ? tier.compensation.money : preview.money;
+
+  const model = (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-sm font-medium text-fg">{t("model")}</span>
+      <SegmentedControl<TierModel>
+        aria-label={t("model")}
+        value={tier.valueModel}
+        onValueChange={(m) => {
+          if (canValues && !disabled) onChange({ valueModel: m });
+        }}
+        options={[
+          { value: "fixo", label: t("fixo"), disabled: disabled || !canValues },
+          { value: "por_marca", label: t("porMarca"), disabled: disabled || !canValues },
+        ]}
+        className="w-full sm:w-fit"
+      />
+      <p className="type-caption text-fg-muted">{fixed ? t("hintFixo") : t("hintPorMarca")}</p>
+    </div>
+  );
+  const priceField = canValues ? (
+    <FormField label={fixed ? t("amountFixo") : t("amountPorMarca")} hint={t("amountHint")}>
+      <MoneyInput value={tier.priceText} maxCents={MAX_AMOUNT_CENTS} onValueChange={(text) => onChange({ priceText: text })} disabled={disabled} data-testid="sponsorship-tier-price" />
+    </FormField>
+  ) : (
+    <FormField label={fixed ? t("amountFixo") : t("amountPorMarca")}>
+      <p className="flex min-h-11 items-center type-body-sm text-fg-muted">{t("byAdmin")}</p>
+    </FormField>
+  );
+  const slots = (
+    <FormField label={t("slots")} hint={!cash ? t("slotsHintNoCash") : fixed ? t("slotsHintFixo") : t("slotsHintPorMarca")}>
+      <QuantityInput min={1} max={MAX_TIER_SLOTS} value={tier.slots} onValueChange={(n) => onChange({ slots: n })} disabled={disabled} data-testid="sponsorship-tier-slots" />
+    </FormField>
+  );
+
+  if (!canValues) {
+    return (
+      <div className="flex flex-col gap-3" data-testid="sponsorship-tier-value">
+        {cash ? model : null}
+        <div className="grid gap-3 sm:grid-cols-2">
+          {cash ? priceField : null}
+          {slots}
+        </div>
+        <CompensationView compensation={preview} canValues={false} />
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-3" data-testid="sponsorship-tier-value">
-      <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-fg">{t("model")}</span>
-        <SegmentedControl<TierModel>
-          aria-label={t("model")}
-          value={tier.valueModel}
-          onValueChange={(m) => {
-            if (canValues && !disabled) onChange({ valueModel: m });
-          }}
-          options={[
-            { value: "fixo", label: t("fixo"), disabled: disabled || !canValues },
-            { value: "por_marca", label: t("porMarca"), disabled: disabled || !canValues },
-          ]}
-          className="w-full sm:w-fit"
-        />
-        <p className="type-caption text-fg-muted">{fixed ? t("hintFixo") : t("hintPorMarca")}</p>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {canValues ? (
-          <FormField label={fixed ? t("amountFixo") : t("amountPorMarca")} hint={t("amountHint")}>
-            <MoneyInput value={tier.priceText} maxCents={MAX_AMOUNT_CENTS} onValueChange={(text) => onChange({ priceText: text })} disabled={disabled} data-testid="sponsorship-tier-price" />
-          </FormField>
-        ) : (
-          <FormField label={fixed ? t("amountFixo") : t("amountPorMarca")}>
-            <p className="flex min-h-11 items-center type-body-sm text-fg-muted">{t("byAdmin")}</p>
-          </FormField>
-        )}
-        <FormField label={t("slots")} hint={fixed ? t("slotsHintFixo") : t("slotsHintPorMarca")}>
-          <QuantityInput min={1} max={MAX_TIER_SLOTS} value={tier.slots} onValueChange={(n) => onChange({ slots: n })} disabled={disabled} data-testid="sponsorship-tier-slots" />
-        </FormField>
-      </div>
-      {canValues ? (
+      <CompensationFields
+        idPrefix={`sponsorship-tier-${index}`}
+        draft={tier.compensation}
+        onChange={(compensation) => onChange({ compensation })}
+        disabled={disabled}
+        hint={t("compHint")}
+        money={
+          <>
+            {model}
+            {priceField}
+          </>
+        }
+      />
+      {slots}
+      {cash ? (
         <p role="status" className="rounded-xl border border-accent/30 bg-accent-soft px-3 py-2 text-sm text-fg" data-testid="sponsorship-tier-summary">
           {total !== null ? (
             <>

@@ -6,11 +6,14 @@ import { z } from "zod";
 import { agencyFail } from "@/lib/agency/errors";
 import { requireAgency } from "@/lib/agency/server";
 import { requireBrand } from "@/lib/brand-portal/server";
+import { compensationDbSchema } from "@/lib/compensation/schema";
 import { createClient } from "@/lib/supabase/server";
-import { MAX_HEROES_LIMIT, validateTerms } from "@/lib/value-model/model";
+import { MAX_HEROES_LIMIT } from "@/lib/value-model/model";
+import { offerReplyArgs } from "./offer";
 
 // Proposta da marca no negócio (0106): a agência (só Adm) aceita ou contrapropõe; a marca (só o dono) aceita,
 // contrapropõe ou recusa a contraproposta. As RPCs conferem papel, vez e etapa de novo; aqui só a forma.
+// 0140: a contraproposta leva a forma de pagamento (valor, permuta e/ou performance); sem dinheiro, vai sem valor.
 
 export type OfferResult = { ok: true; message: string; status: string } | { ok: false; error: string };
 
@@ -25,6 +28,8 @@ const schema = z.object({
   periodStart: day,
   periodEnd: day,
   note: z.string().trim().max(500),
+  /** 0140: obrigatória na contraproposta (null no banco = só valor); o banco confere de novo (compensation_valid). */
+  compensation: compensationDbSchema.nullable().default(null),
 });
 type Input = z.input<typeof schema>;
 
@@ -37,28 +42,14 @@ function refresh(dealId: string, requestId: string | null) {
 
 async function run(side: "agency" | "brand", input: Input): Promise<OfferResult> {
   const parsed = schema.safeParse(input);
-  if (!parsed.success) return agencyFail("invalid_input");
+  if (!parsed.success) return agencyFail(parsed.error.issues.some((i) => i.path[0] === "compensation") ? "invalid_compensation" : "invalid_input");
   const d = parsed.data;
   if (side === "agency" && d.action === "decline") return agencyFail("invalid_input");
-  if (d.action === "counter") {
-    const problem = validateTerms({ model: d.valueModel, amountCents: d.amountCents, maxHeroes: d.valueModel === "por_heroi" ? d.maxHeroes : null }, { requireAmount: true });
-    if (problem) return agencyFail(problem);
-    if (d.periodEnd && (!d.periodStart || d.periodEnd < d.periodStart)) return agencyFail("invalid_input");
-  }
-  const counter = d.action === "counter";
-  const args = {
-    p_deal: d.dealId,
-    p_action: d.action,
-    p_amount_cents: counter ? d.amountCents : null,
-    p_value_model: counter ? d.valueModel : null,
-    p_max_heroes: counter && d.valueModel === "por_heroi" ? d.maxHeroes : null,
-    p_period_start: counter && d.periodStart ? d.periodStart : null,
-    p_period_end: counter && d.periodStart ? d.periodEnd || d.periodStart : null,
-    p_note: d.note || null,
-  };
+  const built = offerReplyArgs(d);
+  if (!built.ok) return agencyFail(built.error);
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc(side === "agency" ? "agency_deal_offer_reply" : "brand_deal_offer_reply", args);
+    const { data, error } = await supabase.rpc(side === "agency" ? "agency_deal_offer_reply" : "brand_deal_offer_reply", built.args);
     if (error) return agencyFail(error);
     refresh(d.dealId, d.requestId);
     const status = String(data ?? "");

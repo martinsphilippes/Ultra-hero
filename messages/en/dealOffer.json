@@ -42,7 +42,8 @@
   },
   "acceptDialog": {
     "title": "Accept these terms?",
-    "hint": "They become the campaign's agreed value. After the agreement, budget changes go through a change request."
+    "hint": "They become the campaign's agreed value. After the agreement, budget changes go through a change request.",
+    "hintNoMoney": "They become the campaign's agreed payment type, with no cash: barter and/or performance only."
   },
   "counterDialog": {
     "title": "Make a counteroffer",

@@ -97,8 +97,8 @@
       "submitEdit": "Guardar",
       "tiers": {
         "title": "Cuotas de patrocinio",
-        "hintAdmin": "De 1 a 3 cuotas (ej.: Master, Apoyo). El valor pedido es lo que el Hero necesita; sin valor, la marca ve “Valor a convenir”.",
-        "hintManager": "De 1 a 3 cuotas (ej.: Master, Apoyo). El valor pedido lo define el Adm de la agencia.",
+        "hintAdmin": "De 1 a 3 cuotas (ej.: Master, Apoyo). En cada cuota, la forma de pago: valor, canje y/o performance. El valor pedido es lo que el Hero necesita; sin valor, la marca ve “Valor a convenir”.",
+        "hintManager": "De 1 a 3 cuotas (ej.: Master, Apoyo). El valor pedido y la forma de pago (canje, performance) los define el Adm de la agencia.",
         "name": "Nombre de la cuota",
         "namePlaceholder": "Ej.: Master",
         "price": "Valor pedido",
@@ -116,7 +116,8 @@
           "nameRepeated": "Cuota {n}: ya hay otra con ese nombre.",
           "price": "Cuota {n}: valor inválido.",
           "perks": "Cuota {n}: cada contrapartida de 3 a 120 letras, sin repetir, hasta {max}.",
-          "slots": "Cuota {n}: de 1 a {max} marcas."
+          "slots": "Cuota {n}: de 1 a {max} marcas.",
+          "compensation": "Cuota {n}: {reason}"
         }
       },
       "publicTitle": "Público del evento",
@@ -320,6 +321,7 @@
     "sideBrand": "Marca",
     "action": {
       "accept_asked": "Aceptó la cuota por el valor pedido",
+      "accept_as_is": "Aceptó la cuota tal como está",
       "propose": "Propuesta",
       "counter": "Contrapropuesta",
       "accept": "Aceptó",
@@ -336,6 +338,7 @@
     "composer": {
       "amount": "Valor propuesto",
       "amountHintNoAsk": "La agencia no pidió valor: propone el tuyo.",
+      "compHint": "Cómo paga la marca esta cuota. Ej.: valor + canje, o solo canje.",
       "sameAsAsked": "Igual al valor pedido",
       "perks": "Contrapartidas (marca lo que queda)",
       "removeExtra": "Quitar “{item}”",
@@ -353,6 +356,7 @@
     "askedWas": "Pedido de la agencia: {amount}",
     "agreedTitle": "Patrocinio acordado",
     "agreedHint": "Valor y contrapartidas quedaron congelados. La campaña ya está lista con ellos: revisa y envía.",
+    "agreedHintNoCash": "Forma de pago y contrapartidas quedaron congeladas. La campaña ya está lista con ellas: revisa y envía.",
     "openCampaign": "Abrir la campaña",
     "endReason": {
       "declined_brand": "Tu marca rechazó esta negociación.",
@@ -383,11 +387,12 @@
     "sendCounter": "Enviar contrapropuesta",
     "sendToOwner": "Enviar al dueño para aprobar",
     "tiersTitle": "Cuotas",
-    "tiersHint": "El valor es lo que pide la agencia. Acéptalo o haz tu propuesta.",
+    "tiersHint": "Lo que pide la agencia en cada cuota: valor, canje y/o performance. Acéptalo o haz tu propuesta.",
     "tierFull": "Agotada",
     "tierSlots": "{count} marcas",
     "priceToCombine": "Valor a convenir",
     "acceptAsked": "Aceptar por el valor pedido",
+    "acceptAsIs": "Aceptar tal como está",
     "makeCounter": "Hacer contrapropuesta",
     "makeProposal": "Hacer propuesta",
     "sendProposal": "Enviar propuesta",
@@ -402,10 +407,18 @@
         "bodyStaff": "Cuota {tier} por {amount}. Va al dueño de la marca para aprobar.",
         "cta": "Aceptar"
       },
+      "acceptAsIs": {
+        "title": "¿Aceptar la cuota tal como está?",
+        "body": "Cuota {tier}, con la forma de pago de abajo. El patrocinio queda acordado al instante y la campaña nace lista.",
+        "bodyStaff": "Cuota {tier}, con la forma de pago de abajo. Va al dueño de la marca para aprobar.",
+        "cta": "Aceptar"
+      },
       "accept": {
         "title": "¿Aceptar la contrapropuesta?",
         "body": "Cierra por {amount} con las contrapartidas de la agencia.",
         "bodyStaff": "{amount}. Va al dueño de la marca para aprobar.",
+        "bodyNoCash": "Cierra sin dinero, con la forma de pago de abajo y las contrapartidas de la agencia.",
+        "bodyNoCashStaff": "Sin dinero, con la forma de pago de abajo. Va al dueño de la marca para aprobar.",
         "cta": "Aceptar"
       },
       "decline": {
@@ -421,6 +434,7 @@
       "agency_accept": {
         "title": "¿Aceptar la propuesta?",
         "body": "{brand} patrocina por {amount}. Valor y contrapartidas quedan congelados.",
+        "bodyNoCash": "{brand} patrocina sin dinero, con la forma de pago de abajo. Forma de pago y contrapartidas quedan congeladas.",
         "cta": "Aceptar"
       },
       "agency_decline": {
@@ -436,6 +450,7 @@
     "agencyEmpty": "Ninguna propuesta todavía.",
     "valuesAdminOnly": "Valores: solo los ve el Adm de la agencia.",
     "agencyAgreedHint": "La campaña de la marca nació con el valor y las contrapartidas del acuerdo.",
+    "agencyAgreedHintNoCash": "La campaña de la marca nació con la forma de pago y las contrapartidas del acuerdo.",
     "waitingBrandAgency": "Esperando la respuesta de la marca.",
     "adminAnswers": "Esperando la respuesta del Adm de la agencia.",
     "agencyAccept": "Aceptar",
@@ -468,9 +483,11 @@
     "amountPorMarca": "Valor por marca",
     "amountHint": "Vacío = \"a convenir\".",
     "byAdmin": "El Adm define el valor",
+    "compHint": "Cómo paga cada marca esta cuota. Ej.: valor, o 50 cajas de bebida en canje.",
     "slots": "Cantidad de marcas",
     "slotsHintFixo": "Hasta cuántas marcas dividen el valor.",
     "slotsHintPorMarca": "Cuántas marcas pueden tomar la cuota.",
+    "slotsHintNoCash": "Cuántas marcas pueden tomar la cuota (cada una con su canje o performance).",
     "summaryTotal": "Total de la cuota: {value}",
     "summaryFixo": "Cada marca desde ≈ {share} (hasta {n} marcas)",
     "summaryPorMarca": "{value} por marca × {n} marca(s)",

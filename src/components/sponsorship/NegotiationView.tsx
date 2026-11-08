@@ -1,15 +1,18 @@
 import { ArrowDownRight, ArrowUpRight, Building2, Store } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { CompensationView } from "@/components/compensation/CompensationView";
 import { Badge, type BadgeVariant } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
+import { isMoneyOnly, type Compensation } from "@/lib/compensation/model";
 import { formatCents } from "@/lib/deals/schemas";
-import { perksDiff, priceDiff, publicChips, type ProposalBadge, type SponsorshipPublic } from "@/lib/sponsorship/negotiation";
+import { perksDiff, priceDiff, publicChips, roundActionKey, type ProposalBadge, type SponsorshipPublic } from "@/lib/sponsorship/negotiation";
 import type { NegotiationRound } from "@/lib/sponsorship/vocab";
 
 // Negociação do patrocínio (0088): selo da proposta, valor com a diferença em relação ao pedido, chips do público e
 // a linha do tempo das rodadas (quem, quando, valor — só para quem lê valor —, contrapartidas e nota). Serve à marca
-// e à agência; o creator nunca recebe rodadas.
+// e à agência; o Hero nunca recebe rodadas. 0140: a forma de pagamento da rodada (permuta, performance) quando há,
+// com números só para quem lê valor; rodada sem dinheiro não mostra valor.
 
 const BADGE_VARIANT: Record<ProposalBadge, BadgeVariant> = {
   waitingOwner: "warning",
@@ -71,17 +74,29 @@ export function PublicChips({ value, label }: { value: SponsorshipPublic | null;
   );
 }
 
-type TimelineProps = { rounds: NegotiationRound[]; basePerks: string[]; timeZone: string; viewer: "brand" | "agency"; brandName?: string };
+type TimelineProps = {
+  rounds: NegotiationRound[];
+  basePerks: string[];
+  timeZone: string;
+  viewer: "brand" | "agency";
+  brandName?: string;
+  /** 0140: quem lê valores (marca, Adm) vê os números da permuta e da performance */
+  canValues?: boolean;
+};
 
-export function NegotiationTimeline({ rounds, basePerks, timeZone, viewer, brandName }: TimelineProps) {
+export function NegotiationTimeline({ rounds, basePerks, timeZone, viewer, brandName, canValues = true }: TimelineProps) {
   const t = useTranslations("sponsorship.negotiation");
   const locale = useLocale() as Locale;
   let previous = basePerks;
+  let previousComp: Compensation | null = null;
   return (
     <ol className="flex flex-col gap-3 border-l-2 border-border pl-4" data-testid="negotiation-timeline">
       {rounds.map((r) => {
         const diff = r.perks ? perksDiff(previous, r.perks) : null;
         if (r.perks && r.state === "sent") previous = r.perks;
+        // forma de pagamento: quando há permuta/performance, ou quando a rodada volta a ser só valor
+        const showComp = r.action !== "decline" && (!isMoneyOnly(r.compensation) || (previousComp !== null && !isMoneyOnly(previousComp)));
+        if (r.action !== "decline" && r.state === "sent") previousComp = r.compensation;
         const SideIcon = r.side === "agency" ? Building2 : Store;
         const who = r.side === "agency" ? t("sideAgency") : (brandName ?? t("sideBrand"));
         return (
@@ -90,7 +105,7 @@ export function NegotiationTimeline({ rounds, basePerks, timeZone, viewer, brand
               <SideIcon className="size-3 text-accent-text" aria-hidden="true" />
             </span>
             <span className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-semibold text-fg">{t(`action.${r.action}`)}</span>
+              <span className="text-sm font-semibold text-fg">{t(roundActionKey(r))}</span>
               {r.state !== "sent" ? (
                 <Badge size="sm" variant={r.state === "pending_owner" ? "warning" : "neutral"}>
                   {t(`roundState.${r.state}`)}
@@ -102,6 +117,7 @@ export function NegotiationTimeline({ rounds, basePerks, timeZone, viewer, brand
               {r.actorLabel ? ` · ${r.actorLabel}` : ""} · {formatDateTime(r.createdAt, locale, timeZone)}
             </span>
             {r.amountCents !== null ? <span className="text-sm font-semibold text-fg">{formatCents(r.amountCents, locale)}</span> : null}
+            {showComp ? <CompensationView compensation={r.compensation} canValues={canValues} always /> : null}
             {diff && r.action !== "accept" && r.action !== "accept_asked" ? (
               <span className="flex flex-wrap gap-1.5">
                 {diff.added.map((p) => (

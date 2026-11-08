@@ -425,7 +425,8 @@
     "action_closed": "Esta acción ya terminó.",
     "sensitive_data": "Quita CPF y datos bancarios del acta. Esos datos siguen el procedimiento interno seguro, no el acta.",
     "meeting_incomplete": "Para concluir, el acta necesita representante, resumen ejecutivo, fecha de seguimiento y al menos un próximo paso con responsable y plazo.",
-    "meeting_final": "Esta acta ya fue concluida."
+    "meeting_final": "Esta acta ya fue concluida.",
+    "invalid_compensation": "Revisa la forma de pago: marca valor, canje o performance y completa lo que cada una pide."
   },
   "casting": {
     "title": "Casting",

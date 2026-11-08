@@ -7,7 +7,7 @@ import { listAgencyBrands } from "@/lib/agency/queries";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
 import { plusDays } from "@/lib/calendar/ics";
-import { EMPTY_PUBLIC } from "@/lib/sponsorship/negotiation";
+import { EMPTY_PUBLIC, newTierDraft } from "@/lib/sponsorship/negotiation";
 import { localParts } from "@/lib/sponsorship/vocab";
 import { FromEventNotice } from "@/components/culture/EventCommerce";
 import { sponsorshipPrefill } from "@/lib/culture/prefill";
@@ -97,7 +97,8 @@ export default async function NewSponsorshipPage({ searchParams }: Props) {
           endTime: pre?.endTime ?? "12:00",
           allDay: pre?.allDay ?? false,
           expectedReach: "",
-          tiers: [{ id: null, name: t("form.tiers.defaultName"), priceText: "", perksText: "", slots: 1, valueModel: "por_marca" }],
+          // 0140: cota única, só valor (o Adm marca permuta/performance na forma de pagamento da cota)
+          tiers: [newTierDraft(t("form.tiers.defaultName"))],
           public: EMPTY_PUBLIC,
           networks: ["instagram"],
           respondDate: pre?.respondDate ?? respond,

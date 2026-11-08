@@ -2,7 +2,7 @@ import { ArrowRight, TrendingUp } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { FilterBox } from "@/components/finance/FinanceFilters";
-import { BUCKET_KEYS, type BucketKey, type CampaignProjection as Projection, type ProjectionBucket, bucketShares, bucketTotal, projectionYears, segmentHint, yearHref } from "@/lib/projection/campaign";
+import { BUCKET_KEYS, EXTRA_KEYS, type BucketKey, type CampaignProjection as Projection, type ExtraKey, type ProjectionBucket, bucketShares, bucketTotal, extrasTotal, projectionYears, segmentHint, yearHref } from "@/lib/projection/campaign";
 import { cn } from "@/lib/utils";
 
 // Aba "Projeção" do Financeiro (0139, pedido de 08/11/2026), para a agência (gestor, equipe e Adm) e para o Hero:
@@ -16,8 +16,11 @@ function money(locale: string, value: number): string {
   return new Intl.NumberFormat(locale, { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(value / 100);
 }
 
-function Breakdown({ bucket, locale, labels }: { bucket: ProjectionBucket; locale: string; labels: Record<BucketKey, string> }) {
+type Labels = Record<BucketKey | ExtraKey, string>;
+
+function Breakdown({ bucket, locale, labels }: { bucket: ProjectionBucket; locale: string; labels: Labels }) {
   const shares = bucketShares(bucket);
+  const extras = EXTRA_KEYS.filter((k) => bucket[k] > 0);
   return (
     <div className="flex flex-col gap-2">
       <div className="flex h-2 w-full overflow-hidden rounded-full bg-surface-hover" aria-hidden="true">
@@ -34,6 +37,17 @@ function Breakdown({ bucket, locale, labels }: { bucket: ProjectionBucket; local
           </div>
         ))}
       </dl>
+      {/* 0140: permuta e performance à parte, pelo valor estimado (fora do total em dinheiro) */}
+      {extras.length > 0 ? (
+        <dl className="flex flex-col gap-1 border-t border-border pt-2" data-testid="projection-extras">
+          {extras.map((k) => (
+            <div key={k} className="flex items-center justify-between gap-2 type-caption">
+              <dt className="text-fg-muted">{labels[k]}</dt>
+              <dd className="font-mono tabular-nums text-fg">{money(locale, bucket[k])}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
     </div>
   );
 }
@@ -52,7 +66,7 @@ function BigCard({
   hint: string;
   bucket: ProjectionBucket;
   locale: string;
-  labels: Record<BucketKey, string>;
+  labels: Labels;
   cta?: { href: string; label: string } | null;
   testid: string;
   highlight?: boolean;
@@ -93,11 +107,17 @@ export async function CampaignProjection({
   side: "hero" | "team";
 }) {
   const [t, locale] = await Promise.all([getTranslations("projection"), getLocale()]);
-  const labels = { won: t("buckets.won"), open: t("buckets.open"), available: t("buckets.available") };
+  const labels: Labels = {
+    won: t("buckets.won"),
+    open: t("buckets.open"),
+    available: t("buckets.available"),
+    barter: t("extras.barter"),
+    performance: t("extras.performance"),
+  };
   const period = year === null ? t("total") : String(year);
   const years = projectionYears(data.years, currentYear);
   const cta = opportunitiesHref && data.segment.available > 0 ? { href: opportunitiesHref, label: t("seeOpportunities") } : null;
-  const ranking = data.segments.filter((s) => bucketTotal(s) > 0).slice(0, 12);
+  const ranking = data.segments.filter((s) => bucketTotal(s) + extrasTotal(s) > 0).slice(0, 12);
 
   return (
     <div className="flex flex-col gap-4" data-testid="campaign-projection">
@@ -149,7 +169,10 @@ export async function CampaignProjection({
                   <span className="truncate">{s.name}</span>
                   {s.mine ? <span className="shrink-0 type-caption font-semibold text-accent-text">{t("yours")}</span> : null}
                 </span>
-                <span className="shrink-0 font-mono text-sm tabular-nums text-fg">{money(locale, bucketTotal(s))}</span>
+                <span className="flex shrink-0 flex-col items-end">
+                  <span className="font-mono text-sm tabular-nums text-fg">{money(locale, bucketTotal(s))}</span>
+                  {extrasTotal(s) > 0 ? <span className="type-caption text-fg-muted">{t("extrasLine", { value: money(locale, extrasTotal(s)) })}</span> : null}
+                </span>
               </li>
             ))}
           </ul>

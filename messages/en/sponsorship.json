@@ -97,8 +97,8 @@
       "submitEdit": "Save",
       "tiers": {
         "title": "Sponsorship tiers",
-        "hintAdmin": "1 to 3 tiers (e.g. Main, Support). The asking price is what the hero needs; without it, brands see “Price to be agreed”.",
-        "hintManager": "1 to 3 tiers (e.g. Main, Support). The asking price is set by the agency Admin.",
+        "hintAdmin": "1 to 3 tiers (e.g. Main, Support). For each tier, the payment type: cash, barter and/or performance. The asking price is what the hero needs; without it, brands see “Price to be agreed”.",
+        "hintManager": "1 to 3 tiers (e.g. Main, Support). The asking price and the payment type (barter, performance) are set by the agency Admin.",
         "name": "Tier name",
         "namePlaceholder": "E.g. Main",
         "price": "Asking price",
@@ -116,7 +116,8 @@
           "nameRepeated": "Tier {n}: another tier has this name.",
           "price": "Tier {n}: invalid price.",
           "perks": "Tier {n}: each item 3 to 120 characters, no repeats, up to {max}.",
-          "slots": "Tier {n}: 1 to {max} brands."
+          "slots": "Tier {n}: 1 to {max} brands.",
+          "compensation": "Tier {n}: {reason}"
         }
       },
       "publicTitle": "Event audience",
@@ -320,6 +321,7 @@
     "sideBrand": "Brand",
     "action": {
       "accept_asked": "Accepted the tier at the asking price",
+      "accept_as_is": "Accepted the tier as it is",
       "propose": "Proposal",
       "counter": "Counteroffer",
       "accept": "Accepted",
@@ -336,6 +338,7 @@
     "composer": {
       "amount": "Proposed amount",
       "amountHintNoAsk": "The agency set no price: propose yours.",
+      "compHint": "How the brand pays for this tier. E.g. cash + barter, or barter only.",
       "sameAsAsked": "Same as the asking price",
       "perks": "Deliverables (tick what stays)",
       "removeExtra": "Remove “{item}”",
@@ -353,6 +356,7 @@
     "askedWas": "Agency asked: {amount}",
     "agreedTitle": "Sponsorship agreed",
     "agreedHint": "Amount and deliverables are frozen. The campaign is ready with them: review and send.",
+    "agreedHintNoCash": "Payment type and deliverables are frozen. The campaign is ready with them: review and send.",
     "openCampaign": "Open the campaign",
     "endReason": {
       "declined_brand": "Your brand declined this negotiation.",
@@ -383,11 +387,12 @@
     "sendCounter": "Send counteroffer",
     "sendToOwner": "Send to owner for approval",
     "tiersTitle": "Tiers",
-    "tiersHint": "The price is what the agency asks. Accept it or make your own offer.",
+    "tiersHint": "What the agency asks for each tier: cash, barter and/or performance. Accept it or make your own offer.",
     "tierFull": "Taken",
     "tierSlots": "{count} brands",
     "priceToCombine": "Price to be agreed",
     "acceptAsked": "Accept at asking price",
+    "acceptAsIs": "Accept as it is",
     "makeCounter": "Make a counteroffer",
     "makeProposal": "Make an offer",
     "sendProposal": "Send offer",
@@ -402,10 +407,18 @@
         "bodyStaff": "{tier} tier for {amount}. It goes to the brand owner for approval.",
         "cta": "Accept"
       },
+      "acceptAsIs": {
+        "title": "Accept the tier as it is?",
+        "body": "{tier} tier, with the payment type below. The sponsorship is agreed right away and the campaign is created.",
+        "bodyStaff": "{tier} tier, with the payment type below. It goes to the brand owner for approval.",
+        "cta": "Accept"
+      },
       "accept": {
         "title": "Accept the counteroffer?",
         "body": "Closes at {amount} with the agency's deliverables.",
         "bodyStaff": "{amount}. It goes to the brand owner for approval.",
+        "bodyNoCash": "Closes with no cash, with the payment type below and the agency's deliverables.",
+        "bodyNoCashStaff": "No cash, with the payment type below. It goes to the brand owner for approval.",
         "cta": "Accept"
       },
       "decline": {
@@ -421,6 +434,7 @@
       "agency_accept": {
         "title": "Accept the offer?",
         "body": "{brand} sponsors for {amount}. Amount and deliverables are frozen.",
+        "bodyNoCash": "{brand} sponsors with no cash, with the payment type below. Payment type and deliverables are frozen.",
         "cta": "Accept"
       },
       "agency_decline": {
@@ -436,6 +450,7 @@
     "agencyEmpty": "No offers yet.",
     "valuesAdminOnly": "Prices: only the agency Admin sees them.",
     "agencyAgreedHint": "The brand's campaign was created with the agreed amount and deliverables.",
+    "agencyAgreedHintNoCash": "The brand's campaign was created with the agreed payment type and deliverables.",
     "waitingBrandAgency": "Waiting for the brand's reply.",
     "adminAnswers": "Waiting for the agency Admin to reply.",
     "agencyAccept": "Accept",
@@ -468,9 +483,11 @@
     "amountPorMarca": "Amount per brand",
     "amountHint": "Empty = \"to be agreed\".",
     "byAdmin": "The Admin sets the amount",
+    "compHint": "How each brand pays for this tier. E.g. cash, or 50 cases of drinks in barter.",
     "slots": "Number of brands",
     "slotsHintFixo": "How many brands can split the amount.",
     "slotsHintPorMarca": "How many brands can take this tier.",
+    "slotsHintNoCash": "How many brands can take this tier (each with its own barter or performance).",
     "summaryTotal": "Tier total: {value}",
     "summaryFixo": "Each brand from ≈ {share} (up to {n} brands)",
     "summaryPorMarca": "{value} per brand × {n} brand(s)",

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { EventEditorProvider, EventNewButton } from "@/components/calendar/EventEditor";
 import { EventList } from "@/components/calendar/EventList";
@@ -17,11 +16,12 @@ import { formatDateTime } from "@/i18n/format";
 import { listTeam } from "@/lib/agency/queries";
 import { zonedDayKey } from "@/lib/calendar/grid";
 import { listDealEvents } from "@/lib/calendar/queries";
-import { getDealOffer, getRequest, getRequestBudget, listActivities, listDealFees, listDealTalents } from "@/lib/deals/queries";
+import { getDealOffer, getDealValueTerms, getRequest, getRequestBudget, listActivities, listDealFees, listDealTalents } from "@/lib/deals/queries";
 import { splitSystemBody } from "@/lib/deals/vocab";
 import { closeWonPending, flowDeliverables, flowStep, flowTerms, isActiveHero, nextStep, nextStepHref, type CloseWonPending, type FlowInput } from "@/lib/deals/next-step";
 import { stageIndex } from "@/lib/deals/stages";
 import { getDealExecution } from "@/lib/execution/queries";
+import { withoutNumbers } from "@/lib/compensation/model";
 import { agencyBudgetChanges, agencyRates, dealEntries, dealPaymentPlan } from "@/lib/finance/queries";
 import { requestDeliverablesSchema } from "@/lib/deals/schemas";
 import { loadDeal } from "./_lib";
@@ -41,9 +41,10 @@ type Props = { params: Promise<{ id: string }> };
 export default async function DealOverviewPage({ params }: Props) {
   const { id } = await params;
   const { ctx, deal, isOwner, canEdit, isManager, isAdmin } = await loadDeal(id);
-  // 0128: como o projeto paga
-  const compRow = (await (await createClient()).from("deals").select("compensation_type, performance_pct").eq("id", deal.id).maybeSingle()).data;
-  const compensation = { type: compRow?.compensation_type ?? "fixed", pct: compRow?.performance_pct ?? null };
+  // 0140: forma de pagamento (valor, permuta e/ou performance). A coluna não é lida direto (sem grant): vem pela RPC,
+  // completa para o Adm e sem números para o gestor; a equipe não recebe (a RPC é do gestor para cima).
+  const valueTerms = isManager ? await getDealValueTerms(deal.id) : null;
+  const compensation = valueTerms ? (isAdmin ? valueTerms.compensation : withoutNumbers(valueTerms.compensation)) : undefined;
   const tz = ctx.agency.timezone || "America/Sao_Paulo";
   const [t, tc, tb, locale, team, request, budget, activities, talents, events, changes, tpay, offer] = await Promise.all([
     getTranslations("agency.deal"),
@@ -151,6 +152,7 @@ export default async function DealOverviewPage({ params }: Props) {
             canEdit={canEdit}
             canSetOwner={isManager}
             compensation={compensation}
+            canSetCompensation={isAdmin && compensation !== undefined}
           />
         </section>
         <section className={card} aria-labelledby="deal-activities">
