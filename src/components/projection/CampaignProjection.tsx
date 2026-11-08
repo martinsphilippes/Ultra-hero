@@ -2,7 +2,7 @@ import { ArrowRight, TrendingUp } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { FilterBox } from "@/components/finance/FinanceFilters";
-import { BUCKET_KEYS, type BucketKey, type CampaignProjection as Projection, type ProjectionBucket, bucketShares, bucketTotal, projectionYears, yearHref } from "@/lib/projection/campaign";
+import { BUCKET_KEYS, type BucketKey, type CampaignProjection as Projection, type ProjectionBucket, bucketShares, bucketTotal, projectionYears, segmentHint, yearHref } from "@/lib/projection/campaign";
 import { cn } from "@/lib/utils";
 
 // Aba "Projeção" do Financeiro (0139, pedido de 08/11/2026), para a agência (gestor, equipe e Adm) e para o Hero:
@@ -119,7 +119,7 @@ export async function CampaignProjection({
       <div className="grid gap-3 sm:grid-cols-2">
         <BigCard
           title={t("segment.title")}
-          hint={data.mySegments.length > 0 ? data.mySegments.join(" · ") : t("segment.none")}
+          hint={data.mySegments.length > 0 ? segmentHint(data.mySegments) : t("segment.none")}
           bucket={data.segment}
           locale={locale}
           labels={labels}

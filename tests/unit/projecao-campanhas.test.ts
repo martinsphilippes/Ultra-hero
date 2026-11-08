@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { bucketShares, bucketTotal, parseProjection, parseYearParam, projectionYears, yearHref } from "@/lib/projection/campaign";
+import { bucketShares, bucketTotal, parseProjection, parseYearParam, projectionYears, segmentHint, yearHref } from "@/lib/projection/campaign";
 
 // Projeção de campanhas (0139, pedido de 08/11/2026): "no seu segmento" e "para você", ano com filtro, tudo de campanha.
 
@@ -22,6 +22,15 @@ describe("filtro de período", () => {
   it("o filtro mantém a aba", () => {
     expect(yearHref("/agencia/financeiro?f=projection", 2026)).toBe("/agencia/financeiro?f=projection&ano=2026");
     expect(yearHref("/heroi/financeiro", null)).toBe("/heroi/financeiro?ano=total");
+  });
+});
+
+describe("segmentos no cartão", () => {
+  it("até 3 nomes; o resto vira +N", () => {
+    expect(segmentHint([])).toBe("");
+    expect(segmentHint(["Música", "Moda"])).toBe("Música · Moda");
+    expect(segmentHint(["Música", "Moda", "Fitness"])).toBe("Música · Moda · Fitness");
+    expect(segmentHint(["Música", "Moda", "Fitness", "Games", "Beleza"])).toBe("Música · Moda · Fitness +2");
   });
 });
 

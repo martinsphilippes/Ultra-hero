@@ -72,6 +72,12 @@ export function parseYearParam(v: string | undefined, current: number): number |
   return v && Number.isInteger(n) && n >= 2000 && n <= 2100 ? n : current;
 }
 
+/** Segmentos no cartão "no seu segmento": até `max` nomes e "+N" para o resto (gestor sem Hero vê os da agência toda). */
+export function segmentHint(names: readonly string[], max = 3): string {
+  if (names.length <= max) return names.join(" · ");
+  return `${names.slice(0, max).join(" · ")} +${names.length - max}`;
+}
+
 /** Endereço do filtro mantendo a aba (basePath pode já ter "?"). */
 export function yearHref(basePath: string, year: number | null): string {
   return `${basePath}${basePath.includes("?") ? "&" : "?"}ano=${year ?? "total"}`;
