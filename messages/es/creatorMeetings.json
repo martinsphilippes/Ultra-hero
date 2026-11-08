@@ -229,6 +229,7 @@
     "copySubject": "Copiar asunto",
     "copyText": "Copiar acta",
     "download": "Descargar .txt",
+    "print": "Imprimir o guardar como PDF",
     "email": "Abrir e-mail",
     "copied": "Copiado.",
     "copyFailed": "No se pudo copiar. Selecciona el texto y cópialo.",

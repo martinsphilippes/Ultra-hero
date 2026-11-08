@@ -58,6 +58,7 @@
     "brandLabel": "Nombre de la empresa",
     "brandLabelHint": "Aún no es cliente: la idea queda para prospección.",
     "segment": "Segmento",
+    "segmentFromHero": "Segmento del Hero: {names}. Puedes cambiarlo.",
     "hero": "Hero",
     "event": "Fecha del Calendario Groscove",
     "eventHint": "Estacionalidad: elige el evento y la fecha viene junto.",

@@ -154,23 +154,33 @@ export async function getCastingReport(agencyId: string, from: string, to: strin
 }
 
 export type PickerOption = { id: string; name: string };
+/** Marca com logo (cartão da caixa de busca). */
+export type BrandPick = PickerOption & { logoUrl: string | null };
+/** Hero do casting com foto, cidade e os segmentos em que está alocado (o segmento da ideia vem do Hero). */
+export type HeroPick = PickerOption & { photoUrl: string | null; city: string | null; state: string | null; segmentIds: string[] };
 export type EventOption = { id: string; title: string; day: string };
 
 /** Opções do formulário: marcas atendidas, segmentos e Heros do casting, eventos do Calendário Groscove (‑30 a +365 dias). */
-export async function strategyFormOptions(agencyId: string, today: string): Promise<{ brands: PickerOption[]; segments: PickerOption[]; talents: PickerOption[]; events: EventOption[] }> {
+export async function strategyFormOptions(agencyId: string, today: string): Promise<{ brands: BrandPick[]; segments: PickerOption[]; talents: HeroPick[]; events: EventOption[] }> {
   const supabase = await createClient();
   const from = new Date(Date.parse(`${today}T00:00:00Z`) - 30 * 86_400_000).toISOString();
   const to = new Date(Date.parse(`${today}T00:00:00Z`) + 365 * 86_400_000).toISOString();
   const [b, sg, t, e] = await Promise.all([
-    supabase.from("agency_brands").select("brand:brands(id, name)").eq("agency_id", agencyId),
+    supabase.from("agency_brands").select("brand:brands(id, name, logo_url)").eq("agency_id", agencyId),
     supabase.from("talent_segments").select("id, name").eq("agency_id", agencyId).eq("active", true).order("sort_order").order("name"),
-    supabase.from("talent_profiles").select("id, display_name").eq("agency_id", agencyId).is("archived_at", null).order("display_name").limit(500),
+    supabase
+      .from("talent_profiles")
+      .select("id, display_name, photo_url, city, state, talent_segment_links(segment_id)")
+      .eq("agency_id", agencyId)
+      .is("archived_at", null)
+      .order("display_name")
+      .limit(500),
     supabase.from("calendar_events").select("id, title, starts_at, timezone").eq("scope", "platform").in("status", ["published", "scheduled"]).gte("starts_at", from).lt("starts_at", to).order("starts_at").limit(400),
   ]);
-  const brands = ((b.data ?? []) as unknown as { brand: { id: string; name: string } | null }[])
+  const brands = ((b.data ?? []) as unknown as { brand: { id: string; name: string; logo_url: string | null } | null }[])
     .map((x) => x.brand)
-    .filter((x): x is { id: string; name: string } => Boolean(x))
-    .map((x) => ({ id: x.id, name: x.name }))
+    .filter((x): x is { id: string; name: string; logo_url: string | null } => Boolean(x))
+    .map((x) => ({ id: x.id, name: x.name, logoUrl: x.logo_url ?? null }))
     .sort((x, y) => x.name.localeCompare(y.name));
   const events = ((e.data ?? []) as { id: string; title: string; starts_at: string; timezone: string | null }[]).map((x) => ({
     id: x.id,
@@ -180,7 +190,23 @@ export async function strategyFormOptions(agencyId: string, today: string): Prom
   return {
     brands,
     segments: ((sg.data ?? []) as { id: string; name: string }[]).map((x) => ({ id: x.id, name: x.name })),
-    talents: ((t.data ?? []) as { id: string; display_name: string }[]).map((x) => ({ id: x.id, name: x.display_name })),
+    talents: (
+      (t.data ?? []) as unknown as {
+        id: string;
+        display_name: string;
+        photo_url: string | null;
+        city: string | null;
+        state: string | null;
+        talent_segment_links: { segment_id: string }[] | null;
+      }[]
+    ).map((x) => ({
+      id: x.id,
+      name: x.display_name,
+      photoUrl: x.photo_url,
+      city: x.city,
+      state: x.state,
+      segmentIds: (x.talent_segment_links ?? []).map((l) => l.segment_id),
+    })),
     events,
   };
 }

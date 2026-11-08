@@ -304,8 +304,8 @@
       "body": "{project}. Mira la ficha y las microetapas en el Plan de proyectos."
     },
     "creator_meeting_action": {
-      "title": "{count, plural, one {Una acción de la reunión con {talent} quedó contigo} other {# acciones de la reunión con {talent} quedaron contigo}}",
-      "body": "Mira el acta y el plazo de cada una, y márcalas cuando las hagas."
+      "title": "{count, plural, one {Un próximo paso de la reunión con {talent} quedó contigo} other {# próximos pasos de la reunión con {talent} quedaron contigo}}",
+      "body": "Mira el acta y el plazo de cada uno, y márcalos cuando los hagas."
     }
   }
 }

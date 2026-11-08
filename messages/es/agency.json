@@ -424,7 +424,7 @@
     "onda_profile_exists": "Esta página ya está en la lista.",
     "action_closed": "Esta acción ya terminó.",
     "sensitive_data": "Quita CPF y datos bancarios del acta. Esos datos siguen el procedimiento interno seguro, no el acta.",
-    "meeting_incomplete": "Para concluir, el acta necesita representante, resumen ejecutivo, fecha de seguimiento y al menos una acción con responsable y plazo.",
+    "meeting_incomplete": "Para concluir, el acta necesita representante, resumen ejecutivo, fecha de seguimiento y al menos un próximo paso con responsable y plazo.",
     "meeting_final": "Esta acta ya fue concluida."
   },
   "casting": {

@@ -4,7 +4,7 @@ import { agencyErrorCode } from "@/lib/agency/error-codes";
 import { installmentState, openCents, toClientReceivables } from "@/lib/finance/client-payments";
 import { insightMark, insightsState, isInsightLate } from "@/lib/media/insights";
 import { addMonths, cycleAnchors, cycleAt, cycleStart, occurrenceDates, recurrenceUnits } from "@/lib/roadmap/recurrence";
-import { monthKey, reportRange, sendHref, shiftMonth, strategyActions, strategyIdeaSchema } from "@/lib/strategy/vocab";
+import { monthKey, reportRange, segmentForHero, sendHref, shiftMonth, strategyActions, strategyIdeaSchema } from "@/lib/strategy/vocab";
 
 // Roteiros de entrega — Fase 3 (0111): espelhos puros das regras do banco (recorrência, insights), estratégias,
 // Hero-cliente que paga a agência e a entrada Estratégias no menu.
@@ -145,5 +145,16 @@ describe("Hero-cliente paga a agência", () => {
     expect(installmentState(r.entryStatus, r.installments[1], "2027-04-10")).toBe("today");
     expect(installmentState(r.entryStatus, r.installments[2], "2027-04-10")).toBe("open");
     expect(installmentState("forecast", r.installments[2], "2027-06-10")).toBe("forecast");
+  });
+});
+
+describe("ideia de estratégia: o Hero define o segmento (pedido de 08/11/2026)", () => {
+  it("escolher o Hero preenche o segmento em que ele está alocado", () => {
+    expect(segmentForHero("", ["beleza"])).toBe("beleza");
+    expect(segmentForHero("moda", ["beleza"])).toBe("beleza");
+  });
+  it("segmento que já é do Hero fica; Hero sem segmento não mexe no escolhido", () => {
+    expect(segmentForHero("moda", ["beleza", "moda"])).toBe("moda");
+    expect(segmentForHero("moda", [])).toBe("moda");
   });
 });

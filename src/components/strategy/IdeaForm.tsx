@@ -3,10 +3,12 @@
 import { Lightbulb, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState, useTransition, type FormEvent } from "react";
-import { Button, DatePicker, FormField, Input, SegmentedControl, Select, Textarea, useToast } from "@/components/ui";
+import { useMemo, useState, useTransition, type FormEvent } from "react";
+import { Button, DatePicker, EntitySelect, FormField, Input, SegmentedControl, Select, Textarea, useToast } from "@/components/ui";
 import { saveStrategyIdeaAction } from "@/lib/strategy/actions";
-import type { EventOption, PickerOption } from "@/lib/strategy/queries";
+import type { BrandPick, EventOption, HeroPick, PickerOption } from "@/lib/strategy/queries";
+import { segmentForHero } from "@/lib/strategy/vocab";
+import { brandOption, talentOption } from "@/lib/ui/entity";
 
 export type IdeaFormValues = {
   id: string;
@@ -23,8 +25,10 @@ export type IdeaFormValues = {
 
 type Target = "brand" | "prospect";
 
-// Ideia de estratégia para marca (0111, D3): marca atendida ou empresa-alvo, segmento, Hero, data do Calendário
+// Ideia de estratégia para marca (0111, D3): marca atendida ou empresa-alvo, Hero, segmento, data do Calendário
 // Groscove e o texto. Mobile first: um campo por linha, alvos ≥ 44 px. A IA é opcional (sem chave, a equipe escreve).
+// Marca e Hero têm busca pelo nome (caixa com lupa); escolher o Hero preenche o segmento em que ele está alocado
+// (dá para trocar).
 export function IdeaForm({
   initial,
   brands,
@@ -34,13 +38,14 @@ export function IdeaForm({
   aiStatus,
 }: {
   initial: IdeaFormValues;
-  brands: PickerOption[];
+  brands: BrandPick[];
   segments: PickerOption[];
-  talents: PickerOption[];
+  talents: HeroPick[];
   events: EventOption[];
   aiStatus: "not_configured" | "ready";
 }) {
   const t = useTranslations("strategy.form");
+  const tp = useTranslations("pickers");
   const router = useRouter();
   const { toast } = useToast();
   const [v, setV] = useState(initial);
@@ -48,6 +53,20 @@ export function IdeaForm({
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const set = <K extends keyof IdeaFormValues>(k: K, value: IdeaFormValues[K]) => setV((cur) => ({ ...cur, [k]: value }));
+  const brandOptions = useMemo(() => brands.map((b) => brandOption(tp, { id: b.id, name: b.name, logoUrl: b.logoUrl })), [brands, tp]);
+  const heroOptions = useMemo(
+    () => talents.map((h) => talentOption(tp, { id: h.id, name: h.name, city: h.city, state: h.state, avatarUrl: h.photoUrl })),
+    [talents, tp],
+  );
+  // segmentos do Hero escolhido que existem na lista (ativos)
+  const heroSegments = (talentId: string) => (talents.find((h) => h.id === talentId)?.segmentIds ?? []).filter((id) => segments.some((s) => s.id === id));
+  const ownSegments = heroSegments(v.talentId);
+
+  /** Escolher o Hero preenche o segmento dele (se o atual não for um dos segmentos do Hero). */
+  function pickHero(talentId: string) {
+    const own = heroSegments(talentId);
+    setV((cur) => ({ ...cur, talentId, segmentId: segmentForHero(cur.segmentId, own) }));
+  }
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -78,42 +97,47 @@ export function IdeaForm({
       </FormField>
       {target === "brand" ? (
         <FormField label={t("brand")} required>
-          <Select value={v.brandId} onChange={(e) => set("brandId", e.target.value)} disabled={pending} data-testid="strategy-brand">
-            <option value="">—</option>
-            {brands.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </Select>
+          <EntitySelect
+            options={brandOptions}
+            value={v.brandId}
+            emptyLabel="—"
+            roleInOption={false}
+            searchAlways
+            onChange={(e) => set("brandId", e.target.value)}
+            disabled={pending}
+            data-testid="strategy-brand"
+          />
         </FormField>
       ) : (
         <FormField label={t("brandLabel")} hint={t("brandLabelHint")} required>
           <Input value={v.brandLabel} onChange={(e) => set("brandLabel", e.target.value)} maxLength={120} disabled={pending} data-testid="strategy-brand-label" />
         </FormField>
       )}
-      <div className="grid gap-3 sm:grid-cols-2">
-        <FormField label={t("segment")}>
-          <Select value={v.segmentId} onChange={(e) => set("segmentId", e.target.value)} disabled={pending}>
-            <option value="">—</option>
-            {segments.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </Select>
-        </FormField>
-        <FormField label={t("hero")}>
-          <Select value={v.talentId} onChange={(e) => set("talentId", e.target.value)} disabled={pending} data-testid="strategy-hero">
-            <option value="">—</option>
-            {talents.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </Select>
-        </FormField>
-      </div>
+      <FormField label={t("hero")}>
+        <EntitySelect
+          options={heroOptions}
+          value={v.talentId}
+          emptyLabel="—"
+          roleInOption={false}
+          searchAlways
+          onChange={(e) => pickHero(e.target.value)}
+          disabled={pending}
+          data-testid="strategy-hero"
+        />
+      </FormField>
+      <FormField
+        label={t("segment")}
+        hint={ownSegments.length > 0 ? t("segmentFromHero", { names: ownSegments.map((id) => segments.find((s) => s.id === id)?.name ?? "").join(", ") }) : undefined}
+      >
+        <Select value={v.segmentId} onChange={(e) => set("segmentId", e.target.value)} disabled={pending} data-testid="strategy-segment">
+          <option value="">—</option>
+          {segments.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </Select>
+      </FormField>
       <FormField label={t("event")} hint={t("eventHint")}>
         <Select
           value={v.calendarEventId}

@@ -73,3 +73,12 @@ export function sendHref(idea: { id: string; talentId: string | null; brandId: s
   qs.set("ideia", idea.id);
   return `/agencia/oportunidades/nova?${qs.toString()}`;
 }
+
+/**
+ * Segmento da ideia depois de escolher o Hero: o segmento em que ele está alocado. Se o segmento atual já é um dos
+ * dele, fica; Hero sem segmento não mexe no que já estava escolhido.
+ */
+export function segmentForHero(current: string, heroSegments: readonly string[]): string {
+  if (heroSegments.length === 0 || heroSegments.includes(current)) return current;
+  return heroSegments[0];
+}

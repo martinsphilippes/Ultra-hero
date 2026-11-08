@@ -24,6 +24,8 @@ type EntitySelectProps = Omit<ComponentProps<typeof Select>, "children" | "value
   roleInOption?: boolean;
   /** Classe do bloco (select + cartão). */
   wrapperClassName?: string;
+  /** Busca pelo nome mesmo em lista curta (o padrão só mostra a partir de ENTITY_SEARCH_MIN opções). */
+  searchAlways?: boolean;
 };
 
 /** Cartão compacto da entidade escolhida: avatar/inicial, nome legível e uma linha de detalhes. */
@@ -67,7 +69,20 @@ export function filterEntityOptions(options: EntityOption[], query: string, limi
  * explicar a caixa: o que é, quem aparece na lista e o que acontece ao escolher.
  * Funciona controlada (value + onChange) ou não controlada (defaultValue, em <form method="get">).
  */
-export function EntitySelect({ options, value, defaultValue, onChange, emptyLabel, emptyCard, extraOptions, roleInOption = true, wrapperClassName, id, ...props }: EntitySelectProps) {
+export function EntitySelect({
+  options,
+  value,
+  defaultValue,
+  onChange,
+  emptyLabel,
+  emptyCard,
+  extraOptions,
+  roleInOption = true,
+  wrapperClassName,
+  searchAlways = false,
+  id,
+  ...props
+}: EntitySelectProps) {
   const [own, setOwn] = useState(defaultValue ?? (emptyLabel !== undefined ? "" : (options[0]?.value ?? "")));
   const current = value ?? own;
   const chosen = options.find((o) => o.value === current) ?? null;
@@ -85,7 +100,7 @@ export function EntitySelect({ options, value, defaultValue, onChange, emptyLabe
   const selectRef = useRef<HTMLSelectElement>(null);
   const searchId = useId();
   const [query, setQuery] = useState("");
-  const searchable = options.length >= ENTITY_SEARCH_MIN && !props.disabled;
+  const searchable = (searchAlways ? options.length > 0 : options.length >= ENTITY_SEARCH_MIN) && !props.disabled;
   const results = searchable ? filterEntityOptions(options, query) : [];
 
   function pick(next: string) {
