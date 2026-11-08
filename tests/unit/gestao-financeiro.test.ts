@@ -71,24 +71,25 @@ describe("códigos de erro e menu", () => {
     expect(AGENCY_ERROR_CODES).toContain("brand_inactive");
     expect(AGENCY_ERROR_CODES).toContain("no_hero");
   });
-  it("Financeiro e Histórico só para o Adm; rotas guardadas", () => {
+  it("Financeiro: o Adm vê tudo; gestor e equipe entram só na aba Projeção (0139); Histórico só o Adm", () => {
     expect(AGENCY_NAV).toContain("finance");
     expect(agencyNavKeys("admin")).toEqual(expect.arrayContaining(["finance", "history"]));
-    expect(agencyNavKeys("manager")).not.toContain("finance");
+    expect(agencyNavKeys("manager")).toContain("finance");
+    expect(agencyNavKeys("staff")).toContain("finance");
     expect(agencyNavKeys("staff")).not.toContain("history");
     expect(agencyNavKeys(null, true)).toContain("finance");
-    expect(AGENCY_ROUTE_MIN["/agencia/financeiro"]).toBe("admin");
+    expect(AGENCY_ROUTE_MIN["/agencia/financeiro"]).toBe("staff");
     expect(AGENCY_ROUTE_MIN["/agencia/historico"]).toBe("admin");
   });
 });
 
 describe("filtros do Financeiro em grade (pedido de 08/11/2026)", () => {
-  it("todos os filtros aparecem uma vez: 8 de situação em 4 colunas e as 2 listas à parte embaixo", async () => {
+  it("todos os filtros aparecem uma vez: 8 de situação em 4 colunas e as 3 telas à parte embaixo", async () => {
     const { financeFilterRows } = await import("@/components/finance/FinanceFilters");
     const { main, special } = financeFilterRows();
     expect(main).toEqual(["open", "receivable", "payable", "overdue", "forecast", "settled", "cancelled", "all"]);
-    expect(special).toEqual(["invoices", "payments"]);
+    expect(special).toEqual(["projection", "invoices", "payments"]);
     expect(new Set([...main, ...special]).size).toBe(main.length + special.length);
-    expect([...main, ...special].filter((f) => f !== "payments").sort()).toEqual([...ENTRY_FILTERS].sort());
+    expect([...main, ...special].filter((f) => f !== "payments" && f !== "projection").sort()).toEqual([...ENTRY_FILTERS].sort());
   });
 });

@@ -1267,7 +1267,8 @@
       "payments": "Brand payments",
       "receivable": "Receivable",
       "payable": "Payable",
-      "forecast": "Forecast"
+      "forecast": "Forecast",
+      "projection": "Projection"
     },
     "empty": {
       "open": "No open entry.",

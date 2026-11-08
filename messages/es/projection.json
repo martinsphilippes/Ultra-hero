@@ -1,12 +1,35 @@
 {
-  "title": "Proyección anual",
-  "hint": "Cachés cerrados en los últimos 12 meses + lo que está abierto en el pipeline. El canje no entra.",
-  "forYou": "Proyección para ti",
-  "forAgency": "Proyección de la agencia",
-  "split": "{won} cerrados · {open} abiertos",
-  "bySegment": "Proyección por segmento",
+  "title": "Proyección",
+  "lead": "Valores de campaña: negocios cerrados y en negociación, acuerdos y cupos libres de patrocinio y las convocatorias abiertas de las marcas. El canje no cuenta.",
+  "periodLabel": "Período de la proyección",
+  "total": "Total",
+  "segment": {
+    "title": "Proyección en tu segmento",
+    "none": "Tu segmento aparece cuando haya un Hero con segmento en el casting."
+  },
+  "mine": {
+    "title": "Proyección para ti",
+    "heroHint": "Tus cachés y tus cupos de patrocinio.",
+    "teamHint": "Los Heros que gestionas y los negocios de los que eres responsable."
+  },
+  "agency": {
+    "title": "Proyección de la agencia",
+    "hint": "Todo el valor de campaña de la agencia (solo lo ve el Adm)."
+  },
+  "buckets": {
+    "won": "Cerrado",
+    "open": "En negociación",
+    "available": "Oportunidades abiertas"
+  },
+  "platform": "En la plataforma ({period}): {value} en campañas.",
+  "seeOpportunities": "Ver oportunidades",
+  "ranking": "Por segmento",
   "yours": "tu segmento",
-  "empty": "Todavía no hay valores registrados en los negocios.",
+  "empty": "Todavía no hay valores de campaña en este período.",
+  "home": {
+    "title": "Proyección {period}",
+    "open": "Ver proyección"
+  },
   "compensation": {
     "label": "Cómo paga el proyecto",
     "hint": "Canje (producto o servicio), valor fijo o performance (% sobre el resultado).",

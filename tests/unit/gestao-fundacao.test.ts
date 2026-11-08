@@ -35,8 +35,9 @@ describe("hierarquia da agência", () => {
   });
 
   it("menu por nível: Equipe só para o Adm, Configurações e Heros para gestor+", () => {
-    expect(agencyNavKeys("staff")).toEqual(["dashboard", "pipeline", "tasks", "agenda", "strategies", "casting", "brands", "notifications", "profile"]);
-    expect(agencyNavKeys("manager")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings", "profile"]);
+    // 0139: Financeiro para todo membro (gestor e equipe só veem a aba Projeção)
+    expect(agencyNavKeys("staff")).toEqual(["dashboard", "pipeline", "tasks", "agenda", "strategies", "casting", "brands", "notifications", "finance", "profile"]);
+    expect(agencyNavKeys("manager")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings", "finance", "profile"]);
     expect(agencyNavKeys("admin")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings", "team", "finance", "history", "profile"]);
     expect(agencyNavKeys(null, true)).toContain("team");
     expect(brandNavKeys()).toEqual(["dashboard", "ondaDigital", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "payments", "team", "notifications"]);

@@ -25,7 +25,8 @@ export function agencyCan(role: AgencyRole | null, min: AgencyRole, platformAdmi
   return RANK[role] >= RANK[min];
 }
 
-/** Só o Adm da agência (e o admin geral) vê valores: contrato, cachê, comissão, financeiro. */
+/** Só o Adm da agência (e o admin geral) vê valores: contrato, cachê, comissão, financeiro.
+ *  Exceção (0139): a aba Projeção do Financeiro mostra somas (nunca negócio a negócio) para todo membro. */
 export function canSeeValues(role: AgencyRole | null, platformAdmin = false): boolean {
   return agencyCan(role, "admin", platformAdmin);
 }
@@ -48,8 +49,11 @@ export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false, op
   // Plano de projetos (0137): os projetos do grupo, só para a equipe da Groscove
   if (opts.groscove || platformAdmin) keys.splice(keys.indexOf("ondaDigital") + 1, 0, "groupProjects");
   if (agencyCan(role, "manager", platformAdmin)) keys.push("settings");
-  // Adm: equipe, financeiro simulado e histórico (auditoria da agência)
-  if (agencyCan(role, "admin", platformAdmin)) keys.push("team", "finance", "history");
+  // Adm: equipe e histórico (auditoria da agência). Financeiro: o Adm vê tudo; gestor e equipe entram só na aba
+  // Projeção (0139, decisão do dono em 08/11/2026)
+  if (agencyCan(role, "admin", platformAdmin)) keys.push("team");
+  if (role || platformAdmin) keys.push("finance");
+  if (agencyCan(role, "admin", platformAdmin)) keys.push("history");
   // Meu cadastro (0125): cada colaborador revê o próprio cadastro PJ (CNPJ, cargo, nível)
   if (role) keys.push("profile");
   return keys;
@@ -74,7 +78,8 @@ export const AGENCY_ROUTE_MIN: Record<string, AgencyRole> = {
   "/agencia/equipe": "admin",
   "/agencia/configuracoes": "manager",
   "/agencia/herois": "manager",
-  "/agencia/financeiro": "admin",
+  // 0139: todo membro entra (gestor e equipe só na aba Projeção; a página leva quem não é Adm para lá)
+  "/agencia/financeiro": "staff",
   "/agencia/historico": "admin",
   "/agencia/oportunidades": "manager",
 };

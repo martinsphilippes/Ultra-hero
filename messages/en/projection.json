@@ -1,12 +1,35 @@
 {
-  "title": "Annual projection",
-  "hint": "Fees closed in the last 12 months + what is open in the pipeline. Barter is not included.",
-  "forYou": "Projection for you",
-  "forAgency": "Agency projection",
-  "split": "{won} closed · {open} open",
-  "bySegment": "Projection by segment",
+  "title": "Projection",
+  "lead": "Campaign values: closed deals and deals in negotiation, sponsorship agreements and open sponsorship slots, and brands' open calls. Barter doesn't count.",
+  "periodLabel": "Projection period",
+  "total": "Total",
+  "segment": {
+    "title": "Projection in your segment",
+    "none": "Your segment shows up once there is a Hero with a segment in the roster."
+  },
+  "mine": {
+    "title": "Projection for you",
+    "heroHint": "Your fees and your sponsorship slots.",
+    "teamHint": "The Heroes you manage and the deals you own."
+  },
+  "agency": {
+    "title": "Agency projection",
+    "hint": "All of the agency's campaign value (only the Admin sees it)."
+  },
+  "buckets": {
+    "won": "Closed",
+    "open": "In negotiation",
+    "available": "Open opportunities"
+  },
+  "platform": "On the platform ({period}): {value} in campaigns.",
+  "seeOpportunities": "See opportunities",
+  "ranking": "By segment",
   "yours": "your segment",
-  "empty": "No amounts recorded in deals yet.",
+  "empty": "No campaign values in this period yet.",
+  "home": {
+    "title": "Projection {period}",
+    "open": "See projection"
+  },
   "compensation": {
     "label": "How the project pays",
     "hint": "Barter (product or service), fixed fee or performance (% of results).",

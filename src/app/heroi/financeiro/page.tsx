@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
-import { ProjectionCard } from "@/components/projection/ProjectionCard";
 import { Clock, Lock, Wallet } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { HeroFinance } from "@/components/hero-work/HeroFinance";
+import { CampaignProjection } from "@/components/projection/CampaignProjection";
 import { EmptyState, PageHeader } from "@/components/ui";
 import { defaultTimeZone } from "@/i18n/config";
 import { zonedDayKey } from "@/lib/calendar/grid";
 import { heroPortalSections } from "@/lib/hero-work/rules";
 import { findHeroWorkspace, listHeroServices } from "@/lib/hero-work/server";
+import { parseYearParam } from "@/lib/projection/campaign";
+import { loadCampaignProjection } from "@/lib/projection/queries";
 import { getTalentContext } from "@/lib/talent/server";
 import { AgencyEarnings } from "./AgencyEarnings";
 
@@ -22,8 +24,10 @@ export async function generateMetadata(): Promise<Metadata> {
 // nunca o valor da marca nem a comissão) e, se houver, os serviços próprios. Sem agência: "Serviços e ganhos" do Hero
 // independente. Os serviços próprios só o titular vê (e escreve); a equipe não vê o que o titular recebe (nem os ganhos
 // da agência: o casting é do titular). Registro e controle simulados: nada aqui movimenta dinheiro.
-export default async function HeroFinancePage() {
-  const [t, talent, ws] = await Promise.all([getTranslations("heroWork.finance"), getTalentContext(), findHeroWorkspace()]);
+type Props = { searchParams: Promise<{ ano?: string }> };
+
+export default async function HeroFinancePage({ searchParams }: Props) {
+  const [t, talent, ws, sp] = await Promise.all([getTranslations("heroWork.finance"), getTalentContext(), findHeroWorkspace(), searchParams]);
   const casting = talent.state === "ok";
   // membro da equipe (0091/0094): vê o casting do titular, mas não o que o titular recebe (o banco também não devolve)
   const agencyFinance = casting && !talent.talent.isTeamMember;
@@ -65,11 +69,17 @@ export default async function HeroFinancePage() {
     );
   }
 
+  // 0139: projeção de campanhas do Hero (no segmento dele e para ele), no ano escolhido ou no total
+  const currentYear = Number(zonedDayKey(new Date(), defaultTimeZone).slice(0, 4));
+  const year = parseYearParam(sp.ano, currentYear);
+  const projection = agencyFinance ? await loadCampaignProjection(null, year) : null;
+
   return (
     <div className="flex flex-col gap-5" data-testid="hero-finance-portal">
       <PageHeader eyebrow={eyebrow} title={t("title")} description={show.agency ? undefined : t("intro")} />
-      {/* 0128: projeção anual para o Hero e no segmento dele */}
-      <ProjectionCard />
+      {projection ? (
+        <CampaignProjection data={projection} year={year} currentYear={currentYear} basePath="/heroi/financeiro" opportunitiesHref="/heroi/oportunidades" side="hero" />
+      ) : null}
       {show.agency ? <AgencyEarnings /> : null}
       {show.own && ws && services && ws.canSeeFinance ? (
         <section className="flex flex-col gap-4" aria-labelledby="hero-own-finance" data-testid="hero-finance-page">

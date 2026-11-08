@@ -1267,7 +1267,8 @@
       "payments": "Pagos de la marca",
       "receivable": "Por cobrar",
       "payable": "Por pagar",
-      "forecast": "Previstos"
+      "forecast": "Previstos",
+      "projection": "Proyección"
     },
     "empty": {
       "open": "Ningún asiento abierto.",

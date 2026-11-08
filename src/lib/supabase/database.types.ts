@@ -12637,6 +12637,8 @@ isOneToOne: false
       [_ in never]: never;
     };
     Functions: {
+      projection_key: { Args: { p: string }; Returns: string };
+      campaign_projection: { Args: { p_agency?: string; p_year?: number }; Returns: Json };
       creator_meeting_checks_clean: { Args: { p: Json }; Returns: Json };
       creator_meeting_notes_clean: { Args: { p: Json }; Returns: Json };
       creator_meeting_text_ok: { Args: { p: string }; Returns: boolean };

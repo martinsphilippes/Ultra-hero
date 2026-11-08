@@ -4,13 +4,13 @@ import { cn } from "@/lib/utils";
 
 // Filtros do Financeiro da agência em grade (pedido de 08/11/2026): caixas do mesmo tamanho, alinhadas e um pouco
 // menores que as pílulas soltas de antes. Situação e direção em 4 colunas (Em aberto, A receber, A pagar, Vencidos /
-// Previstos, Liquidados, Cancelados, Todos); as listas à parte (notas para conferir, pagamentos da marca) em 2 caixas
-// largas embaixo.
+// Previstos, Liquidados, Cancelados, Todos); as telas à parte (projeção, notas para conferir, pagamentos da marca) em
+// 3 caixas embaixo.
 
-export type FinanceFilterKey = EntryFilter | "payments";
+export type FinanceFilterKey = EntryFilter | "payments" | "projection";
 
 const MAIN_ORDER: readonly EntryFilter[] = ["open", "receivable", "payable", "overdue", "forecast", "settled", "cancelled", "all"];
-const SPECIAL: readonly FinanceFilterKey[] = ["invoices", "payments"];
+const SPECIAL: readonly FinanceFilterKey[] = ["projection", "invoices", "payments"];
 
 /** Linhas da grade: os filtros conhecidos na ordem acima; filtro novo em ENTRY_FILTERS entra no fim da grade principal. */
 export function financeFilterRows(): { main: EntryFilter[]; special: FinanceFilterKey[] } {
@@ -45,7 +45,7 @@ export function FinanceFilters({ active, label, labels }: { active: FinanceFilte
           <FilterBox key={f} href={`/agencia/financeiro?f=${f}`} active={active === f} label={labels[f]} />
         ))}
       </div>
-      <div className="grid grid-cols-2 gap-1.5">
+      <div className="grid grid-cols-3 gap-1.5">
         {special.map((f) => (
           <FilterBox key={f} href={`/agencia/financeiro?f=${f}`} active={active === f} label={labels[f]} />
         ))}

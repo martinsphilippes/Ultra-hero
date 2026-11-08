@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { requireAgency } from "@/lib/agency/server";
 
-// Financeiro simulado: só o Adm da agência (e o admin da plataforma). Redireciona no servidor.
+// Financeiro: qualquer pessoa da agência entra (0139), mas a página só mostra ao gestor e à equipe a aba Projeção
+// (somas, sem valor de negócio a negócio); lançamentos, notas e pagamentos da marca continuam só do Adm.
 export default async function FinanceLayout({ children }: { children: ReactNode }) {
-  await requireAgency("admin");
+  await requireAgency("staff");
   return children;
 }

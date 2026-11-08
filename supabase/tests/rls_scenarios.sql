@@ -19801,5 +19801,147 @@ delete from public.agencies where id::text like 'c1380000-%';
 delete from auth.users where id::text like 'c1380000-%';
 drop table tests.s138;
 
+-- ================================================================ S139 · Projeção de campanhas: no seu segmento e para você (0139)
+\ir ../migrations/0139_projecao_campanhas.sql
+select tests.su();
+create table tests.s139 (k text primary key, v text);
+grant all on tests.s139 to anon, authenticated;
+insert into tests.s139 values ('y', extract(year from current_date)::int::text);
+insert into auth.users (id, email) values
+  ('c1390000-0000-4000-8000-000000000001', 'adm@s139.test'),
+  ('c1390000-0000-4000-8000-000000000002', 'gestor@s139.test'),
+  ('c1390000-0000-4000-8000-000000000003', 'colab@s139.test'),
+  ('c1390000-0000-4000-8000-000000000004', 'hero@s139.test'),
+  ('c1390000-0000-4000-8000-000000000005', 'marca@s139.test'),
+  ('c1390000-0000-4000-8000-000000000006', 'gestor@outra-s139.test');
+insert into public.agencies (id, slug, name) values ('c1390000-0000-4000-8000-0000000000a1', 's139', 'Agência S139'), ('c1390000-0000-4000-8000-0000000000a2', 's139-outra', 'Outra S139');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('c1390000-0000-4000-8000-0000000000a1', 'c1390000-0000-4000-8000-000000000001', 'admin', 'Adm S139'),
+  ('c1390000-0000-4000-8000-0000000000a1', 'c1390000-0000-4000-8000-000000000002', 'manager', 'Gestor S139'),
+  ('c1390000-0000-4000-8000-0000000000a1', 'c1390000-0000-4000-8000-000000000003', 'staff', 'Colab S139'),
+  ('c1390000-0000-4000-8000-0000000000a2', 'c1390000-0000-4000-8000-000000000006', 'manager', 'Gestor Outra S139');
+insert into public.brands (id, slug, name, site_url, status, category, approval_status, is_demo) values
+  ('c1390000-0000-4000-8000-0000000000b1', 'marca-s139', 'Marca S139', 'https://marca-s139.test/', 'active', 'moda', 'approved', false);
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('c1390000-0000-4000-8000-0000000000b1', 'c1390000-0000-4000-8000-000000000005', 'owner', 'Marca S139');
+insert into public.agency_brands (agency_id, brand_id, status) values
+  ('c1390000-0000-4000-8000-0000000000a1', 'c1390000-0000-4000-8000-0000000000b1', 'active'),
+  ('c1390000-0000-4000-8000-0000000000a2', 'c1390000-0000-4000-8000-0000000000b1', 'archived');
+-- segmentos: "Música S139" na agência e "MÚSICA S139" na outra (a soma do segmento junta as duas)
+insert into public.talent_segments (id, agency_id, slug, name, sort_order) values
+  ('c1390000-0000-4000-8000-0000000000e1', 'c1390000-0000-4000-8000-0000000000a1', 'musica-s139', 'Música S139', 10),
+  ('c1390000-0000-4000-8000-0000000000e2', 'c1390000-0000-4000-8000-0000000000a1', 'influencia-s139', 'Influência S139', 20),
+  ('c1390000-0000-4000-8000-0000000000e3', 'c1390000-0000-4000-8000-0000000000a2', 'musica-s139', 'MÚSICA S139', 10);
+insert into public.talent_profiles (id, agency_id, display_name, user_id, manager_id) values
+  ('c1390000-0000-4000-8000-0000000000c1', 'c1390000-0000-4000-8000-0000000000a1', 'Hero S139', 'c1390000-0000-4000-8000-000000000004', 'c1390000-0000-4000-8000-000000000002'),
+  ('c1390000-0000-4000-8000-0000000000c2', 'c1390000-0000-4000-8000-0000000000a1', 'Hero Dois S139', null, null),
+  ('c1390000-0000-4000-8000-0000000000c3', 'c1390000-0000-4000-8000-0000000000a2', 'Hero Outra S139', null, null);
+insert into public.talent_segment_links (agency_id, talent_id, segment_id) values
+  ('c1390000-0000-4000-8000-0000000000a1', 'c1390000-0000-4000-8000-0000000000c1', 'c1390000-0000-4000-8000-0000000000e1'),
+  ('c1390000-0000-4000-8000-0000000000a1', 'c1390000-0000-4000-8000-0000000000c2', 'c1390000-0000-4000-8000-0000000000e2'),
+  ('c1390000-0000-4000-8000-0000000000a2', 'c1390000-0000-4000-8000-0000000000c3', 'c1390000-0000-4000-8000-0000000000e3');
+-- negócios do ano: ganho (Hero da agência, responsável = colaborador), em negociação, ganho na outra agência;
+-- perdido, permuta e o do ano passado não entram no ano
+insert into public.deals (id, agency_id, brand_id, title, stage, outcome, brand_visible, expected_start, owner_id, compensation_type) values
+  ('c1390000-0000-4000-8000-0000000000d1', 'c1390000-0000-4000-8000-0000000000a1', 'c1390000-0000-4000-8000-0000000000b1', 'Ganho S139', 'closed', 'won', true,
+   make_date((select v::int from tests.s139 where k = 'y'), 3, 1), 'c1390000-0000-4000-8000-000000000003', 'fixed'),
+  ('c1390000-0000-4000-8000-0000000000d2', 'c1390000-0000-4000-8000-0000000000a1', 'c1390000-0000-4000-8000-0000000000b1', 'Aberto S139', 'shortlist', null, true,
+   make_date((select v::int from tests.s139 where k = 'y'), 6, 1), null, 'fixed'),
+  ('c1390000-0000-4000-8000-0000000000d3', 'c1390000-0000-4000-8000-0000000000a2', 'c1390000-0000-4000-8000-0000000000b1', 'Ganho outra S139', 'closed', 'won', true,
+   make_date((select v::int from tests.s139 where k = 'y'), 2, 1), null, 'fixed'),
+  ('c1390000-0000-4000-8000-0000000000d4', 'c1390000-0000-4000-8000-0000000000a1', 'c1390000-0000-4000-8000-0000000000b1', 'Perdido S139', 'closed', 'lost', true,
+   make_date((select v::int from tests.s139 where k = 'y'), 4, 1), null, 'fixed'),
+  ('c1390000-0000-4000-8000-0000000000d5', 'c1390000-0000-4000-8000-0000000000a1', 'c1390000-0000-4000-8000-0000000000b1', 'Permuta S139', 'closed', 'won', true,
+   make_date((select v::int from tests.s139 where k = 'y'), 5, 1), null, 'barter'),
+  ('c1390000-0000-4000-8000-0000000000d6', 'c1390000-0000-4000-8000-0000000000a1', 'c1390000-0000-4000-8000-0000000000b1', 'Ano passado S139', 'closed', 'won', true,
+   make_date((select v::int from tests.s139 where k = 'y') - 1, 5, 1), null, 'fixed');
+insert into public.deal_talents (id, deal_id, talent_id, status, consulted_at, terms_ready) values
+  ('c1390000-0000-4000-8000-0000000000f1', 'c1390000-0000-4000-8000-0000000000d1', 'c1390000-0000-4000-8000-0000000000c1', 'contracted', now(), true),
+  ('c1390000-0000-4000-8000-0000000000f2', 'c1390000-0000-4000-8000-0000000000d2', 'c1390000-0000-4000-8000-0000000000c2', 'suggested', null, true),
+  ('c1390000-0000-4000-8000-0000000000f3', 'c1390000-0000-4000-8000-0000000000d3', 'c1390000-0000-4000-8000-0000000000c3', 'contracted', now(), true),
+  ('c1390000-0000-4000-8000-0000000000f4', 'c1390000-0000-4000-8000-0000000000d4', 'c1390000-0000-4000-8000-0000000000c1', 'contracted', now(), true),
+  ('c1390000-0000-4000-8000-0000000000f5', 'c1390000-0000-4000-8000-0000000000d5', 'c1390000-0000-4000-8000-0000000000c1', 'contracted', now(), true),
+  ('c1390000-0000-4000-8000-0000000000f6', 'c1390000-0000-4000-8000-0000000000d6', 'c1390000-0000-4000-8000-0000000000c1', 'contracted', now(), true);
+insert into public.deal_talent_fees (deal_id, deal_talent_id, talent_id, fee_cents) values
+  ('c1390000-0000-4000-8000-0000000000d1', 'c1390000-0000-4000-8000-0000000000f1', 'c1390000-0000-4000-8000-0000000000c1', 100000),
+  ('c1390000-0000-4000-8000-0000000000d2', 'c1390000-0000-4000-8000-0000000000f2', 'c1390000-0000-4000-8000-0000000000c2', 50000),
+  ('c1390000-0000-4000-8000-0000000000d3', 'c1390000-0000-4000-8000-0000000000f3', 'c1390000-0000-4000-8000-0000000000c3', 70000),
+  ('c1390000-0000-4000-8000-0000000000d4', 'c1390000-0000-4000-8000-0000000000f4', 'c1390000-0000-4000-8000-0000000000c1', 999999),
+  ('c1390000-0000-4000-8000-0000000000d5', 'c1390000-0000-4000-8000-0000000000f5', 'c1390000-0000-4000-8000-0000000000c1', 888888),
+  ('c1390000-0000-4000-8000-0000000000d6', 'c1390000-0000-4000-8000-0000000000f6', 'c1390000-0000-4000-8000-0000000000c1', 20000);
+-- chamada aberta da marca: R$ 3.000 por Hero × 2 Heros, nicho escrito sem acento e minúsculo
+insert into public.brand_calls (id, brand_id, title, starts_on, ends_on, respond_by, networks, deliverables, niches, status, budget_cents, budget_display, value_model, max_heroes, published_at) values
+  ('c1390000-0000-4000-8000-0000000000a7', 'c1390000-0000-4000-8000-0000000000b1', 'Chamada S139',
+   make_date((select v::int from tests.s139 where k = 'y'), 9, 1), make_date((select v::int from tests.s139 where k = 'y'), 9, 30),
+   make_date((select v::int from tests.s139 where k = 'y'), 8, 20), array['instagram'], '[{"kind": "reels", "quantity": 1}]'::jsonb,
+   array['musica s139'], 'open', 300000, 'exact', 'por_heroi', 2, now());
+-- patrocínio do Hero: cota de R$ 400 com 3 vagas, uma já fechada
+insert into public.sponsorship_opportunities (id, agency_id, talent_id, title, starts_at, ends_at, respond_by, status, networks) values
+  ('c1390000-0000-4000-8000-0000000000a8', 'c1390000-0000-4000-8000-0000000000a1', 'c1390000-0000-4000-8000-0000000000c1', 'Evento S139',
+   make_date((select v::int from tests.s139 where k = 'y'), 10, 1) + time '12:00', make_date((select v::int from tests.s139 where k = 'y'), 10, 1) + time '14:00',
+   make_date((select v::int from tests.s139 where k = 'y'), 9, 20), 'open', array['instagram']);
+insert into public.sponsorship_tiers (id, opportunity_id, agency_id, position, name, price_cents, slots) values
+  ('c1390000-0000-4000-8000-0000000000e9', 'c1390000-0000-4000-8000-0000000000a8', 'c1390000-0000-4000-8000-0000000000a1', 1, 'Ouro', 40000, 3);
+insert into public.sponsorship_proposals (opportunity_id, tier_id, agency_id, brand_id, status, amount_cents, perks, sent_at, agreed_at, agreed_cents, agreed_perks, agreed_side) values
+  ('c1390000-0000-4000-8000-0000000000a8', 'c1390000-0000-4000-8000-0000000000e9', 'c1390000-0000-4000-8000-0000000000a1', 'c1390000-0000-4000-8000-0000000000b1', 'agreed', 40000, array['Logo no palco'], now(), now(), 40000, array['Logo no palco'], 'brand');
+
+-- o gestor: Heros que ele cuida (o Hero S139) e o segmento deles (Música, das duas agências)
+select tests.login('c1390000-0000-4000-8000-000000000002', 'gestor@s139.test');
+insert into tests.s139 select 'gestor', public.campaign_projection('c1390000-0000-4000-8000-0000000000a1', (select v::int from tests.s139 where k = 'y'))::text;
+select tests.ok('S139 no seu segmento: negócios ganhos das duas agências + patrocínio fechado; aberto = chamada por Hero (×2) + 2 cotas livres',
+  ((select v::jsonb from tests.s139 where k = 'gestor') -> 'segment') = '{"won": 210000, "open": 0, "available": 680000}'::jsonb);
+select tests.ok('S139 para você (gestor): o Hero que ele cuida — cachê ganho, patrocínio fechado e cotas livres; perdido, permuta e ano passado fora',
+  ((select v::jsonb from tests.s139 where k = 'gestor') -> 'mine') = '{"won": 140000, "open": 0, "available": 80000}'::jsonb);
+select tests.ok('S139 o gestor não vê o total da agência; o segmento dele aparece com o nome da agência',
+  ((select v::jsonb from tests.s139 where k = 'gestor') -> 'agency') = 'null'::jsonb
+  and ((select v::jsonb from tests.s139 where k = 'gestor') -> 'my_segments') = '["Música S139"]'::jsonb
+  and exists (select 1 from jsonb_array_elements((select v::jsonb from tests.s139 where k = 'gestor') -> 'segments') e
+              where e ->> 'name' = 'Música S139' and (e ->> 'mine')::boolean));
+
+-- o colaborador: sem Hero sob cuidado, o segmento é o da agência inteira; "para você" = o negócio em que é o responsável
+select tests.login('c1390000-0000-4000-8000-000000000003', 'colab@s139.test');
+select tests.ok('S139 colaborador: segmento da agência inteira e o negócio em que ele é o responsável',
+  (public.campaign_projection('c1390000-0000-4000-8000-0000000000a1', (select v::int from tests.s139 where k = 'y')) -> 'segment') = '{"won": 210000, "open": 50000, "available": 680000}'::jsonb
+  and (public.campaign_projection('c1390000-0000-4000-8000-0000000000a1', (select v::int from tests.s139 where k = 'y')) -> 'mine') = '{"won": 100000, "open": 0, "available": 0}'::jsonb);
+
+-- o Adm: total da agência (sem a outra agência e sem a chamada, que é da marca)
+select tests.login('c1390000-0000-4000-8000-000000000001', 'adm@s139.test');
+select tests.ok('S139 o Adm vê o total da agência',
+  (public.campaign_projection('c1390000-0000-4000-8000-0000000000a1', (select v::int from tests.s139 where k = 'y')) -> 'agency') = '{"won": 140000, "open": 50000, "available": 80000}'::jsonb);
+select tests.expect_error('S139 ano fora do lugar é recusado', $$select public.campaign_projection('c1390000-0000-4000-8000-0000000000a1', 1900)$$, 'invalid_input');
+
+-- o Hero: o que é dele e o segmento dele; o filtro troca o ano e o total junta tudo
+select tests.login('c1390000-0000-4000-8000-000000000004', 'hero@s139.test');
+select tests.ok('S139 Hero: para você e no seu segmento, no ano',
+  (public.campaign_projection(null, (select v::int from tests.s139 where k = 'y')) -> 'mine') = '{"won": 140000, "open": 0, "available": 80000}'::jsonb
+  and (public.campaign_projection(null, (select v::int from tests.s139 where k = 'y')) -> 'segment' ->> 'won')::bigint = 210000
+  and (public.campaign_projection(null, (select v::int from tests.s139 where k = 'y')) -> 'agency') = 'null'::jsonb);
+select tests.ok('S139 filtro: ano passado só tem o negócio de lá; o total junta os dois anos; os anos aparecem no filtro',
+  (public.campaign_projection(null, (select v::int from tests.s139 where k = 'y') - 1) -> 'mine' ->> 'won')::bigint = 20000
+  and (public.campaign_projection(null, null) -> 'mine' ->> 'won')::bigint = 160000
+  and (public.campaign_projection(null, null) -> 'years') @> jsonb_build_array((select v::int from tests.s139 where k = 'y') - 1, (select v::int from tests.s139 where k = 'y')));
+
+-- marca, outra agência e visitante não veem
+select tests.login('c1390000-0000-4000-8000-000000000005', 'marca@s139.test');
+select tests.expect_error('S139 marca não vê a projeção', $$select public.campaign_projection(null, null)$$, 'forbidden');
+select tests.login('c1390000-0000-4000-8000-000000000006', 'gestor@outra-s139.test');
+select tests.expect_error('S139 gestor de outra agência não vê a projeção desta', $$select public.campaign_projection('c1390000-0000-4000-8000-0000000000a1', null)$$, 'forbidden');
+select tests.su();
+select tests.ok('S139 nada para anon', not has_function_privilege('anon', 'public.campaign_projection(uuid, int)', 'execute'));
+
+delete from public.sponsorship_opportunities where id = 'c1390000-0000-4000-8000-0000000000a8';
+delete from public.brand_calls where id = 'c1390000-0000-4000-8000-0000000000a7';
+delete from public.deals where id::text like 'c1390000-%';
+delete from public.talent_segment_links where talent_id::text like 'c1390000-%';
+delete from public.talent_profiles where id::text like 'c1390000-%';
+delete from public.talent_segments where id::text like 'c1390000-%';
+delete from public.agency_brands where brand_id = 'c1390000-0000-4000-8000-0000000000b1';
+delete from public.brand_members where brand_id = 'c1390000-0000-4000-8000-0000000000b1';
+delete from public.brands where id = 'c1390000-0000-4000-8000-0000000000b1';
+delete from public.agency_members where agency_id::text like 'c1390000-%';
+delete from public.agencies where id::text like 'c1390000-%';
+delete from auth.users where id::text like 'c1390000-%';
+drop table tests.s139;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

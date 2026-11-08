@@ -1267,7 +1267,8 @@
       "payments": "Pagamentos da marca",
       "receivable": "A receber",
       "payable": "A pagar",
-      "forecast": "Previstos"
+      "forecast": "Previstos",
+      "projection": "Projeção"
     },
     "empty": {
       "open": "Nenhum lançamento em aberto.",
