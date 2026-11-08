@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { AGENCY_ERROR_CODES } from "@/lib/agency/error-codes";
 import { AGENCY_NAV, AGENCY_ROUTE_MIN, agencyNavKeys } from "@/lib/agency/roles";
-import { computeFinance, dealRateSchema, entryStatusSchema, formatRate, nextEntryStatuses, parseRatePercent, rateSchema } from "@/lib/finance/vocab";
+import { ENTRY_FILTERS, computeFinance, dealRateSchema, entryStatusSchema, formatRate, nextEntryStatuses, parseRatePercent, rateSchema } from "@/lib/finance/vocab";
 
 // P3 (0069): a mesma conta do banco (cachês + taxa = o que a marca paga), transições de situação, taxa em
 // pontos-base, formas dos formulários, códigos de erro e o menu do Adm (Financeiro e Histórico).
@@ -79,5 +79,16 @@ describe("códigos de erro e menu", () => {
     expect(agencyNavKeys(null, true)).toContain("finance");
     expect(AGENCY_ROUTE_MIN["/agencia/financeiro"]).toBe("admin");
     expect(AGENCY_ROUTE_MIN["/agencia/historico"]).toBe("admin");
+  });
+});
+
+describe("filtros do Financeiro em grade (pedido de 08/11/2026)", () => {
+  it("todos os filtros aparecem uma vez: 8 de situação em 4 colunas e as 2 listas à parte embaixo", async () => {
+    const { financeFilterRows } = await import("@/components/finance/FinanceFilters");
+    const { main, special } = financeFilterRows();
+    expect(main).toEqual(["open", "receivable", "payable", "overdue", "forecast", "settled", "cancelled", "all"]);
+    expect(special).toEqual(["invoices", "payments"]);
+    expect(new Set([...main, ...special]).size).toBe(main.length + special.length);
+    expect([...main, ...special].filter((f) => f !== "payments").sort()).toEqual([...ENTRY_FILTERS].sort());
   });
 });

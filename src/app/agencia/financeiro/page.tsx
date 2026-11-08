@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Wallet } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { FilterAnchor } from "@/components/admin-ops/FilterAnchor";
 import { EntryTable } from "@/components/finance/EntryTable";
+import { FilterBox, type FinanceFilterKey, FinanceFilters } from "@/components/finance/FinanceFilters";
 import { FinanceKpis } from "@/components/finance/FinanceKpis";
 import { ClientPayments } from "@/components/finance/ClientPayments";
 import { AgencyPaymentsList } from "@/components/finance/Payments";
@@ -22,6 +22,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 type Props = { searchParams: Promise<{ f?: string; p?: string }> };
+
+/** Rótulos dos filtros do topo (lançamentos + pagamentos da marca). */
+function filterLabels(t: (key: string) => string): Record<FinanceFilterKey, string> {
+  return Object.fromEntries([...ENTRY_FILTERS, "payments"].map((f) => [f, t(`filters.${f}`)])) as Record<FinanceFilterKey, string>;
+}
 
 // Financeiro (Adm): a receber da marca, comissão e repasses de cada negócio contratado, com situação. Tudo
 // simulado: registro interno, sem cobrança real.
@@ -42,12 +47,7 @@ export default async function AgencyFinancePage({ searchParams }: Props) {
     <div className="flex flex-col gap-5" data-testid="agency-finance">
       <PageHeader title={t("title")} description={t("description")} />
       {summary.data ? <FinanceKpis summary={summary.data} /> : null}
-      <nav aria-label={t("filtersLabel")} className="flex flex-wrap gap-2" data-testid="finance-filters">
-        {ENTRY_FILTERS.map((f) => (
-          <FilterAnchor key={f} href={`/agencia/financeiro?f=${f}`} active={filter === f} label={t(`filters.${f}`)} />
-        ))}
-        <FilterAnchor href="/agencia/financeiro?f=payments" active={false} label={t("filters.payments")} />
-      </nav>
+      <FinanceFilters active={filter} label={t("filtersLabel")} labels={filterLabels(t)} />
       <EntryTable entries={list.items} canAct emptyText={t(`empty.${filter}`)} />
     </div>
   );
@@ -62,12 +62,7 @@ async function BrandPaymentsTab({ agencyId, filterParam }: { agencyId: string; f
   return (
     <div className="flex flex-col gap-5" data-testid="agency-finance-payments">
       <PageHeader title={t("title")} description={tp("description")} />
-      <nav aria-label={t("filtersLabel")} className="flex flex-wrap gap-2" data-testid="finance-filters">
-        {ENTRY_FILTERS.map((f) => (
-          <FilterAnchor key={f} href={`/agencia/financeiro?f=${f}`} active={false} label={t(`filters.${f}`)} />
-        ))}
-        <FilterAnchor href="/agencia/financeiro?f=payments" active label={t("filters.payments")} />
-      </nav>
+      <FinanceFilters active="payments" label={t("filtersLabel")} labels={filterLabels(t)} />
       {data && !data.hasSettings ? (
         <p className="rounded-xl border border-warning/40 bg-warning-soft px-3 py-2 type-body-sm text-fg" data-testid="payments-no-settings">
           {tp("noSettings")}{" "}
@@ -76,9 +71,9 @@ async function BrandPaymentsTab({ agencyId, filterParam }: { agencyId: string; f
           </Link>
         </p>
       ) : null}
-      <nav aria-label={tp("filtersLabel")} className="flex flex-wrap gap-2">
+      <nav aria-label={tp("filtersLabel")} className="grid w-full max-w-2xl grid-cols-3 gap-1.5 sm:grid-cols-5" data-testid="payments-filters">
         {AGENCY_PAYMENT_FILTERS.map((f) => (
-          <FilterAnchor key={f} href={`/agencia/financeiro?f=payments&p=${f}`} active={filter === f} label={tp(`filters.${f}`)} />
+          <FilterBox key={f} href={`/agencia/financeiro?f=payments&p=${f}`} active={filter === f} label={tp(`filters.${f}`)} />
         ))}
       </nav>
       {!res.available || !data ? (
