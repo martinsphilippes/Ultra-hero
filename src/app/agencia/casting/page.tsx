@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ChevronDown, Contact, Plus, Search } from "lucide-react";
+import { BookOpen, ChevronDown, Contact, ListChecks, Plus, Search } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { FilterAnchor } from "@/components/admin-ops/FilterAnchor";
@@ -76,8 +76,9 @@ export default async function CastingPage({ searchParams }: Props) {
     q: sp.q?.slice(0, 60),
     archived,
   };
-  const [t, tp, locale, list, segments, managers, access] = await Promise.all([
+  const [t, tm, tp, locale, list, segments, managers, access] = await Promise.all([
     getTranslations("agency.casting"),
+    getTranslations("creatorMeetings"),
     getTranslations("pickers"),
     getLocale(),
     listTalents(ctx.agency.id, filters),
@@ -112,11 +113,21 @@ export default async function CastingPage({ searchParams }: Props) {
         title={t("title")}
         description={t("description")}
         actions={
-          canEdit ? (
-            <Button asChild size="sm" leadingIcon={<Plus />}>
-              <Link href="/agencia/casting/novo">{t("new")}</Link>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild size="sm" variant="secondary" leadingIcon={<ListChecks />}>
+              <Link href="/agencia/casting/encaminhamentos">{tm("list.actions")}</Link>
             </Button>
-          ) : null
+            {ctx.agency.slug === "groscove" || ctx.platformAdmin ? (
+              <Button asChild size="sm" variant="ghost" leadingIcon={<BookOpen />}>
+                <Link href="/agencia/casting/guia-da-reuniao">{tm("list.guide")}</Link>
+              </Button>
+            ) : null}
+            {canEdit ? (
+              <Button asChild size="sm" leadingIcon={<Plus />}>
+                <Link href="/agencia/casting/novo">{t("new")}</Link>
+              </Button>
+            ) : null}
+          </div>
         }
       />
       <nav aria-label={t("filterLabel")} className="flex flex-wrap gap-2">

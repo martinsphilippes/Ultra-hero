@@ -235,6 +235,7 @@
     "answersTitle": "Answers: {title}",
     "answersLead": "Who answered the action, interested first. Answering doesn't confirm participation.",
     "answersCount": "{yes} interested · {depends} depends · {no} no",
+    "fromMeeting": "recorded in the meeting",
     "noAnswers": "No one has answered yet.",
     "openTalent": "Open profile"
   }

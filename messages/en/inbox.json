@@ -302,6 +302,10 @@
     "group_project_assigned": {
       "title": "{role, select, owner {You are the owner of a project} other {You were added as support on a project}}",
       "body": "{project}. See the sheet and the micro-steps in the Projects plan."
+    },
+    "creator_meeting_action": {
+      "title": "{count, plural, one {A next step from the meeting with {talent} is yours} other {# next steps from the meeting with {talent} are yours}}",
+      "body": "See the minutes and each due date, and mark them when done."
     }
   }
 }

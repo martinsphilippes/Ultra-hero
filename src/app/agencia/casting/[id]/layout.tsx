@@ -7,7 +7,7 @@ import { loadTalent } from "./_lib";
 
 type Props = { children: ReactNode; params: Promise<{ id: string }> };
 
-// Ficha do talento com abas por rota (Resumo, Redes, Media kit, Documentos, Histórico).
+// Ficha do talento com abas por rota (Resumo, Redes, Media kit, Relacionamento, Reuniões, Disponibilidade, Documentos, Histórico).
 export default async function TalentLayout({ children, params }: Props) {
   const { id } = await params;
   const [{ talent }, t] = await Promise.all([loadTalent(id), getTranslations("agency.casting")]);
@@ -32,6 +32,7 @@ export default async function TalentLayout({ children, params }: Props) {
           { href: `${base}/redes`, label: t("tabs.networks") },
           { href: `${base}/media-kit`, label: t("tabs.kit") },
           { href: `${base}/relacionamento`, label: t("tabs.relationship") },
+          { href: `${base}/reunioes`, label: t("tabs.meetings") },
           { href: `${base}/disponibilidade`, label: t("tabs.availability") },
           { href: `${base}/documentos`, label: t("tabs.documents") },
           { href: `${base}/historico`, label: t("tabs.history") },

@@ -9,6 +9,144 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      creator_meeting_actions: {
+        Row: {
+          id: string;
+          meeting_id: string;
+          position: number;
+          title: string;
+          owner_kind: string;
+          owner_id: string | null;
+          due_on: string | null;
+          status: string;
+          done_at: string | null;
+          done_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          meeting_id: string;
+          position: number;
+          title: string;
+          owner_kind?: string;
+          owner_id?: string | null;
+          due_on?: string | null;
+          status?: string;
+          done_at?: string | null;
+          done_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          meeting_id?: string;
+          position?: number;
+          title?: string;
+          owner_kind?: string;
+          owner_id?: string | null;
+          due_on?: string | null;
+          status?: string;
+          done_at?: string | null;
+          done_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      creator_meetings: {
+        Row: {
+          id: string;
+          agency_id: string;
+          talent_id: string;
+          held_at: string;
+          mode: string;
+          representative_id: string | null;
+          participants: string;
+          full_name: string;
+          contact_confirmed: string | null;
+          contact_fix: string;
+          notes: Json;
+          formats: Json;
+          action_key: string | null;
+          action_interest: string | null;
+          register_idea: boolean;
+          checks: Json;
+          sender_id: string | null;
+          sent_on: string | null;
+          follow_up_on: string | null;
+          status: string;
+          finalized_at: string | null;
+          finalized_by: string | null;
+          idea_id: string | null;
+          calendar_event_id: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          agency_id: string;
+          talent_id: string;
+          held_at: string;
+          mode?: string;
+          representative_id?: string | null;
+          participants?: string;
+          full_name?: string;
+          contact_confirmed?: string | null;
+          contact_fix?: string;
+          notes?: Json;
+          formats?: Json;
+          action_key?: string | null;
+          action_interest?: string | null;
+          register_idea?: boolean;
+          checks?: Json;
+          sender_id?: string | null;
+          sent_on?: string | null;
+          follow_up_on?: string | null;
+          status?: string;
+          finalized_at?: string | null;
+          finalized_by?: string | null;
+          idea_id?: string | null;
+          calendar_event_id?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          agency_id?: string;
+          talent_id?: string;
+          held_at?: string;
+          mode?: string;
+          representative_id?: string | null;
+          participants?: string;
+          full_name?: string;
+          contact_confirmed?: string | null;
+          contact_fix?: string;
+          notes?: Json;
+          formats?: Json;
+          action_key?: string | null;
+          action_interest?: string | null;
+          register_idea?: boolean;
+          checks?: Json;
+          sender_id?: string | null;
+          sent_on?: string | null;
+          follow_up_on?: string | null;
+          status?: string;
+          finalized_at?: string | null;
+          finalized_by?: string | null;
+          idea_id?: string | null;
+          calendar_event_id?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
       group_project_steps: {
         Row: {
           project_id: string;
@@ -178,6 +316,7 @@ export type Database = {
           notes: string;
           updated_at: string;
           updated_by: string | null;
+          meeting_id: string | null;
         };
         Insert: {
           talent_id: string;
@@ -188,6 +327,7 @@ export type Database = {
           notes?: string;
           updated_at?: string;
           updated_by?: string | null;
+          meeting_id?: string | null;
         };
         Update: {
           talent_id?: string;
@@ -198,6 +338,7 @@ export type Database = {
           notes?: string;
           updated_at?: string;
           updated_by?: string | null;
+          meeting_id?: string | null;
         };
         Relationships: [];
       };
@@ -12496,6 +12637,18 @@ isOneToOne: false
       [_ in never]: never;
     };
     Functions: {
+      creator_meeting_checks_clean: { Args: { p: Json }; Returns: Json };
+      creator_meeting_notes_clean: { Args: { p: Json }; Returns: Json };
+      creator_meeting_text_ok: { Args: { p: string }; Returns: boolean };
+      creator_meeting_actions_open: { Args: { p_agency: string; p_mine?: boolean }; Returns: Json };
+      creator_meeting_get: { Args: { p_id: string }; Returns: Json };
+      creator_meetings_list: { Args: { p_talent: string }; Returns: Json };
+      creator_meeting_action_set: { Args: { p_action: string; p_status: string }; Returns: undefined };
+      creator_meeting_delete: { Args: { p_id: string }; Returns: undefined };
+      creator_meeting_reopen: { Args: { p_id: string }; Returns: undefined };
+      creator_meeting_finalize: { Args: { p_id: string }; Returns: undefined };
+      creator_meeting_save: { Args: { p_id: string; p_data: Json }; Returns: undefined };
+      creator_meeting_create: { Args: { p_talent: string }; Returns: string };
       group_project_step_set: { Args: { p_project: string; p_stage: number; p_position: number; p_status: string; p_note: string }; Returns: undefined };
       group_project_save: { Args: { p_id: string; p_data: Json }; Returns: undefined };
       group_project_get: { Args: { p_number: number }; Returns: Json };

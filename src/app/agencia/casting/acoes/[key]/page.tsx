@@ -46,7 +46,10 @@ export default async function ActionAnswersPage({ params }: Props) {
                 <Avatar src={a.photo_url} name={a.name} size="md" alt="" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-fg">{a.name}</p>
-                  <p className="type-caption text-fg-muted">{formatDateTime(a.updated_at, locale)}</p>
+                  <p className="type-caption text-fg-muted">
+                    {formatDateTime(a.updated_at, locale)}
+                    {a.from_meeting ? ` · ${t("teamView.fromMeeting")}` : ""}
+                  </p>
                 </div>
                 <Badge size="sm" variant={a.interest === "yes" ? "success" : a.interest === "depends" ? "warning" : "neutral"}>
                   {t(`actions.interest.${a.interest}`)}

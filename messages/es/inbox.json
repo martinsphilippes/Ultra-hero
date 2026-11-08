@@ -302,6 +302,10 @@
     "group_project_assigned": {
       "title": "{role, select, owner {Eres el responsable de un proyecto} other {Entraste como apoyo en un proyecto}}",
       "body": "{project}. Mira la ficha y las microetapas en el Plan de proyectos."
+    },
+    "creator_meeting_action": {
+      "title": "{count, plural, one {Una acción de la reunión con {talent} quedó contigo} other {# acciones de la reunión con {talent} quedaron contigo}}",
+      "body": "Mira el acta y el plazo de cada una, y márcalas cuando las hagas."
     }
   }
 }

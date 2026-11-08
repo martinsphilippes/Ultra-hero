@@ -422,7 +422,10 @@
     "claim_link_failed": "No fue posible vincular la cuenta al perfil. Revisa si la persona ya tiene otro Hero.",
     "brand_exists_claim": "Esta marca ya está en la plataforma. Pide acceso a ella en la lista de arriba — Groscove la revisa y la libera.",
     "onda_profile_exists": "Esta página ya está en la lista.",
-    "action_closed": "Esta acción ya terminó."
+    "action_closed": "Esta acción ya terminó.",
+    "sensitive_data": "Quita CPF y datos bancarios del acta. Esos datos siguen el procedimiento interno seguro, no el acta.",
+    "meeting_incomplete": "Para concluir, el acta necesita representante, resumen ejecutivo, fecha de seguimiento y al menos una acción con responsable y plazo.",
+    "meeting_final": "Esta acta ya fue concluida."
   },
   "casting": {
     "title": "Casting",
@@ -495,7 +498,8 @@
       "documents": "Documentos",
       "history": "Historial",
       "availability": "Disponibilidad",
-      "relationship": "Relación"
+      "relationship": "Relación",
+      "meetings": "Reuniones"
     },
     "sections": {
       "data": "Datos del Hero",

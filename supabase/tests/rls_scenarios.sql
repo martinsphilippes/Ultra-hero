@@ -19523,5 +19523,230 @@ delete from public.agencies where id::text like 'c1370000-%';
 update public.agencies set slug = 'groscove' where slug = 'groscove-antes-s137';
 delete from auth.users where id::text like 'c1370000-%';
 
+-- ================================================================ S138 · Ata de reunião com o Hero: modelo A–K, encaminhamentos e checklist (0138)
+\ir ../migrations/0138_ata_reuniao_creator.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('c1380000-0000-4000-8000-000000000001', 'gestor@s138.test'),
+  ('c1380000-0000-4000-8000-000000000002', 'colab@s138.test'),
+  ('c1380000-0000-4000-8000-000000000003', 'hero@s138.test'),
+  ('c1380000-0000-4000-8000-000000000006', 'gestor@outra-s138.test'),
+  ('c1380000-0000-4000-8000-000000000007', 'colab2@s138.test');
+insert into public.agencies (id, slug, name) values ('c1380000-0000-4000-8000-0000000000a1', 's138', 'Agência S138'),
+  ('c1380000-0000-4000-8000-0000000000a2', 's138-outra', 'Outra S138');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('c1380000-0000-4000-8000-0000000000a1', 'c1380000-0000-4000-8000-000000000001', 'manager', 'Gestor S138'),
+  ('c1380000-0000-4000-8000-0000000000a1', 'c1380000-0000-4000-8000-000000000002', 'staff', 'Colab S138'),
+  ('c1380000-0000-4000-8000-0000000000a1', 'c1380000-0000-4000-8000-000000000007', 'staff', 'Colab2 S138'),
+  ('c1380000-0000-4000-8000-0000000000a2', 'c1380000-0000-4000-8000-000000000006', 'manager', 'Gestor Outra S138');
+insert into public.talent_profiles (id, agency_id, display_name, user_id) values
+  ('c1380000-0000-4000-8000-0000000000c1', 'c1380000-0000-4000-8000-0000000000a1', 'Hero S138', 'c1380000-0000-4000-8000-000000000003'),
+  ('c1380000-0000-4000-8000-0000000000c3', 'c1380000-0000-4000-8000-0000000000a1', 'Hero Respondeu S138', null),
+  ('c1380000-0000-4000-8000-0000000000c2', 'c1380000-0000-4000-8000-0000000000a2', 'Hero Outra S138', null);
+insert into public.creator_actions (key, agency_id, title, summary, starts_on, ends_on) values
+  ('s138-aberta', 'c1380000-0000-4000-8000-0000000000a1', 'Ação aberta S138', 'Teste', current_date - 1, current_date + 30);
+-- o Hero c3 já respondeu no portal: a ata nunca passa por cima
+insert into public.talent_action_responses (talent_id, action_key, interest, categories) values
+  ('c1380000-0000-4000-8000-0000000000c3', 's138-aberta', 'no', 'Nada agora');
+insert into public.talent_relationship (talent_id, formats) values ('c1380000-0000-4000-8000-0000000000c1', '{"publi":{"interest":"no","note":""}}');
+create table tests.s138 (k text primary key, v text);
+grant all on tests.s138 to anon, authenticated;
+
+-- a equipe abre a ata (rascunho já preenchido com o que se sabe do Hero)
+select tests.login('c1380000-0000-4000-8000-000000000002', 'colab@s138.test');
+insert into tests.s138 select 'm1', public.creator_meeting_create('c1380000-0000-4000-8000-0000000000c1')::text;
+select tests.ok('S138 o rascunho já vem com representante, ação aberta e os formatos do Hero',
+  (public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid) ->> 'representative_id') = 'c1380000-0000-4000-8000-000000000002'
+  and (public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid) ->> 'action_key') = 's138-aberta'
+  and (public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid) -> 'formats' -> 'publi' ->> 'interest') = 'no'
+  and (public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid) ->> 'status') = 'draft');
+select tests.expect_error('S138 CPF no resumo é recusado',
+  $$select public.creator_meeting_save((select v from tests.s138 where k = 'm1')::uuid,
+      jsonb_build_object('held_at', now(), 'notes', jsonb_build_object('summary', 'CPF dele: 123.456.789-10')))$$, 'sensitive_data');
+select tests.expect_error('S138 dados bancários num encaminhamento são recusados',
+  $$select public.creator_meeting_save((select v from tests.s138 where k = 'm1')::uuid,
+      jsonb_build_object('held_at', now(), 'actions', jsonb_build_array(jsonb_build_object('title', 'Pagar na agência 1234 conta 56789-0'))))$$, 'sensitive_data');
+select tests.expect_error('S138 responsável de outra agência é recusado',
+  $$select public.creator_meeting_save((select v from tests.s138 where k = 'm1')::uuid,
+      jsonb_build_object('held_at', now(), 'actions', jsonb_build_array(jsonb_build_object('title', 'Ligar', 'owner_id', 'c1380000-0000-4000-8000-000000000006'))))$$, 'invalid_input');
+select tests.expect_error('S138 follow-up antes da reunião é recusado',
+  $$select public.creator_meeting_save((select v from tests.s138 where k = 'm1')::uuid,
+      jsonb_build_object('held_at', now(), 'follow_up_on', current_date - 10))$$, 'invalid_date');
+select tests.expect_error('S138 campo fora do modelo é recusado',
+  $$select public.creator_meeting_save((select v from tests.s138 where k = 'm1')::uuid,
+      jsonb_build_object('held_at', now(), 'notes', jsonb_build_object('cpf', 'x')))$$, 'invalid_input');
+select tests.expect_error('S138 sem resumo, encaminhamento e follow-up não conclui',
+  $$select public.creator_meeting_finalize((select v from tests.s138 where k = 'm1')::uuid)$$, 'meeting_incomplete');
+select public.creator_meeting_save((select v from tests.s138 where k = 'm1')::uuid, jsonb_build_object(
+  'held_at', now() - interval '1 hour', 'mode', 'online', 'representative_id', 'c1380000-0000-4000-8000-000000000002',
+  'participants', 'Gestor S138', 'full_name', 'Hero da Silva', 'contact_confirmed', 'yes',
+  'notes', jsonb_build_object('summary', 'Muito interesse em CPA e eventos; seguir com Black Friday.', 'rates', 'R$ 5.000 por reels',
+                              'project_name', 'Festival S138', 'project_concept', 'Festival de esporte e música na praia.', 'open_questions', ''),
+  'formats', '{"cpa":{"interest":"yes","note":"Usa marcas de beleza"},"events":{"interest":"maybe","note":""}}'::jsonb,
+  'action_key', 's138-aberta', 'action_interest', 'yes', 'register_idea', true,
+  'checks', '{"reg_email":true,"media_kit":"no","internal_data":"pending"}'::jsonb,
+  'follow_up_on', current_date + 7,
+  'actions', jsonb_build_array(
+    jsonb_build_object('title', 'Pedir o media kit por e-mail', 'owner_kind', 'team', 'owner_id', 'c1380000-0000-4000-8000-000000000007', 'due_on', current_date + 3),
+    jsonb_build_object('title', 'Enviar media kit', 'owner_kind', 'talent', 'due_on', current_date + 5),
+    jsonb_build_object('title', 'Formalizar por e-mail', 'owner_kind', 'team', 'owner_id', 'c1380000-0000-4000-8000-000000000002', 'due_on', current_date + 2))));
+select tests.ok('S138 a ata guarda os textos, as caixas e os encaminhamentos na ordem',
+  (public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid) -> 'notes' ->> 'rates') = 'R$ 5.000 por reels'
+  and not (public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid) -> 'notes' ? 'open_questions')
+  and (public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid) -> 'checks') = '{"reg_email": true, "media_kit": "no", "internal_data": "pending"}'::jsonb
+  and (public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid) -> 'actions' -> 1 ->> 'owner_kind') = 'talent'
+  and (public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid) -> 'actions' -> 0 ->> 'owner') = 'Colab2 S138');
+select tests.expect_error('S138 o colaborador não lê as tabelas direto', $$select count(*) from public.creator_meetings$$, 'permission denied');
+select public.creator_meeting_finalize((select v from tests.s138 where k = 'm1')::uuid);
+select tests.expect_error('S138 ata concluída não conclui de novo',
+  $$select public.creator_meeting_finalize((select v from tests.s138 where k = 'm1')::uuid)$$, 'meeting_final');
+
+select tests.su();
+select tests.ok('S138 concluir leva os formatos para o relacionamento (sem apagar o que já havia)',
+  (select formats -> 'cpa' ->> 'interest' from public.talent_relationship where talent_id = 'c1380000-0000-4000-8000-0000000000c1') = 'yes'
+  and (select formats -> 'publi' ->> 'interest' from public.talent_relationship where talent_id = 'c1380000-0000-4000-8000-0000000000c1') = 'no');
+select tests.ok('S138 o interesse vira a resposta do Hero na ação, marcada como da reunião',
+  (select interest from public.talent_action_responses where talent_id = 'c1380000-0000-4000-8000-0000000000c1' and action_key = 's138-aberta') = 'yes'
+  and (select meeting_id::text from public.talent_action_responses where talent_id = 'c1380000-0000-4000-8000-0000000000c1' and action_key = 's138-aberta') = (select v from tests.s138 where k = 'm1'));
+select tests.ok('S138 o projeto autoral entra em Projetos autorais e fica ligado à ata',
+  (select count(*) from public.creator_project_ideas where talent_id = 'c1380000-0000-4000-8000-0000000000c1' and title = 'Festival S138') = 1
+  and (select idea_id is not null from public.creator_meetings where id = (select v from tests.s138 where k = 'm1')::uuid));
+select tests.ok('S138 o follow-up entra na agenda da agência como dia inteiro, só para a equipe',
+  exists (select 1 from public.calendar_events e join public.creator_meetings m on m.calendar_event_id = e.id
+          where m.id = (select v from tests.s138 where k = 'm1')::uuid and e.all_day and e.kind = 'meeting'
+            and e.starts_at = ((current_date + 7)::timestamp at time zone 'America/Sao_Paulo') and not e.visible_to_talent and not e.visible_to_brand));
+select tests.ok('S138 quem ficou com encaminhamento é avisado; quem concluiu, não',
+  (select count(*) from public.inbox_notifications where user_id = 'c1380000-0000-4000-8000-000000000007' and kind = 'creator_meeting_action') = 1
+  and (select count(*) from public.inbox_notifications where user_id = 'c1380000-0000-4000-8000-000000000002' and kind = 'creator_meeting_action') = 0);
+insert into tests.s138 select 'a1', x.id::text from public.creator_meeting_actions x where x.meeting_id = (select v from tests.s138 where k = 'm1')::uuid order by x.position limit 1;
+select tests.ok('S138 a última conversa do Hero no casting vira a data da reunião',
+  (select last_contact_at from public.talent_profiles where id = 'c1380000-0000-4000-8000-0000000000c1')
+    = (select held_at from public.creator_meetings where id = (select v from tests.s138 where k = 'm1')::uuid));
+
+-- concluída: só checklist, follow-up e encaminhamentos mudam
+select tests.login('c1380000-0000-4000-8000-000000000002', 'colab@s138.test');
+select public.creator_meeting_save((select v from tests.s138 where k = 'm1')::uuid, jsonb_build_object(
+  'held_at', now(), 'notes', jsonb_build_object('summary', 'Trocado depois'),
+  'checks', '{"reg_email":true,"media_kit":"no","internal_data":"pending","k_reviewed":true,"k_presidency":true}'::jsonb,
+  'follow_up_on', current_date + 9,
+  'actions', (select jsonb_agg(e) from jsonb_array_elements(public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid) -> 'actions') e)
+    || jsonb_build_array(jsonb_build_object('title', 'Enviar calendário de sugestões', 'owner_kind', 'team', 'owner_id', 'c1380000-0000-4000-8000-000000000001', 'due_on', current_date + 4))));
+select tests.ok('S138 depois de concluída o registro não muda; checklist, follow-up e encaminhamentos sim',
+  (public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid) -> 'notes' ->> 'summary') like 'Muito interesse%'
+  and (public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid) -> 'checks' ->> 'k_presidency') = 'true'
+  and jsonb_array_length(public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid) -> 'actions') = 4);
+select tests.expect_error('S138 ata concluída não fica sem follow-up',
+  $$select public.creator_meeting_save((select v from tests.s138 where k = 'm1')::uuid, jsonb_build_object('follow_up_on', null))$$, 'meeting_incomplete');
+select tests.expect_error('S138 ata concluída não é apagada',
+  $$select public.creator_meeting_delete((select v from tests.s138 where k = 'm1')::uuid)$$, 'meeting_final');
+select tests.expect_error('S138 o colaborador não reabre (gestor+)',
+  $$select public.creator_meeting_reopen((select v from tests.s138 where k = 'm1')::uuid)$$, 'forbidden');
+select tests.su();
+select tests.ok('S138 o follow-up mudou na agenda e o gestor foi avisado do encaminhamento novo',
+  (select e.starts_at from public.calendar_events e join public.creator_meetings m on m.calendar_event_id = e.id
+   where m.id = (select v from tests.s138 where k = 'm1')::uuid) = ((current_date + 9)::timestamp at time zone 'America/Sao_Paulo')
+  and (select count(*) from public.inbox_notifications where user_id = 'c1380000-0000-4000-8000-000000000001' and kind = 'creator_meeting_action') = 1);
+
+-- encaminhamentos pendentes (meus e todos) e marcar feito
+select tests.login('c1380000-0000-4000-8000-000000000007', 'colab2@s138.test');
+select tests.ok('S138 "meus" mostra só o que está comigo; "todos" mostra os 4',
+  jsonb_array_length(public.creator_meeting_actions_open('c1380000-0000-4000-8000-0000000000a1', true)) = 1
+  and jsonb_array_length(public.creator_meeting_actions_open('c1380000-0000-4000-8000-0000000000a1', false)) = 4);
+select public.creator_meeting_action_set((public.creator_meeting_actions_open('c1380000-0000-4000-8000-0000000000a1', true) -> 0 ->> 'id')::uuid, 'done');
+select tests.ok('S138 feito sai da lista de pendentes',
+  jsonb_array_length(public.creator_meeting_actions_open('c1380000-0000-4000-8000-0000000000a1', true)) = 0);
+select tests.expect_error('S138 status fora da lista é recusado',
+  $$select public.creator_meeting_action_set((public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid) -> 'actions' -> 0 ->> 'id')::uuid, 'feito')$$, 'invalid_input');
+
+-- gestor reabre e conclui de novo: nada duplica
+select tests.login('c1380000-0000-4000-8000-000000000001', 'gestor@s138.test');
+select public.creator_meeting_reopen((select v from tests.s138 where k = 'm1')::uuid);
+select tests.expect_error('S138 ata já concluída uma vez não é apagada nem reaberta',
+  $$select public.creator_meeting_delete((select v from tests.s138 where k = 'm1')::uuid)$$, 'meeting_final');
+select public.creator_meeting_finalize((select v from tests.s138 where k = 'm1')::uuid);
+select tests.su();
+select tests.ok('S138 concluir de novo não duplica projeto, evento nem aviso',
+  (select count(*) from public.creator_project_ideas where talent_id = 'c1380000-0000-4000-8000-0000000000c1') = 1
+  and (select count(*) from public.calendar_events where talent_id = 'c1380000-0000-4000-8000-0000000000c1' and kind = 'meeting') = 1
+  and (select count(*) from public.inbox_notifications where user_id = 'c1380000-0000-4000-8000-000000000007' and kind = 'creator_meeting_action') = 1);
+
+-- o Hero que já respondeu no portal não é sobrescrito pela ata
+select tests.login('c1380000-0000-4000-8000-000000000002', 'colab@s138.test');
+insert into tests.s138 select 'm3', public.creator_meeting_create('c1380000-0000-4000-8000-0000000000c3')::text;
+select tests.ok('S138 o rascunho traz a resposta que o Hero deu no portal',
+  (public.creator_meeting_get((select v from tests.s138 where k = 'm3')::uuid) ->> 'action_interest') = 'no'
+  and (public.creator_meeting_get((select v from tests.s138 where k = 'm3')::uuid) -> 'notes' ->> 'action_categories') = 'Nada agora');
+select public.creator_meeting_save((select v from tests.s138 where k = 'm3')::uuid, jsonb_build_object(
+  'held_at', now(), 'representative_id', 'c1380000-0000-4000-8000-000000000002', 'action_key', 's138-aberta', 'action_interest', 'yes',
+  'notes', jsonb_build_object('summary', 'Mudou de ideia na conversa.'), 'follow_up_on', current_date + 1,
+  'actions', jsonb_build_array(jsonb_build_object('title', 'Confirmar por e-mail', 'owner_kind', 'talent', 'due_on', current_date + 1))));
+select public.creator_meeting_finalize((select v from tests.s138 where k = 'm3')::uuid);
+select tests.su();
+select tests.ok('S138 a resposta do próprio Hero fica',
+  (select interest from public.talent_action_responses where talent_id = 'c1380000-0000-4000-8000-0000000000c3' and action_key = 's138-aberta') = 'no'
+  and (select meeting_id from public.talent_action_responses where talent_id = 'c1380000-0000-4000-8000-0000000000c3' and action_key = 's138-aberta') is null);
+select tests.login('c1380000-0000-4000-8000-000000000002', 'colab@s138.test');
+select tests.ok('S138 a lista da ação mostra o que veio da reunião',
+  (select (e ->> 'from_meeting')::boolean from jsonb_array_elements(public.creator_action_answers('s138-aberta') -> 'answers') e where e ->> 'name' = 'Hero S138')
+  and not (select (e ->> 'from_meeting')::boolean from jsonb_array_elements(public.creator_action_answers('s138-aberta') -> 'answers') e where e ->> 'name' = 'Hero Respondeu S138'));
+
+-- quando o Hero responde no portal, a resposta dele substitui a da reunião
+select tests.login('c1380000-0000-4000-8000-000000000003', 'hero@s138.test');
+select public.creator_action_respond('s138-aberta', '{"interest":"depends","categories":"Só beleza"}'::jsonb);
+select tests.su();
+select tests.ok('S138 a resposta do Hero no portal substitui a registrada na reunião',
+  (select interest || '|' || coalesce(meeting_id::text, '-') from public.talent_action_responses
+   where talent_id = 'c1380000-0000-4000-8000-0000000000c1' and action_key = 's138-aberta') = 'depends|-');
+
+-- o Hero não vê a ata (documento interno)
+select tests.login('c1380000-0000-4000-8000-000000000003', 'hero@s138.test');
+select tests.expect_error('S138 o Hero não lê a lista de reuniões', $$select public.creator_meetings_list('c1380000-0000-4000-8000-0000000000c1')$$, 'forbidden');
+select tests.expect_error('S138 nem a ata', $$select public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid)$$, 'forbidden');
+select tests.expect_error('S138 nem abre ata', $$select public.creator_meeting_create('c1380000-0000-4000-8000-0000000000c1')$$, 'forbidden');
+
+-- outra agência
+select tests.login('c1380000-0000-4000-8000-000000000006', 'gestor@outra-s138.test');
+select tests.expect_error('S138 gestor de outra agência não lê a ata', $$select public.creator_meeting_get((select v from tests.s138 where k = 'm1')::uuid)$$, 'forbidden');
+select tests.expect_error('S138 nem salva', $$select public.creator_meeting_save((select v from tests.s138 where k = 'm1')::uuid, '{"follow_up_on":null}'::jsonb)$$, 'forbidden');
+select tests.expect_error('S138 nem vê os encaminhamentos', $$select public.creator_meeting_actions_open('c1380000-0000-4000-8000-0000000000a1', false)$$, 'forbidden');
+select tests.expect_error('S138 nem marca encaminhamento',
+  $$select public.creator_meeting_action_set((select v from tests.s138 where k = 'a1')::uuid, 'done')$$, 'forbidden');
+
+-- rascunho: apaga quem criou ou gestor+; e o limite de atas por dia
+select tests.login('c1380000-0000-4000-8000-000000000002', 'colab@s138.test');
+insert into tests.s138 select 'm4', public.creator_meeting_create('c1380000-0000-4000-8000-0000000000c1')::text;
+select tests.login('c1380000-0000-4000-8000-000000000007', 'colab2@s138.test');
+select tests.expect_error('S138 outro colaborador não apaga o rascunho dos outros',
+  $$select public.creator_meeting_delete((select v from tests.s138 where k = 'm4')::uuid)$$, 'forbidden');
+select tests.login('c1380000-0000-4000-8000-000000000002', 'colab@s138.test');
+select public.creator_meeting_delete((select v from tests.s138 where k = 'm4')::uuid);
+select tests.ok('S138 quem criou apaga o rascunho', jsonb_array_length(public.creator_meetings_list('c1380000-0000-4000-8000-0000000000c1')) = 1);
+select public.creator_meeting_create('c1380000-0000-4000-8000-0000000000c1') from generate_series(1, 9);
+select tests.expect_error('S138 com 10 atas do mesmo Hero em 24 h, a próxima é segurada',
+  $$select public.creator_meeting_create('c1380000-0000-4000-8000-0000000000c1')$$, 'rate_limited');
+
+select tests.su();
+select tests.ok('S138 nada para anon e tabelas fechadas',
+  not has_function_privilege('anon', 'public.creator_meeting_create(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.creator_meeting_save(uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.creator_meeting_finalize(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.creator_meeting_get(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.creator_meetings_list(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.creator_meeting_actions_open(uuid, boolean)', 'execute')
+  and not has_function_privilege('authenticated', 'public.creator_meeting_member_name(uuid, uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.creator_meeting_member_ok(uuid, uuid)', 'execute')
+  and not has_table_privilege('authenticated', 'public.creator_meetings', 'select')
+  and not has_table_privilege('authenticated', 'public.creator_meeting_actions', 'select'));
+
+delete from public.inbox_notifications where user_id::text like 'c1380000-%';
+delete from public.creator_meetings where agency_id::text like 'c1380000-%';
+delete from public.calendar_events where agency_id::text like 'c1380000-%';
+delete from public.creator_actions where key like 's138-%';
+delete from public.talent_profiles where id::text like 'c1380000-%';
+delete from public.agency_members where agency_id::text like 'c1380000-%';
+delete from public.agencies where id::text like 'c1380000-%';
+delete from auth.users where id::text like 'c1380000-%';
+drop table tests.s138;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

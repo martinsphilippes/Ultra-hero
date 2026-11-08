@@ -422,7 +422,10 @@
     "claim_link_failed": "The account could not be linked to the profile. Check whether the person already has another Hero.",
     "brand_exists_claim": "This brand is already on the platform. Request access to it in the list above — Groscove checks and approves it.",
     "onda_profile_exists": "This page is already on the list.",
-    "action_closed": "This action has already closed."
+    "action_closed": "This action has already closed.",
+    "sensitive_data": "Remove tax IDs and bank details from the minutes. That data follows the secure internal procedure, not the minutes.",
+    "meeting_incomplete": "To finish, the minutes need a representative, an executive summary, a follow-up date and at least one next step with an owner and a due date.",
+    "meeting_final": "These minutes are already finished."
   },
   "casting": {
     "title": "Roster",
@@ -495,7 +498,8 @@
       "documents": "Documents",
       "history": "History",
       "availability": "Availability",
-      "relationship": "Relationship"
+      "relationship": "Relationship",
+      "meetings": "Meetings"
     },
     "sections": {
       "data": "Hero details",

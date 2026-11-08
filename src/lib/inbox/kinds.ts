@@ -92,6 +92,8 @@ export const INBOX_KINDS = [
   "creator_action_answered",
   // Plano de projetos (0137): responsável ou apoio de um projeto
   "group_project_assigned",
+  // Ata de reunião (0138): encaminhamento da reunião com o Hero
+  "creator_meeting_action",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 

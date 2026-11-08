@@ -1,0 +1,553 @@
+{
+  "meta": {
+    "list": "Meetings",
+    "meeting": "Meeting minutes",
+    "actions": "Next steps",
+    "guide": "Meeting guide"
+  },
+  "list": {
+    "title": "Meetings with the Hero",
+    "lead": "Each meeting is recorded as minutes using the guide's template (A to K). Once finished, the minutes update the Hero's relationship, put the follow-up on the calendar and notify the owner of each next step.",
+    "new": "New minutes",
+    "creating": "Opening…",
+    "empty": "No meetings recorded yet.",
+    "emptyHint": "Open the minutes during the meeting or right after it.",
+    "guide": "Meeting guide",
+    "actions": "Next steps",
+    "status": {
+      "draft": "Draft",
+      "final": "Finished"
+    },
+    "by": "With {name}",
+    "followUp": "Follow-up on {date}",
+    "pending": "{count, plural, =0 {Next steps done} one {# pending next step} other {# pending next steps}}",
+    "checklist": "Checklist {done} of {total}",
+    "noSummary": "No summary yet."
+  },
+  "editor": {
+    "draftNote": "Draft. Save during the meeting and finish once you have the summary, next steps and follow-up.",
+    "finalNote": "Finished on {date} by {name}. Now only the checklist, the follow-up and the next steps can change.",
+    "reopenedNote": "Minutes reopened for correction. Finish them again to make them official.",
+    "reopen": "Reopen to correct",
+    "reopenConfirm": "Reopen these minutes? They go back to draft until they are finished again.",
+    "delete": "Delete draft",
+    "deleteConfirm": "Delete this draft? This can't be undone.",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Minutes saved.",
+    "finalize": "Finish minutes",
+    "finalizing": "Finishing…",
+    "finalized": "Minutes finished. Relationship, calendar and notices updated.",
+    "missingTitle": "To finish, you still need:",
+    "unsaved": "There are unsaved changes.",
+    "jump": "Minutes sections",
+    "sensitive": "Remove tax IDs and bank details from here: they follow the secure internal procedure.",
+    "sensitiveBlock": "The minutes contain a tax ID or bank details. Remove them before saving.",
+    "invalidTitle": "Each next step needs at least 2 letters."
+  },
+  "problems": {
+    "representative": "Representative in charge (A)",
+    "summary": "Executive summary (J)",
+    "actions": "A next step with an owner and a due date (I)",
+    "followUp": "Follow-up date (K)",
+    "project": "Original project name and concept (F), since it goes to Original projects"
+  },
+  "sections": {
+    "A": {
+      "title": "A. Identification"
+    },
+    "B": {
+      "title": "B. Hero profile and positioning"
+    },
+    "C": {
+      "title": "C. Brands, campaigns and commercial history"
+    },
+    "D": {
+      "title": "D. Interest in the four formats",
+      "hint": "Comes pre-filled with what the Hero marked in the portal. On finishing, whatever is left here updates the Relationship tab."
+    },
+    "E": {
+      "title": "E. Open action and calendar",
+      "hint": "On finishing, the interest becomes the Hero's answer to the action. If they already answered in the portal, their answer takes precedence."
+    },
+    "F": {
+      "title": "F. Original project (if any)"
+    },
+    "G": {
+      "title": "G. Profile details and materials",
+      "hint": "Bank details, documents and tax information follow the secure internal procedure and stay out of the minutes."
+    },
+    "H": {
+      "title": "H. Questions and points that need an internal answer",
+      "hint": "Don't improvise: record the question and reply by e-mail after internal validation."
+    },
+    "I": {
+      "title": "I. Next steps and owners",
+      "hint": "Every meeting ends with clear next steps: each action with an owner and a due date."
+    },
+    "J": {
+      "title": "J. Executive summary of the meeting",
+      "hint": "Main opportunities, level of interest, the Hero's fit and recommended next step."
+    },
+    "K": {
+      "title": "K. Formalization and post-meeting checklist",
+      "hint": "Don't wrap up until it's all done. The minutes themselves already answer three items."
+    }
+  },
+  "fields": {
+    "talent": "Hero / stage name",
+    "full_name": "Full name",
+    "held_at": "Date and time",
+    "mode": "Meeting format",
+    "representative": "Representative in charge",
+    "participants": "Other participants",
+    "contact_confirmed": "E-mail and phone confirmed",
+    "contact_fix": "Correct or update",
+    "contact_on_file": "On file: {value}",
+    "contact_none": "No e-mail or phone on file.",
+    "profile_topics": "Hero description and main topics",
+    "profile_platforms": "Platforms and links",
+    "profile_audience": "Audience size and metrics shared",
+    "profile_public": "Predominant audience profile (age, location and other data)",
+    "profile_frequency": "Content frequency and formats",
+    "brands_affinity": "Brands they already have an affinity with or consume",
+    "brands_worked": "Brands they have worked with",
+    "past_campaigns": "Past campaigns, deliverables and results",
+    "rates": "Fees or ranges charged, or stated expectation",
+    "conflicts": "Contracts, exclusivities or category conflicts",
+    "action": "Action",
+    "action_none": "No open action right now.",
+    "action_interest": "Interest in taking part",
+    "action_categories": "Categories and brands of interest",
+    "action_availability": "Availability and schedule restrictions",
+    "action_dates": "Dates and formats presented",
+    "project_name": "Project name or idea",
+    "project_concept": "Concept, audience and differentiator",
+    "project_format": "Format, place and planned calendar",
+    "project_stage": "Current stage, partners and needs",
+    "project_next": "Next material to be sent by the Hero",
+    "register_idea": "Add to Original projects on finishing",
+    "register_idea_hint": "The team tracks progress in the Relationship tab.",
+    "idea_registered": "Added to Original projects: “{title}”.",
+    "registration": "Profile details update",
+    "media_kit": "Media kit received",
+    "internal_data": "Data for in-house creation",
+    "channels_insights": "Channel links and insights received",
+    "materials_notes": "Other materials and notes",
+    "open_questions": "Questions and points that need an answer",
+    "summary": "Executive summary",
+    "sender": "Sender",
+    "sent_on": "Date sent",
+    "follow_up_on": "Follow-up date",
+    "follow_up_hint": "Goes on the agency calendar (only the team sees it)."
+  },
+  "modes": {
+    "online": "Online",
+    "in_person": "In person"
+  },
+  "yesNo": {
+    "yes": "Yes",
+    "no": "No"
+  },
+  "internalData": {
+    "received": "Received",
+    "pending": "Pending"
+  },
+  "formats": {
+    "cpa": "CPA — links and coupons",
+    "publi": "Sponsored post",
+    "project": "Original project / sponsorship",
+    "events": "Events and experiences"
+  },
+  "interest": {
+    "yes": "Yes",
+    "maybe": "To evaluate",
+    "no": "No"
+  },
+  "actionInterest": {
+    "yes": "Yes",
+    "depends": "Depends on the brands and terms",
+    "no": "No"
+  },
+  "formatNote": "Notes and possibilities",
+  "checks": {
+    "reg_full_name": "Full name",
+    "reg_artistic_name": "Stage name",
+    "reg_address": "Address",
+    "reg_phone": "Phone",
+    "reg_email": "E-mail",
+    "reg_city": "City/State",
+    "k_reviewed": "Minutes reviewed, with no ambiguous information or unauthorized promises",
+    "k_saved": "Minutes saved under the standard name",
+    "k_shared": "Minutes shared in the internal groups",
+    "k_presidency": "Minutes forwarded to and filed in the Presidency's e-mail",
+    "k_follow_up_sent": "Follow-up sent or scheduled by e-mail",
+    "k_media_kit_requested": "Media kit or pending data requested by e-mail",
+    "k_calendar_sent": "Calendar of suggestions and materials sent",
+    "k_questions_forwarded": "Unanswered questions forwarded to the right areas"
+  },
+  "post": {
+    "registration": "Hero's details updated (name, address, phone and e-mail)",
+    "formats": "Interest in CPA, sponsored posts, projects and events recorded",
+    "follow_up": "Follow-up owner and due date set",
+    "auto": "from the minutes",
+    "progress": "{done} of {total}"
+  },
+  "owner": {
+    "label": "Owner",
+    "talent": "The Hero",
+    "none": "No owner",
+    "choose": "Choose",
+    "noDue": "no due date",
+    "due": "Due date"
+  },
+  "actionStatus": {
+    "pending": "Pending",
+    "done": "Done"
+  },
+  "actionForm": {
+    "title": "Action or deliverable",
+    "add": "Add next step",
+    "remove": "Remove this next step",
+    "done": "Done",
+    "suggestions": "Shortcuts",
+    "max": "Minutes can have up to {max} next steps.",
+    "items": {
+      "kit": "Ask for the updated media kit by e-mail",
+      "calendar": "Send the calendar of content suggestions",
+      "formalize": "Formalize the opportunities by e-mail",
+      "registration": "Update the Hero's details",
+      "answers": "Answer the questions by e-mail after internal validation",
+      "heroKit": "Send media kit and pending data"
+    }
+  },
+  "tools": {
+    "title": "Formalization by e-mail",
+    "lead": "E-mail is the official channel. Use the standard subject and file name.",
+    "subject": "Subject",
+    "file": "File",
+    "copySubject": "Copy subject",
+    "copyText": "Copy minutes",
+    "download": "Download .txt",
+    "print": "Print or save as PDF",
+    "email": "Open e-mail",
+    "copied": "Copied.",
+    "copyFailed": "Couldn't copy. Select the text and copy it.",
+    "fromSaved": "The text comes from the last saved version.",
+    "pasteHint": "(paste the copied minutes here)"
+  },
+  "record": {
+    "heading": "MINUTES OF THE MEETING WITH {name}"
+  },
+  "actionsPage": {
+    "title": "Next steps from meetings",
+    "lead": "What was agreed in finished minutes and is still pending. Mark each one as you complete it.",
+    "mine": "Mine",
+    "all": "All",
+    "empty": "Nothing pending. Everything agreed in meetings is done.",
+    "buckets": {
+      "overdue": "Overdue",
+      "today": "Due today",
+      "week": "Next 7 days",
+      "later": "Later",
+      "none": "No due date"
+    },
+    "meetingOf": "Meeting on {date}",
+    "markDone": "Mark as done",
+    "doneToast": "Next step done.",
+    "openMeeting": "Open the minutes"
+  },
+  "guide": {
+    "title": "Hero meeting guide",
+    "lead": "How the team runs the meeting, presents the formats and records everything in the minutes. Professional image, active listening, commercial clarity, formal record-keeping and relationship continuity.",
+    "openCasting": "Open the casting to start new minutes",
+    "sampleName": "Name",
+    "sampleDate": "YYYY-MM-DD",
+    "purpose": {
+      "title": "1. Purpose and stance",
+      "p1": "The meeting is about relationship-building, mapping and creating opportunities. It is not a rushed conversation, a promise of hiring or just a sales presentation. The goal is to get to know the Hero, understand their positioning and find real ways to connect them with brands, events and projects.",
+      "p2": "Every contact represents Groscove Group: the experience must convey organization, consistency, courtesy and confidence. The Hero ends the conversation knowing how we work, what information we need and what the next steps are.",
+      "central": "Core message: we are building relationships with Heroes to understand how each profile connects with brands and opportunities in the current cycle and, above all, in next year's actions.",
+      "momentTitle": "How to frame the current moment",
+      "moment": {
+        "a": "This year's calendar has already had actions and events. Since the relationship with part of the casting is starting now, the team is mapping things out during this period.",
+        "b": "The window from Black Friday to the end of the year is a period of getting closer, testing and reading opportunities.",
+        "c": "This work also prepares next year's relationships and campaigns.",
+        "d": "No opportunity is guaranteed: each brand has its own criteria, budget, deadlines and processes."
+      }
+    },
+    "image": {
+      "title": "2. Image and setting standards",
+      "lead": "Before joining, check your appearance and your surroundings. Tap each item once it's ready.",
+      "ready": "All set to join.",
+      "items": {
+        "presentation": {
+          "title": "Personal presentation",
+          "text": "Well presented, appropriate clothing, well-groomed appearance and clean, manicured nails. Professionalism without losing naturalness."
+        },
+        "place": {
+          "title": "Setting",
+          "text": "A quiet, tidy place, with no people walking through and no noise. No interruptions and no visually cluttered surroundings."
+        },
+        "background": {
+          "title": "Background",
+          "text": "Preferably white or black, clean and neutral, with no objects that draw attention away."
+        },
+        "light": {
+          "title": "Lighting",
+          "text": "Soft front or side light, face visible. No backlighting, harsh shadows or dark image."
+        },
+        "camera": {
+          "title": "Camera and audio",
+          "text": "Camera at eye level, steady framing, tested audio and a good connection."
+        },
+        "attitude": {
+          "title": "Attitude",
+          "text": "A smile, courtesy, active listening, attention to the Hero's name and a welcoming manner from start to finish."
+        }
+      },
+      "brand": "The look reinforces the Groscove Group brand: discretion, consistency, elegance and professionalism. The meeting is also a brand experience."
+    },
+    "opening": {
+      "title": "3. Opening and company introduction",
+      "suggested": "Suggested opening",
+      "quote": "“Thank you for taking the time to talk with us. The idea of this meeting is to get to know your work better and understand your interests, your content calendar and the brands you already have an affinity with. Groscove Group is building relationship opportunities between Heroes, brands, events and projects. We want to understand what makes sense for you and show how we can build this together.”",
+      "structureTitle": "How to present the structure",
+      "structure": {
+        "a": "Make it clear that you are part of the Groscove Group team and that you lead the relationship and the next steps.",
+        "b": "Introduce Jonathas Groscove as the group's founder. Execution and follow-through are handled by the professionals in each area.",
+        "c": "Stress that the Hero has a team to organize information, opportunities and next steps.",
+        "d": "Don't center everything on the founder or suggest that only he can solve things. Highlight the team and the formal channels."
+      },
+      "institutionalTitle": "Suggested company statement",
+      "institutional": "“Jonathas is the founder of Groscove Group, but the work happens through a team of professionals who follow every step. It is with us that you will structure information, opportunities and day-to-day next steps.”"
+    },
+    "formats": {
+      "title": "4. The four ways of working",
+      "lead": "Present them clearly. The formats happen at different times and each action depends on alignment between the Hero, the brand, the scope, the budget and the formal agreement.",
+      "importantLabel": "Important",
+      "cpa": {
+        "title": "Format 1 — CPA: relationship, links and coupons",
+        "lead": "Suggested first step to start or deepen the relationship with brands: understand how familiar the Hero is with products and brands, test communication and see how the audience responds.",
+        "points": {
+          "a": "Ask which brands the Hero already consumes, knows or uses in their routine.",
+          "b": "Explore the Universes tab to find segments and brands that fit the profile.",
+          "c": "Links and discount coupons can be sent for tests, depending on availability and each brand's rules.",
+          "d": "The Hero works links and coupons into content that fits their editorial calendar, always following the brand's guidelines.",
+          "e": "The brand looks at fit, content quality, audience interest and the available results."
+        },
+        "important": "CPA is not guaranteed fixed pay. Explain up front the attribution rule, which action counts, the measurement window, the percentage or amount and how payment works, according to what the brand formalizes."
+      },
+      "publi": {
+        "title": "Format 2 — Sponsored post: paid campaign",
+        "lead": "Once it understands the Hero's communication, the team can present sponsored content opportunities. Many brands need to know the profile and review the data before defining scope and investment.",
+        "points": {
+          "a": "Ask for the updated media kit by e-mail. If there is no media kit, ask for the data so the team can prepare an internal presentation.",
+          "b": "Ask about past campaigns, brands served, formats delivered, results and the fees charged or desired.",
+          "c": "Fees and terms depend on the brief, deliverables, deadline, usage rights, exclusivity and the brand's budget."
+        },
+        "important": "Don't promise fees, campaigns or approval in the meeting. The proposal is handled and formalized by e-mail."
+      },
+      "project": {
+        "title": "Format 3 — Original projects and sponsorship",
+        "lead": "Groscove Group also looks for Heroes with their own ideas: projects, experiences, events, recurring formats or content properties that attract sponsors. References just to illustrate: Rancho do Carlinhos Maia, Farofa da Gkay, Neymar's charity auction, Ensaios da Anitta, Numanice da Ludmilla and Tardezinha do Thiaguinho. It's not about comparing scale or promising results.",
+        "points": {
+          "a": "Ask whether they have an idea on hold, a project in development or a community they'd like to bring together in an experience.",
+          "b": "Listen without interrupting: concept, audience, format, place, calendar, differentiators, partners and stage.",
+          "c": "Ask for the idea to be formalized by e-mail, even at an early stage.",
+          "d": "The team can study the project and look for sponsors. Sponsorship tiers can exceed R$100k, depending on the project, scope and opportunity."
+        },
+        "important": "Don't promise sponsorship or amounts. The figure is a reference for the type of opportunity, not a guarantee: it depends on the pitch, budget, audience, what is offered in return and sponsor interest."
+      },
+      "events": {
+        "title": "Format 4 — Brand events and experiences",
+        "lead": "Brands and partners hire Heroes for events, activations, launches, internal meetings and experiences: relationships, content production and getting closer to the market.",
+        "points": {
+          "a": "Ask about availability, interest in events, the cities they can be in and how much notice they need.",
+          "b": "Go over the participation formats: attendance, coverage, stories, reels, interviews, content before or after the event.",
+          "c": "Opportunities can come from a brand or from the holding company's relationships with PR agencies and partners.",
+          "d": "Stress punctuality, professional conduct, courtesy with staff and guests and keeping commitments."
+        },
+        "important": "No appearance is confirmed before alignment of brand, scope, fees, schedule and a formal agreement."
+      }
+    },
+    "content": {
+      "title": "5. Content that attracts brands",
+      "lead": "Many Heroes want opportunities but don't keep up content that shows the brand their language, consistency and ability to communicate products. Handle the topic constructively, without judgment.",
+      "items": {
+        "a": "Naturalness: show products and experiences in a way that fits the routine, without turning everything into an ad.",
+        "b": "Consistency: frequency and quality, without long gaps in posting when there is a calendar commitment.",
+        "c": "Context: explain why they use, like or recommend something; show real use, benefit or experience.",
+        "d": "Variety: short videos, stories, carousels, behind the scenes, tutorials, reviews and routine, according to the profile.",
+        "e": "Community: start conversations, reply to comments and notice recurring questions.",
+        "f": "Brand safety: care with language, image, information and transparency, labeling sponsored content.",
+        "g": "Planning: connect commercial and seasonal dates to the Hero's segment, without artificial or out-of-context content."
+      },
+      "calendar": "The team sends a calendar of suggestions with relevant dates, seasonal opportunities and content ideas. It is a strategic reference: the Hero adapts it to their identity, schedule and production capacity.",
+      "universes": "Advise the Hero to follow the Universes tab (segments and brands Groscove Group works with, always kept up to date) and to mark the universes that make sense, the brands they already know and the ones they want to explore. Marking something is not automatic campaign approval."
+    },
+    "blackFriday": {
+      "title": "6. Black Friday invitation",
+      "lead": "In the meeting, present the Black Friday action and gauge the Hero's interest.",
+      "quote": "“We are organizing a Black Friday initiative with a few brands and a structured content calendar. We want to understand whether you're interested in taking part and whether you can produce within the planned period and dates. The idea is to formalize the possibilities by e-mail early next week, with the details of each opportunity.”",
+      "points": {
+        "a": "Show the available calendar, with dates, formats and deadlines.",
+        "b": "Ask about interest, availability and affinity with the brands or categories.",
+        "c": "Record restrictions, conflicts with competitors, trips, commitments and formats they don't want to do.",
+        "d": "Don't confirm participation before alignment of brand, scope, fees, availability and a formal agreement."
+      },
+      "answers": "Answers, from the portal and from the minutes, are kept together in the action's list."
+    },
+    "questions": {
+      "title": "7. Questions for a productive meeting",
+      "lead": "A two-way conversation: open questions, listening and recording what is concrete. Use them as a guide, not as an interrogation.",
+      "items": {
+        "profile": {
+          "title": "Profile and positioning",
+          "text": "How do you define your content today? Which topics do you want to strengthen? Which audience do you want to reach? What sets your communication apart?"
+        },
+        "brands": {
+          "title": "Brands and affinity",
+          "text": "Which brands do you consume or admire? Which ones have you worked with? Are there segments you'd rather not promote? Are there contracts or exclusivities in force?"
+        },
+        "history": {
+          "title": "Commercial history",
+          "text": "Have you done paid campaigns? Which formats did you deliver? What was the investment range or fee charged? What worked best? Can you show case studies or results?"
+        },
+        "audience": {
+          "title": "Metrics and audience",
+          "text": "What are your main channels? What are your audience's location, age range and profile? Which metrics can you share?"
+        },
+        "production": {
+          "title": "Production and schedule",
+          "text": "How often do you post? How do you organize shooting and editing? Are there dates, trips or commitments that affect the calendar?"
+        },
+        "blackFriday": {
+          "title": "Black Friday",
+          "text": "Are you interested in taking part? Which categories make sense? Can you meet the proposed calendar?"
+        },
+        "projects": {
+          "title": "Original projects",
+          "text": "Is there a project you'd like to get off the ground? What would the experience, audience, format, place and timeline be? What is already in place?"
+        },
+        "events": {
+          "title": "Events",
+          "text": "Are you interested in appearances and activations? In which cities can you take part? Which delivery formats do you usually accept?"
+        }
+      },
+      "noImprovise": "If the answer isn't available yet, don't improvise: say the question will go to the responsible team and be answered by e-mail after internal validation."
+    },
+    "mediaKit": {
+      "title": "8. Media kit and profile details update",
+      "lead": "At the end of the meeting, ask for the media kit by e-mail. If there's no ready-made document, ask for the information below so the team can put together the internal presentation and the pitch for brands.",
+      "items": {
+        "identification": "Identification: full name, stage name, city/state, short bio and professional contacts.",
+        "channels": "Channels: links and @handles for Instagram, TikTok, YouTube, Twitch, website, podcast and other platforms.",
+        "audience": "Audience: followers per channel, reach, impressions, average views, engagement and age, gender and location data.",
+        "content": "Content: main topics and formats, frequency, differentiators and representative examples.",
+        "history": "Commercial history: brands served, campaigns, deliverables, case studies, authorized results and testimonials.",
+        "prices": "Formats and fees: stories, reels, feed, video, appearances, packages and reference ranges, if any.",
+        "conditions": "Terms: availability, minimum lead times, travel, production costs, usage rights, paid boosting and exclusivity.",
+        "materials": "Materials: professional photos, portraits, logo, portfolio and recent screenshots of insights."
+      },
+      "registrationTitle": "Mandatory profile details update",
+      "registration": "Full name and stage name, full address (for registration, shipping or logistics), phone or WhatsApp with area code, main and alternative e-mail, city and state. Confirm the spelling with the Hero.",
+      "sensitive": "Bank details, documents and tax information only when needed, through the appropriate channel and with guidance from the responsible team. Never in a WhatsApp group or in open minutes."
+    },
+    "channels": {
+      "title": "9. Channels and formalization",
+      "items": {
+        "a": "E-mail is the official channel for brands, briefs, proposals, fees, approvals, contracts, deadlines and confirmations.",
+        "b": "WhatsApp is for quick contact, alignments and notices, but it does not replace formalization by e-mail.",
+        "c": "Advise the Hero to keep an eye on their inbox and spam folder.",
+        "d": "After the meeting, the minutes go to the relevant internal groups and are sent to and filed in the Presidency's e-mail.",
+        "e": "Standard e-mail subject: “{subject}”. The minutes on the platform already generate this subject.",
+        "f": "Every action has an owner and a due date. Never leave a next step only in a stray message."
+      }
+    },
+    "script": {
+      "title": "10. Meeting script",
+      "doLabel": "What to do",
+      "recordLabel": "In the minutes",
+      "steps": {
+        "prep": {
+          "title": "1. Preparation",
+          "do": "Test camera, audio, lighting, background and connection, and open the materials.",
+          "record": "Date, time, participants and representative in charge (A)."
+        },
+        "welcome": {
+          "title": "2. Welcome",
+          "do": "Thank them, set a friendly tone and explain the purpose of the meeting.",
+          "record": "Summary of the purpose and the context presented."
+        },
+        "institutional": {
+          "title": "3. Company overview",
+          "do": "Introduce Groscove Group, the team, the founder's role and how the relationship works.",
+          "record": "Company points presented and questions (H)."
+        },
+        "discovery": {
+          "title": "4. Discovery",
+          "do": "Learn about content, audience, brands, commercial history, schedule and preferences.",
+          "record": "Answers, metrics, brands and restrictions (B and C)."
+        },
+        "formats": {
+          "title": "5. Formats",
+          "do": "Explain CPA, sponsored posts, original projects and events, without promising hiring.",
+          "record": "Formats of interest and possibilities (D and F)."
+        },
+        "blackFriday": {
+          "title": "6. Black Friday",
+          "do": "Present the calendar and gauge interest and availability.",
+          "record": "Interest, categories, dates and constraints (E)."
+        },
+        "next": {
+          "title": "7. Next steps",
+          "do": "Ask for the media kit and data, update the profile details and agree on response deadlines.",
+          "record": "Pending items, owners, due dates and response channel (G and I)."
+        },
+        "closing": {
+          "title": "8. Closing",
+          "do": "Thank them, reinforce e-mail as the official channel and confirm what each party will send.",
+          "record": "Final summary and follow-up date (J and K)."
+        }
+      },
+      "tone": "Friendliness and professionalism: genuine interest, camera on whenever possible, a smile, no interrupting and no side conversations. The quality of the relationship starts with how the Hero is welcomed."
+    },
+    "limits": {
+      "title": "11. Precautions and limits",
+      "items": {
+        "a": "Don't guarantee campaigns, fees, invitations, sponsorships, results or brand approval.",
+        "b": "Don't say the Hero was approved by a brand just because they joined the casting or a selection.",
+        "c": "Explain it correctly: the profile was included in the casting sent to advertisers for evaluation; each brand decides based on its own brief and criteria.",
+        "d": "Don't assume that the lack of a general contract rules out every opportunity: each action can have its own negotiation and formal agreement.",
+        "e": "Don't disclose confidential information about brands, other Heroes, fees or negotiations.",
+        "f": "Don't advise publishing without a brief, authorization and agreed commercial terms.",
+        "g": "When in doubt, record the question, forward it to the responsible team and answer by e-mail after validation."
+      }
+    },
+    "minutes": {
+      "title": "12. Meeting minutes (A to K)",
+      "text": "Every meeting has minutes, filled in during the conversation or right after. Open them from the casting: Hero profile, Meetings tab, New minutes. Once finished, the minutes update the Hero's relationship, the answer to the open action, original projects and the calendar, and notify the owner of each next step."
+    },
+    "after": {
+      "title": "13. Post-meeting checklist",
+      "lead": "Don't wrap up until it's all done. In the minutes, section K tracks each item and automatically checks off what the minutes themselves already answer.",
+      "items": {
+        "a": "Review the minutes: nothing ambiguous, no unauthorized promises.",
+        "b": "Save with the standard name “{file}”.",
+        "c": "Share in the internal groups for awareness and continuity.",
+        "d": "Formally forward to the Presidency's e-mail for filing and record-keeping.",
+        "e": "Ask by e-mail for the media kit or the pending data.",
+        "f": "Update the Hero's details: name, address, phone and e-mail.",
+        "g": "Send the calendar of suggestions and the agreed materials.",
+        "h": "Record interest in CPA, sponsored posts, projects and events.",
+        "i": "Forward unanswered questions to the right areas and track the replies by e-mail.",
+        "j": "Set the follow-up owner and due date."
+      }
+    },
+    "principle": {
+      "title": "Operating principle",
+      "text": "Relationships are built through consistency. Every meeting leaves the Hero well received, the team well informed and the operation with clear records. Groscove Group doesn't just present opportunities: it organizes relationships, understands potential and turns conversations into concrete next steps."
+    }
+  }
+}

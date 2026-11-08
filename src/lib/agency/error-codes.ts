@@ -1,5 +1,9 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // ata de reunião (0138): CPF/dados bancários no texto, falta o mínimo para concluir, ata já concluída
+  "sensitive_data",
+  "meeting_incomplete",
+  "meeting_final",
   // Como trabalhamos (0136): a ação (ex.: Black Friday) já fechou
   "action_closed",
   // Onda Digital (0134): a página já está na lista do editor

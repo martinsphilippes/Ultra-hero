@@ -1,0 +1,552 @@
+{
+  "meta": {
+    "list": "Reuniones",
+    "meeting": "Acta de la reunión",
+    "actions": "Próximos pasos",
+    "guide": "Guía de la reunión"
+  },
+  "list": {
+    "title": "Reuniones con el Hero",
+    "lead": "Cada reunión se convierte en un acta con el modelo de la guía (A a K). Una vez concluida, actualiza la relación del Hero, pone el seguimiento en la agenda y avisa al responsable de cada próximo paso.",
+    "new": "Nueva acta",
+    "creating": "Abriendo…",
+    "empty": "Todavía no hay reuniones registradas.",
+    "emptyHint": "Abre el acta durante la reunión o justo después.",
+    "guide": "Guía de la reunión",
+    "actions": "Próximos pasos",
+    "status": {
+      "draft": "Borrador",
+      "final": "Concluida"
+    },
+    "by": "Con {name}",
+    "followUp": "Seguimiento el {date}",
+    "pending": "{count, plural, =0 {Próximos pasos hechos} one {# próximo paso pendiente} other {# próximos pasos pendientes}}",
+    "checklist": "Checklist {done} de {total}",
+    "noSummary": "Sin resumen todavía."
+  },
+  "editor": {
+    "draftNote": "Borrador. Guarda durante la reunión y concluye cuando tengas resumen, próximos pasos y seguimiento.",
+    "finalNote": "Concluida el {date} por {name}. Ahora solo pueden cambiar el checklist, el seguimiento y los próximos pasos.",
+    "reopenedNote": "Acta reabierta para corrección. Vuelve a concluirla para que tenga validez.",
+    "reopen": "Reabrir para corregir",
+    "reopenConfirm": "¿Reabrir esta acta? Vuelve a ser borrador hasta que se concluya de nuevo.",
+    "delete": "Eliminar borrador",
+    "deleteConfirm": "¿Eliminar este borrador? No se puede deshacer.",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "saved": "Acta guardada.",
+    "finalize": "Concluir acta",
+    "finalizing": "Concluyendo…",
+    "finalized": "Acta concluida. Relación, agenda y avisos actualizados.",
+    "missingTitle": "Para concluir, falta:",
+    "unsaved": "Hay cambios sin guardar.",
+    "jump": "Secciones del acta",
+    "sensitive": "Quita CPF y datos bancarios de aquí: siguen el procedimiento interno seguro.",
+    "sensitiveBlock": "Hay CPF o datos bancarios en el acta. Quítalos antes de guardar.",
+    "invalidTitle": "Cada próximo paso necesita al menos 2 letras."
+  },
+  "problems": {
+    "representative": "Representante responsable (A)",
+    "summary": "Resumen ejecutivo (J)",
+    "actions": "Un próximo paso con responsable y plazo (I)",
+    "followUp": "Fecha de seguimiento (K)",
+    "project": "Nombre y concepto del proyecto propio (F), porque va a Proyectos propios"
+  },
+  "sections": {
+    "A": {
+      "title": "A. Identificación"
+    },
+    "B": {
+      "title": "B. Perfil y posicionamiento del Hero"
+    },
+    "C": {
+      "title": "C. Marcas, campañas e historial comercial"
+    },
+    "D": {
+      "title": "D. Interés en los cuatro formatos",
+      "hint": "Ya viene con lo que el Hero marcó en el portal. Al concluir, lo que quede aquí actualiza la pestaña Relación."
+    },
+    "E": {
+      "title": "E. Acción abierta y calendario",
+      "hint": "Al concluir, el interés pasa a ser la respuesta del Hero en la acción. Si ya respondió en el portal, prevalece su respuesta."
+    },
+    "F": {
+      "title": "F. Proyecto propio (si lo hay)"
+    },
+    "G": {
+      "title": "G. Datos de registro y materiales",
+      "hint": "Los datos bancarios, documentos e información fiscal siguen el procedimiento interno seguro y no entran en el acta."
+    },
+    "H": {
+      "title": "H. Dudas y puntos que requieren respuesta interna",
+      "hint": "No improvises: registra la pregunta y responde por e-mail después de la validación interna."
+    },
+    "I": {
+      "title": "I. Próximos pasos y responsables",
+      "hint": "Toda reunión termina con próximos pasos claros: cada acción con responsable y plazo."
+    },
+    "J": {
+      "title": "J. Resumen ejecutivo de la reunión",
+      "hint": "Principales oportunidades, nivel de interés, afinidad del Hero y recomendación de próximo paso."
+    },
+    "K": {
+      "title": "K. Formalización y checklist tras la reunión",
+      "hint": "No cierres sin concluir. Tres ítems ya los responde la propia acta."
+    }
+  },
+  "fields": {
+    "talent": "Hero / nombre artístico",
+    "full_name": "Nombre completo",
+    "held_at": "Fecha y hora",
+    "mode": "Formato de la reunión",
+    "representative": "Representante responsable",
+    "participants": "Demás participantes",
+    "contact_confirmed": "E-mail y teléfono confirmados",
+    "contact_fix": "Corregir o actualizar",
+    "contact_on_file": "En el registro: {value}",
+    "contact_none": "Sin e-mail ni teléfono en el registro.",
+    "profile_topics": "Descripción del Hero y temas principales",
+    "profile_platforms": "Plataformas y enlaces",
+    "profile_audience": "Tamaño de audiencia y métricas compartidas",
+    "profile_public": "Perfil predominante del público (edad, ubicación y otros datos)",
+    "profile_frequency": "Frecuencia y formatos de contenido",
+    "brands_affinity": "Marcas con las que ya tiene afinidad o que consume",
+    "brands_worked": "Marcas con las que ya trabajó",
+    "past_campaigns": "Campañas anteriores, entregables y resultados",
+    "rates": "Valores o rangos cobrados, o expectativa informada",
+    "conflicts": "Contratos, exclusividades o conflictos de categoría",
+    "action": "Acción",
+    "action_none": "Ninguna acción abierta ahora.",
+    "action_interest": "Interés en participar",
+    "action_categories": "Categorías y marcas de interés",
+    "action_availability": "Disponibilidad y restricciones de agenda",
+    "action_dates": "Fechas y formatos presentados",
+    "project_name": "Nombre o idea del proyecto",
+    "project_concept": "Concepto, público y diferencial",
+    "project_format": "Formato, lugar y calendario previsto",
+    "project_stage": "Etapa actual, socios y necesidades",
+    "project_next": "Próximo material que enviará el Hero",
+    "register_idea": "Registrar en Proyectos propios al concluir",
+    "register_idea_hint": "El equipo sigue el avance en la pestaña Relación.",
+    "idea_registered": "Registrado en Proyectos propios: “{title}”.",
+    "registration": "Actualización de datos",
+    "media_kit": "Media kit recibido",
+    "internal_data": "Datos para creación interna",
+    "channels_insights": "Enlaces de canales y estadísticas recibidos",
+    "materials_notes": "Otros materiales y observaciones",
+    "open_questions": "Dudas y puntos que requieren respuesta",
+    "summary": "Resumen ejecutivo",
+    "sender": "Responsable del envío",
+    "sent_on": "Fecha de envío",
+    "follow_up_on": "Fecha de seguimiento",
+    "follow_up_hint": "Entra en la agenda de la agencia (solo el equipo lo ve)."
+  },
+  "modes": {
+    "online": "En línea",
+    "in_person": "Presencial"
+  },
+  "yesNo": {
+    "yes": "Sí",
+    "no": "No"
+  },
+  "internalData": {
+    "received": "Recibidos",
+    "pending": "Pendientes"
+  },
+  "formats": {
+    "cpa": "CPA — enlaces y cupones",
+    "publi": "Publi post",
+    "project": "Proyecto propio / patrocinio",
+    "events": "Eventos y experiencias"
+  },
+  "interest": {
+    "yes": "Sí",
+    "maybe": "Por evaluar",
+    "no": "No"
+  },
+  "actionInterest": {
+    "yes": "Sí",
+    "depends": "Depende de las marcas y condiciones",
+    "no": "No"
+  },
+  "formatNote": "Observaciones y posibilidades",
+  "checks": {
+    "reg_full_name": "Nombre completo",
+    "reg_artistic_name": "Nombre artístico",
+    "reg_address": "Dirección",
+    "reg_phone": "Teléfono",
+    "reg_email": "E-mail",
+    "reg_city": "Ciudad/Estado",
+    "k_reviewed": "Acta revisada, sin información ambigua ni promesas no autorizadas",
+    "k_saved": "Acta guardada con el nombre estándar",
+    "k_shared": "Acta compartida en los grupos internos",
+    "k_presidency": "Acta enviada y archivada en el e-mail de la Presidencia",
+    "k_follow_up_sent": "Seguimiento enviado o programado por e-mail",
+    "k_media_kit_requested": "Media kit o datos pendientes pedidos por e-mail",
+    "k_calendar_sent": "Calendario de sugerencias y materiales enviados",
+    "k_questions_forwarded": "Preguntas sin respuesta derivadas a las áreas"
+  },
+  "post": {
+    "registration": "Datos del Hero actualizados (nombre, dirección, teléfono y e-mail)",
+    "formats": "Interés en CPA, publi post, proyectos y eventos registrado",
+    "follow_up": "Responsable y plazo del seguimiento definidos",
+    "auto": "por el acta",
+    "progress": "{done} de {total}"
+  },
+  "owner": {
+    "label": "Responsable",
+    "talent": "El Hero",
+    "none": "Sin responsable",
+    "choose": "Elige",
+    "noDue": "sin plazo",
+    "due": "Plazo"
+  },
+  "actionStatus": {
+    "pending": "Pendiente",
+    "done": "Concluido"
+  },
+  "actionForm": {
+    "title": "Acción o entrega",
+    "add": "Agregar próximo paso",
+    "remove": "Quitar este próximo paso",
+    "done": "Hecho",
+    "suggestions": "Atajos",
+    "max": "Hasta {max} próximos pasos por acta.",
+    "items": {
+      "kit": "Pedir el media kit actualizado por e-mail",
+      "calendar": "Enviar el calendario de sugerencias de contenido",
+      "formalize": "Formalizar las oportunidades por e-mail",
+      "registration": "Actualizar los datos del Hero",
+      "answers": "Responder las dudas por e-mail tras la validación interna",
+      "heroKit": "Enviar media kit y datos pendientes"
+    }
+  },
+  "tools": {
+    "title": "Formalización por e-mail",
+    "lead": "El e-mail es el canal oficial. Usa el asunto y el nombre de archivo estándar.",
+    "subject": "Asunto",
+    "file": "Archivo",
+    "copySubject": "Copiar asunto",
+    "copyText": "Copiar acta",
+    "download": "Descargar .txt",
+    "email": "Abrir e-mail",
+    "copied": "Copiado.",
+    "copyFailed": "No se pudo copiar. Selecciona el texto y cópialo.",
+    "fromSaved": "El texto sale de la última versión guardada.",
+    "pasteHint": "(pega aquí el acta copiada)"
+  },
+  "record": {
+    "heading": "ACTA DE LA REUNIÓN CON {name}"
+  },
+  "actionsPage": {
+    "title": "Próximos pasos de las reuniones",
+    "lead": "Lo que quedó acordado en las actas concluidas y sigue pendiente. Márcalo cuando lo hagas.",
+    "mine": "Míos",
+    "all": "Todos",
+    "empty": "Nada pendiente. Todo lo acordado en las reuniones está hecho.",
+    "buckets": {
+      "overdue": "Atrasados",
+      "today": "Para hoy",
+      "week": "Próximos 7 días",
+      "later": "Más adelante",
+      "none": "Sin plazo"
+    },
+    "meetingOf": "Reunión del {date}",
+    "markDone": "Marcar como hecho",
+    "doneToast": "Próximo paso hecho.",
+    "openMeeting": "Abrir el acta"
+  },
+  "guide": {
+    "title": "Guía de la reunión con el Hero",
+    "lead": "Cómo el equipo conduce la reunión, presenta los formatos y registra todo en el acta. Imagen profesional, escucha activa, claridad comercial, registro formal y continuidad de la relación.",
+    "openCasting": "Abrir el casting para empezar un acta",
+    "sampleName": "Nombre",
+    "sampleDate": "AAAA-MM-DD",
+    "purpose": {
+      "title": "1. Propósito y postura",
+      "p1": "La reunión es un encuentro de relación, mapeo y construcción de oportunidades. No es una conversación apresurada, una promesa de contratación ni solo una presentación comercial. El objetivo es conocer al Hero, entender su posicionamiento y encontrar caminos reales de conexión con marcas, eventos y proyectos.",
+      "p2": "Cada contacto representa a Groscove Group: la experiencia debe transmitir organización, coherencia, cordialidad y seguridad. El Hero termina la conversación sabiendo cómo trabajamos, qué información necesitamos y cuáles son los próximos pasos.",
+      "central": "Mensaje central: estamos estructurando relaciones con Heros para entender cómo cada perfil se conecta con marcas y oportunidades en el ciclo actual y, sobre todo, en las acciones del próximo año.",
+      "momentTitle": "Cómo contextualizar el momento",
+      "moment": {
+        "a": "El calendario del año ya tuvo acciones y eventos. Como la relación con parte del casting empieza ahora, el equipo está haciendo un mapeo en este período.",
+        "b": "La ventana de Black Friday a fin de año es un período de acercamiento, pruebas y lectura de oportunidades.",
+        "c": "Este trabajo también prepara las relaciones y las campañas del próximo año.",
+        "d": "Ninguna oportunidad está garantizada: cada marca tiene sus propios criterios, presupuesto, plazos y procesos."
+      }
+    },
+    "image": {
+      "title": "2. Estándar de imagen y ambiente",
+      "lead": "Antes de entrar, revisa tu presentación y el ambiente. Toca cada ítem cuando esté listo.",
+      "ready": "Todo listo para entrar.",
+      "items": {
+        "presentation": {
+          "title": "Presentación personal",
+          "text": "Bien presentado, ropa adecuada, apariencia cuidada y uñas limpias y arregladas. Profesionalismo sin perder la naturalidad."
+        },
+        "place": {
+          "title": "Ambiente",
+          "text": "Lugar silencioso y ordenado, sin gente circulando ni ruido. Sin interrupciones y sin un ambiente visualmente recargado."
+        },
+        "background": {
+          "title": "Fondo",
+          "text": "De preferencia blanco o negro, limpio y neutro, sin objetos que distraigan la atención."
+        },
+        "light": {
+          "title": "Iluminación",
+          "text": "Luz frontal o lateral suave, rostro visible. Nada de contraluz, sombras fuertes ni imagen oscura."
+        },
+        "camera": {
+          "title": "Cámara y audio",
+          "text": "Cámara a la altura de los ojos, encuadre estable, audio probado y buena conexión."
+        },
+        "attitude": {
+          "title": "Actitud",
+          "text": "Sonrisa, cordialidad, escucha activa, atención al nombre del Hero y una postura acogedora de principio a fin."
+        }
+      },
+      "brand": "La imagen refuerza la marca de Groscove Group: discreción, coherencia, elegancia y profesionalismo. La reunión también es una experiencia de marca."
+    },
+    "opening": {
+      "title": "3. Apertura y presentación institucional",
+      "suggested": "Apertura sugerida",
+      "quote": "“Gracias por reservar este tiempo para conversar con nosotros. La idea de este encuentro es conocer mejor tu trabajo, entender tus intereses, tu calendario de contenido y las marcas con las que ya tienes afinidad. Groscove Group está estructurando oportunidades de relación entre Heros, marcas, eventos y proyectos. Queremos entender qué tiene sentido para ti y mostrarte cómo podemos construirlo juntos.”",
+      "structureTitle": "Cómo presentar la estructura",
+      "structure": {
+        "a": "Deja claro que formas parte del equipo de Groscove Group y que conduces la relación y los próximos pasos.",
+        "b": "Presenta a Jonathas Groscove como fundador del grupo. La ejecución y el acompañamiento están a cargo de los profesionales de cada frente.",
+        "c": "Refuerza que el Hero cuenta con un equipo para organizar información, oportunidades y próximos pasos.",
+        "d": "No centralices todo en el fundador ni sugieras que solo él resuelve. Valora al equipo y los canales formales."
+      },
+      "institutionalTitle": "Frase institucional sugerida",
+      "institutional": "“Jonathas es el fundador de Groscove Group, pero el trabajo se hace con un equipo de profesionales que acompaña cada etapa. Con nosotros vas a estructurar la información, las oportunidades y los próximos pasos del día a día.”"
+    },
+    "formats": {
+      "title": "4. Los cuatro formatos de trabajo",
+      "lead": "Preséntalos con claridad. Los formatos ocurren en momentos distintos y cada acción depende del acuerdo entre el Hero, la marca, el alcance, el presupuesto y la formalización.",
+      "importantLabel": "Importante",
+      "cpa": {
+        "title": "Formato 1 — CPA: relación, enlaces y cupones",
+        "lead": "Primer paso sugerido para empezar o profundizar la relación con marcas: entender la familiaridad del Hero con productos y marcas, probar la comunicación y observar la respuesta del público.",
+        "points": {
+          "a": "Pregunta qué marcas el Hero ya consume, conoce o usa en su rutina.",
+          "b": "Explora la pestaña Universos para encontrar segmentos y marcas afines al perfil.",
+          "c": "Se pueden enviar enlaces y cupones de descuento para pruebas, según la disponibilidad y las reglas de cada marca.",
+          "d": "El Hero integra enlaces y cupones en contenidos coherentes con su calendario editorial, siempre siguiendo las indicaciones de la marca.",
+          "e": "La marca observa la afinidad, la calidad del contenido, el interés del público y los resultados disponibles."
+        },
+        "important": "CPA no es una remuneración fija garantizada. Explica antes la regla de atribución, la acción que cuenta, la ventana de medición, el porcentaje o valor y la forma de pago, según lo que formalice la marca."
+      },
+      "publi": {
+        "title": "Formato 2 — Publi post: campaña remunerada",
+        "lead": "Después de entender la comunicación del Hero, el equipo puede presentar oportunidades de contenido patrocinado. Muchas marcas necesitan conocer el perfil y evaluar los datos antes de definir el alcance y la inversión.",
+        "points": {
+          "a": "Pide el media kit actualizado por e-mail. Si no hay media kit, pide los datos para que el equipo prepare una presentación interna.",
+          "b": "Pregunta por campañas anteriores, marcas atendidas, formatos entregados, resultados y valores cobrados o deseados.",
+          "c": "Los valores y las condiciones dependen del briefing, los entregables, el plazo, los derechos de uso, la exclusividad y el presupuesto de la marca."
+        },
+        "important": "No prometas cachés, campañas ni aprobaciones en la reunión. La propuesta se trata y se formaliza por e-mail."
+      },
+      "project": {
+        "title": "Formato 3 — Proyectos propios y búsqueda de patrocinio",
+        "lead": "Groscove Group también busca Heros con ideas propias: proyectos, experiencias, eventos, formatos recurrentes o propiedades de contenido que atraigan patrocinadores. Referencias solo para ilustrar: el Rancho do Carlinhos Maia, la Farofa da Gkay, la subasta benéfica de Neymar, los Ensaios da Anitta, el Numanice da Ludmilla y la Tardezinha do Thiaguinho. No se trata de comparar escala ni de prometer resultados.",
+        "points": {
+          "a": "Pregunta si tiene una idea guardada, un proyecto en desarrollo o una comunidad que le gustaría reunir en una experiencia.",
+          "b": "Escucha sin interrumpir: concepto, público, formato, lugar, calendario, diferenciales, socios y etapa.",
+          "c": "Pide que la idea se formalice por e-mail, incluso en fase inicial.",
+          "d": "El equipo puede estudiar el proyecto y buscar patrocinio. Las cuotas pueden superar los R$ 100 mil, según el proyecto, el alcance y la oportunidad."
+        },
+        "important": "No prometas captación ni montos de patrocinio. El monto es una referencia del tipo de oportunidad, no una garantía: depende de la presentación, el presupuesto, el público, las contrapartidas y el interés de los patrocinadores."
+      },
+      "events": {
+        "title": "Formato 4 — Eventos y experiencias de marca",
+        "lead": "Marcas y socios contratan Heros para eventos, activaciones, lanzamientos, encuentros internos y experiencias: relación, producción de contenido y acercamiento al mercado.",
+        "points": {
+          "a": "Pregunta por la disponibilidad, el interés en eventos, las ciudades a las que puede ir y la anticipación que necesita.",
+          "b": "Revisa los formatos de participación: presencia, cobertura, stories, reels, entrevistas, contenido antes o después del evento.",
+          "c": "Las oportunidades pueden venir de una marca o de la relación con agencias de prensa y socios del holding.",
+          "d": "Refuerza la puntualidad, la postura profesional, la cordialidad con equipos e invitados y el cumplimiento de lo acordado."
+        },
+        "important": "Ninguna presencia está confirmada antes del acuerdo de marca, alcance, valores, agenda y formalización."
+      }
+    },
+    "content": {
+      "title": "5. Contenido que atrae marcas",
+      "lead": "Muchos Heros quieren oportunidades, pero no mantienen contenidos que muestren a la marca su lenguaje, su constancia y su capacidad de comunicar productos. Trata el tema de forma constructiva, sin juzgar.",
+      "items": {
+        "a": "Naturalidad: mostrar productos y experiencias de forma coherente con la rutina, sin convertir todo en anuncio.",
+        "b": "Constancia: frecuencia y calidad, sin largos períodos sin publicar cuando hay un compromiso de calendario.",
+        "c": "Contexto: explicar por qué lo usa, le gusta o lo recomienda; mostrar el uso real, el beneficio o la experiencia.",
+        "d": "Variedad: videos cortos, stories, carruseles, detrás de cámaras, tutoriales, reseñas y rutina, según el perfil.",
+        "e": "Comunidad: generar conversación, responder comentarios y notar las dudas que se repiten.",
+        "f": "Seguridad de marca: cuidado con el lenguaje, la imagen, la información y la transparencia, señalando el contenido patrocinado.",
+        "g": "Planificación: conectar fechas comerciales y estacionales con el segmento del Hero, sin contenido artificial o fuera de contexto."
+      },
+      "calendar": "El equipo envía un calendario de sugerencias con fechas relevantes, oportunidades estacionales e ideas de contenido. Es una referencia estratégica: el Hero lo adapta a su identidad, su agenda y su capacidad de producción.",
+      "universes": "Orienta al Hero a seguir la pestaña Universos (segmentos y marcas con los que trabaja Groscove Group, siempre actualizada) y a marcar los universos que tienen sentido, las marcas que ya conoce y las que quiere explorar. Marcar algo no es una aprobación automática de campaña."
+    },
+    "blackFriday": {
+      "title": "6. Invitación para Black Friday",
+      "lead": "En la reunión, presenta la acción de Black Friday y evalúa el interés del Hero.",
+      "quote": "“Estamos organizando un frente de Black Friday con algunas marcas y un calendario de contenidos estructurado. Queremos entender si te interesa participar y si puedes producir dentro del período y las fechas previstas. La idea es formalizar las posibilidades por e-mail a principios de la próxima semana, con la información de cada oportunidad.”",
+      "points": {
+        "a": "Muestra el calendario disponible, con fechas, formatos y plazos.",
+        "b": "Pregunta por el interés, la disponibilidad y la afinidad con las marcas o categorías.",
+        "c": "Registra restricciones, conflictos con competidores, viajes, compromisos y formatos que no quiere hacer.",
+        "d": "No confirmes la participación antes del acuerdo de marca, alcance, valores, disponibilidad y formalización."
+      },
+      "answers": "Las respuestas, del portal y de las actas, quedan juntas en la lista de la acción."
+    },
+    "questions": {
+      "title": "7. Preguntas para una reunión productiva",
+      "lead": "Conversación de doble vía: preguntas abiertas, escucha y registro de lo concreto. Úsalas como guía, no como interrogatorio.",
+      "items": {
+        "profile": {
+          "title": "Perfil y posicionamiento",
+          "text": "¿Cómo defines tu contenido hoy? ¿Qué temas quieres fortalecer? ¿A qué público quieres llegar? ¿Qué diferencia tu comunicación?"
+        },
+        "brands": {
+          "title": "Marcas y afinidad",
+          "text": "¿Qué marcas consumes o admiras? ¿Con cuáles ya trabajaste? ¿Hay segmentos que prefieres no promocionar? ¿Hay contratos o exclusividades vigentes?"
+        },
+        "history": {
+          "title": "Historial comercial",
+          "text": "¿Ya hiciste campañas remuneradas? ¿Qué formatos entregaste? ¿Cuál fue el rango de inversión o el valor cobrado? ¿Qué funcionó mejor? ¿Puedes mostrar casos o resultados?"
+        },
+        "audience": {
+          "title": "Métricas y audiencia",
+          "text": "¿Cuáles son tus principales canales? ¿Cuál es la ubicación, el rango de edad y el perfil de tu audiencia? ¿Qué métricas puedes compartir?"
+        },
+        "production": {
+          "title": "Producción y agenda",
+          "text": "¿Con qué frecuencia publicas? ¿Cómo organizas la grabación y la edición? ¿Hay fechas, viajes o compromisos que afecten el calendario?"
+        },
+        "blackFriday": {
+          "title": "Black Friday",
+          "text": "¿Te interesa participar? ¿Qué categorías tienen sentido? ¿Puedes cumplir el calendario propuesto?"
+        },
+        "projects": {
+          "title": "Proyectos propios",
+          "text": "¿Hay algún proyecto que te gustaría poner en marcha? ¿Cuál sería la experiencia, el público, el formato, el lugar y el plazo? ¿Qué ya está estructurado?"
+        },
+        "events": {
+          "title": "Eventos",
+          "text": "¿Te interesan las presencias y activaciones? ¿En qué ciudades puedes participar? ¿Qué formatos de entrega sueles aceptar?"
+        }
+      },
+      "noImprovise": "Si la respuesta todavía no está disponible, no improvises: di que la pregunta va al área responsable y se responderá por e-mail después de la validación interna."
+    },
+    "mediaKit": {
+      "title": "8. Media kit y actualización de datos",
+      "lead": "Al final de la reunión, pide el media kit por e-mail. Si no hay un documento listo, pide la información de abajo para que el equipo arme la presentación interna y el pitch para las marcas.",
+      "items": {
+        "identification": "Identificación: nombre completo, nombre artístico, ciudad/estado, biografía breve y contactos profesionales.",
+        "channels": "Canales: enlaces y usuarios (@) de Instagram, TikTok, YouTube, Twitch, sitio web, podcast y otras plataformas.",
+        "audience": "Audiencia: seguidores por canal, alcance, impresiones, visualizaciones promedio, engagement y datos de edad, género y ubicación.",
+        "content": "Contenido: temas y formatos principales, frecuencia, diferenciales y ejemplos representativos.",
+        "history": "Historial comercial: marcas atendidas, campañas, entregables, casos, resultados autorizados y testimonios.",
+        "prices": "Formatos y valores: stories, reels, feed, video, presencia, paquetes y rangos de referencia, si los hay.",
+        "conditions": "Condiciones: disponibilidad, plazos mínimos, traslados, costos de producción, derechos de uso, pauta y exclusividad.",
+        "materials": "Materiales: fotos profesionales, retratos, logotipo, portafolio y capturas recientes de estadísticas."
+      },
+      "registrationTitle": "Actualización de datos obligatoria",
+      "registration": "Nombre completo y nombre artístico, dirección completa (para registro, envíos o logística), teléfono o WhatsApp con código de área, e-mail principal y alternativo, ciudad y estado. Confirma la ortografía con el Hero.",
+      "sensitive": "Datos bancarios, documentos e información fiscal solo cuando haga falta, por el canal adecuado y con la orientación del área responsable. Nunca en un grupo de WhatsApp ni en un acta abierta."
+    },
+    "channels": {
+      "title": "9. Canales y formalización",
+      "items": {
+        "a": "El e-mail es el canal oficial para marcas, briefings, propuestas, valores, aprobaciones, contratos, plazos y confirmaciones.",
+        "b": "WhatsApp sirve para contacto rápido, coordinación y avisos, pero no reemplaza la formalización por e-mail.",
+        "c": "Orienta al Hero a revisar la bandeja de entrada y la carpeta de spam.",
+        "d": "Después de la reunión, el acta va a los grupos internos pertinentes y se envía y archiva en el e-mail de la Presidencia.",
+        "e": "Asunto estándar del e-mail: “{subject}”. El acta de la plataforma ya genera ese asunto.",
+        "f": "Cada acción tiene responsable y plazo. Ningún próximo paso queda solo en un mensaje suelto."
+      }
+    },
+    "script": {
+      "title": "10. Guion de la reunión",
+      "doLabel": "Qué hacer",
+      "recordLabel": "En el acta",
+      "steps": {
+        "prep": {
+          "title": "1. Preparación",
+          "do": "Probar cámara, audio, iluminación, fondo y conexión, y abrir los materiales.",
+          "record": "Fecha, hora, participantes y representante responsable (A)."
+        },
+        "welcome": {
+          "title": "2. Bienvenida",
+          "do": "Agradecer, crear un clima cordial y explicar el objetivo del encuentro.",
+          "record": "Resumen del objetivo y del contexto presentado."
+        },
+        "institutional": {
+          "title": "3. Institucional",
+          "do": "Presentar Groscove Group, el equipo, el papel del fundador y la lógica de la relación.",
+          "record": "Puntos institucionales presentados y dudas (H)."
+        },
+        "discovery": {
+          "title": "4. Descubrimiento",
+          "do": "Conocer contenido, audiencia, marcas, historial comercial, agenda y preferencias.",
+          "record": "Respuestas, métricas, marcas y restricciones (B y C)."
+        },
+        "formats": {
+          "title": "5. Formatos",
+          "do": "Explicar CPA, publi post, proyectos propios y eventos, sin prometer contratación.",
+          "record": "Formatos de interés y posibilidades (D y F)."
+        },
+        "blackFriday": {
+          "title": "6. Black Friday",
+          "do": "Presentar el calendario y ver el interés y la disponibilidad.",
+          "record": "Interés, categorías, fechas e impedimentos (E)."
+        },
+        "next": {
+          "title": "7. Próximos pasos",
+          "do": "Pedir media kit y datos, actualizar el registro y acordar plazos de respuesta.",
+          "record": "Pendientes, responsables, plazos y canal de respuesta (G e I)."
+        },
+        "closing": {
+          "title": "8. Cierre",
+          "do": "Agradecer, reforzar el e-mail como canal oficial y confirmar lo que enviará cada parte.",
+          "record": "Resumen final y fecha de seguimiento (J y K)."
+        }
+      },
+      "tone": "Simpatía y profesionalismo: interés genuino, cámara encendida cuando sea posible, sonrisa, sin interrumpir y sin conversaciones paralelas. La calidad de la relación empieza en la forma en que se recibe al Hero."
+    },
+    "limits": {
+      "title": "11. Cuidados y límites",
+      "items": {
+        "a": "No garantizar campañas, cachés, invitaciones, patrocinios, resultados ni la aprobación de marcas.",
+        "b": "No decir que el Hero fue aprobado por una marca solo porque entró en el casting o en una selección.",
+        "c": "Explicarlo bien: el perfil se incluyó en el casting enviado a anunciantes para evaluación; cada marca decide según su propio briefing y criterio.",
+        "d": "No suponer que la falta de un contrato general impide toda oportunidad: cada acción puede tener su propia negociación y formalización.",
+        "e": "No divulgar información confidencial de marcas, de otros Heros, valores ni negociaciones.",
+        "f": "No orientar la publicación sin briefing, autorización y condiciones comerciales acordadas.",
+        "g": "Ante la duda, registrar la pregunta, derivarla al área responsable y responder por e-mail después de la validación."
+      }
+    },
+    "minutes": {
+      "title": "12. Acta de la reunión (A a K)",
+      "text": "Toda reunión tiene acta, completada durante la conversación o justo después. Ábrela desde el casting: ficha del Hero, pestaña Reuniones, Nueva acta. Una vez concluida, actualiza la relación del Hero, la respuesta de la acción abierta, los proyectos propios y la agenda, y avisa al responsable de cada próximo paso."
+    },
+    "after": {
+      "title": "13. Checklist tras la reunión",
+      "lead": "No cierres sin concluir. En el acta, la sección K sigue cada ítem y marca sola lo que la propia acta ya responde.",
+      "items": {
+        "a": "Revisar el acta: nada ambiguo, ninguna promesa no autorizada.",
+        "b": "Guardar con el nombre estándar “{file}”.",
+        "c": "Compartir en los grupos internos para conocimiento y continuidad.",
+        "d": "Enviar formalmente al e-mail de la Presidencia para archivo e historial.",
+        "e": "Pedir por e-mail el media kit o los datos pendientes.",
+        "f": "Actualizar los datos del Hero: nombre, dirección, teléfono y e-mail.",
+        "g": "Enviar el calendario de sugerencias y los materiales acordados.",
+        "h": "Registrar el interés en CPA, publi post, proyectos y eventos.",
+        "i": "Derivar las preguntas sin respuesta a las áreas y controlar la respuesta por e-mail.",
+        "j": "Definir responsable y plazo del seguimiento."
+      }
+    },
+    "principle": {
+      "title": "Principio de ejecución",
+      "text": "Las relaciones se construyen con constancia. Cada reunión deja al Hero bien recibido, al equipo bien informado y a la operación con registros claros. Groscove Group no solo presenta oportunidades: organiza relaciones, entiende el potencial y convierte conversaciones en próximos pasos concretos."
+    }
+  }
+}

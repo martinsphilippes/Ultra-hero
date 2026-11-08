@@ -235,6 +235,7 @@
     "answersTitle": "Respostas: {title}",
     "answersLead": "Quem respondeu à ação, com interesse primeiro. Responder não confirma participação.",
     "answersCount": "{yes} com interesse · {depends} depende · {no} não",
+    "fromMeeting": "registrado na reunião",
     "noAnswers": "Ninguém respondeu ainda.",
     "openTalent": "Abrir ficha"
   }

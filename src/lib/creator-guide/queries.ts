@@ -54,7 +54,8 @@ export type TeamRelationship = {
 
 export type ActionAnswers = {
   action: { key: string; title: string; summary: string; starts_on: string; ends_on: string; active: boolean; event_id: string | null };
-  answers: { talent_id: string; name: string; photo_url: string | null; interest: ActionInterest; categories: string; availability: string; notes: string; updated_at: string }[];
+  /** from_meeting (0138): resposta registrada pela equipe na ata da reunião (o Hero não respondeu no portal). */
+  answers: { talent_id: string; name: string; photo_url: string | null; interest: ActionInterest; categories: string; availability: string; notes: string; updated_at: string; from_meeting?: boolean }[];
 };
 
 const arr = <T>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);

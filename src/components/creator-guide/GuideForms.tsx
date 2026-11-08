@@ -37,8 +37,8 @@ function Feedback({ msg }: { msg: Msg }) {
   );
 }
 
-/** Botões de escolha (um só marcado), com aria-pressed. */
-function ChoicePills<T extends string>({
+/** Botões de escolha (um só marcado), com aria-pressed. Também usados na ata de reunião (0138). */
+export function ChoicePills<T extends string>({
   options,
   value,
   onChange,
