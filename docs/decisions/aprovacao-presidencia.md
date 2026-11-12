@@ -46,5 +46,8 @@
 - Storage e Realtime não passam pela trava da Data API; conta pendente não tem vínculo de negócio, então o risco é baixo.
 - Avisos por e-mail dependem do Resend configurado na Vercel; hoje a Presidência é avisada no sino.
 - Válvula: `CREATOR_APP_ONLY=false` na Vercel (e nova publicação) desliga só a regra do Hero (a aprovação continua).
+- App aberto durante uma publicação (12/11/2026): o cadastro grava no servidor, mas a resposta pode quebrar o JavaScript
+  antigo acima de todas as telas. `src/app/global-error.tsx` recarrega sozinho uma vez por minuto e, se não der, mostra
+  "Recarregar" (no app não há barra de endereço); antes a pessoa ficava presa em "Application error".
 - Emergência da trava da Data API (se ela bloquear o que não deve): `alter role authenticator reset pgrst.db_pre_request;
   notify pgrst, 'reload config';` — o site continua barrando pelas telas; a decisão da Presidência continua no banco.
