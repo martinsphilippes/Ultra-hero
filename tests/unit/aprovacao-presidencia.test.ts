@@ -89,10 +89,22 @@ describe("Hero/Creator só pelo aplicativo", () => {
   });
   it("canal do app: marca do user agent ou, sem ela (service worker do Android), o cookie gravado pelo servidor", () => {
     expect(nativeAppFrom("Mozilla/5.0 (Linux; Android 14; wv) GCHeroApp/1.2.0 (android)", undefined)).toEqual({ platform: "android", version: "1.2.0" });
-    expect(nativeAppFrom("Mozilla/5.0 (Linux; Android 14; wv) Chrome/120", "android")).toEqual({ platform: "android", version: "0" });
-    expect(nativeAppFrom("Mozilla/5.0 (iPhone)", "ios")).toEqual({ platform: "ios", version: "0" });
+    expect(nativeAppFrom("Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/AP2A; wv) AppleWebKit/537.36 Version/4.0 Chrome/120 Mobile Safari/537.36", "android")).toEqual({ platform: "android", version: "0" });
+    expect(nativeAppFrom("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148", "ios")).toEqual({ platform: "ios", version: "0" });
     expect(nativeAppFrom("Mozilla/5.0 (Windows NT 10.0) Chrome/120", undefined)).toBeNull();
     expect(nativeAppFrom("Mozilla/5.0 (Windows NT 10.0) Chrome/120", "desktop")).toBeNull();
+  });
+  it("cookie do canal copiado para um navegador comum (com a sessão) não vale como app", () => {
+    for (const ua of [
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/130.0 Safari/537.36",
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15",
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
+      "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36",
+      "Mozilla/5.0 (X11; Linux x86_64; rv:130.0) Gecko/20100101 Firefox/130.0",
+    ]) {
+      expect(nativeAppFrom(ua, "ios")).toBeNull();
+      expect(nativeAppFrom(ua, "android")).toBeNull();
+    }
   });
   it("WebView do Android sem a marca não perde a sessão (só o redirecionamento)", () => {
     expect(isAndroidWebView("Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/AP2A; wv) AppleWebKit/537.36 Chrome/120 Mobile")).toBe(true);

@@ -20,11 +20,25 @@ export const NATIVE_SCHEME = "gchero";
  */
 export const NATIVE_CHANNEL_COOKIE = "uh-app";
 
-/** App pela marca do user agent ou, na falta dela, pelo cookie do canal. */
+/**
+ * WebView embutida (o motor da casca sem a marca): Android com "; wv)" ou WebKit da Apple sem o "Safari/" dos navegadores.
+ * Chrome, Safari, Firefox e Edge, no computador ou no celular, nunca contam.
+ */
+export function isEmbeddedWebView(userAgent: string | null | undefined): boolean {
+  const ua = userAgent ?? "";
+  if (/; wv\)/.test(ua)) return true;
+  return /\b(iPhone|iPad|iPod|Macintosh)\b/.test(ua) && /AppleWebKit\//.test(ua) && !/\bSafari\//.test(ua);
+}
+
+/**
+ * App pela marca do user agent ou, na falta dela, pelo cookie do canal — este só dentro de uma WebView embutida: o cookie
+ * copiado para um navegador comum (com os cookies da sessão) não transforma o navegador em app.
+ */
 export function nativeAppFrom(userAgent: string | null | undefined, channelCookie: string | null | undefined): NativeApp | null {
   const fromUa = parseNativeApp(userAgent);
   if (fromUa) return fromUa;
-  return channelCookie === "ios" || channelCookie === "android" ? { platform: channelCookie, version: "0" } : null;
+  if (channelCookie !== "ios" && channelCookie !== "android") return null;
+  return isEmbeddedWebView(userAgent) ? { platform: channelCookie, version: "0" } : null;
 }
 
 export function parseNativeApp(userAgent: string | null | undefined): NativeApp | null {
