@@ -63,7 +63,7 @@
     "bySegment": "mesmo segmento: {segments}",
     "byCompetitor": "esta marca foi citada como concorrente",
     "category": "categoria: {category}",
-    "talentHint": "Fale com a agência antes de aceitar: esta oferta pode ir contra a exclusividade.",
+    "talentHint": "Fale com a indústria antes de aceitar: esta oferta pode ir contra a exclusividade.",
     "agencyHint": "Não bloqueia, mas consultar exige confirmação, que fica registrada no histórico.",
     "badge": "exclusividade vigente",
     "consultWarn": "{count, plural, one {# Hero marcado tem exclusividade vigente que pega este negócio.} other {# Heros marcados têm exclusividade vigente que pega este negócio.}}",
@@ -77,7 +77,7 @@
     "howMuch": "Quanto",
     "rights": "Direitos",
     "respondBy": "Responda até {date}",
-    "noDeliverables": "Entregáveis a definir com a agência",
+    "noDeliverables": "Entregáveis a definir com a indústria",
     "noDates": "Datas a definir",
     "noFee": "Cachê ainda não definido",
     "feeOnWeb": "O valor aparece na versão web.",
@@ -88,13 +88,13 @@
     "proposeDate": "Propor outra data",
     "proposeFee": "Propor outro valor",
     "dateTitle": "Propor outra data",
-    "dateHint": "A agência recebe o pedido e responde aqui.",
+    "dateHint": "A indústria recebe o pedido e responde aqui.",
     "deliverable": "Para qual entrega",
     "deliverableNone": "Início da campanha",
     "currentDate": "Data atual: {date}",
     "newDate": "Nova data",
     "feeTitle": "Propor outro valor",
-    "feeHint": "Diga o valor que faz sentido e por quê. A agência responde aqui.",
+    "feeHint": "Diga o valor que faz sentido e por quê. A indústria responde aqui.",
     "currentFee": "Cachê atual: {value}",
     "newFee": "Valor proposto (R$)",
     "reason": "Justificativa",
@@ -106,29 +106,29 @@
     "send": "Enviar contraproposta",
     "back": "Voltar",
     "sent": {
-      "fee": "Contraproposta de valor enviada à agência.",
-      "date": "Contraproposta de data enviada à agência."
+      "fee": "Contraproposta de valor enviada à indústria.",
+      "date": "Contraproposta de data enviada à indústria."
     },
     "withdrawn": "Contraproposta retirada.",
     "withdraw": "Retirar",
     "confirmWithdraw": "Retirar a contraproposta?",
-    "openNotice": "Sua contraproposta está com a agência. Você pode retirá-la enquanto ela não responde.",
+    "openNotice": "Sua contraproposta está com a indústria. Você pode retirá-la enquanto ela não responde.",
     "history": "Contrapropostas",
     "kind": {
       "fee": "Valor",
       "date": "Data"
     },
     "status": {
-      "open": "Aguardando a agência",
+      "open": "Aguardando a indústria",
       "accepted": "Aceita",
       "rejected": "Recusada",
       "withdrawn": "Retirada"
     },
     "change": "{from} → {to}",
     "reasonLine": "Justificativa: {reason}",
-    "agencyNote": "Nota da agência: {note}",
-    "resultAccepted": "A agência aceitou sua contraproposta.",
-    "resultRejected": "A agência recusou sua contraproposta."
+    "agencyNote": "Nota da indústria: {note}",
+    "resultAccepted": "A indústria aceitou sua contraproposta.",
+    "resultRejected": "A indústria recusou sua contraproposta."
   },
   "review": {
     "title": "Contraproposta do Hero",

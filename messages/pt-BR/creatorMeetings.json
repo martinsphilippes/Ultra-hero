@@ -140,7 +140,7 @@
     "sender": "Responsável pelo envio",
     "sent_on": "Data do envio",
     "follow_up_on": "Data do follow-up",
-    "follow_up_hint": "Entra na agenda da agência (só a equipe vê)."
+    "follow_up_hint": "Entra na agenda da indústria (só a equipe vê)."
   },
   "modes": {
     "online": "Online",

@@ -20,7 +20,7 @@
       },
       "opportunity_updated": {
         "subject": "{status, select, counter_accepted {Contraproposta aceita} other {Contraproposta recusada}}: {deal}",
-        "body": "{status, select, counter_accepted {A agência aceitou a sua contraproposta em {deal}.} other {A agência respondeu a sua contraproposta em {deal} e não aceitou. Veja o motivo no app.}}",
+        "body": "{status, select, counter_accepted {A indústria aceitou a sua contraproposta em {deal}.} other {A indústria respondeu a sua contraproposta em {deal} e não aceitou. Veja o motivo no app.}}",
         "cta": "Ver resposta"
       },
       "deliverable_decided": {
@@ -45,7 +45,7 @@
       },
       "sponsorship_published": {
         "subject": "Oportunidade de patrocínio: {title}",
-        "body": "A agência oferece um evento do Hero {talent} para a sua marca patrocinar: {title}. Responda até {date}.",
+        "body": "A indústria oferece um evento do Hero {talent} para a sua marca patrocinar: {title}. Responda até {date}.",
         "cta": "Ver oportunidade"
       },
       "sponsorship_interest": {
@@ -55,7 +55,7 @@
       },
       "sponsorship_decided": {
         "subject": "{status, select, won {Sua marca foi escolhida} sponsored {Patrocínio confirmado} cancelled {Oportunidade cancelada} other {Oportunidade encerrada}}: {title}",
-        "body": "{status, select, won {A agência escolheu a sua marca para patrocinar {title}. Siga pela campanha no app.} sponsored {{title} foi patrocinada por {brand}.} cancelled {A agência cancelou a oportunidade {title}.} other {A agência encerrou a oportunidade {title}.}}",
+        "body": "{status, select, won {A indústria escolheu a sua marca para patrocinar {title}. Siga pela campanha no app.} sponsored {{title} foi patrocinada por {brand}.} cancelled {A indústria cancelou a oportunidade {title}.} other {A indústria encerrou a oportunidade {title}.}}",
         "cta": "Ver no app"
       },
       "sponsorship_negotiation": {
@@ -65,7 +65,7 @@
       },
       "brand_call_published": {
         "subject": "Pedido de marca: {title}",
-        "body": "{brand} publicou o pedido {title} para a sua agência. Propostas até {date}.",
+        "body": "{brand} publicou o pedido {title} para a sua indústria. Propostas até {date}.",
         "cta": "Ver pedido"
       },
       "brand_call_interest": {
@@ -80,12 +80,12 @@
       },
       "brand_call_decided": {
         "subject": "Pedido de marca decidido: {title}",
-        "body": "{status, select, won {Sua proposta venceu em {title}. A marca recebe a campanha pronta.} lost {A marca escolheu outra proposta em {title}.} chosen {Você foi escolhido para {title} ({brand}). A sua agência cuida do resto.} cancelled {A marca cancelou {title}.} other {A marca encerrou {title}.}}",
+        "body": "{status, select, won {Sua proposta venceu em {title}. A marca recebe a campanha pronta.} lost {A marca escolheu outra proposta em {title}.} chosen {Você foi escolhido para {title} ({brand}). A sua indústria cuida do resto.} cancelled {A marca cancelou {title}.} other {A marca encerrou {title}.}}",
         "cta": "Ver detalhes"
       },
       "budget_change": {
         "subject": "{status, select, requested {Pedido de alteração de verba} declined {Pedido de verba recusado} proposed {Realinhamento proposto} confirmed {Nova verba confirmada} other {Realinhamento recusado}}: {deal}",
-        "body": "{status, select, requested {A marca pediu para mudar a verba de {deal}. Só o Adm da agência vê os valores e decide.} declined {A agência recusou o pedido de verba de {deal}. A verba atual continua valendo.} proposed {A agência aceitou rever a verba de {deal} e propôs um realinhamento. O dono da marca confirma ou recusa pelo app.} confirmed {A marca confirmou a nova verba de {deal}. As tarefas do realinhamento já estão no negócio.} other {A marca recusou o realinhamento de {deal}. Veja o motivo no app.}}",
+        "body": "{status, select, requested {A marca pediu para mudar a verba de {deal}. Só o Adm da indústria vê os valores e decide.} declined {A indústria recusou o pedido de verba de {deal}. A verba atual continua valendo.} proposed {A indústria aceitou rever a verba de {deal} e propôs um realinhamento. O dono da marca confirma ou recusa pelo app.} confirmed {A marca confirmou a nova verba de {deal}. As tarefas do realinhamento já estão no negócio.} other {A marca recusou o realinhamento de {deal}. Veja o motivo no app.}}",
         "cta": "Ver pedido"
       },
       "payment_reported": {
@@ -95,7 +95,7 @@
       },
       "payment_reviewed": {
         "subject": "{status, select, confirmed {Pagamento confirmado} other {Pagamento não confirmado}}: {deal}",
-        "body": "{status, select, confirmed {A agência confirmou o recebimento do pagamento de {deal}.} other {A agência não confirmou o pagamento de {deal}. Veja o motivo e informe de novo.}}",
+        "body": "{status, select, confirmed {A indústria confirmou o recebimento do pagamento de {deal}.} other {A indústria não confirmou o pagamento de {deal}. Veja o motivo e informe de novo.}}",
         "cta": "Ver pagamentos"
       },
       "payment_due": {
@@ -105,7 +105,7 @@
       },
       "payment_plan": {
         "subject": "Parcelas do pagamento: {deal}",
-        "body": "A agência dividiu o pagamento de {deal} em {step} parcela(s). Veja os valores e os vencimentos no app.",
+        "body": "A indústria dividiu o pagamento de {deal} em {step} parcela(s). Veja os valores e os vencimentos no app.",
         "cta": "Ver pagamentos"
       }
     }

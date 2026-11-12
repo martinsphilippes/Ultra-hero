@@ -41,12 +41,12 @@
     "newMessage": "Nuevo mensaje",
     "placeholder": "Mensaje, foto, audio o archivo",
     "internalToggle": "Interno",
-    "internalHint": "Solo la agencia y el staff externo lo ven.",
-    "internalHintStaff": "Solo el equipo de la agencia y el staff lo ven.",
+    "internalHint": "Solo la industria y el staff externo lo ven.",
+    "internalHintStaff": "Solo el equipo de la industria y el staff lo ven.",
     "send": "Enviar",
     "fileHint": "Foto, audio o PDF de hasta 20 MB. Nada de valores en la sala.",
     "sides": {
-      "agency": "Agencia",
+      "agency": "Industria",
       "brand": "Marca",
       "talent": "Hero",
       "staff": "Staff externo",
@@ -82,7 +82,7 @@
     "crew": "Equipo y llegada",
     "arrived": "{n} de {total} llegaron",
     "sides": {
-      "agency": "Agencia",
+      "agency": "Industria",
       "talent": "Hero",
       "staff": "Staff externo"
     },
@@ -160,7 +160,7 @@
     "copied": "Enlace copiado.",
     "copyFailed": "No se pudo copiar. Selecciona el enlace.",
     "sides": {
-      "agency": "Agencia",
+      "agency": "Industria",
       "talent": "Hero",
       "staff": "Staff externo",
       "brand": "Marca"
@@ -201,7 +201,7 @@
     "ndaHeroes": "Los Heros también firman el NDA",
     "ndaHeroesHint": "El staff externo siempre firma.",
     "save": "Guardar",
-    "confirmArchive": "¿Archivar la sala? Staff, Heros y marca pierden el acceso; la agencia sigue leyendo.",
+    "confirmArchive": "¿Archivar la sala? Staff, Heros y marca pierden el acceso; la industria sigue leyendo.",
     "archive": "Archivar sala"
   },
   "room": {
@@ -210,12 +210,12 @@
     "open": "Abierta",
     "people": "{n} personas",
     "count": {
-      "agency": "Agencia {n}",
+      "agency": "Industria {n}",
       "talent": "Hero {n}",
       "staff": "Staff externo {n}",
       "brand": "Marca {n}"
     },
-    "archivedHint": "Sala archivada: solo lectura para la agencia.",
+    "archivedHint": "Sala archivada: solo lectura para la industria.",
     "closingHint": "Al cierre, la sala se archiva y se quita el acceso de todos.",
     "clipping": "Clipping del proyecto",
     "pinned": "Fijado",
@@ -224,9 +224,9 @@
     "noBriefing": "Briefing aún no fijado.",
     "guide": "Guía de uso del material",
     "noShoot": "Ninguna jornada fijada.",
-    "tools": "Herramientas de la agencia",
+    "tools": "Herramientas de la industria",
     "conversation": "Conversación de la sala",
-    "clientHint": "Aquí hablas con la agencia y el equipo del proyecto.",
+    "clientHint": "Aquí hablas con la industria y el equipo del proyecto.",
     "whoIsHere": "Quién está en la sala",
     "openFailed": "No se pudo abrir el archivo.",
     "openGuide": "Abrir",
@@ -270,7 +270,7 @@
     "guideHint": "Dónde y cuándo usar cada pieza para que rinda más.",
     "team": "Equipo",
     "roles": {
-      "agency": "Agencia",
+      "agency": "Industria",
       "talent": "Hero"
     },
     "shootDays": "Jornadas",
@@ -335,7 +335,7 @@
     "nda": "Modelo de NDA (versión {version})",
     "ndaHint": "Cambiar el texto crea una nueva versión; quien ya firmó conserva la versión que firmó.",
     "save": "Guardar",
-    "adminOnly": "Solo el Adm de la agencia edita.",
+    "adminOnly": "Solo el Adm de la industria edita.",
     "title": "Normas y NDA de la sala del proyecto",
     "description": "Lo que el staff externo lee y firma antes de entrar a la sala.",
     "back": "Configuración",
@@ -364,20 +364,20 @@
     "description": "Las salas de los proyectos a los que te llamaron.",
     "unavailable": "Los proyectos están en actualización.",
     "empty": "Ningún proyecto por aquí.",
-    "emptyHint": "Cuando una agencia te llame, la invitación llega por correo.",
+    "emptyHint": "Cuando una industria te llame, la invitación llega por correo.",
     "heroTitle": "Salas de los proyectos",
-    "heroHint": "Conversación con la agencia y el equipo, jornada y materiales."
+    "heroHint": "Conversación con la industria y el equipo, jornada y materiales."
   },
   "link": {
     "room": "Sala del proyecto",
     "clipping": "Clipping del proyecto",
     "ndaHint": "Firma el NDA para entrar.",
-    "roomHint": "Conversación con la agencia y el equipo, jornada y guía de uso.",
+    "roomHint": "Conversación con la industria y el equipo, jornada y guía de uso.",
     "clippingHint": "Entregas, enlaces, métricas y guía de uso."
   },
   "invite": {
     "title": "Invitación a un proyecto",
-    "description": "Una agencia te llamó al equipo de un proyecto.",
+    "description": "Una industria te llamó al equipo de un proyecto.",
     "missing": "Enlace de invitación incompleto.",
     "missingHint": "Abre el enlace tal como llegó en el correo.",
     "hint": "Al aceptar, entras a la sala de este proyecto. Antes de ver la conversación, firmas el NDA.",

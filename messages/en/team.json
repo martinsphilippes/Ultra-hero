@@ -37,17 +37,17 @@
   },
   "requests": {
     "title": "{count, plural, =0 {Access requests} one {# access request} other {# access requests}}",
-    "description": "People who signed up with the agency e-mail and are waiting for your approval.",
-    "empty": "No requests waiting right now. When someone signs up with the agency e-mail, it shows up here and in the bell.",
+    "description": "People who signed up with the industry e-mail and are waiting for your approval.",
+    "empty": "No requests waiting right now. When someone signs up with the industry e-mail, it shows up here and in the bell.",
     "since": "requested on {date}",
     "cnpj": "CNPJ {cnpj}",
     "roleLabel": "Access level",
-    "roleHint": "Collaborator sees the day to day; Manager runs deals; Admin also manages the agency.",
+    "roleHint": "Collaborator sees the day to day; Manager runs deals; Admin also manages the industry.",
     "approve": "Approve",
     "reject": "Decline",
-    "approvedDone": "{name} joined the agency.",
+    "approvedDone": "{name} joined the industry.",
     "rejectedDone": "{name}'s request declined.",
-    "banner": "{count, plural, one {# person is} other {# people are}} waiting for your approval to join the agency.",
+    "banner": "{count, plural, one {# person is} other {# people are}} waiting for your approval to join the industry.",
     "bannerAction": "See requests"
   },
   "gate": {
@@ -65,8 +65,8 @@
     "rejectedTitle": "Request not approved",
     "rejectedBody": "The administrators of {agency} did not approve this request. If it was a mistake, talk to them and send it again.",
     "rejectedNote": "Reason: {note}",
-    "domainTitle": "This e-mail can't join as an agency",
-    "domainBody": "Only Groscove e-mails (@groscovegroup.com or @groscoveultra.com) join as an agency. Sign out and sign up with your Groscove e-mail.",
+    "domainTitle": "This e-mail can't join as an industry",
+    "domainBody": "Only Groscove e-mails (@groscovegroup.com or @groscoveultra.com) join as an industry. Sign out and sign up with your Groscove e-mail.",
     "signOut": "Sign out",
     "goPortal": "Open the portal"
   },
@@ -82,7 +82,7 @@
   },
   "brand": {
     "title": "My job title and level",
-    "description": "How you introduce yourself to the agency and the Heroes.",
+    "description": "How you introduce yourself to the industry and the Heroes.",
     "jobTitle": "Job title",
     "level": "Level",
     "save": "Save",

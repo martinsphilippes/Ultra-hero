@@ -1,9 +1,9 @@
 {
-  "title": "Agencias",
-  "description": "Agencias del módulo de gestión y sus equipos.",
+  "title": "Industrias",
+  "description": "Industrias del módulo de gestión y sus equipos.",
   "unavailable": "Módulo en actualización.",
-  "forbidden": "Solo la administración general de la plataforma gestiona agencias.",
-  "listTitle": "Agencias registradas",
+  "forbidden": "Solo la administración general de la plataforma gestiona industrias.",
+  "listTitle": "Industrias registradas",
   "status": {
     "active": "Activa",
     "suspended": "Suspendida"
@@ -12,7 +12,7 @@
   "openPortal": "Abrir portal",
   "teamCount": "Adm: {admins} · Gestores: {managers} · Colaboradores: {staff}",
   "edit": "Editar datos",
-  "newTitle": "Nueva agencia",
+  "newTitle": "Nueva industria",
   "form": {
     "name": "Nombre",
     "slug": "Dirección corta",
@@ -21,9 +21,9 @@
     "suspended": "Suspendida",
     "email": "Correo de contacto",
     "save": "Guardar",
-    "create": "Crear agencia"
+    "create": "Crear industria"
   },
-  "saved": "Agencia guardada.",
+  "saved": "Industria guardada.",
   "inviteCreated": "Invitación creada. Copia el enlace y envíalo a la persona.",
   "transferred": "Marca transferida."
 }

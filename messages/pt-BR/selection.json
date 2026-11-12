@@ -6,8 +6,8 @@
   },
   "approval": {
     "title": "Aprovação interna",
-    "staffHint": "Só o diretor envia à agência. Monte a campanha e peça a aprovação.",
-    "ownerHint": "Você é o diretor: pode enviar direto à agência.",
+    "staffHint": "Só o diretor envia à indústria. Monte a campanha e peça a aprovação.",
+    "ownerHint": "Você é o diretor: pode enviar direto à indústria.",
     "pending": "Aguardando o diretor",
     "returned": "Devolvida para ajuste",
     "approved": "Aprovada",
@@ -20,8 +20,8 @@
     "askHint": "O diretor recebe um aviso. Enquanto ele não decide, o rascunho fica travado para a equipe.",
     "askNote": "Recado para o diretor (opcional)",
     "approve": "Aprovar e enviar",
-    "approveTitle": "Aprovar e enviar à agência",
-    "approveHint": "A campanha vai para a agência agora, com o seu nome como quem aprovou.",
+    "approveTitle": "Aprovar e enviar à indústria",
+    "approveHint": "A campanha vai para a indústria agora, com o seu nome como quem aprovou.",
     "approveNote": "Nota (opcional)",
     "return": "Devolver",
     "returnTitle": "Devolver para ajuste",
@@ -32,7 +32,7 @@
     "back": "Voltar",
     "asked": "Pedido de aprovação enviado ao diretor.",
     "decided": {
-      "approve": "Campanha aprovada e enviada à agência.",
+      "approve": "Campanha aprovada e enviada à indústria.",
       "return": "Campanha devolvida para ajuste.",
       "withdraw": "Pedido retirado. O rascunho voltou a ser editável."
     },
@@ -107,7 +107,7 @@
     "outOfCatalog": "Saiu do catálogo",
     "toCampaign": "Criar campanha com os aprovados",
     "toCampaignTitle": "Criar campanha com os aprovados",
-    "toCampaignHint": "Cria um rascunho com o primeiro aprovado como Hero escolhido. No envio à agência, todos os aprovados vão sugeridos.",
+    "toCampaignHint": "Cria um rascunho com o primeiro aprovado como Hero escolhido. No envio à indústria, todos os aprovados vão sugeridos.",
     "campaignTitle": "Nome da campanha",
     "campaignLinked": "Esta lista já virou campanha.",
     "seeCampaign": "Ver campanha",
@@ -117,7 +117,7 @@
     "staffWaiting": "Com o diretor. Você recebe um aviso quando ele decidir.",
     "draftHint": "Em montagem: adicione Heros e envie ao diretor.",
     "fromShortlist": "Da pré-seleção “{title}”: {names}.",
-    "fromShortlistHint": "No envio à agência, os aprovados vão sugeridos junto.",
+    "fromShortlistHint": "No envio à indústria, os aprovados vão sugeridos junto.",
     "items": "Heros da lista",
     "seeAll": "Ver listas",
     "cancel": "Voltar"
@@ -140,8 +140,8 @@
       "campaigns": "Campanhas com vocês"
     },
     "availabilityDays": "{available} dias livres · {blocked} indisponíveis",
-    "undeclared": "Sem agenda declarada: confirme com a agência.",
-    "valueRule": "Combinado com a agência (o catálogo não mostra valores).",
+    "undeclared": "Sem agenda declarada: confirme com a indústria.",
+    "valueRule": "Combinado com a indústria (o catálogo não mostra valores).",
     "noRating": "Sem avaliação",
     "ratingValue": "{avg} de 5 · {count, plural, one {# avaliação} other {# avaliações}}",
     "onTime": "{pct}% no prazo",
@@ -158,7 +158,7 @@
   },
   "rating": {
     "title": "Avaliar Heros",
-    "hint": "Uma avaliação por entrega publicada ou comprovada. A média aparece no catálogo e para a agência.",
+    "hint": "Uma avaliação por entrega publicada ou comprovada. A média aparece no catálogo e para a indústria.",
     "none": "Nenhuma entrega publicada ainda.",
     "onTime": "Cumpriu o prazo?",
     "yes": "Sim",

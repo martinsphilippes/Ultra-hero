@@ -17,7 +17,7 @@
       "app": "O app",
       "heroi": "Portal do Hero",
       "marca": "Portal da Marca",
-      "agencia": "Portal da Agência"
+      "agencia": "Portal da Indústria"
     },
     "about": "Conheça o Groscove Ultra",
     "aboutHint": "Tudo o que o Ultra faz, perfil por perfil."
@@ -65,7 +65,7 @@
         },
         "page": {
           "title": "Mensagens e página pública",
-          "body": "Fale com a agência pelo portal e cuide da sua página no app."
+          "body": "Fale com a indústria pelo portal e cuide da sua página no app."
         }
       }
     },
@@ -78,7 +78,7 @@
         },
         "hire": {
           "title": "Como contratar Heros",
-          "body": "Escolha Heros no catálogo; a agência cuida da negociação."
+          "body": "Escolha Heros no catálogo; a indústria cuida da negociação."
         },
         "approvals": {
           "title": "Aprovações",
@@ -90,12 +90,12 @@
         },
         "messages": {
           "title": "Mensagens",
-          "body": "Converse com a agência que atende a sua marca."
+          "body": "Converse com a indústria que atende a sua marca."
         }
       }
     },
     "agencia": {
-      "title": "Boas-vindas ao Portal da Agência",
+      "title": "Boas-vindas ao Portal da Indústria",
       "steps": {
         "casting": {
           "title": "Casting",

@@ -27,7 +27,7 @@
     "backToList": "Back to list"
   },
   "errors": {
-    "profile_conflict": "This email is already used by {kind, select, hero {a Hero account} brand {a Brand account} agency {an Agency account} other {another profile account}}. Use another email.",
+    "profile_conflict": "This email is already used by {kind, select, hero {a Hero account} brand {a Brand account} agency {an Industry account} other {another profile account}}. Use another email.",
     "forbidden": "You do not have permission for this action.",
     "unauthenticated": "Session expired. Sign in again.",
     "invalid_input": "Invalid data. Review the form.",
@@ -65,9 +65,9 @@
     "creator_not_found": "Hero not found.",
     "product_not_found": "Product not found.",
     "professional_profile_already_linked": "This account is already linked to another professional profile.",
-    "demo_account_forbidden": "Example accounts can't join real agencies.",
-    "agency_member_elsewhere": "This person already belongs to another agency.",
-    "brand_not_linked": "The brand is no longer with this agency.",
+    "demo_account_forbidden": "Example accounts can't join real industries.",
+    "agency_member_elsewhere": "This person already belongs to another industry.",
+    "brand_not_linked": "The brand is no longer with this industry.",
     "partner_suspended": "This access is suspended right now.",
     "user_has_talent": "This account is already in a roster.",
     "talent_already_linked": "This invite was already used by another account.",
@@ -194,7 +194,7 @@
       "seller": "Supplier",
       "admin": "Admin",
       "professional": "Professional",
-      "agency": "Agency",
+      "agency": "Industry",
       "brand": "Brand"
     },
     "detail": {
@@ -292,7 +292,7 @@
     "revokeDescription": "The link stops working immediately.",
     "revoked": "Invitation revoked",
     "expiredNote": "expired",
-    "roleAgency": "Agency",
+    "roleAgency": "Industry",
     "roleBrand": "Brand",
     "talentTarget": "Casting profile"
   },
@@ -318,18 +318,18 @@
     "successProfessional": "Your professional access is ready. Complete your profile and services.",
     "goProfessional": "Go to the professional portal",
     "grantProfessional": "You will get access to the professional portal.",
-    "grantAgency": "Agency: joins the agency team at the invited level.",
-    "grantBrand": "Brand: accesses the portal of the brand served by the agency.",
-    "successAgency": "You are now part of the agency team.",
+    "grantAgency": "Industry: joins the industry team at the invited level.",
+    "grantBrand": "Brand: accesses the portal of the brand served by the industry.",
+    "successAgency": "You are now part of the industry team.",
     "successBrand": "You now have access to the brand portal.",
-    "goAgency": "Open agency portal",
+    "goAgency": "Open industry portal",
     "goBrand": "Open brand portal",
     "inboxOnlyNote": "Notices stay on the portal bell.",
     "successTalent": "Done! You now have the Hero Portal.",
     "goOffice": "Open the Hero Portal",
     "alreadyHint": "Already signed in on the login screen with this e-mail? Then the invitation was already accepted and your access is ready.",
     "openPortals": "Open my portals",
-    "grantGeneric": "This invitation's access (agency, brand, hero, supplier or professional) shows right after you accept."
+    "grantGeneric": "This invitation's access (industry, brand, hero, supplier or professional) shows right after you accept."
   },
   "creators": {
     "title": "Heroes",
@@ -720,7 +720,7 @@
       "removeEmail": "Remove {email}",
       "missing": "Key missing in the database (it will be created on save).",
       "invites_enabled": "Invitations on",
-      "invites_enabled_desc": "Off: nobody creates invitations (admin, agency, brand, hero team), enforced in the database. Invitations already sent remain valid. People sign up on their own as Hero, Brand or Agency."
+      "invites_enabled_desc": "Off: nobody creates invitations (admin, industry, brand, hero team), enforced in the database. Invitations already sent remain valid. People sign up on their own as Hero, Brand or Industry."
     },
     "ops": {
       "title": "Operations",

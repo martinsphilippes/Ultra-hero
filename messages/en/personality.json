@@ -21,7 +21,7 @@
   },
   "again": "Retake the test",
   "saved": "Result saved to your profile.",
-  "notAllowed": "The test is for people who work on the platform (agency, brand or Hero).",
+  "notAllowed": "The test is for people who work on the platform (industry, brand or Hero).",
   "cta": "Take the personality test",
   "ctaHint": "32 statements, 3 minutes. Your team sees the result.",
   "myType": "Your profile: {name} ({type})",

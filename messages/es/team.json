@@ -37,17 +37,17 @@
   },
   "requests": {
     "title": "{count, plural, =0 {Solicitudes de acceso} one {# solicitud de acceso} other {# solicitudes de acceso}}",
-    "description": "Personas que se registraron con el e-mail de la agencia y esperan tu autorización.",
-    "empty": "No hay solicitudes esperando ahora. Cuando alguien se registre con el e-mail de la agencia, aparece aquí y en la campana.",
+    "description": "Personas que se registraron con el e-mail de la industria y esperan tu autorización.",
+    "empty": "No hay solicitudes esperando ahora. Cuando alguien se registre con el e-mail de la industria, aparece aquí y en la campana.",
     "since": "pidió el {date}",
     "cnpj": "CNPJ {cnpj}",
     "roleLabel": "Nivel de acceso",
-    "roleHint": "Colaborador ve el día a día; Gestor lleva negocios; Admin también gestiona la agencia.",
+    "roleHint": "Colaborador ve el día a día; Gestor lleva negocios; Admin también gestiona la industria.",
     "approve": "Aceptar",
     "reject": "Rechazar",
-    "approvedDone": "{name} entró en la agencia.",
+    "approvedDone": "{name} entró en la industria.",
     "rejectedDone": "Solicitud de {name} rechazada.",
-    "banner": "{count, plural, one {# persona espera} other {# personas esperan}} tu autorización para entrar en la agencia.",
+    "banner": "{count, plural, one {# persona espera} other {# personas esperan}} tu autorización para entrar en la industria.",
     "bannerAction": "Ver solicitudes"
   },
   "gate": {
@@ -65,8 +65,8 @@
     "rejectedTitle": "Solicitud no autorizada",
     "rejectedBody": "Los administradores de {agency} no autorizaron esta solicitud. Si fue un error, habla con ellos y envíala de nuevo.",
     "rejectedNote": "Motivo: {note}",
-    "domainTitle": "Este e-mail no entra como agencia",
-    "domainBody": "Solo los e-mails de Groscove (@groscovegroup.com o @groscoveultra.com) entran como agencia. Sal y regístrate con tu e-mail de Groscove.",
+    "domainTitle": "Este e-mail no entra como industria",
+    "domainBody": "Solo los e-mails de Groscove (@groscovegroup.com o @groscoveultra.com) entran como industria. Sal y regístrate con tu e-mail de Groscove.",
     "signOut": "Salir",
     "goPortal": "Abrir el portal"
   },
@@ -82,7 +82,7 @@
   },
   "brand": {
     "title": "Mi cargo y nivel",
-    "description": "Cómo te presentas a la agencia y a los Heroes.",
+    "description": "Cómo te presentas a la industria y a los Heroes.",
     "jobTitle": "Cargo",
     "level": "Nivel",
     "save": "Guardar",

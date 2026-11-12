@@ -218,7 +218,7 @@
     "empty": "No requests yet.",
     "by": "Requested by {name}",
     "openDeal": "Open deal",
-    "noDeal": "Brand served by another agency: the request didn't enter the pipeline. Reach out using the contact below.",
+    "noDeal": "Brand served by another industry: the request didn't enter the pipeline. Reach out using the contact below.",
     "budget": "Budget: {value}",
     "pages": "Chosen pages",
     "status": "Stage",

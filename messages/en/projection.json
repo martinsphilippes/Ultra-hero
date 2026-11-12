@@ -13,8 +13,8 @@
     "teamHint": "The Heroes you manage and the deals you own."
   },
   "agency": {
-    "title": "Agency projection",
-    "hint": "All of the agency's campaign value (only the Admin sees it)."
+    "title": "Industry projection",
+    "hint": "All of the industry's campaign value (only the Admin sees it)."
   },
   "buckets": {
     "won": "Closed",

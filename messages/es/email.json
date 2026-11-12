@@ -20,7 +20,7 @@
       },
       "opportunity_updated": {
         "subject": "{status, select, counter_accepted {Contrapropuesta aceptada} other {Contrapropuesta rechazada}}: {deal}",
-        "body": "{status, select, counter_accepted {La agencia aceptó tu contrapropuesta en {deal}.} other {La agencia respondió tu contrapropuesta en {deal} y no la aceptó. Mira el motivo en la app.}}",
+        "body": "{status, select, counter_accepted {La industria aceptó tu contrapropuesta en {deal}.} other {La industria respondió tu contrapropuesta en {deal} y no la aceptó. Mira el motivo en la app.}}",
         "cta": "Ver respuesta"
       },
       "deliverable_decided": {
@@ -45,7 +45,7 @@
       },
       "sponsorship_published": {
         "subject": "Oportunidad de patrocinio: {title}",
-        "body": "La agencia ofrece un evento del Hero {talent} para que tu marca lo patrocine: {title}. Responde hasta {date}.",
+        "body": "La industria ofrece un evento del Hero {talent} para que tu marca lo patrocine: {title}. Responde hasta {date}.",
         "cta": "Ver oportunidad"
       },
       "sponsorship_interest": {
@@ -55,7 +55,7 @@
       },
       "sponsorship_decided": {
         "subject": "{status, select, won {Tu marca fue elegida} sponsored {Patrocinio confirmado} cancelled {Oportunidad cancelada} other {Oportunidad cerrada}}: {title}",
-        "body": "{status, select, won {La agencia eligió tu marca para patrocinar {title}. Sigue por la campaña en la app.} sponsored {{title} fue patrocinada por {brand}.} cancelled {La agencia canceló la oportunidad {title}.} other {La agencia cerró la oportunidad {title}.}}",
+        "body": "{status, select, won {La industria eligió tu marca para patrocinar {title}. Sigue por la campaña en la app.} sponsored {{title} fue patrocinada por {brand}.} cancelled {La industria canceló la oportunidad {title}.} other {La industria cerró la oportunidad {title}.}}",
         "cta": "Abrir la app"
       },
       "sponsorship_negotiation": {
@@ -65,7 +65,7 @@
       },
       "brand_call_published": {
         "subject": "Pedido de marca: {title}",
-        "body": "{brand} publicó el pedido {title} para tu agencia. Propuestas hasta {date}.",
+        "body": "{brand} publicó el pedido {title} para tu industria. Propuestas hasta {date}.",
         "cta": "Ver pedido"
       },
       "brand_call_interest": {
@@ -80,12 +80,12 @@
       },
       "brand_call_decided": {
         "subject": "Pedido de marca decidido: {title}",
-        "body": "{status, select, won {Tu propuesta ganó en {title}. La marca recibe la campaña lista.} lost {La marca eligió otra propuesta en {title}.} chosen {Te eligieron para {title} ({brand}). Tu agencia se ocupa del resto.} cancelled {La marca canceló {title}.} other {La marca cerró {title}.}}",
+        "body": "{status, select, won {Tu propuesta ganó en {title}. La marca recibe la campaña lista.} lost {La marca eligió otra propuesta en {title}.} chosen {Te eligieron para {title} ({brand}). Tu industria se ocupa del resto.} cancelled {La marca canceló {title}.} other {La marca cerró {title}.}}",
         "cta": "Ver detalles"
       },
       "budget_change": {
         "subject": "{status, select, requested {Solicitud de cambio de presupuesto} declined {Solicitud de presupuesto rechazada} proposed {Reajuste propuesto} confirmed {Nuevo presupuesto confirmado} other {Reajuste rechazado}}: {deal}",
-        "body": "{status, select, requested {La marca pidió cambiar el presupuesto de {deal}. Solo el Adm de la agencia ve los valores y decide.} declined {La agencia rechazó la solicitud de presupuesto de {deal}. El presupuesto actual sigue vigente.} proposed {La agencia aceptó revisar el presupuesto de {deal} y propuso un reajuste. El dueño de la marca confirma o rechaza en la app.} confirmed {La marca confirmó el nuevo presupuesto de {deal}. Las tareas del reajuste ya están en el negocio.} other {La marca rechazó el reajuste de {deal}. Mira el motivo en la app.}}",
+        "body": "{status, select, requested {La marca pidió cambiar el presupuesto de {deal}. Solo el Adm de la industria ve los valores y decide.} declined {La industria rechazó la solicitud de presupuesto de {deal}. El presupuesto actual sigue vigente.} proposed {La industria aceptó revisar el presupuesto de {deal} y propuso un reajuste. El dueño de la marca confirma o rechaza en la app.} confirmed {La marca confirmó el nuevo presupuesto de {deal}. Las tareas del reajuste ya están en el negocio.} other {La marca rechazó el reajuste de {deal}. Mira el motivo en la app.}}",
         "cta": "Ver solicitud"
       },
       "payment_reported": {
@@ -95,7 +95,7 @@
       },
       "payment_reviewed": {
         "subject": "{status, select, confirmed {Pago confirmado} other {Pago no confirmado}}: {deal}",
-        "body": "{status, select, confirmed {La agencia confirmó la recepción del pago de {deal}.} other {La agencia no confirmó el pago de {deal}. Mira el motivo e infórmalo de nuevo.}}",
+        "body": "{status, select, confirmed {La industria confirmó la recepción del pago de {deal}.} other {La industria no confirmó el pago de {deal}. Mira el motivo e infórmalo de nuevo.}}",
         "cta": "Ver pagos"
       },
       "payment_due": {
@@ -105,7 +105,7 @@
       },
       "payment_plan": {
         "subject": "Cuotas del pago: {deal}",
-        "body": "La agencia dividió el pago de {deal} en {step} cuota(s). Mira valores y vencimientos en la app.",
+        "body": "La industria dividió el pago de {deal} en {step} cuota(s). Mira valores y vencimientos en la app.",
         "cta": "Ver pagos"
       }
     }

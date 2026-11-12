@@ -96,7 +96,7 @@
       "seller": "Proveedor",
       "admin": "Admin",
       "professional": "Profesional",
-      "agency": "Agencia",
+      "agency": "Industria",
       "brand": "Marca",
       "talent": "Hero"
     },
@@ -106,15 +106,15 @@
       "creator": "Portal del Hero",
       "seller": "Portal del proveedor",
       "hints": {
-        "creator": "Posts, contenidos, agenda, finanzas y el casting de la agencia",
+        "creator": "Posts, contenidos, agenda, finanzas y el casting de la industria",
         "seller": "Productos, entregas y perfil de la operación",
         "admin": "Usuarios, contenidos, pedidos y configuración",
         "professional": "Pedidos, servicios y perfil público",
         "agency": "Casting, equipo, marcas atendidas y avisos",
-        "brand": "Equipo de la marca y avisos de la agencia"
+        "brand": "Equipo de la marca y avisos de la industria"
       },
       "professional": "Portal del profesional",
-      "agency": "Portal de la agencia",
+      "agency": "Portal de la industria",
       "brand": "Portal de la marca"
     },
     "data": {
@@ -246,7 +246,7 @@
       "workOn": "Trabajar en este Hero",
       "workOnNamed": "Trabajar en el Hero {name}",
       "error": "No se pudo cambiar de Hero. Inténtalo de nuevo.",
-      "casting": "Casting de la agencia {agency}",
+      "casting": "Casting de la industria {agency}",
       "hint": "Nuevo post, Nuevo contenido y Mis contenidos usan el Hero marcado como \"En uso\"."
     }
   },
@@ -761,7 +761,7 @@
       },
       "office_updates": {
         "label": "Avisos del Portal del Hero",
-        "description": "Oportunidades, tareas y entregas de la agencia que cuida tu carrera."
+        "description": "Oportunidades, tareas y entregas de la industria que cuida tu carrera."
       }
     },
     "transactional": {

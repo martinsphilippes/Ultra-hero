@@ -4,7 +4,7 @@
     "labelShort": "dados de {date} · declarado por {by}",
     "side": {
       "talent": "Hero",
-      "agency": "agência",
+      "agency": "indústria",
       "integration": "integração"
     },
     "stale": "desatualizado"
@@ -103,7 +103,7 @@
     "engagement": "Engajamento",
     "audience": "Audiência (gráficos)",
     "brands": "Marcas que já acompanham",
-    "agency_contact": "Contato da agência",
+    "agency_contact": "Contato da indústria",
     "stats": "Números do trabalho (automático)",
     "portfolio": "Portfólio (campanhas e marcas)"
   },
@@ -132,7 +132,7 @@
   },
   "public": {
     "eyebrow": "Media kit",
-    "declaredNote": "Métricas declaradas pelo Hero ou pela agência, com a data de cada dado.",
+    "declaredNote": "Métricas declaradas pelo Hero ou pela indústria, com a data de cada dado.",
     "poweredBy": "Groscove Ultra",
     "unavailableTitle": "Este link não está disponível",
     "unavailableBody": "O link pode ter vencido ou sido desligado. Peça um novo a quem enviou."

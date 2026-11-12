@@ -6,8 +6,8 @@
   },
   "approval": {
     "title": "Internal approval",
-    "staffHint": "Only the director sends to the agency. Build the campaign and ask for approval.",
-    "ownerHint": "You are the director: you can send straight to the agency.",
+    "staffHint": "Only the director sends to the industry. Build the campaign and ask for approval.",
+    "ownerHint": "You are the director: you can send straight to the industry.",
     "pending": "Waiting for the director",
     "returned": "Sent back for changes",
     "approved": "Approved",
@@ -20,8 +20,8 @@
     "askHint": "The director gets a notice. Until they decide, the draft is locked for the team.",
     "askNote": "Message to the director (optional)",
     "approve": "Approve and send",
-    "approveTitle": "Approve and send to the agency",
-    "approveHint": "The campaign goes to the agency now, with your name as the approver.",
+    "approveTitle": "Approve and send to the industry",
+    "approveHint": "The campaign goes to the industry now, with your name as the approver.",
     "approveNote": "Note (optional)",
     "return": "Send back",
     "returnTitle": "Send back for changes",
@@ -32,7 +32,7 @@
     "back": "Back",
     "asked": "Approval request sent to the director.",
     "decided": {
-      "approve": "Campaign approved and sent to the agency.",
+      "approve": "Campaign approved and sent to the industry.",
       "return": "Campaign sent back for changes.",
       "withdraw": "Request withdrawn. The draft can be edited again."
     },
@@ -107,7 +107,7 @@
     "outOfCatalog": "Left the catalog",
     "toCampaign": "Create campaign with approved",
     "toCampaignTitle": "Create campaign with the approved heroes",
-    "toCampaignHint": "Creates a draft with the first approved hero as the chosen one. When sent to the agency, all approved heroes go as suggestions.",
+    "toCampaignHint": "Creates a draft with the first approved hero as the chosen one. When sent to the industry, all approved heroes go as suggestions.",
     "campaignTitle": "Campaign name",
     "campaignLinked": "This list already became a campaign.",
     "seeCampaign": "See campaign",
@@ -117,7 +117,7 @@
     "staffWaiting": "With the director. You'll get a notice when they decide.",
     "draftHint": "In progress: add heroes and send to the director.",
     "fromShortlist": "From the shortlist “{title}”: {names}.",
-    "fromShortlistHint": "When sent to the agency, the approved heroes go as suggestions too.",
+    "fromShortlistHint": "When sent to the industry, the approved heroes go as suggestions too.",
     "items": "Heroes on the list",
     "seeAll": "See lists",
     "cancel": "Back"
@@ -140,8 +140,8 @@
       "campaigns": "Campaigns with you"
     },
     "availabilityDays": "{available} free days · {blocked} unavailable",
-    "undeclared": "No schedule declared: check with the agency.",
-    "valueRule": "Agreed with the agency (the catalog shows no prices).",
+    "undeclared": "No schedule declared: check with the industry.",
+    "valueRule": "Agreed with the industry (the catalog shows no prices).",
     "noRating": "No rating",
     "ratingValue": "{avg} of 5 · {count, plural, one {# rating} other {# ratings}}",
     "onTime": "{pct}% on time",
@@ -158,7 +158,7 @@
   },
   "rating": {
     "title": "Rate heroes",
-    "hint": "One rating per published or proven deliverable. The average shows in the catalog and to the agency.",
+    "hint": "One rating per published or proven deliverable. The average shows in the catalog and to the industry.",
     "none": "No published deliverables yet.",
     "onTime": "Met the deadline?",
     "yes": "Yes",

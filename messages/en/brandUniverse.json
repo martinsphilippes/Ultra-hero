@@ -30,7 +30,7 @@
     "domains": "Brand email domains",
     "domainsHint": "Separate with commas (e.g. natura.net, natura.com.br). Anyone signing up with an email from these domains sees \"Are you from this brand?\". Personal email (gmail, hotmail…) never counts.",
     "internalTitle": "Internal data",
-    "internalHint": "Only Groscove sees this. The brand and other agencies don't.",
+    "internalHint": "Only Groscove sees this. The brand and other industries don't.",
     "cpa": "CPA",
     "cpaInfluencer": "Influencer CPA",
     "mid": "MID code",
@@ -70,6 +70,6 @@
   },
   "brandLogo": {
     "title": "Brand logo",
-    "hint": "The logo is shown to agencies, Heroes and in your portal."
+    "hint": "The logo is shown to industries, Heroes and in your portal."
   }
 }

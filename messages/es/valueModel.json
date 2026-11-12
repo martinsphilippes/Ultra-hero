@@ -4,7 +4,7 @@
     "fixo": "Valor fijo del evento",
     "porHeroi": "Valor por Hero",
     "hint": {
-      "fixo": "Un valor total para todo el evento. La agencia lo divide entre los Heros que proponga.",
+      "fixo": "Un valor total para todo el evento. La industria lo divide entre los Heros que proponga.",
       "porHeroi": "Cada Hero recibe este valor. El máximo de Heros limita la inversión total."
     }
   },
@@ -12,21 +12,21 @@
     "total": "Valor total (R$)",
     "perHero": "Valor por Hero (R$)",
     "hint": {
-      "total": "Opcional. Solo tu marca y el admin de la agencia lo ven.",
-      "perHero": "Lo que recibe cada Hero. Solo tu marca y el admin de la agencia lo ven."
+      "total": "Opcional. Solo tu marca y el admin de la industria lo ven.",
+      "perHero": "Lo que recibe cada Hero. Solo tu marca y el admin de la industria lo ven."
     }
   },
   "maxHeroes": {
     "label": "Máximo de Heros",
-    "hint": "La agencia no podrá proponer más Heros que esto."
+    "hint": "La industria no podrá proponer más Heros que esto."
   },
   "summary": {
     "ceiling": "Hasta {value}",
     "ceilingDetail": "{value} por Hero × {n, plural, one {# Hero} other {# Heros}}, como máximo",
     "perHeroMissing": "Indica el valor por Hero y el máximo de Heros para ver el tope de la inversión.",
     "fixed": "{value} en total",
-    "fixedDetail": "Dividido entre los Heros que proponga la agencia.",
-    "fixedMissing": "Sin valor indicado. Puedes acordarlo con la agencia después."
+    "fixedDetail": "Dividido entre los Heros que proponga la industria.",
+    "fixedMissing": "Sin valor indicado. Puedes acordarlo con la industria después."
   },
   "view": {
     "title": "Valor ofrecido",
@@ -49,7 +49,7 @@
     "subtitle": "Elige el resultado que importa y mira combinaciones de Heros que caben en el valor.",
     "loading": "Buscando los números del casting…",
     "loadError": "No se pudo cargar el casting ahora. Inténtalo de nuevo.",
-    "disclaimer": "Son estimaciones hechas con los números que los Heros o la agencia declararon en las redes. No hay conexión directa con las redes sociales y el alcance de Heros distintos puede repetirse.",
+    "disclaimer": "Son estimaciones hechas con los números que los Heros o la industria declararon en las redes. No hay conexión directa con las redes sociales y el alcance de Heros distintos puede repetirse.",
     "oldest": "El dato más antiguo usado es del {date}.",
     "cancel": "Cancelar",
     "use": "Usar este elenco",
@@ -63,7 +63,7 @@
       "total": "Valor total del evento (R$)",
       "totalLocked": "Valor ofrecido por la marca en este negocio.",
       "totalHint": "Simula con un valor. No cambia nada en el negocio.",
-      "feeBudget": "Quedan {value} para los cachés, ya descontada la comisión de la agencia ({rate}%).",
+      "feeBudget": "Quedan {value} para los cachés, ya descontada la comisión de la industria ({rate}%).",
       "missing": "Indica el valor total para ver las combinaciones.",
       "hiddenForManager": "El presupuesto está oculto para ti. Las combinaciones muestran la parte del presupuesto usada, en porcentaje.",
       "missingManager": "El admin aún no indicó el valor ofrecido. Pídele que simule.",

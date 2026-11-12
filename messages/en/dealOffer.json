@@ -1,7 +1,7 @@
 {
   "agencyTitle": "Brand proposal",
-  "brandTitle": "Negotiation with the agency",
-  "brandCounterTitle": "Agency counteroffer",
+  "brandTitle": "Negotiation with the industry",
+  "brandCounterTitle": "Industry counteroffer",
   "agreedTitle": "Agreed terms",
   "status": {
     "agency": {
@@ -13,11 +13,11 @@
       "closed": "Negotiation is no longer available at this deal stage."
     },
     "brand": {
-      "brand_proposal": "Waiting for the agency to answer your proposal.",
-      "brand_countered": "Your counteroffer was sent. Waiting for the agency.",
-      "brand_declined": "You declined the counteroffer. Waiting for the agency.",
-      "agency_countered": "The agency made a counteroffer: accept, counter or decline.",
-      "agreed": "Terms agreed with the agency.",
+      "brand_proposal": "Waiting for the industry to answer your proposal.",
+      "brand_countered": "Your counteroffer was sent. Waiting for the industry.",
+      "brand_declined": "You declined the counteroffer. Waiting for the industry.",
+      "agency_countered": "The industry made a counteroffer: accept, counter or decline.",
+      "agreed": "Terms agreed with the industry.",
       "closed": "Negotiation is no longer available at this campaign stage."
     }
   },
@@ -52,15 +52,15 @@
   },
   "declineDialog": {
     "title": "Decline the counteroffer?",
-    "hint": "The campaign stays open: the agency can send another proposal.",
+    "hint": "The campaign stays open: the industry can send another proposal.",
     "reason": "Reason (optional)"
   },
   "noValueHint": "No brand value to accept: make a counteroffer.",
-  "ownerOnly": "Only the brand owner replies to the agency.",
+  "ownerOnly": "Only the brand owner replies to the industry.",
   "confirmNext": "Now just confirm the campaign in the “Confirm campaign” card.",
   "history": {
     "title": "History",
-    "agency": "Agency",
+    "agency": "Industry",
     "brand": "Brand",
     "action": {
       "accept": "Accepted",

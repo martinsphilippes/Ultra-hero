@@ -30,7 +30,7 @@
     "domains": "Domínios de e-mail da marca",
     "domainsHint": "Separe por vírgula (ex.: natura.net, natura.com.br). Quem se cadastrar com e-mail desses domínios vê \"Você é da marca?\". E-mail pessoal (gmail, hotmail…) nunca entra.",
     "internalTitle": "Dados internos",
-    "internalHint": "Só quem é da Groscove vê. A marca e outras agências não veem.",
+    "internalHint": "Só quem é da Groscove vê. A marca e outras indústrias não veem.",
     "cpa": "CPA",
     "cpaInfluencer": "CPA Influencer",
     "mid": "Código MID",
@@ -70,6 +70,6 @@
   },
   "brandLogo": {
     "title": "Logo da marca",
-    "hint": "O logo aparece para as agências, os Heroes e no seu portal."
+    "hint": "O logo aparece para as indústrias, os Heroes e no seu portal."
   }
 }

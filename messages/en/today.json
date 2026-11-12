@@ -26,7 +26,7 @@
       "approval": "Approve delivery",
       "script": "Approve script",
       "terms": "Accept terms",
-      "message": "Reply to the agency",
+      "message": "Reply to the industry",
       "deadline": "Delivery deadline",
       "draft": "Stalled draft",
       "internalApproval": "Internal approval",
@@ -82,12 +82,12 @@
       "invoice": "Invoices",
       "payment": "Payments"
     },
-    "counter_open": "Counteroffer waiting for the agency",
+    "counter_open": "Counteroffer waiting for the industry",
     "counter_accepted": "Counteroffer accepted",
     "counter_rejected": "Counteroffer declined",
     "invoiceMissing": "Delivered: send the invoice to get paid",
     "invoiceRejected": "Invoice rejected: send a new one",
-    "paymentScheduled": "The agency scheduled the payment",
+    "paymentScheduled": "The industry scheduled the payment",
     "pendingHint": "Create it and send it for the brand to approve",
     "sendProof": "Published: send the proof"
   },
@@ -112,7 +112,7 @@
       "published": "Published"
     },
     "stageHints": {
-      "sent": "Proposal sent, waiting on the agency and the hero.",
+      "sent": "Proposal sent, waiting on the industry and the hero.",
       "accepted": "The hero accepted; production has not started.",
       "creating": "In production, with changes requested or approved to publish.",
       "awaiting": "A version was sent and is waiting for your approval.",

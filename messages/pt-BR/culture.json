@@ -64,10 +64,10 @@
   "brand": {
     "title": "Proposta comercial",
     "interested": "Sua marca demonstrou interesse neste evento.",
-    "notInterested": "Demonstre interesse antes de propor: a agência fica sabendo.",
+    "notInterested": "Demonstre interesse antes de propor: a indústria fica sabendo.",
     "campaign": "Criar campanha a partir deste evento",
-    "call": "Abrir chamada para agências a partir deste evento",
-    "needsAgency": "Para criar campanha, a marca precisa de uma agência ativa. A chamada vai para várias agências.",
+    "call": "Abrir chamada para indústrias a partir deste evento",
+    "needsAgency": "Para criar campanha, a marca precisa de uma indústria ativa. A chamada vai para várias indústrias.",
     "membersOnly": "Só o dono e a equipe da marca criam propostas.",
     "heroesHidden": "A marca vê só quantos Heros se interessaram, nunca quem."
   },
@@ -148,7 +148,7 @@
       "scheduled": "Programado",
       "published": "Publicado"
     },
-    "audienceAdmin": "Vai para todos os perfis com portal (Heros, marcas e agências).",
+    "audienceAdmin": "Vai para todos os perfis com portal (Heros, marcas e indústrias).",
     "audienceAgency": "Vai para a sua rede: equipe, marcas atendidas e Heros do casting.",
     "form": {
       "kind": "Tipo",

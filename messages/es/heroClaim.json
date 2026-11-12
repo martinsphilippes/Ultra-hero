@@ -1,6 +1,6 @@
 {
   "title": "¿Eres tú?",
-  "body": "Encontramos perfiles en el casting de Groscove con un nombre parecido al tuyo. Si uno de ellos eres tú, pide tu perfil: la agencia lo verifica y libera el acceso, y entras con todo lo que ya está allí.",
+  "body": "Encontramos perfiles en el casting de Groscove con un nombre parecido al tuyo. Si uno de ellos eres tú, pide tu perfil: la industria lo verifica y libera el acceso, y entras con todo lo que ya está allí.",
   "searchLabel": "Buscar por tu nombre artístico",
   "search": "Buscar",
   "none": "Ningún perfil encontrado con ese nombre.",
@@ -10,5 +10,5 @@
   "searchAgain": "Buscar mi perfil en el casting",
   "pendingTitle": "Solicitud enviada",
   "pendingBody": "{agency} recibió tu solicitud del perfil {talent}. En cuanto confirme que eres tú, se libera el acceso y recibes un aviso.",
-  "rejected": "La agencia no confirmó el perfil {talent}. Si fue un error, habla con ella; o crea tu Hero abajo."
+  "rejected": "La industria no confirmó el perfil {talent}. Si fue un error, habla con ella; o crea tu Hero abajo."
 }

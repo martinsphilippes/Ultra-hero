@@ -63,7 +63,7 @@
     "bySegment": "same segment: {segments}",
     "byCompetitor": "this brand was listed as a competitor",
     "category": "category: {category}",
-    "talentHint": "Talk to the agency before accepting: this offer may go against the exclusivity.",
+    "talentHint": "Talk to the industry before accepting: this offer may go against the exclusivity.",
     "agencyHint": "It does not block, but consulting requires a confirmation, which is recorded in the history.",
     "badge": "active exclusivity",
     "consultWarn": "{count, plural, one {# selected hero has an active exclusivity that covers this deal.} other {# selected heroes have an active exclusivity that covers this deal.}}",
@@ -77,7 +77,7 @@
     "howMuch": "How much",
     "rights": "Rights",
     "respondBy": "Reply by {date}",
-    "noDeliverables": "Deliverables to be set with the agency",
+    "noDeliverables": "Deliverables to be set with the industry",
     "noDates": "Dates to be set",
     "noFee": "Fee not set yet",
     "feeOnWeb": "The amount shows on the web version.",
@@ -88,13 +88,13 @@
     "proposeDate": "Propose another date",
     "proposeFee": "Propose another amount",
     "dateTitle": "Propose another date",
-    "dateHint": "The agency gets the request and replies here.",
+    "dateHint": "The industry gets the request and replies here.",
     "deliverable": "For which deliverable",
     "deliverableNone": "Campaign start",
     "currentDate": "Current date: {date}",
     "newDate": "New date",
     "feeTitle": "Propose another amount",
-    "feeHint": "Say which amount makes sense and why. The agency replies here.",
+    "feeHint": "Say which amount makes sense and why. The industry replies here.",
     "currentFee": "Current fee: {value}",
     "newFee": "Proposed amount (R$)",
     "reason": "Reason",
@@ -106,29 +106,29 @@
     "send": "Send counteroffer",
     "back": "Back",
     "sent": {
-      "fee": "Amount counteroffer sent to the agency.",
-      "date": "Date counteroffer sent to the agency."
+      "fee": "Amount counteroffer sent to the industry.",
+      "date": "Date counteroffer sent to the industry."
     },
     "withdrawn": "Counteroffer withdrawn.",
     "withdraw": "Withdraw",
     "confirmWithdraw": "Withdraw the counteroffer?",
-    "openNotice": "Your counteroffer is with the agency. You can withdraw it while they have not replied.",
+    "openNotice": "Your counteroffer is with the industry. You can withdraw it while they have not replied.",
     "history": "Counteroffers",
     "kind": {
       "fee": "Amount",
       "date": "Date"
     },
     "status": {
-      "open": "Waiting for the agency",
+      "open": "Waiting for the industry",
       "accepted": "Accepted",
       "rejected": "Declined",
       "withdrawn": "Withdrawn"
     },
     "change": "{from} → {to}",
     "reasonLine": "Reason: {reason}",
-    "agencyNote": "Agency note: {note}",
-    "resultAccepted": "The agency accepted your counteroffer.",
-    "resultRejected": "The agency declined your counteroffer."
+    "agencyNote": "Industry note: {note}",
+    "resultAccepted": "The industry accepted your counteroffer.",
+    "resultRejected": "The industry declined your counteroffer."
   },
   "review": {
     "title": "Hero counteroffer",

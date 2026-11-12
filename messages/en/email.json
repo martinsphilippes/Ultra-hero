@@ -20,7 +20,7 @@
       },
       "opportunity_updated": {
         "subject": "{status, select, counter_accepted {Counteroffer accepted} other {Counteroffer declined}}: {deal}",
-        "body": "{status, select, counter_accepted {The agency accepted your counteroffer in {deal}.} other {The agency answered your counteroffer in {deal} and did not accept it. See why in the app.}}",
+        "body": "{status, select, counter_accepted {The industry accepted your counteroffer in {deal}.} other {The industry answered your counteroffer in {deal} and did not accept it. See why in the app.}}",
         "cta": "See answer"
       },
       "deliverable_decided": {
@@ -45,7 +45,7 @@
       },
       "sponsorship_published": {
         "subject": "Sponsorship opportunity: {title}",
-        "body": "The agency is offering an event of hero {talent} for your brand to sponsor: {title}. Reply by {date}.",
+        "body": "The industry is offering an event of hero {talent} for your brand to sponsor: {title}. Reply by {date}.",
         "cta": "See opportunity"
       },
       "sponsorship_interest": {
@@ -55,7 +55,7 @@
       },
       "sponsorship_decided": {
         "subject": "{status, select, won {Your brand was chosen} sponsored {Sponsorship confirmed} cancelled {Opportunity cancelled} other {Opportunity closed}}: {title}",
-        "body": "{status, select, won {The agency chose your brand to sponsor {title}. Continue in the campaign in the app.} sponsored {{title} was sponsored by {brand}.} cancelled {The agency cancelled the opportunity {title}.} other {The agency closed the opportunity {title}.}}",
+        "body": "{status, select, won {The industry chose your brand to sponsor {title}. Continue in the campaign in the app.} sponsored {{title} was sponsored by {brand}.} cancelled {The industry cancelled the opportunity {title}.} other {The industry closed the opportunity {title}.}}",
         "cta": "Open the app"
       },
       "sponsorship_negotiation": {
@@ -65,7 +65,7 @@
       },
       "brand_call_published": {
         "subject": "Brand request: {title}",
-        "body": "{brand} published the request {title} for your agency. Proposals until {date}.",
+        "body": "{brand} published the request {title} for your industry. Proposals until {date}.",
         "cta": "See request"
       },
       "brand_call_interest": {
@@ -80,12 +80,12 @@
       },
       "brand_call_decided": {
         "subject": "Brand request decided: {title}",
-        "body": "{status, select, won {Your proposal won on {title}. The brand gets the campaign ready.} lost {The brand chose another proposal on {title}.} chosen {You were chosen for {title} ({brand}). Your agency handles the rest.} cancelled {The brand cancelled {title}.} other {The brand closed {title}.}}",
+        "body": "{status, select, won {Your proposal won on {title}. The brand gets the campaign ready.} lost {The brand chose another proposal on {title}.} chosen {You were chosen for {title} ({brand}). Your industry handles the rest.} cancelled {The brand cancelled {title}.} other {The brand closed {title}.}}",
         "cta": "See details"
       },
       "budget_change": {
         "subject": "{status, select, requested {Budget change request} declined {Budget request declined} proposed {Realignment proposed} confirmed {New budget confirmed} other {Realignment declined}}: {deal}",
-        "body": "{status, select, requested {The brand asked to change the budget of {deal}. Only the agency Admin sees the amounts and decides.} declined {The agency declined the budget request for {deal}. The current budget stays.} proposed {The agency agreed to review the budget of {deal} and proposed a realignment. The brand owner confirms or declines in the app.} confirmed {The brand confirmed the new budget of {deal}. The realignment tasks are already in the deal.} other {The brand declined the realignment of {deal}. See why in the app.}}",
+        "body": "{status, select, requested {The brand asked to change the budget of {deal}. Only the industry Admin sees the amounts and decides.} declined {The industry declined the budget request for {deal}. The current budget stays.} proposed {The industry agreed to review the budget of {deal} and proposed a realignment. The brand owner confirms or declines in the app.} confirmed {The brand confirmed the new budget of {deal}. The realignment tasks are already in the deal.} other {The brand declined the realignment of {deal}. See why in the app.}}",
         "cta": "See request"
       },
       "payment_reported": {
@@ -95,7 +95,7 @@
       },
       "payment_reviewed": {
         "subject": "{status, select, confirmed {Payment confirmed} other {Payment not confirmed}}: {deal}",
-        "body": "{status, select, confirmed {The agency confirmed receiving the payment for {deal}.} other {The agency did not confirm the payment for {deal}. See why and report it again.}}",
+        "body": "{status, select, confirmed {The industry confirmed receiving the payment for {deal}.} other {The industry did not confirm the payment for {deal}. See why and report it again.}}",
         "cta": "See payments"
       },
       "payment_due": {
@@ -105,7 +105,7 @@
       },
       "payment_plan": {
         "subject": "Payment installments: {deal}",
-        "body": "The agency split the payment for {deal} into {step} installment(s). See amounts and due dates in the app.",
+        "body": "The industry split the payment for {deal} into {step} installment(s). See amounts and due dates in the app.",
         "cta": "See payments"
       }
     }

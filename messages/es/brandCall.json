@@ -36,8 +36,8 @@
     "public": "Público",
     "budget": "Presupuesto",
     "budgetShown": {
-      "exact": "Las agencias (solo el Adm) ven el valor exacto.",
-      "up_to": "Las agencias (solo el Adm) ven \"hasta\" este valor."
+      "exact": "Las industrias (solo el Adm) ven el valor exacto.",
+      "up_to": "Las industrias (solo el Adm) ven \"hasta\" este valor."
     }
   },
   "form": {
@@ -63,8 +63,8 @@
     "nichesPlaceholder": "Belleza, playa, bienestar",
     "networks": "Redes",
     "budget": "Presupuesto (valor total)",
-    "budgetHint": "Tú decides cómo lo ven las agencias.",
-    "budgetDisplay": "Cómo mostrarlo a las agencias",
+    "budgetHint": "Tú decides cómo lo ven las industrias.",
+    "budgetDisplay": "Cómo mostrarlo a las industrias",
     "budgetDisplays": {
       "exact": "Mostrar el valor exacto",
       "up_to": "Mostrar \"hasta R$ X\"",
@@ -75,19 +75,19 @@
     "respondTime": "Hora",
     "audience": "Quién la ve",
     "audiences": {
-      "my_agencies": "Agencias que ya me atienden",
-      "selected": "Agencias elegidas",
-      "all": "Todas las agencias de la plataforma"
+      "my_agencies": "Industrias que ya me atienden",
+      "selected": "Industrias elegidas",
+      "all": "Todas las industrias de la plataforma"
     },
     "audienceHints": {
-      "my_agencies": "Solo la agencia que atiende tu marca hoy.",
-      "selected": "Solo las agencias que marques. No saben a quién más se invitó.",
-      "all": "Cualquier agencia activa de la plataforma la ve y puede proponer."
+      "my_agencies": "Solo la industria que atiende tu marca hoy.",
+      "selected": "Solo las industrias que marques. No saben a quién más se invitó.",
+      "all": "Cualquier industria activa de la plataforma la ve y puede proponer."
     },
-    "agencies": "Agencias",
-    "noAgencies": "Ninguna agencia activa.",
+    "agencies": "Industrias",
+    "noAgencies": "Ninguna industria activa.",
     "agencyServes": "{name} (te atiende)",
-    "ownerHint": "Al publicar, se avisa a las agencias del público. Los Heros ven la convocatoria sin el presupuesto.",
+    "ownerHint": "Al publicar, se avisa a las industrias del público. Los Heros ven la convocatoria sin el presupuesto.",
     "staffHint": "El dueño de la marca aprueba antes de publicar.",
     "saveDraft": "Guardar borrador",
     "publish": "Publicar convocatoria",
@@ -100,10 +100,10 @@
       "respondAfterPeriod": "El plazo de propuestas debe ser hasta el fin del período.",
       "deliverables": "Agrega al menos una entrega.",
       "networks": "Marca al menos una red.",
-      "agencies": "Elige al menos una agencia.",
+      "agencies": "Elige al menos una industria.",
       "maxHeroes": "Para valor por Hero, indica el máximo de Heros (de 1 a 50)."
     },
-    "published": "Convocatoria publicada. Se avisó a las agencias.",
+    "published": "Convocatoria publicada. Se avisó a las industrias.",
     "toOwner": "Enviada al dueño para aprobar.",
     "saved": "Borrador guardado."
   },
@@ -122,7 +122,7 @@
     "withdraw": "Retirar pedido",
     "cancel": "Cancelar convocatoria",
     "confirmCancelTitle": "¿Cancelar la convocatoria?",
-    "confirmCancel": "Desaparece para las agencias y no recibe más propuestas.",
+    "confirmCancel": "Desaparece para las industrias y no recibe más propuestas.",
     "back": "Volver",
     "done": {
       "approve": "Convocatoria publicada.",
@@ -132,7 +132,7 @@
   },
   "compare": {
     "empty": "Aún no hay propuestas",
-    "emptyHint": "Se avisó a las agencias del público. Las propuestas aparecen aquí.",
+    "emptyHint": "Se avisó a las industrias del público. Las propuestas aparecen aquí.",
     "title": "{count, plural, one {# propuesta recibida} other {# propuestas recibidas}}",
     "hint": "Compara lado a lado. Desliza para ver las demás.",
     "amount": "Valor",
@@ -157,8 +157,8 @@
   "decide": {
     "pickOne": "Elige al menos una propuesta.",
     "title": "Decisión",
-    "hint": "Marca las ganadoras y contrata. Para cada una nace la campaña con todo completo; se avisa a las demás agencias.",
-    "note": "Mensaje a las agencias (opcional)",
+    "hint": "Marca las ganadoras y contrata. Para cada una nace la campaña con todo completo; se avisa a las demás industrias.",
+    "note": "Mensaje a las industrias (opcional)",
     "contract": "{count, plural, one {Contratar la elegida} other {Contratar las # elegidas}}",
     "close": "Cerrar sin contratar",
     "closeWithAgreed": "Cerrar con los acuerdos",
@@ -166,7 +166,7 @@
     "confirmContractTitle": "¿Contratar las elegidas?",
     "confirmContract": "El valor y las entregas se congelan, se crean las campañas y la convocatoria se cierra a nuevas propuestas.",
     "confirmCloseTitle": "¿Cerrar la convocatoria?",
-    "confirmClose": "Las propuestas abiertas se cierran y se avisa a las agencias.",
+    "confirmClose": "Las propuestas abiertas se cierran y se avisa a las industrias.",
     "back": "Volver",
     "confirm": "Contratar",
     "done": {
@@ -180,7 +180,7 @@
     "deliverBy": "Entrega hasta",
     "deliverables": "Entregas",
     "note": "Mensaje",
-    "sideAgency": "Agencia",
+    "sideAgency": "Industria",
     "sideBrand": "Marca",
     "action": {
       "propose": "Propuesta",
@@ -198,7 +198,7 @@
     "termsRequired": "Indica el valor y al menos una entrega.",
     "hideHistory": "Ocultar negociación",
     "showHistory": "Ver negociación ({count})",
-    "ownerReview": "{name} preparó una respuesta. Aprueba para enviarla a la agencia.",
+    "ownerReview": "{name} preparó una respuesta. Aprueba para enviarla a la industria.",
     "reviewNote": "Nota (obligatoria para devolver)",
     "approveRound": "Aprobar y enviar",
     "returnRound": "Devolver",
@@ -232,7 +232,7 @@
     "description": "Necesidades publicadas por las marcas. Arma la propuesta con tu casting.",
     "unavailable": "Pedidos de marcas no disponibles",
     "empty": "Aún no hay pedidos",
-    "emptyHint": "Cuando una marca publique una convocatoria para tu agencia, aparece aquí y en la campana.",
+    "emptyHint": "Cuando una marca publique una convocatoria para tu industria, aparece aquí y en la campana.",
     "proposalBadge": {
       "yourTurn": "Tu turno",
       "withBrand": "Con la marca",
@@ -246,7 +246,7 @@
     "respondUntil": "propuestas hasta {date}",
     "calendarTitle": "Pedido: {title}",
     "calendarSubtitle": "{brand} · propuestas hasta {date}",
-    "privacy": "Solo tu agencia ve tu propuesta. La marca no muestra a quién más invitó.",
+    "privacy": "Solo tu industria ve tu propuesta. La marca no muestra a quién más invitó.",
     "interestsTitle": "Heros interesados ({count})",
     "interestsEmpty": "Ningún Hero mostró interés todavía.",
     "yourProposal": "Tu propuesta",
@@ -291,14 +291,14 @@
   },
   "brand": {
     "tabsLabel": "Oportunidades",
-    "tabOffers": "Ofrecidas por la agencia",
+    "tabOffers": "Ofrecidas por la industria",
     "tabCalls": "Mis convocatorias",
     "title": "Mis convocatorias",
-    "description": "Publica lo que necesitas y recibe propuestas de agencias con Heros.",
+    "description": "Publica lo que necesitas y recibe propuestas de industrias con Heros.",
     "new": "Nueva convocatoria",
     "unavailable": "Convocatorias no disponibles",
     "empty": "Aún no hay convocatorias",
-    "emptyHint": "Cuenta la necesidad de la marca (entregas, público, presupuesto) y las agencias responden con Heros.",
+    "emptyHint": "Cuenta la necesidad de la marca (entregas, público, presupuesto) y las industrias responden con Heros.",
     "badgeApproval": "Esperando al dueño",
     "badgeYourTurn": "{count, plural, one {# en tu turno} other {# en tu turno}}",
     "badgeOwner": "Ronda esperando al dueño",
@@ -306,7 +306,7 @@
     "agreed": "{count, plural, one {# acuerdo} other {# acuerdos}}",
     "respondUntil": "Propuestas hasta {date}",
     "newTitle": "Nueva convocatoria",
-    "newDescription": "Las agencias responden con Heros, entregas y valor. Tú comparas y eliges.",
+    "newDescription": "Las industrias responden con Heros, entregas y valor. Tú comparas y eliges.",
     "editTitle": "Editar convocatoria",
     "publishedAt": "Publicada el {date}",
     "edit": "Editar",
@@ -318,16 +318,16 @@
     "deadlineHint": "El plazo de propuestas terminó. Aún puedes negociar y elegir las ganadoras.",
     "whoSees": "Quién la ve",
     "audience": {
-      "my_agencies": "Agencias que ya atienden tu marca.",
-      "selected": "Solo las agencias elegidas:",
-      "all": "Todas las agencias de la plataforma."
+      "my_agencies": "Industrias que ya atienden tu marca.",
+      "selected": "Solo las industrias elegidas:",
+      "all": "Todas las industrias de la plataforma."
     },
     "fromCall": "Esta campaña nació del acuerdo en la convocatoria \"{title}\". El valor acordado está bloqueado.",
     "seeCall": "Ver convocatoria"
   },
   "talent": {
     "title": "Pedidos de marcas",
-    "hint": "Marcas buscando Heros a través de tu agencia. Muestra interés y la agencia arma la propuesta.",
+    "hint": "Marcas buscando Heros a través de tu industria. Muestra interés y la industria arma la propuesta.",
     "status": {
       "open": "Abierta",
       "expired": "Plazo cerrado",
@@ -339,11 +339,11 @@
     "interest": "Me interesa",
     "editInterest": "Editar mi mensaje",
     "dialogTitle": "Me interesa",
-    "dialogHint": "Tu agencia recibe el aviso. La marca no habla directo contigo.",
+    "dialogHint": "Tu industria recibe el aviso. La marca no habla directo contigo.",
     "back": "Volver",
-    "send": "Enviar a la agencia",
-    "message": "Mensaje para la agencia (opcional)",
+    "send": "Enviar a la industria",
+    "message": "Mensaje para la industria (opcional)",
     "messagePlaceholder": "Ej.: Ya uso el producto y tengo fechas libres.",
-    "interestSent": "Interés enviado a tu agencia."
+    "interestSent": "Interés enviado a tu industria."
   }
 }

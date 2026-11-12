@@ -27,7 +27,7 @@
       "cta": "Responder proposta"
     },
     "answerCounter": {
-      "title": "Responder à contraproposta da agência",
+      "title": "Responder à contraproposta da indústria",
       "hint": "Aceite, faça outra proposta ou recuse.",
       "cta": "Ver contraproposta"
     },
@@ -119,19 +119,19 @@
   },
   "waits": {
     "waitAgencyOffer": {
-      "title": "Aguardando a agência responder à sua proposta"
+      "title": "Aguardando a indústria responder à sua proposta"
     },
     "waitBrandOffer": {
       "title": "Aguardando a marca responder à contraproposta"
     },
     "waitAdminOffer": {
-      "title": "Aguardando o Adm da agência responder à proposta da marca"
+      "title": "Aguardando o Adm da indústria responder à proposta da marca"
     },
     "waitOwnerCounter": {
       "title": "Aguardando o dono da marca responder à contraproposta"
     },
     "waitAgencyProposal": {
-      "title": "A agência está montando a proposta com os Heros"
+      "title": "A indústria está montando a proposta com os Heros"
     },
     "waitHeroesAnswer": {
       "title": "Aguardando {count, plural, one {# Hero} other {# Heros}} responder ao convite",
@@ -147,7 +147,7 @@
       "title": "Aguardando o Adm definir as condições de pagamento"
     },
     "waitTerms": {
-      "title": "Aguardando a agência enviar os termos"
+      "title": "Aguardando a indústria enviar os termos"
     },
     "waitManagerTerms": {
       "title": "Aguardando um gestor enviar os termos"
@@ -166,13 +166,13 @@
       "title": "Aguardando {names} aceitar os termos"
     },
     "waitContract": {
-      "title": "Aguardando a agência confirmar a contratação"
+      "title": "Aguardando a indústria confirmar a contratação"
     },
     "waitManagerContract": {
       "title": "Aguardando um gestor confirmar a contratação"
     },
     "waitDeliverablesPlan": {
-      "title": "Aguardando a agência cadastrar as entregas"
+      "title": "Aguardando a indústria cadastrar as entregas"
     },
     "waitHeroDeliverable": {
       "title": "Aguardando {hero} enviar {item}"
@@ -187,20 +187,20 @@
       "title": "Aguardando a marca aprovar {item}"
     },
     "waitAgencyClose": {
-      "title": "Aguardando a agência concluir {item}"
+      "title": "Aguardando a indústria concluir {item}"
     },
     "waitAgencyFinish": {
-      "title": "Aguardando a agência encerrar a campanha"
+      "title": "Aguardando a indústria encerrar a campanha"
     },
     "waitManagerFinish": {
       "title": "Aguardando um gestor encerrar a campanha"
     },
     "waitProposalHero": {
-      "title": "A agência está fechando a proposta com a marca",
+      "title": "A indústria está fechando a proposta com a marca",
       "hint": "Você recebe os termos para aceitar quando a campanha for confirmada."
     },
     "waitHeroTalk": {
-      "title": "Aguardando a agência conversar com você"
+      "title": "Aguardando a indústria conversar com você"
     }
   },
   "done": {

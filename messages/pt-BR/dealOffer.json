@@ -1,7 +1,7 @@
 {
   "agencyTitle": "Proposta da marca",
-  "brandTitle": "Negociação com a agência",
-  "brandCounterTitle": "Contraproposta da agência",
+  "brandTitle": "Negociação com a indústria",
+  "brandCounterTitle": "Contraproposta da indústria",
   "agreedTitle": "Termos acordados",
   "status": {
     "agency": {
@@ -13,11 +13,11 @@
       "closed": "A negociação não vale mais nesta etapa do negócio."
     },
     "brand": {
-      "brand_proposal": "Aguardando a agência responder à sua proposta.",
-      "brand_countered": "Sua contraproposta foi enviada. Aguardando a agência.",
-      "brand_declined": "Você recusou a contraproposta. Aguardando a agência.",
-      "agency_countered": "A agência fez uma contraproposta: aceite, contraproponha ou recuse.",
-      "agreed": "Termos acordados com a agência.",
+      "brand_proposal": "Aguardando a indústria responder à sua proposta.",
+      "brand_countered": "Sua contraproposta foi enviada. Aguardando a indústria.",
+      "brand_declined": "Você recusou a contraproposta. Aguardando a indústria.",
+      "agency_countered": "A indústria fez uma contraproposta: aceite, contraproponha ou recuse.",
+      "agreed": "Termos acordados com a indústria.",
       "closed": "A negociação não vale mais nesta etapa da campanha."
     }
   },
@@ -52,15 +52,15 @@
   },
   "declineDialog": {
     "title": "Recusar a contraproposta?",
-    "hint": "A campanha segue aberta: a agência pode mandar outra proposta.",
+    "hint": "A campanha segue aberta: a indústria pode mandar outra proposta.",
     "reason": "Motivo (opcional)"
   },
   "noValueHint": "Sem valor da marca para aceitar: faça uma contraproposta.",
-  "ownerOnly": "Só o dono da marca responde à agência.",
+  "ownerOnly": "Só o dono da marca responde à indústria.",
   "confirmNext": "Agora é só confirmar a campanha no card “Confirmar campanha”.",
   "history": {
     "title": "Histórico",
-    "agency": "Agência",
+    "agency": "Indústria",
     "brand": "Marca",
     "action": {
       "accept": "Aceitou",

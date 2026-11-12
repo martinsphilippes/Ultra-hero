@@ -140,7 +140,7 @@
     "sender": "Sender",
     "sent_on": "Date sent",
     "follow_up_on": "Follow-up date",
-    "follow_up_hint": "Goes on the agency calendar (only the team sees it)."
+    "follow_up_hint": "Goes on the industry calendar (only the team sees it)."
   },
   "modes": {
     "online": "Online",
@@ -366,7 +366,7 @@
         "points": {
           "a": "Ask about availability, interest in events, the cities they can be in and how much notice they need.",
           "b": "Go over the participation formats: attendance, coverage, stories, reels, interviews, content before or after the event.",
-          "c": "Opportunities can come from a brand or from the holding company's relationships with PR agencies and partners.",
+          "c": "Opportunities can come from a brand or from the holding company's relationships with PR industries and partners.",
           "d": "Stress punctuality, professional conduct, courtesy with staff and guests and keeping commitments."
         },
         "important": "No appearance is confirmed before alignment of brand, scope, fees, schedule and a formal agreement."

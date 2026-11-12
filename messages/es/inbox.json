@@ -2,7 +2,7 @@
   "bell": "Avisos",
   "bellUnread": "Avisos sin leer: {count}",
   "title": "Avisos",
-  "sheetDescription": "Los avisos de tu agencia, de tu marca o del Portal del Hero llegan aquí.",
+  "sheetDescription": "Los avisos de tu industria, de tu marca o del Portal del Hero llegan aquí.",
   "pageDescription": "Todo lo que te pasó en los portales de gestión.",
   "seeAll": "Ver todos",
   "markAll": "Marcar todas como leídas",
@@ -17,7 +17,7 @@
   "kinds": {
     "member_joined": {
       "title": "Nueva persona en el equipo",
-      "body": "{name} entró al equipo de la agencia."
+      "body": "{name} entró al equipo de la industria."
     },
     "brand_member_joined": {
       "title": "Nueva persona en la marca",
@@ -40,12 +40,12 @@
       "body": "Ahora eres responsable de {deal}."
     },
     "campaign_status_changed": {
-      "title": "{status, select, room_opened {Sala del proyecto abierta} feedback_requested {Cuéntanos cómo fue} feedback_received {Nueva valoración del cliente} clipping_ready {Clipping del proyecto listo} shared {Nueva campaña de la agencia} other {Campaña actualizada}}",
-      "body": "{status, select, room_opened {La sala de {deal} está abierta: conversación, normas y jornada en un solo lugar.} feedback_requested {Da una nota de 0 a 10 a {deal}.} feedback_received {El cliente dio nota {step} a {deal}.} clipping_ready {{deal} concluyó: mira el clipping y la guía de uso.} shared {La agencia compartió {deal} contigo. Síguelo aquí.} other {{deal} cambió de situación.}}"
+      "title": "{status, select, room_opened {Sala del proyecto abierta} feedback_requested {Cuéntanos cómo fue} feedback_received {Nueva valoración del cliente} clipping_ready {Clipping del proyecto listo} shared {Nueva campaña de la industria} other {Campaña actualizada}}",
+      "body": "{status, select, room_opened {La sala de {deal} está abierta: conversación, normas y jornada en un solo lugar.} feedback_requested {Da una nota de 0 a 10 a {deal}.} feedback_received {El cliente dio nota {step} a {deal}.} clipping_ready {{deal} concluyó: mira el clipping y la guía de uso.} shared {La industria compartió {deal} contigo. Síguelo aquí.} other {{deal} cambió de situación.}}"
     },
     "proposal_received": {
-      "title": "{status, select, accepted {Propuesta aceptada} countered {Contrapropuesta de la agencia} other {Propuesta recibida}}",
-      "body": "{status, select, accepted {La agencia aceptó tu propuesta de {deal}. Términos acordados.} countered {La agencia hizo una contrapropuesta para {deal}: acepta, contrapropón o rechaza.} other {La agencia envió la propuesta de {deal}.}}"
+      "title": "{status, select, accepted {Propuesta aceptada} countered {Contrapropuesta de la industria} other {Propuesta recibida}}",
+      "body": "{status, select, accepted {La industria aceptó tu propuesta de {deal}. Términos acordados.} countered {La industria hizo una contrapropuesta para {deal}: acepta, contrapropón o rechaza.} other {La industria envió la propuesta de {deal}.}}"
     },
     "proposal_decided": {
       "title": "{status, select, accepted {La marca aceptó} countered {Contrapropuesta de la marca} declined {La marca rechazó} other {Respuesta de la marca}}",
@@ -101,7 +101,7 @@
     },
     "commercial_date_published": {
       "title": "Nueva fecha comercial",
-      "body": "La agencia publicó una oportunidad para el {date}."
+      "body": "La industria publicó una oportunidad para el {date}."
     },
     "relationship_alert": {
       "title": "Sin contacto hace tiempo",
@@ -137,11 +137,11 @@
     },
     "invoice_reviewed": {
       "title": "{status, select, approve {Factura aprobada} other {Factura rechazada}}",
-      "body": "{status, select, approve {La agencia aprobó la factura de {deal}.} other {La agencia rechazó la factura de {deal}. Mira el motivo y envía otra.}}"
+      "body": "{status, select, approve {La industria aprobó la factura de {deal}.} other {La industria rechazó la factura de {deal}. Mira el motivo y envía otra.}}"
     },
     "payout_scheduled": {
       "title": "Pago programado",
-      "body": "La agencia programó el pago de {deal}. Mira la fecha en Ganancias."
+      "body": "La industria programó el pago de {deal}. Mira la fecha en Ganancias."
     },
     "budget_exceeded": {
       "title": "Presupuesto excedido",
@@ -153,7 +153,7 @@
     },
     "deliverable_comment": {
       "title": "Comentario en la entrega",
-      "body": "{status, select, brand {La marca comentó una entrega de {deal}.} other {La agencia comentó una entrega de {deal}.}}"
+      "body": "{status, select, brand {La marca comentó una entrega de {deal}.} other {La industria comentó una entrega de {deal}.}}"
     },
     "task_due_soon": {
       "title": "Plazo cerca",
@@ -197,7 +197,7 @@
     },
     "budget_change": {
       "title": "Cambio de presupuesto",
-      "body": "{status, select, review {Tu equipo pidió cambiar el presupuesto de {deal}: revísalo y envíalo a la agencia.} returned {El dueño devolvió la solicitud de presupuesto de {deal}.} sent {El dueño envió a la agencia la solicitud de presupuesto de {deal}.} requested {La marca pidió cambiar el presupuesto de {deal}.} withdrawn {La marca retiró la solicitud de presupuesto de {deal}.} declined {La agencia rechazó la solicitud de presupuesto de {deal}. El presupuesto actual sigue vigente.} proposed {La agencia aceptó revisar el presupuesto de {deal} y propuso un reajuste: el dueño confirma o rechaza.} confirmed {La marca confirmó el nuevo presupuesto de {deal}. Mira las tareas del reajuste.} rejected {La marca rechazó el reajuste de {deal}.} other {Novedad en la solicitud de presupuesto de {deal}.}}"
+      "body": "{status, select, review {Tu equipo pidió cambiar el presupuesto de {deal}: revísalo y envíalo a la industria.} returned {El dueño devolvió la solicitud de presupuesto de {deal}.} sent {El dueño envió a la industria la solicitud de presupuesto de {deal}.} requested {La marca pidió cambiar el presupuesto de {deal}.} withdrawn {La marca retiró la solicitud de presupuesto de {deal}.} declined {La industria rechazó la solicitud de presupuesto de {deal}. El presupuesto actual sigue vigente.} proposed {La industria aceptó revisar el presupuesto de {deal} y propuso un reajuste: el dueño confirma o rechaza.} confirmed {La marca confirmó el nuevo presupuesto de {deal}. Mira las tareas del reajuste.} rejected {La marca rechazó el reajuste de {deal}.} other {Novedad en la solicitud de presupuesto de {deal}.}}"
     },
     "payment_reported": {
       "title": "Pago informado",
@@ -205,7 +205,7 @@
     },
     "payment_reviewed": {
       "title": "{status, select, confirmed {Pago confirmado} other {Pago no confirmado}}",
-      "body": "{status, select, confirmed {La agencia confirmó la recepción del pago de {deal}.} other {La agencia no confirmó el pago de {deal}. Mira el motivo e infórmalo de nuevo.}}"
+      "body": "{status, select, confirmed {La industria confirmó la recepción del pago de {deal}.} other {La industria no confirmó el pago de {deal}. Mira el motivo e infórmalo de nuevo.}}"
     },
     "payment_due": {
       "title": "{status, select, late {Pago vencido} today {El pago vence hoy} other {Pago por vencer}}",
@@ -213,7 +213,7 @@
     },
     "payment_plan": {
       "title": "Cuotas del pago",
-      "body": "La agencia dividió el pago de {deal} en {step} cuota(s). Mira los vencimientos."
+      "body": "La industria dividió el pago de {deal} en {step} cuota(s). Mira los vencimientos."
     },
     "roadmap_due_soon": {
       "title": "Etapa vence el próximo día hábil",
@@ -236,12 +236,12 @@
       "body": "{name} registró {brand} y te dio el acceso de Dueño. Abre el portal de la marca."
     },
     "agency_access_requested": {
-      "title": "Solicitud de acceso a la agencia",
-      "body": "{name} ({job}) se registró con el e-mail de la agencia y espera tu autorización."
+      "title": "Solicitud de acceso a la industria",
+      "body": "{name} ({job}) se registró con el e-mail de la industria y espera tu autorización."
     },
     "agency_access_decided": {
       "title": "{approved, select, true {Acceso autorizado} other {Acceso no autorizado}}",
-      "body": "{approved, select, true {Entraste en {agency}. Abre el portal de la agencia.} other {Los administradores de {agency} no autorizaron tu solicitud.}}"
+      "body": "{approved, select, true {Entraste en {agency}. Abre el portal de la industria.} other {Los administradores de {agency} no autorizaron tu solicitud.}}"
     },
     "casting_access_requested": {
       "title": "Solicitud de contacto del casting",
@@ -249,7 +249,7 @@
     },
     "casting_access_decided": {
       "title": "{approved, select, true {Contacto liberado} other {Contacto no liberado}}",
-      "body": "{approved, select, true {Ya puedes ver el contacto y los valores de {talent} en Casting abierto.} other {La agencia no liberó el contacto de {talent}.}}"
+      "body": "{approved, select, true {Ya puedes ver el contacto y los valores de {talent} en Casting abierto.} other {La industria no liberó el contacto de {talent}.}}"
     },
     "brand_approval_requested": {
       "title": "Marca nueva para aprobar",
@@ -265,7 +265,7 @@
     },
     "profile_claim_decided": {
       "title": "{approved, select, true {Tu perfil fue liberado} other {Perfil no confirmado}}",
-      "body": "{approved, select, true {Ahora entras como {talent}. Abre el Portal del Hero.} other {La agencia no confirmó que eres {talent}.}}"
+      "body": "{approved, select, true {Ahora entras como {talent}. Abre el Portal del Hero.} other {La industria no confirmó que eres {talent}.}}"
     },
     "brand_login_requested": {
       "title": "Solicitud de acceso de marca",
@@ -309,7 +309,7 @@
     },
     "account_access_requested": {
       "title": "Registro esperando aprobación",
-      "body": "{name} pidió acceso con el {profile, select, hero {perfil Hero} brand {perfil Marca} agency {perfil Agencia} professional {perfil Profesional} seller {perfil Proveedor} staff {perfil Equipo de proyecto} admin {perfil Administración} other {perfil de usuario de la app}}. Abre la fila de la Presidencia."
+      "body": "{name} pidió acceso con el {profile, select, hero {perfil Hero} brand {perfil Marca} agency {perfil Industria} professional {perfil Profesional} seller {perfil Proveedor} staff {perfil Equipo de proyecto} admin {perfil Administración} other {perfil de usuario de la app}}. Abre la fila de la Presidencia."
     },
     "account_access_decided": {
       "title": "{decision, select, approved {Registro aprobado} other {Registro no aprobado}}",

@@ -2,7 +2,7 @@
   "roles": {
     "consumer": "Consumer",
     "admin": "Admin",
-    "agency": "Agency",
+    "agency": "Industry",
     "brand": "Brand",
     "hero": "Hero",
     "seller": "Supplier",
@@ -15,9 +15,9 @@
     "roleHints": {
       "consumer": "Just creates the account and opens the app.",
       "admin": "Full control of Ultra. Valid for 48 hours at most.",
-      "agency": "The person creates the agency on first access and becomes Admin.",
-      "brand": "The person creates the brand on first access and becomes Owner. No agency needed.",
-      "hero": "New hero (pending approval), joining a hero's team, or a hero already in an agency's casting.",
+      "agency": "The person creates the industry on first access and becomes Admin.",
+      "brand": "The person creates the brand on first access and becomes Owner. No industry needed.",
+      "hero": "New hero (pending approval), joining a hero's team, or a hero already in an industry's casting.",
       "seller": "The person creates the operation on first access (or joins an existing one).",
       "professional": "The person creates the professional profile on first access."
     },
@@ -65,16 +65,16 @@
       "title": "Invitation type",
       "new": "New hero",
       "team": "Join a hero team",
-      "casting": "Hero already in an agency casting",
+      "casting": "Hero already in an industry casting",
       "hints": {
         "new": "The public page starts pending approval and whoever accepts becomes the lead.",
         "team": "Hero without a lead: the person becomes the lead. With a lead: joins as a team member.",
-        "casting": "Gives access to the hero profile in the agency casting (opportunities, calendar, earnings)."
+        "casting": "Gives access to the hero profile in the industry casting (opportunities, calendar, earnings)."
       }
     },
     "heroTalent": {
       "pick": "Hero in the casting",
-      "hint": "The list shows heroes in agency castings who have no login yet.",
+      "hint": "The list shows heroes in industry castings who have no login yet.",
       "none": "No casting hero without a login right now.",
       "withPage": "With a public page",
       "withoutPage": "No public page yet"
@@ -119,15 +119,15 @@
       "psychologist": "Psychologist"
     },
     "agency": {
-      "title": "Your agency",
-      "name": "Agency name",
+      "title": "Your industry",
+      "name": "Industry name",
       "contactEmail": "Contact email",
       "contactEmailHint": "Optional. Shown to brands.",
-      "roleNote": "You will be the agency Admin.",
-      "create": "Create agency",
-      "doneTitle": "Agency created",
+      "roleNote": "You will be the industry Admin.",
+      "create": "Create industry",
+      "doneTitle": "Industry created",
       "doneText": "Build your roster and serve brands from the portal.",
-      "go": "Go to the agency"
+      "go": "Go to the industry"
     },
     "brand": {
       "title": "Your brand",
@@ -136,12 +136,12 @@
       "segmentHint": "Optional. E.g. drinks, fashion, supplements.",
       "site": "Brand website",
       "siteHint": "Address with https (it can be Instagram).",
-      "withAgency": "The brand starts served by the agency {agency}.",
-      "noAgency": "No agency needed: you can publish calls to every agency.",
+      "withAgency": "The brand starts served by the industry {agency}.",
+      "noAgency": "No industry needed: you can publish calls to every industry.",
       "roleNote": "You will be the brand Owner.",
       "create": "Create brand",
       "doneTitle": "Brand created",
-      "doneText": "Publish your first call to agencies.",
+      "doneText": "Publish your first call to industries.",
       "go": "Go to the brand"
     },
     "seller": {
@@ -245,13 +245,13 @@
     "cancel": "Cancel",
     "transferConfirm": "Transfer",
     "noAgency": {
-      "title": "No agency yet",
-      "text": "Publish a call to every agency or wait for an agency invite.",
+      "title": "No industry yet",
+      "text": "Publish a call to every industry or wait for an industry invite.",
       "publishCall": "Publish call"
     }
   },
   "agency": {
-    "linkRole": "Agency link",
+    "linkRole": "Industry link",
     "newBrandRole": "Brand owner",
     "linkSent": "Link request created",
     "newBrandSent": "New brand invite created",
@@ -271,7 +271,7 @@
     "emailed": "We sent the link to {email}. Copy it too if you like.",
     "notEmailed": "Copy the link and send it to the person: it won't show again.",
     "link": "Invite link",
-    "brandHint": "New brand: the person creates the brand and it starts with this agency. Brand owner on Ultra: gets a link request to accept.",
+    "brandHint": "New brand: the person creates the brand and it starts with this industry. Brand owner on Ultra: gets a link request to accept.",
     "heroHint": "Hero without a public page: the page starts pending and the person becomes the lead. Page without a lead: the person takes over.",
     "noTalents": "Every hero in the casting already has a login.",
     "talent": "Casting hero",
@@ -289,7 +289,7 @@
   "paused": {
     "note": "Invitations are turned off right now",
     "hint": "Invitations already sent remain valid.",
-    "adminBanner": "Invitations paused: nobody creates new invitations; the ones already sent remain valid. People sign up on their own as Hero, Brand or Agency.",
+    "adminBanner": "Invitations paused: nobody creates new invitations; the ones already sent remain valid. People sign up on their own as Hero, Brand or Industry.",
     "adminTurnOn": "Turn back on in Settings",
     "selfSignupsLink": "See new sign-ups"
   },
@@ -299,8 +299,8 @@
     "notNow": "Not now",
     "alreadyText": "You already have this profile.",
     "errors": {
-      "profile_conflict": "This email is already used by {kind, select, hero {a Hero account} brand {a Brand account} agency {an Agency account} other {another profile account}}. Use another email.",
-      "agency_member_elsewhere": "You are already part of an agency.",
+      "profile_conflict": "This email is already used by {kind, select, hero {a Hero account} brand {a Brand account} agency {an Industry account} other {another profile account}}. Use another email.",
+      "agency_member_elsewhere": "You are already part of an industry.",
       "brand_already_owned": "You already own a brand.",
       "has_hero": "You already have a hero.",
       "rate_limited": "Too many attempts today. Try again tomorrow.",
@@ -321,21 +321,21 @@
       "text": "Hire heroes and run campaigns.",
       "step1": "Enter the brand name and website.",
       "step2": "You become the brand Owner.",
-      "step3": "Publish calls to agencies.",
+      "step3": "Publish calls to industries.",
       "go": "Go to the brand"
     },
     "agency": {
-      "title": "Agency sign-up",
+      "title": "Industry sign-up",
       "text": "Represent heroes and manage deals.",
-      "step1": "Enter the agency name.",
-      "step2": "You become the agency Admin.",
+      "step1": "Enter the industry name.",
+      "step2": "You become the industry Admin.",
       "step3": "Build your roster and serve brands.",
-      "go": "Go to the agency"
+      "go": "Go to the industry"
     }
   },
   "selfSignups": {
     "title": "New sign-ups",
-    "description": "Agencies, brands and heroes created without an invitation in the last 14 days.",
+    "description": "Industries, brands and heroes created without an invitation in the last 14 days.",
     "back": "Home",
     "empty": "No new sign-ups.",
     "unavailable": "List unavailable right now.",
@@ -343,7 +343,7 @@
     "open": "View and suspend",
     "approve": "Approve hero",
     "kinds": {
-      "agency": "Agency",
+      "agency": "Industry",
       "brand": "Brand",
       "hero": "Hero"
     },

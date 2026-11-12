@@ -1,6 +1,6 @@
 {
   "meta": {
-    "eyebrow": "Agency casting",
+    "eyebrow": "Industry casting",
     "home": "Home",
     "consent": "Consent",
     "kit": "Media kit",
@@ -15,7 +15,7 @@
   "home": {
     "unavailable": "Hero Portal being updated",
     "none": "You are not part of a roster yet",
-    "noneHint": "When an agency adds you to its casting, opportunities, tasks and earnings show up here.",
+    "noneHint": "When an industry adds you to its casting, opportunities, tasks and earnings show up here.",
     "agency": "{agency} roster",
     "agencyWithManager": "{agency} roster · managed by {manager}",
     "availabilityTitle": "Your availability",
@@ -24,7 +24,7 @@
       "limited": "Limited schedule",
       "unavailable": "Unavailable"
     },
-    "availabilityHint": "The agency updates your availability with you.",
+    "availabilityHint": "The industry updates your availability with you.",
     "kitTitle": "Media kit",
     "kitActive": "Link active until {date} · {count, plural, =0 {no visits} one {# visit} other {# visits}}",
     "kitInactive": "No active public link.",
@@ -33,7 +33,7 @@
     "metricsEmpty": "No networks declared yet. Add them in the media kit.",
     "followers": "{count} followers",
     "followersUnknown": "Followers: not provided",
-    "inboxTitle": "Agency notices",
+    "inboxTitle": "Industry notices",
     "inboxAll": "See all",
     "inboxEmpty": "No notices yet.",
     "opportunitiesTitle": "Opportunities",
@@ -54,7 +54,7 @@
     "publishAt": "publish on {date}",
     "eventsToday": "{count, plural, one {# event today} other {# events today}}",
     "payoutsTitle": "Payouts",
-    "payoutsHint": "Status informed by the agency. Internal record, no real payment.",
+    "payoutsHint": "Status informed by the industry. Internal record, no real payment.",
     "payoutsNone": "No payout recorded.",
     "payoutsAppHint": "See the amounts on the website.",
     "payoutsAll": "See earnings"
@@ -64,9 +64,9 @@
     "stateOn": "Consent active",
     "stateOff": "No consent",
     "stateRevoked": "Consent revoked",
-    "intro": "For the agency to present you to brands, we need your consent (LGPD). With it:",
-    "item1": "the agency can create the public link to your media kit, showing only the fields you choose;",
-    "item2": "you can appear in the catalog that the agency's brands browse;",
+    "intro": "For the industry to present you to brands, we need your consent (LGPD). With it:",
+    "item1": "the industry can create the public link to your media kit, showing only the fields you choose;",
+    "item2": "you can appear in the catalog that the industry's brands browse;",
     "item3": "your metrics always show as declared, with the date of each figure;",
     "item4": "you can revoke at any time: the link goes offline and you leave the catalog immediately.",
     "version": "Terms version: {version}",
@@ -78,7 +78,7 @@
     "confirmRevoke": "Revoke consent? The public kit link stops working and you leave the catalog.",
     "given": "Consent recorded.",
     "revoked": "Consent revoked. The kit link was turned off.",
-    "banner": "Without your consent, the agency cannot create the kit link or show you in the catalog.",
+    "banner": "Without your consent, the industry cannot create the kit link or show you in the catalog.",
     "bannerLink": "See the terms"
   },
   "kit": {
@@ -88,7 +88,7 @@
   },
   "errors": {
     "consent_required": "Accept the commercial use terms before creating the link.",
-    "demo_locked": "The public link is turned off for this agency.",
+    "demo_locked": "The public link is turned off for this industry.",
     "duplicate_network": "This network with this handle is already registered.",
     "too_many_networks": "Network limit reached.",
     "forbidden": "You do not have permission for this action.",
@@ -101,7 +101,7 @@
     "invalid_stage": "This campaign is already closed.",
     "file_missing": "Attach the file (link or document) to complete.",
     "invalid_url": "Enter a valid https link.",
-    "counteroffer_open": "You already have a counteroffer waiting for the agency.",
+    "counteroffer_open": "You already have a counteroffer waiting for the industry.",
     "checklist_incomplete": "Check every checklist item before sending.",
     "signature_required": "To accept, sign with your full name and tax ID (CPF/CNPJ).",
     "already_signed": "These terms have already been signed.",
@@ -110,13 +110,13 @@
     "name_required": "Type your full name (first and last name)."
   },
   "values": {
-    "demoLockedKit": "Example agency: the public link stays off (preview only)."
+    "demoLockedKit": "Example industry: the public link stays off (preview only)."
   },
   "opportunities": {
     "unavailable": "Opportunities being updated",
-    "intro": "Interest checks made by the agency. Replying is not a contract: the commercial confirmation is the agency's, with the brand.",
+    "intro": "Interest checks made by the industry. Replying is not a contract: the commercial confirmation is the industry's, with the brand.",
     "empty": "No opportunities yet.",
-    "emptyHint": "When the agency consults you for a campaign, it shows up here.",
+    "emptyHint": "When the industry consults you for a campaign, it shows up here.",
     "pendingTitle": "{count, plural, one {Awaiting your reply (#)} other {Awaiting your reply (#)}}",
     "restTitle": "Answered and in progress",
     "startsOn": "starts {date}",
@@ -145,25 +145,25 @@
       "deliverables": "Requested deliverables"
     },
     "deliverablesTitle": "Your planned deliverables",
-    "deliverablesNone": "The agency has not planned the deliverables yet.",
+    "deliverablesNone": "The industry has not planned the deliverables yet.",
     "dueAt": "due {date}",
     "feeTitle": "Proposed fee",
-    "feeHint": "Set by the agency for this campaign. Not a contract.",
-    "messagesTitle": "Conversation with the agency",
+    "feeHint": "Set by the industry for this campaign. Not a contract.",
+    "messagesTitle": "Conversation with the industry",
     "responded": {
-      "interested": "Interest recorded. The agency will follow up.",
+      "interested": "Interest recorded. The industry will follow up.",
       "declined": "Reply recorded. Thanks for letting us know.",
-      "talk_requested": "Talk request sent to the agency."
+      "talk_requested": "Talk request sent to the industry."
     },
     "respond": {
       "title": "Your reply",
       "hint": "Accept, decline (with the reason), ask for a call or make a date or amount counteroffer.",
       "note": "Note",
-      "noteHint": "Required when declining. Helps the agency propose something better.",
+      "noteHint": "Required when declining. Helps the industry propose something better.",
       "interested": "Accept",
       "talk": "I want to talk",
       "declined": "Decline",
-      "legal": "Replying is not a contractual commitment. Contract and terms are agreed with the agency.",
+      "legal": "Replying is not a contractual commitment. Contract and terms are agreed with the industry.",
       "reasonRequired": "Tell us why (at least 3 characters)."
     }
   },
@@ -192,7 +192,7 @@
     "unavailable": "Calendar being updated",
     "intro": "Confirmed campaigns, reply deadlines, deliverables and recordings. Your personal calendar stays out.",
     "empty": "Nothing this month.",
-    "emptyHint": "When the agency confirms a campaign with you, it shows up here."
+    "emptyHint": "When the industry confirms a campaign with you, it shows up here."
   },
   "tasks": {
     "unavailable": "Tasks being updated",
@@ -210,14 +210,14 @@
     "deliverablesHint": "Send each version by link; the brand approves or requests changes. Then record the publication and the proof."
   },
   "documents": {
-    "intro": "Briefs, approved scripts and proofs the agency shared with you. Read only."
+    "intro": "Briefs, approved scripts and proofs the industry shared with you. Read only."
   },
   "earnings": {
     "title": "Earnings",
     "description": "What you have to receive, what is coming and what was paid. Send the invoice for each payment here.",
     "unavailable": "Earnings being updated",
     "unavailableHint": "Earnings show up once the database is updated.",
-    "simulated": "Agency internal record: nothing is charged or transferred here.",
+    "simulated": "Industry internal record: nothing is charged or transferred here.",
     "appHint": "Amounts show on the website.",
     "groups": {
       "receivable": "To receive",
@@ -230,7 +230,7 @@
       "paid": "Already paid"
     },
     "count": "{count, plural, one {# payment} other {# payments}}",
-    "empty": "No payments yet. They show up when the agency confirms a hiring.",
+    "empty": "No payments yet. They show up when the industry confirms a hiring.",
     "listLabel": "Payments",
     "expected": "Expected by {date}",
     "scheduledFor": "Scheduled for {date}",
@@ -242,7 +242,7 @@
     "sendAnother": "Send another invoice",
     "viewInvoice": "View invoice",
     "file": "Invoice file (PDF or image)",
-    "fileHint": "Up to 20 MB. Only you and the agency admin can see it.",
+    "fileHint": "Up to 20 MB. Only you and the industry admin can see it.",
     "pickFile": "Pick the invoice file.",
     "badType": "Send PDF, JPG, PNG or WEBP.",
     "tooLarge": "The file is over 20 MB.",
@@ -252,7 +252,7 @@
     "cancel": "Cancel",
     "invoiceTitle": "Invoice · {deal}",
     "invoiceDocTitle": "Invoice · {deal}",
-    "invoiceSent": "Invoice sent. The agency will review it.",
+    "invoiceSent": "Invoice sent. The industry will review it.",
     "forecastOn": "Expected on {date} · awaiting contract",
     "payoutMethod": {
       "pix": "Paid by PIX",

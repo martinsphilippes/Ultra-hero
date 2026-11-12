@@ -64,10 +64,10 @@
   "brand": {
     "title": "Commercial proposal",
     "interested": "Your brand showed interest in this event.",
-    "notInterested": "Show interest before proposing: the agency is notified.",
+    "notInterested": "Show interest before proposing: the industry is notified.",
     "campaign": "Create a campaign from this event",
-    "call": "Open a call for agencies from this event",
-    "needsAgency": "To create a campaign, the brand needs an active agency. A call goes to several agencies.",
+    "call": "Open a call for industries from this event",
+    "needsAgency": "To create a campaign, the brand needs an active industry. A call goes to several industries.",
     "membersOnly": "Only the brand owner and team create proposals.",
     "heroesHidden": "Brands only see how many heroes are interested, never who."
   },
@@ -148,7 +148,7 @@
       "scheduled": "Scheduled",
       "published": "Published"
     },
-    "audienceAdmin": "Goes to every profile with a portal (heroes, brands and agencies).",
+    "audienceAdmin": "Goes to every profile with a portal (heroes, brands and industries).",
     "audienceAgency": "Goes to your network: team, brands you serve and heroes in your roster.",
     "form": {
       "kind": "Type",

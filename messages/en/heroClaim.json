@@ -1,6 +1,6 @@
 {
   "title": "Is this you?",
-  "body": "We found profiles in the Groscove casting with a name similar to yours. If one of them is you, request your profile: the agency checks and grants access, and you get in with everything already there.",
+  "body": "We found profiles in the Groscove casting with a name similar to yours. If one of them is you, request your profile: the industry checks and grants access, and you get in with everything already there.",
   "searchLabel": "Search by your stage name",
   "search": "Search",
   "none": "No profile found with that name.",
@@ -10,5 +10,5 @@
   "searchAgain": "Look for my profile in the casting",
   "pendingTitle": "Request sent",
   "pendingBody": "{agency} received your request for the profile {talent}. As soon as they confirm it's you, access is granted and you get a notice.",
-  "rejected": "The agency did not confirm the profile {talent}. If it was a mistake, talk to them; or create your Hero below."
+  "rejected": "The industry did not confirm the profile {talent}. If it was a mistake, talk to them; or create your Hero below."
 }

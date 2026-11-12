@@ -27,7 +27,7 @@
     "backToList": "Volver a la lista"
   },
   "errors": {
-    "profile_conflict": "Este correo ya lo usa {kind, select, hero {una cuenta de Hero} brand {una cuenta de Marca} agency {una cuenta de Agencia} other {una cuenta de otro perfil}}. Usa otro correo.",
+    "profile_conflict": "Este correo ya lo usa {kind, select, hero {una cuenta de Hero} brand {una cuenta de Marca} agency {una cuenta de Industria} other {una cuenta de otro perfil}}. Usa otro correo.",
     "forbidden": "No tienes permiso para esta acción.",
     "unauthenticated": "Sesión expirada. Inicia sesión de nuevo.",
     "invalid_input": "Datos inválidos. Revisa el formulario.",
@@ -65,9 +65,9 @@
     "creator_not_found": "Hero no encontrado.",
     "product_not_found": "Producto no encontrado.",
     "professional_profile_already_linked": "Esta cuenta ya está vinculada a otro perfil profesional.",
-    "demo_account_forbidden": "Las cuentas de ejemplo no entran en agencias reales.",
-    "agency_member_elsewhere": "Esta persona ya forma parte de otra agencia.",
-    "brand_not_linked": "La marca ya no está con esta agencia.",
+    "demo_account_forbidden": "Las cuentas de ejemplo no entran en industrias reales.",
+    "agency_member_elsewhere": "Esta persona ya forma parte de otra industria.",
+    "brand_not_linked": "La marca ya no está con esta industria.",
     "partner_suspended": "Este acceso está suspendido en este momento.",
     "user_has_talent": "Esta cuenta ya está en un casting.",
     "talent_already_linked": "Esta invitación ya fue usada por otra cuenta.",
@@ -194,7 +194,7 @@
       "seller": "Proveedor",
       "admin": "Admin",
       "professional": "Profesional",
-      "agency": "Agencia",
+      "agency": "Industria",
       "brand": "Marca"
     },
     "detail": {
@@ -292,7 +292,7 @@
     "revokeDescription": "El enlace dejará de funcionar de inmediato.",
     "revoked": "Invitación revocada",
     "expiredNote": "expirada",
-    "roleAgency": "Agencia",
+    "roleAgency": "Industria",
     "roleBrand": "Marca",
     "talentTarget": "Ficha en el casting"
   },
@@ -318,18 +318,18 @@
     "successProfessional": "Tu acceso de profesional está listo. Completa el perfil y los servicios.",
     "goProfessional": "Ir al portal del profesional",
     "grantProfessional": "Recibirás acceso al portal del profesional.",
-    "grantAgency": "Agencia: entra al equipo de la agencia en el nivel de la invitación.",
-    "grantBrand": "Marca: accede al portal de la marca atendida por la agencia.",
-    "successAgency": "Ahora formas parte del equipo de la agencia.",
+    "grantAgency": "Industria: entra al equipo de la industria en el nivel de la invitación.",
+    "grantBrand": "Marca: accede al portal de la marca atendida por la industria.",
+    "successAgency": "Ahora formas parte del equipo de la industria.",
     "successBrand": "Ahora accedes al portal de la marca.",
-    "goAgency": "Abrir portal de la agencia",
+    "goAgency": "Abrir portal de la industria",
     "goBrand": "Abrir portal de la marca",
     "inboxOnlyNote": "Los avisos quedan en la campana del portal.",
     "successTalent": "¡Listo! Ahora tienes el Portal del Hero.",
     "goOffice": "Abrir el Portal del Hero",
     "alreadyHint": "¿Ya entraste por la pantalla de inicio de sesión con este e-mail? Entonces la invitación ya fue aceptada y tu acceso está listo.",
     "openPortals": "Abrir mis portales",
-    "grantGeneric": "El acceso de esta invitación (agencia, marca, Hero, proveedor o profesional) aparece justo después de aceptar."
+    "grantGeneric": "El acceso de esta invitación (industria, marca, Hero, proveedor o profesional) aparece justo después de aceptar."
   },
   "creators": {
     "title": "Heros",
@@ -720,7 +720,7 @@
       "removeEmail": "Quitar {email}",
       "missing": "Clave ausente en la base (se creará al guardar).",
       "invites_enabled": "Invitaciones activas",
-      "invites_enabled_desc": "Desactivado: nadie crea invitaciones (admin, agencia, marca, equipo del Hero), directo en la base de datos. Las invitaciones ya enviadas siguen valiendo. Las personas se registran solas como Hero, Marca o Agencia."
+      "invites_enabled_desc": "Desactivado: nadie crea invitaciones (admin, industria, marca, equipo del Hero), directo en la base de datos. Las invitaciones ya enviadas siguen valiendo. Las personas se registran solas como Hero, Marca o Industria."
     },
     "ops": {
       "title": "Operaciones",

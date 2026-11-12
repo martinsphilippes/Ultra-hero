@@ -7,7 +7,7 @@
     "deletion": "Excluir conta",
     "deletionDescription": "Como excluir sua conta e o que acontece com os seus dados.",
     "partner": "Termos do Parceiro",
-    "partnerDescription": "Regras para Heros e agências que publicam no Groscove Ultra: direitos sobre fotos e vídeos, licença de uso e moderação."
+    "partnerDescription": "Regras para Heros e indústrias que publicam no Groscove Ultra: direitos sobre fotos e vídeos, licença de uso e moderação."
   },
   "links": {
     "nav": "Documentos legais",
@@ -40,7 +40,7 @@
   },
   "terms": {
     "title": "Termos de Uso",
-    "intro": "Estes Termos explicam as regras para usar o {app}, no site e no app para iOS e Android. Ao criar uma conta ou usar o serviço, você concorda com eles. Leia também a <privacy>Política de Privacidade</privacy>, que explica como tratamos seus dados. Heros e agências seguem também os <partner>Termos do Parceiro</partner>.",
+    "intro": "Estes Termos explicam as regras para usar o {app}, no site e no app para iOS e Android. Ao criar uma conta ou usar o serviço, você concorda com eles. Leia também a <privacy>Política de Privacidade</privacy>, que explica como tratamos seus dados. Heros e indústrias seguem também os <partner>Termos do Parceiro</partner>.",
     "sections": {
       "about": {
         "title": "Sobre o serviço",
@@ -79,7 +79,7 @@
       "personalities": {
         "title": "Heros",
         "blocks": {
-          "p1": "Os Heros do {app} são personalidades reais que mantêm o próprio perfil, por convite. Cada Hero, ou a agência que o representa, aceita os <partner>Termos do Parceiro</partner> e publica as próprias fotos, vídeos e textos, declarando ter os direitos sobre eles.",
+          "p1": "Os Heros do {app} são personalidades reais que mantêm o próprio perfil, por convite. Cada Hero, ou a indústria que o representa, aceita os <partner>Termos do Parceiro</partner> e publica as próprias fotos, vídeos e textos, declarando ter os direitos sobre eles.",
           "p2": "Os conteúdos dos perfis são educativos e não substituem orientação profissional individual. Os fornecedores de exemplo da loja do site são fictícios."
         }
       },
@@ -114,7 +114,7 @@
       "partners": {
         "title": "Conteúdo de parceiros",
         "blocks": {
-          "p1": "Heros, agências e fornecedores participam <strong>somente por convite</strong> da equipe do {app}. Ao aceitar o convite, o parceiro aceita os <partner>Termos do Parceiro</partner>. Cada parceiro usa um portal próprio e só vê e gerencia o que é seu.",
+          "p1": "Heros, indústrias e fornecedores participam <strong>somente por convite</strong> da equipe do {app}. Ao aceitar o convite, o parceiro aceita os <partner>Termos do Parceiro</partner>. Cada parceiro usa um portal próprio e só vê e gerencia o que é seu.",
           "list1": {
             "i1": "Conteúdos enviados por Heros passam por revisão editorial antes de serem publicados.",
             "i2": "Produtos de fornecedores podem ser ocultados ou suspensos pela moderação a qualquer momento. Vínculos entre conteúdos e produtos também podem ser suspensos, inclusive automaticamente quando um produto muda de forma relevante.",
@@ -204,7 +204,7 @@
             "reports": "<strong>Denúncias e bloqueios:</strong> se você denunciar, guardamos o conteúdo ou Hero denunciado, o motivo, o detalhe que escrever e a data; se bloquear um Hero, guardamos qual Hero e desde quando, para escondê-lo de você.",
             "recommendations": "<strong>Recomendações:</strong> a lista de conteúdos recomendados para você e um registro técnico de cada cálculo (motor usado, tempo, quantidade de itens, custo estimado e erros).",
             "partners": "<strong>Parceiros e administração:</strong> se você for convidado como parceiro, o e-mail para o qual o convite foi enviado, os dados do perfil de parceiro e o que você enviar. As principais ações feitas pelo painel de administração, como mudanças de papéis, convites, moderação e configurações, ficam registradas em auditoria.",
-            "partnerTerms": "<strong>Aceite dos Termos do Parceiro (só Heros e agências):</strong> a versão dos <partner>Termos do Parceiro</partner> que você aceitou ao entrar por convite, a data do aceite e a data em que você confirmou, antes do primeiro envio, ter os direitos sobre as fotos e os vídeos, como prova do aceite.",
+            "partnerTerms": "<strong>Aceite dos Termos do Parceiro (só Heros e indústrias):</strong> a versão dos <partner>Termos do Parceiro</partner> que você aceitou ao entrar por convite, a data do aceite e a data em que você confirmou, antes do primeiro envio, ter os direitos sobre as fotos e os vídeos, como prova do aceite.",
             "recipeStep": "<strong>Etapa de receitas:</strong> o aceite do aviso e as restrições e alergias que você marcar (de uma lista fixa, sem texto livre). Alergias e restrições são dados sensíveis de saúde: usamos só para lembrar você na página de cada receita, com o seu consentimento, e você pode mudar ou apagar quando quiser.",
             "heroVideos": "<strong>Vídeos dos Heros:</strong> se você é Hero e grava ou envia um vídeo pelo app, o arquivo vai direto do seu aparelho para o Cloudflare Stream. O app guarda só o identificador do vídeo, o conteúdo ao qual ele pertence e as datas de envio e de descarte (para limitar envios e limpar vídeos abandonados).",
             "recipePhotos": "<strong>Fotos e vídeos de receitas:</strong> se você é Hero e envia fotos para uma receita, a foto é reduzida no seu aparelho (perde a localização e os dados da câmera) e fica num espaço privado do armazenamento do Supabase, ligada à receita. Quem vê: as fotos da galeria, todos, quando a receita está no ar; as fotos das etapas, só quem pode abrir a receita; o rascunho, só você e a administração. O vídeo de uma receita segue a regra dos vídeos dos Heros.",
@@ -507,12 +507,12 @@
   },
   "partner": {
     "title": "Termos do Parceiro",
-    "intro": "Estes Termos do Parceiro valem para agências e seus colaboradores, Heroes, marcas e demais pessoas que trabalham pelo {app}. Eles completam os <terms>Termos de Uso</terms> e a <privacy>Política de Privacidade</privacy> e funcionam como o contrato de parceria entre você e {company}. Ao aceitar estes Termos no cadastro, no pedido de acesso ou em um convite, você concorda com tudo o que está aqui.",
+    "intro": "Estes Termos do Parceiro valem para indústrias e seus colaboradores, Heroes, marcas e demais pessoas que trabalham pelo {app}. Eles completam os <terms>Termos de Uso</terms> e a <privacy>Política de Privacidade</privacy> e funcionam como o contrato de parceria entre você e {company}. Ao aceitar estes Termos no cadastro, no pedido de acesso ou em um convite, você concorda com tudo o que está aqui.",
     "sections": {
       "who": {
         "title": "Quem é parceiro",
         "blocks": {
-          "p1": "Parceiro é quem entra no {app} por convite da equipe para publicar ou gerenciar conteúdo: o <strong>Hero</strong> (a personalidade real dona do perfil), a <strong>agência</strong> que representa Heros ou marcas, as pessoas da equipe da agência e as demais pessoas convidadas para um portal de parceiro (marcas, profissionais e fornecedores).",
+          "p1": "Parceiro é quem entra no {app} por convite da equipe para publicar ou gerenciar conteúdo: o <strong>Hero</strong> (a personalidade real dona do perfil), a <strong>indústria</strong> que representa Heros ou marcas, as pessoas da equipe da indústria e as demais pessoas convidadas para um portal de parceiro (marcas, profissionais e fornecedores).",
           "p2": "O convite é pessoal e ligado ao e-mail para o qual foi enviado. Não compartilhe o acesso ao portal."
         }
       },
@@ -530,7 +530,7 @@
       "access": {
         "title": "Acesso, conta e segurança",
         "blocks": {
-          "p1": "O acesso é pessoal e intransferível. Na agência, a entrada é feita com o e-mail do domínio autorizado e depende da aprovação de um administrador, que define o nível de acesso (Colaborador, Gestor ou Adm).",
+          "p1": "O acesso é pessoal e intransferível. Na indústria, a entrada é feita com o e-mail do domínio autorizado e depende da aprovação de um administrador, que define o nível de acesso (Colaborador, Gestor ou Adm).",
           "list1": {
             "i1": "Não compartilhe senha nem deixe outra pessoa usar a sua conta;",
             "i2": "avise imediatamente se perceber uso indevido, perda do aparelho ou vazamento;",
@@ -544,7 +544,7 @@
           "p1": "Ao enviar qualquer foto, vídeo, áudio ou texto, você declara que:",
           "list1": {
             "i1": "é o titular dos direitos sobre o material ou tem autorização por escrito de todos os titulares, inclusive do fotógrafo, do produtor e das pessoas que aparecem nele;",
-            "i2": "tem o direito de usar o nome, a imagem e a voz das pessoas que aparecem no material. Se você é agência, declara ter contrato com o Hero que autoriza publicar em nome dele;",
+            "i2": "tem o direito de usar o nome, a imagem e a voz das pessoas que aparecem no material. Se você é indústria, declara ter contrato com o Hero que autoriza publicar em nome dele;",
             "i3": "o material não viola marcas, direitos autorais, privacidade ou outros direitos de terceiros, nem a lei;",
             "i4": "não envia material de bancos de imagens, de outros perfis ou da internet sem licença que permita este uso."
           },
@@ -554,7 +554,7 @@
       "evidence": {
         "title": "Guarda dos contratos",
         "blocks": {
-          "p1": "<strong>Quem publica guarda as provas.</strong> O parceiro — e, quando publica em nome de um Hero, a agência — mantém os contratos e as autorizações que sustentam cada publicação e os apresenta, no prazo pedido, sempre que solicitados pelo {app}, pelo próprio Hero, por titulares de direitos ou por autoridades. O {app} é uma plataforma intermediária: não revisa nem guarda esses contratos e, conforme a lei (Marco Civil da Internet, Lei nº 12.965/2014), remove o conteúdo quando houver ordem judicial ou quando ele violar estes Termos."
+          "p1": "<strong>Quem publica guarda as provas.</strong> O parceiro — e, quando publica em nome de um Hero, a indústria — mantém os contratos e as autorizações que sustentam cada publicação e os apresenta, no prazo pedido, sempre que solicitados pelo {app}, pelo próprio Hero, por titulares de direitos ou por autoridades. O {app} é uma plataforma intermediária: não revisa nem guarda esses contratos e, conforme a lei (Marco Civil da Internet, Lei nº 12.965/2014), remove o conteúdo quando houver ordem judicial ou quando ele violar estes Termos."
         }
       },
       "license": {

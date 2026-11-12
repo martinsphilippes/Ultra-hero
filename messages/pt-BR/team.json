@@ -37,17 +37,17 @@
   },
   "requests": {
     "title": "{count, plural, =0 {Pedidos de acesso} one {# pedido de acesso} other {# pedidos de acesso}}",
-    "description": "Pessoas que se cadastraram com o e-mail da agência e esperam a sua autorização.",
-    "empty": "Nenhum pedido esperando agora. Quando alguém se cadastrar com o e-mail da agência, aparece aqui e no sino.",
+    "description": "Pessoas que se cadastraram com o e-mail da indústria e esperam a sua autorização.",
+    "empty": "Nenhum pedido esperando agora. Quando alguém se cadastrar com o e-mail da indústria, aparece aqui e no sino.",
     "since": "pediu em {date}",
     "cnpj": "CNPJ {cnpj}",
     "roleLabel": "Nível de acesso",
-    "roleHint": "Colaborador vê o dia a dia; Gestor toca negócios; Adm também cuida da agência.",
+    "roleHint": "Colaborador vê o dia a dia; Gestor toca negócios; Adm também cuida da indústria.",
     "approve": "Aceitar",
     "reject": "Recusar",
-    "approvedDone": "{name} entrou na agência.",
+    "approvedDone": "{name} entrou na indústria.",
     "rejectedDone": "Pedido de {name} recusado.",
-    "banner": "{count, plural, one {# pessoa espera} other {# pessoas esperam}} a sua autorização para entrar na agência.",
+    "banner": "{count, plural, one {# pessoa espera} other {# pessoas esperam}} a sua autorização para entrar na indústria.",
     "bannerAction": "Ver pedidos"
   },
   "gate": {
@@ -65,8 +65,8 @@
     "rejectedTitle": "Pedido não autorizado",
     "rejectedBody": "Os administradores da {agency} não autorizaram este pedido. Se foi engano, fale com eles e envie de novo.",
     "rejectedNote": "Motivo: {note}",
-    "domainTitle": "Este e-mail não entra como agência",
-    "domainBody": "Só e-mails da Groscove (@groscovegroup.com ou @groscoveultra.com) entram como agência. Saia e cadastre-se com o seu e-mail da Groscove.",
+    "domainTitle": "Este e-mail não entra como indústria",
+    "domainBody": "Só e-mails da Groscove (@groscovegroup.com ou @groscoveultra.com) entram como indústria. Saia e cadastre-se com o seu e-mail da Groscove.",
     "signOut": "Sair",
     "goPortal": "Abrir o portal"
   },
@@ -82,7 +82,7 @@
   },
   "brand": {
     "title": "Meu cargo e nível",
-    "description": "Como você se apresenta para a agência e para os Heroes.",
+    "description": "Como você se apresenta para a indústria e para os Heroes.",
     "jobTitle": "Cargo",
     "level": "Nível",
     "save": "Salvar",

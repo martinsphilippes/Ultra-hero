@@ -63,7 +63,7 @@
     "bySegment": "mismo segmento: {segments}",
     "byCompetitor": "esta marca fue citada como competidora",
     "category": "categoría: {category}",
-    "talentHint": "Habla con la agencia antes de aceptar: esta oferta puede ir contra la exclusividad.",
+    "talentHint": "Habla con la industria antes de aceptar: esta oferta puede ir contra la exclusividad.",
     "agencyHint": "No bloquea, pero consultar exige una confirmación, que queda registrada en el historial.",
     "badge": "exclusividad vigente",
     "consultWarn": "{count, plural, one {# Hero marcado tiene una exclusividad vigente que alcanza este negocio.} other {# Heros marcados tienen una exclusividad vigente que alcanza este negocio.}}",
@@ -77,7 +77,7 @@
     "howMuch": "Cuánto",
     "rights": "Derechos",
     "respondBy": "Responde antes del {date}",
-    "noDeliverables": "Entregables por definir con la agencia",
+    "noDeliverables": "Entregables por definir con la industria",
     "noDates": "Fechas por definir",
     "noFee": "Honorario aún no definido",
     "feeOnWeb": "El valor aparece en la versión web.",
@@ -88,13 +88,13 @@
     "proposeDate": "Proponer otra fecha",
     "proposeFee": "Proponer otro valor",
     "dateTitle": "Proponer otra fecha",
-    "dateHint": "La agencia recibe el pedido y responde aquí.",
+    "dateHint": "La industria recibe el pedido y responde aquí.",
     "deliverable": "Para qué entrega",
     "deliverableNone": "Inicio de la campaña",
     "currentDate": "Fecha actual: {date}",
     "newDate": "Nueva fecha",
     "feeTitle": "Proponer otro valor",
-    "feeHint": "Di qué valor tiene sentido y por qué. La agencia responde aquí.",
+    "feeHint": "Di qué valor tiene sentido y por qué. La industria responde aquí.",
     "currentFee": "Honorario actual: {value}",
     "newFee": "Valor propuesto (R$)",
     "reason": "Justificación",
@@ -106,29 +106,29 @@
     "send": "Enviar contrapropuesta",
     "back": "Volver",
     "sent": {
-      "fee": "Contrapropuesta de valor enviada a la agencia.",
-      "date": "Contrapropuesta de fecha enviada a la agencia."
+      "fee": "Contrapropuesta de valor enviada a la industria.",
+      "date": "Contrapropuesta de fecha enviada a la industria."
     },
     "withdrawn": "Contrapropuesta retirada.",
     "withdraw": "Retirar",
     "confirmWithdraw": "¿Retirar la contrapropuesta?",
-    "openNotice": "Tu contrapropuesta está con la agencia. Puedes retirarla mientras no responda.",
+    "openNotice": "Tu contrapropuesta está con la industria. Puedes retirarla mientras no responda.",
     "history": "Contrapropuestas",
     "kind": {
       "fee": "Valor",
       "date": "Fecha"
     },
     "status": {
-      "open": "Esperando a la agencia",
+      "open": "Esperando a la industria",
       "accepted": "Aceptada",
       "rejected": "Rechazada",
       "withdrawn": "Retirada"
     },
     "change": "{from} → {to}",
     "reasonLine": "Justificación: {reason}",
-    "agencyNote": "Nota de la agencia: {note}",
-    "resultAccepted": "La agencia aceptó tu contrapropuesta.",
-    "resultRejected": "La agencia rechazó tu contrapropuesta."
+    "agencyNote": "Nota de la industria: {note}",
+    "resultAccepted": "La industria aceptó tu contrapropuesta.",
+    "resultRejected": "La industria rechazó tu contrapropuesta."
   },
   "review": {
     "title": "Contrapropuesta del Hero",

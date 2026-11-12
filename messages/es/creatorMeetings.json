@@ -140,7 +140,7 @@
     "sender": "Responsable del envío",
     "sent_on": "Fecha de envío",
     "follow_up_on": "Fecha de seguimiento",
-    "follow_up_hint": "Entra en la agenda de la agencia (solo el equipo lo ve)."
+    "follow_up_hint": "Entra en la agenda de la industria (solo el equipo lo ve)."
   },
   "modes": {
     "online": "En línea",
@@ -366,7 +366,7 @@
         "points": {
           "a": "Pregunta por la disponibilidad, el interés en eventos, las ciudades a las que puede ir y la anticipación que necesita.",
           "b": "Revisa los formatos de participación: presencia, cobertura, stories, reels, entrevistas, contenido antes o después del evento.",
-          "c": "Las oportunidades pueden venir de una marca o de la relación con agencias de prensa y socios del holding.",
+          "c": "Las oportunidades pueden venir de una marca o de la relación con industrias de prensa y socios del holding.",
           "d": "Refuerza la puntualidad, la postura profesional, la cordialidad con equipos e invitados y el cumplimiento de lo acordado."
         },
         "important": "Ninguna presencia está confirmada antes del acuerdo de marca, alcance, valores, agenda y formalización."

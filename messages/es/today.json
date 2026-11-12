@@ -26,7 +26,7 @@
       "approval": "Aprobar entrega",
       "script": "Aprobar guion",
       "terms": "Aceptar términos",
-      "message": "Responder a la agencia",
+      "message": "Responder a la industria",
       "deadline": "Plazo de entrega",
       "draft": "Borrador detenido",
       "internalApproval": "Aprobación interna",
@@ -82,12 +82,12 @@
       "invoice": "Facturas",
       "payment": "Pagos"
     },
-    "counter_open": "Contrapropuesta esperando a la agencia",
+    "counter_open": "Contrapropuesta esperando a la industria",
     "counter_accepted": "Contrapropuesta aceptada",
     "counter_rejected": "Contrapropuesta rechazada",
     "invoiceMissing": "Entregado: envía la factura para cobrar",
     "invoiceRejected": "Factura rechazada: envía otra",
-    "paymentScheduled": "La agencia programó el pago",
+    "paymentScheduled": "La industria programó el pago",
     "pendingHint": "Créalo y envíalo para que la marca lo apruebe",
     "sendProof": "Publicado: envía el comprobante"
   },
@@ -112,7 +112,7 @@
       "published": "Publicada"
     },
     "stageHints": {
-      "sent": "Propuesta enviada, esperando a la agencia y al Hero.",
+      "sent": "Propuesta enviada, esperando a la industria y al Hero.",
       "accepted": "El Hero aceptó; la producción aún no empezó.",
       "creating": "En producción, con ajuste pedido o aprobado para publicar.",
       "awaiting": "Versión enviada esperando tu aprobación.",

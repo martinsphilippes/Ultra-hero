@@ -27,7 +27,7 @@
       "cta": "Answer proposal"
     },
     "answerCounter": {
-      "title": "Answer the agency's counteroffer",
+      "title": "Answer the industry's counteroffer",
       "hint": "Accept, make another proposal or decline.",
       "cta": "See counteroffer"
     },
@@ -119,19 +119,19 @@
   },
   "waits": {
     "waitAgencyOffer": {
-      "title": "Waiting for the agency to answer your proposal"
+      "title": "Waiting for the industry to answer your proposal"
     },
     "waitBrandOffer": {
       "title": "Waiting for the brand to answer the counteroffer"
     },
     "waitAdminOffer": {
-      "title": "Waiting for the agency Admin to answer the brand's proposal"
+      "title": "Waiting for the industry Admin to answer the brand's proposal"
     },
     "waitOwnerCounter": {
       "title": "Waiting for the brand owner to answer the counteroffer"
     },
     "waitAgencyProposal": {
-      "title": "The agency is putting the proposal together with the heroes"
+      "title": "The industry is putting the proposal together with the heroes"
     },
     "waitHeroesAnswer": {
       "title": "Waiting for {count, plural, one {# hero} other {# heroes}} to answer the invitation",
@@ -147,7 +147,7 @@
       "title": "Waiting for the Admin to set the payment conditions"
     },
     "waitTerms": {
-      "title": "Waiting for the agency to send the terms"
+      "title": "Waiting for the industry to send the terms"
     },
     "waitManagerTerms": {
       "title": "Waiting for a manager to send the terms"
@@ -166,13 +166,13 @@
       "title": "Waiting for {names} to accept the terms"
     },
     "waitContract": {
-      "title": "Waiting for the agency to confirm the contract"
+      "title": "Waiting for the industry to confirm the contract"
     },
     "waitManagerContract": {
       "title": "Waiting for a manager to confirm the contract"
     },
     "waitDeliverablesPlan": {
-      "title": "Waiting for the agency to add the deliverables"
+      "title": "Waiting for the industry to add the deliverables"
     },
     "waitHeroDeliverable": {
       "title": "Waiting for {hero} to send {item}"
@@ -187,20 +187,20 @@
       "title": "Waiting for the brand to approve {item}"
     },
     "waitAgencyClose": {
-      "title": "Waiting for the agency to complete {item}"
+      "title": "Waiting for the industry to complete {item}"
     },
     "waitAgencyFinish": {
-      "title": "Waiting for the agency to close the campaign"
+      "title": "Waiting for the industry to close the campaign"
     },
     "waitManagerFinish": {
       "title": "Waiting for a manager to close the campaign"
     },
     "waitProposalHero": {
-      "title": "The agency is closing the proposal with the brand",
+      "title": "The industry is closing the proposal with the brand",
       "hint": "You'll get the terms to accept once the campaign is confirmed."
     },
     "waitHeroTalk": {
-      "title": "Waiting for the agency to talk to you"
+      "title": "Waiting for the industry to talk to you"
     }
   },
   "done": {

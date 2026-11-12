@@ -1,7 +1,7 @@
 {
   "agencyTitle": "Propuesta de la marca",
-  "brandTitle": "Negociación con la agencia",
-  "brandCounterTitle": "Contrapropuesta de la agencia",
+  "brandTitle": "Negociación con la industria",
+  "brandCounterTitle": "Contrapropuesta de la industria",
   "agreedTitle": "Términos acordados",
   "status": {
     "agency": {
@@ -13,11 +13,11 @@
       "closed": "La negociación ya no vale en esta etapa del negocio."
     },
     "brand": {
-      "brand_proposal": "Esperando que la agencia responda a tu propuesta.",
-      "brand_countered": "Tu contrapropuesta fue enviada. Esperando a la agencia.",
-      "brand_declined": "Rechazaste la contrapropuesta. Esperando a la agencia.",
-      "agency_countered": "La agencia hizo una contrapropuesta: acepta, contrapropón o rechaza.",
-      "agreed": "Términos acordados con la agencia.",
+      "brand_proposal": "Esperando que la industria responda a tu propuesta.",
+      "brand_countered": "Tu contrapropuesta fue enviada. Esperando a la industria.",
+      "brand_declined": "Rechazaste la contrapropuesta. Esperando a la industria.",
+      "agency_countered": "La industria hizo una contrapropuesta: acepta, contrapropón o rechaza.",
+      "agreed": "Términos acordados con la industria.",
       "closed": "La negociación ya no vale en esta etapa de la campaña."
     }
   },
@@ -52,15 +52,15 @@
   },
   "declineDialog": {
     "title": "¿Rechazar la contrapropuesta?",
-    "hint": "La campaña sigue abierta: la agencia puede enviar otra propuesta.",
+    "hint": "La campaña sigue abierta: la industria puede enviar otra propuesta.",
     "reason": "Motivo (opcional)"
   },
   "noValueHint": "La marca no informó valor para aceptar: haz una contrapropuesta.",
-  "ownerOnly": "Solo el dueño de la marca responde a la agencia.",
+  "ownerOnly": "Solo el dueño de la marca responde a la industria.",
   "confirmNext": "Ahora solo confirma la campaña en la tarjeta “Confirmar campaña”.",
   "history": {
     "title": "Historial",
-    "agency": "Agencia",
+    "agency": "Industria",
     "brand": "Marca",
     "action": {
       "accept": "Aceptó",

@@ -96,7 +96,7 @@
       "seller": "Seller",
       "admin": "Admin",
       "professional": "Professional",
-      "agency": "Agency",
+      "agency": "Industry",
       "brand": "Brand",
       "talent": "Hero"
     },
@@ -106,15 +106,15 @@
       "creator": "Hero Portal",
       "seller": "Seller portal",
       "hints": {
-        "creator": "Posts, content, calendar, finances and the agency casting",
+        "creator": "Posts, content, calendar, finances and the industry casting",
         "seller": "Products, deliveries and store profile",
         "admin": "Users, content, orders and settings",
         "professional": "Orders, services and public profile",
         "agency": "Roster, team, brands and notices",
-        "brand": "Brand team and agency notices"
+        "brand": "Brand team and industry notices"
       },
       "professional": "Professional portal",
-      "agency": "Agency portal",
+      "agency": "Industry portal",
       "brand": "Brand portal"
     },
     "data": {
@@ -761,7 +761,7 @@
       },
       "office_updates": {
         "label": "Hero Portal notices",
-        "description": "Opportunities, tasks and deliverables from the agency that manages your career."
+        "description": "Opportunities, tasks and deliverables from the industry that manages your career."
       }
     },
     "transactional": {

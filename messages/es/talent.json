@@ -1,6 +1,6 @@
 {
   "meta": {
-    "eyebrow": "Casting de la agencia",
+    "eyebrow": "Casting de la industria",
     "home": "Inicio",
     "consent": "Consentimiento",
     "kit": "Media kit",
@@ -15,7 +15,7 @@
   "home": {
     "unavailable": "Portal del Hero en actualización",
     "none": "Todavía no formas parte de un casting",
-    "noneHint": "Cuando una agencia te incluya en su casting, las oportunidades, tareas y ganancias aparecerán aquí.",
+    "noneHint": "Cuando una industria te incluya en su casting, las oportunidades, tareas y ganancias aparecerán aquí.",
     "agency": "Casting de {agency}",
     "agencyWithManager": "Casting de {agency} · gestión: {manager}",
     "availabilityTitle": "Tu disponibilidad",
@@ -24,7 +24,7 @@
       "limited": "Agenda limitada",
       "unavailable": "No disponible"
     },
-    "availabilityHint": "La agencia actualiza la disponibilidad contigo.",
+    "availabilityHint": "La industria actualiza la disponibilidad contigo.",
     "kitTitle": "Media kit",
     "kitActive": "Enlace activo hasta {date} · {count, plural, =0 {ninguna visita} one {# visita} other {# visitas}}",
     "kitInactive": "Ningún enlace público activo.",
@@ -33,7 +33,7 @@
     "metricsEmpty": "Todavía no hay redes declaradas. Regístralas en el media kit.",
     "followers": "{count} seguidores",
     "followersUnknown": "Seguidores: no informado",
-    "inboxTitle": "Avisos de la agencia",
+    "inboxTitle": "Avisos de la industria",
     "inboxAll": "Ver todos",
     "inboxEmpty": "Ningún aviso por ahora.",
     "opportunitiesTitle": "Oportunidades",
@@ -54,7 +54,7 @@
     "publishAt": "publicación el {date}",
     "eventsToday": "{count, plural, one {# compromiso hoy} other {# compromisos hoy}}",
     "payoutsTitle": "Pagos",
-    "payoutsHint": "Estado informado por la agencia. Registro interno, sin cobro real.",
+    "payoutsHint": "Estado informado por la industria. Registro interno, sin cobro real.",
     "payoutsNone": "Ningún pago registrado.",
     "payoutsAppHint": "Mira los importes en el sitio.",
     "payoutsAll": "Ver ganancias"
@@ -64,9 +64,9 @@
     "stateOn": "Consentimiento activo",
     "stateOff": "Sin consentimiento",
     "stateRevoked": "Consentimiento revocado",
-    "intro": "Para que la agencia te presente a las marcas, necesitamos tu consentimiento (LGPD). Con él:",
-    "item1": "la agencia puede generar el enlace público de tu media kit, solo con los campos que elijas;",
-    "item2": "puedes aparecer en el catálogo que consultan las marcas de la agencia;",
+    "intro": "Para que la industria te presente a las marcas, necesitamos tu consentimiento (LGPD). Con él:",
+    "item1": "la industria puede generar el enlace público de tu media kit, solo con los campos que elijas;",
+    "item2": "puedes aparecer en el catálogo que consultan las marcas de la industria;",
     "item3": "tus métricas aparecen siempre como declaradas, con la fecha de cada dato;",
     "item4": "puedes revocarlo cuando quieras: el enlace deja de funcionar y sales del catálogo al instante.",
     "version": "Versión de los términos: {version}",
@@ -78,7 +78,7 @@
     "confirmRevoke": "¿Revocar el consentimiento? El enlace público del kit deja de funcionar y sales del catálogo.",
     "given": "Consentimiento registrado.",
     "revoked": "Consentimiento revocado. El enlace del kit se desactivó.",
-    "banner": "Sin tu consentimiento, la agencia no genera el enlace del kit ni te muestra en el catálogo.",
+    "banner": "Sin tu consentimiento, la industria no genera el enlace del kit ni te muestra en el catálogo.",
     "bannerLink": "Ver los términos"
   },
   "kit": {
@@ -88,7 +88,7 @@
   },
   "errors": {
     "consent_required": "Acepta los términos de uso comercial antes de generar el enlace.",
-    "demo_locked": "El enlace público está desactivado para esta agencia.",
+    "demo_locked": "El enlace público está desactivado para esta industria.",
     "duplicate_network": "Esta red con este perfil ya está registrada.",
     "too_many_networks": "Se alcanzó el límite de redes.",
     "forbidden": "No tienes permiso para esta acción.",
@@ -101,7 +101,7 @@
     "invalid_stage": "Esta campaña ya fue cerrada.",
     "file_missing": "Adjunta el archivo (enlace o documento) para completar.",
     "invalid_url": "Indica un enlace https válido.",
-    "counteroffer_open": "Ya tienes una contrapropuesta esperando a la agencia.",
+    "counteroffer_open": "Ya tienes una contrapropuesta esperando a la industria.",
     "checklist_incomplete": "Revisa todos los ítems del checklist antes de enviar.",
     "signature_required": "Para aceptar, firma con tu nombre completo y CPF/CNPJ.",
     "already_signed": "Estos términos ya fueron firmados.",
@@ -110,13 +110,13 @@
     "name_required": "Escribe tu nombre completo (nombre y apellido)."
   },
   "values": {
-    "demoLockedKit": "Agencia de ejemplo: el enlace público queda desactivado (solo la vista previa)."
+    "demoLockedKit": "Industria de ejemplo: el enlace público queda desactivado (solo la vista previa)."
   },
   "opportunities": {
     "unavailable": "Oportunidades en actualización",
-    "intro": "Consultas de interés hechas por la agencia. Responder no es contrato: la confirmación comercial es de la agencia con la marca.",
+    "intro": "Consultas de interés hechas por la industria. Responder no es contrato: la confirmación comercial es de la industria con la marca.",
     "empty": "Todavía no hay oportunidades.",
-    "emptyHint": "Cuando la agencia te consulte para una campaña, aparece aquí.",
+    "emptyHint": "Cuando la industria te consulte para una campaña, aparece aquí.",
     "pendingTitle": "{count, plural, one {Esperando tu respuesta (#)} other {Esperando tu respuesta (#)}}",
     "restTitle": "Respondidas y en curso",
     "startsOn": "inicio {date}",
@@ -145,25 +145,25 @@
       "deliverables": "Entregables pedidos"
     },
     "deliverablesTitle": "Tus entregas previstas",
-    "deliverablesNone": "La agencia todavía no planificó las entregas.",
+    "deliverablesNone": "La industria todavía no planificó las entregas.",
     "dueAt": "plazo {date}",
     "feeTitle": "Caché propuesto",
-    "feeHint": "Definido por la agencia para esta campaña. No es contrato.",
-    "messagesTitle": "Conversación con la agencia",
+    "feeHint": "Definido por la industria para esta campaña. No es contrato.",
+    "messagesTitle": "Conversación con la industria",
     "responded": {
-      "interested": "Interés registrado. La agencia dará seguimiento.",
+      "interested": "Interés registrado. La industria dará seguimiento.",
       "declined": "Respuesta registrada. Gracias por avisar.",
-      "talk_requested": "Pedido de conversación enviado a la agencia."
+      "talk_requested": "Pedido de conversación enviado a la industria."
     },
     "respond": {
       "title": "Tu respuesta",
       "hint": "Acepta, rechaza (con el motivo), pide una conversación o haz una contrapropuesta de fecha o de valor.",
       "note": "Observación",
-      "noteHint": "Obligatoria al rechazar. Ayuda a la agencia a proponer algo mejor.",
+      "noteHint": "Obligatoria al rechazar. Ayuda a la industria a proponer algo mejor.",
       "interested": "Aceptar",
       "talk": "Quiero conversar",
       "declined": "Rechazar",
-      "legal": "Responder no es vínculo contractual. Contrato y condiciones se acuerdan con la agencia.",
+      "legal": "Responder no es vínculo contractual. Contrato y condiciones se acuerdan con la industria.",
       "reasonRequired": "Cuéntanos el motivo (al menos 3 caracteres)."
     }
   },
@@ -192,7 +192,7 @@
     "unavailable": "Agenda en actualización",
     "intro": "Campañas confirmadas, plazos de respuesta, entregas y grabaciones. Tu agenda personal queda fuera.",
     "empty": "Nada este mes.",
-    "emptyHint": "Cuando la agencia confirme una campaña contigo, aparece aquí."
+    "emptyHint": "Cuando la industria confirme una campaña contigo, aparece aquí."
   },
   "tasks": {
     "unavailable": "Tareas en actualización",
@@ -210,14 +210,14 @@
     "deliverablesHint": "Envía cada versión por enlace; la marca aprueba o pide ajustes. Después registra la publicación y el comprobante."
   },
   "documents": {
-    "intro": "Briefings, guiones aprobados y comprobantes que la agencia compartió contigo. Solo lectura."
+    "intro": "Briefings, guiones aprobados y comprobantes que la industria compartió contigo. Solo lectura."
   },
   "earnings": {
     "title": "Ganancias",
     "description": "Lo que tienes por cobrar, lo que viene y lo que ya se pagó. Envía aquí la factura de cada pago.",
     "unavailable": "Ganancias en actualización",
     "unavailableHint": "Las ganancias aparecen cuando se actualice la base de datos.",
-    "simulated": "Registro interno de la agencia: nada se cobra ni se transfiere aquí.",
+    "simulated": "Registro interno de la industria: nada se cobra ni se transfiere aquí.",
     "appHint": "Los valores aparecen en el sitio.",
     "groups": {
       "receivable": "Por cobrar",
@@ -230,7 +230,7 @@
       "paid": "Ya pagados"
     },
     "count": "{count, plural, one {# pago} other {# pagos}}",
-    "empty": "Ningún pago aún. Aparecen cuando la agencia confirma una contratación.",
+    "empty": "Ningún pago aún. Aparecen cuando la industria confirma una contratación.",
     "listLabel": "Pagos",
     "expected": "Previsto para {date}",
     "scheduledFor": "Programado para {date}",
@@ -242,7 +242,7 @@
     "sendAnother": "Enviar otra factura",
     "viewInvoice": "Ver factura",
     "file": "Archivo de la factura (PDF o imagen)",
-    "fileHint": "Hasta 20 MB. Solo tú y el administrador de la agencia la ven.",
+    "fileHint": "Hasta 20 MB. Solo tú y el administrador de la industria la ven.",
     "pickFile": "Elige el archivo de la factura.",
     "badType": "Envía PDF, JPG, PNG o WEBP.",
     "tooLarge": "El archivo supera 20 MB.",
@@ -252,7 +252,7 @@
     "cancel": "Cancelar",
     "invoiceTitle": "Factura · {deal}",
     "invoiceDocTitle": "Factura · {deal}",
-    "invoiceSent": "Factura enviada. La agencia la revisará.",
+    "invoiceSent": "Factura enviada. La industria la revisará.",
     "forecastOn": "Previsto para el {date} · esperando la contratación",
     "payoutMethod": {
       "pix": "Cobra por PIX",

@@ -12,7 +12,7 @@
     "creator": "Hero",
     "seller": "Supplier",
     "professional": "Professional",
-    "agency": "Agency",
+    "agency": "Industry",
     "brand": "Brand",
     "project": "Projects"
   },
@@ -41,7 +41,7 @@
     "shipments": "Shipments",
     "professionals": "Professionals",
     "brands": "Brands and products",
-    "agency": "Agencies",
+    "agency": "Industries",
     "reports": "Reports",
     "agenda": "Groscove Calendar",
     "seasonalThemes": "Seasonal themes"
@@ -100,7 +100,7 @@
     "creator": "Hero Portal",
     "seller": "Supplier area",
     "professional": "Professional area",
-    "agency": "Agency workspace",
+    "agency": "Industry workspace",
     "brand": "Brand area",
     "project": "Projects you were invited to"
   },

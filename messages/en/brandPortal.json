@@ -27,7 +27,7 @@
     },
     "seeTeam": "See team",
     "upcomingTitle": "Coming to the portal",
-    "upcomingHint": "The agency will open these areas in stages.",
+    "upcomingHint": "The industry will open these areas in stages.",
     "upcoming": {
       "campaigns": {
         "title": "Campaigns",
@@ -43,14 +43,14 @@
       },
       "calendar": {
         "title": "Commercial calendar",
-        "body": "Dates and opportunities published by the agency."
+        "body": "Dates and opportunities published by the industry."
       }
     },
     "newCampaign": "New proposal",
     "seeCreators": "Find heroes",
     "seeCampaigns": "See campaigns",
     "approvalsNote": "Terms, scripts and deliverables to approve live inside each campaign.",
-    "suggestedTitle": "Heroes suggested by the agency",
+    "suggestedTitle": "Heroes suggested by the industry",
     "suggestedHint": "Confirmed or contracted in your open campaigns, with the data they authorised.",
     "suggestedNone": "No hero confirmed in the open campaigns yet.",
     "nextEventsTitle": "Upcoming dates",
@@ -81,7 +81,7 @@
   "creators": {
     "title": "Heroes",
     "description": "Heroes from {agency} available to your brand.",
-    "descriptionNoAgency": "Your brand is not linked to an agency yet.",
+    "descriptionNoAgency": "Your brand is not linked to an industry yet.",
     "filters": {
       "search": "Search",
       "searchPlaceholder": "Hero name",
@@ -98,10 +98,10 @@
       "available": "Available",
       "limited": "Limited schedule"
     },
-    "sourceNote": "Metrics declared by the hero or the agency, always with the data date. No values: the commercial proposal is made with the agency.",
+    "sourceNote": "Metrics declared by the hero or the industry, always with the data date. No values: the commercial proposal is made with the industry.",
     "emptyFiltered": "No heroes match these filters.",
     "empty": "No heroes released to the catalog yet.",
-    "emptyHint": "The agency releases heroes as each one consents.",
+    "emptyHint": "The industry releases heroes as each one consents.",
     "unavailable": "Catalog being updated",
     "unavailableHint": "The catalog appears as soon as the database is updated.",
     "noHeadline": "No headline",
@@ -120,8 +120,8 @@
     "networksTitle": "Networks and declared metrics",
     "brandsTitle": "Brands already working with them",
     "availabilityTitle": "Commercial availability",
-    "availabilityHint": "Periods declared by the hero or the agency. The private calendar never shows.",
-    "noPeriods": "No declared periods. Ask the agency in the proposal.",
+    "availabilityHint": "Periods declared by the hero or the industry. The private calendar never shows.",
+    "noPeriods": "No declared periods. Ask the industry in the proposal.",
     "blocked": "unavailable",
     "representedBy": "Represented by {agency}.",
     "consentMissing": "no consent (kit unavailable)",
@@ -131,14 +131,14 @@
   },
   "campaigns": {
     "draftSaved": "Draft saved.",
-    "submitted": "Proposal sent to the agency.",
+    "submitted": "Proposal sent to the industry.",
     "cancelled": "Proposal cancelled.",
     "title": "Campaigns",
-    "description": "Your proposals and the progress of each campaign with the agency.",
+    "description": "Your proposals and the progress of each campaign with the industry.",
     "new": "New proposal",
     "unavailable": "Campaigns being updated",
     "unavailableHint": "Campaigns appear as soon as the database is updated.",
-    "noAgency": "Your brand is not linked to an agency yet: proposals can only be sent after the link.",
+    "noAgency": "Your brand is not linked to an industry yet: proposals can only be sent after the link.",
     "empty": "No campaigns yet.",
     "emptyHint": "Build the first proposal: objective, audience, period, deliverables and offered value.",
     "forCreator": "For {name}",
@@ -151,7 +151,7 @@
     "stepsLabel": "Progress",
     "sections": {
       "summary": "Proposal summary",
-      "messages": "Conversation with the agency",
+      "messages": "Conversation with the industry",
       "talents": "Heroes",
       "deliverables": "Deliverables",
       "attachments": "Briefing attachments",
@@ -160,14 +160,14 @@
     },
     "requestedTalent": "Hero you chose",
     "talentStatus": {
-      "proposed": "Confirmed by the agency",
+      "proposed": "Confirmed by the industry",
       "contracted": "Contracted"
     },
-    "talentsPending": "The agency is consulting the heroes. You see the confirmed lineup as soon as the campaign is approved.",
+    "talentsPending": "The industry is consulting the heroes. You see the confirmed lineup as soon as the campaign is approved.",
     "talentsNone": "No heroes in this campaign.",
     "deliverablesNone": "Deliverables appear after confirmation.",
     "dueAt": "due {date}",
-    "agencyNote": "Values, contracts and the negotiation with heroes stay with the agency.",
+    "agencyNote": "Values, contracts and the negotiation with heroes stay with the industry.",
     "seeCatalog": "See catalog",
     "form": {
       "blocks": {
@@ -177,7 +177,7 @@
         "deliverables": "4. Networks and deliverables",
         "budget": "5. Value and notes"
       },
-      "forCreator": "Proposal addressed to {name}. The agency may suggest other heroes.",
+      "forCreator": "Proposal addressed to {name}. The industry may suggest other heroes.",
       "title": "Campaign name",
       "objective": "Objective",
       "product": "Product or service",
@@ -206,15 +206,15 @@
       "remove": "Remove",
       "addDeliverable": "Add deliverable",
       "budget": "Offered value (R$)",
-      "budgetHint": "Optional. Only your brand and the agency admin see it.",
+      "budgetHint": "Optional. Only your brand and the industry admin see it.",
       "budgetNote": "Note about the value",
       "notes": "Notes",
       "notesHint": "Free briefing: tone, references, what to avoid.",
       "saveDraft": "Save draft",
-      "submit": "Send to the agency",
+      "submit": "Send to the industry",
       "incompleteHint": "To send: title, objective, start date, one network and one deliverable.",
       "confirmTitle": "Send the proposal?",
-      "confirmHint": "The agency receives the briefing and starts consulting the heroes. You follow the progress here and can cancel until there is a confirmation.",
+      "confirmHint": "The industry receives the briefing and starts consulting the heroes. You follow the progress here and can cancel until there is a confirmation.",
       "back": "Back",
       "budgetInvalid": "Enter the value like 15.000,00.",
       "incomplete": "Something is missing: title, objective, start date, one network and one deliverable.",
@@ -243,7 +243,7 @@
     "cancel": {
       "action": "Cancel proposal",
       "title": "Cancel this proposal?",
-      "hint": "The agency is notified. After confirmation, only the agency can close it.",
+      "hint": "The industry is notified. After confirmation, only the industry can close it.",
       "back": "Back",
       "confirm": "Cancel proposal",
       "note": "Reason",
@@ -255,7 +255,7 @@
   "agenda": {
     "title": "Calendar",
     "description": "Confirmed campaigns, publications and meetings scheduled by {agency}, plus the commercial dates it publishes.",
-    "descriptionNoAgency": "Your brand is not linked to an agency yet.",
+    "descriptionNoAgency": "Your brand is not linked to an industry yet.",
     "unavailable": "Calendar being updated",
     "unavailableHint": "The calendar appears as soon as the database is updated.",
     "empty": "Nothing this month.",
@@ -270,7 +270,7 @@
     "paid": "Paid",
     "remaining": "Remaining",
     "none": "No budget set",
-    "sourceOffered": "Using the maximum told to the agency",
+    "sourceOffered": "Using the maximum told to the industry",
     "sourceSet": "Budget set by the brand",
     "used": "{percent}% of the budget committed",
     "tone": {
@@ -280,7 +280,7 @@
       "none": "No budget"
     },
     "committedHint": "What the brand pays for hired heroes (fee and service rate not split).",
-    "paymentDue": "Payment to the agency expected by {date}",
+    "paymentDue": "Payment to the industry expected by {date}",
     "byTalent": "By hero",
     "talentProposed": "Proposed",
     "talentContracted": "Hired",
@@ -290,7 +290,7 @@
     "editTitle": "Campaign budget",
     "editTalentTitle": "Budget · {name}",
     "amount": "Amount (R$)",
-    "amountHint": "Blank goes back to what was told to the agency.",
+    "amountHint": "Blank goes back to what was told to the industry.",
     "amountTalentHint": "Blank removes this hero's budget.",
     "amountInvalid": "Invalid amount. Use the 15.000,00 format.",
     "save": "Save",
@@ -304,6 +304,6 @@
     "overCount": "{count, plural, one {# campaign is over budget} other {# campaigns are over budget}}",
     "talentsOver": "{count, plural, one {# hero over budget} other {# heroes over budget}}",
     "seeCampaign": "See campaign",
-    "lockedHint": "A set budget is locked. To change it, use “Request budget change”: the agency reviews it and the owner confirms."
+    "lockedHint": "A set budget is locked. To change it, use “Request budget change”: the industry reviews it and the owner confirms."
   }
 }

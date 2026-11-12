@@ -20200,6 +20200,21 @@ update public.account_approvals set requested_profile = 'consumer' where user_id
 select tests.ok('S142 sem pedido de Hero e sem papel creator: volta à web',
   (select public.account_app_only('c1410000-0000-4000-8000-000000000014')) is false);
 
+-- S143: "Agência" vira "Indústria" nos textos que o banco gera (as seções acima reaplicam as migrações antigas)
+\ir ../migrations/0143_industria.sql
+select tests.su();
+select tests.ok('S143 termo, condições de pagamento, NDA e normas padrão falam em Indústria (nenhum "agência" nos textos gerados)',
+  not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+              where n.nspname = 'public'
+                and p.proname in ('deal_terms_payment_text', 'deal_terms_signable_text', 'project_default_nda', 'project_default_norms',
+                                  'project_nda_signable_text', 'brand_call_agree', 'agency_demo_seed', 'casting_groscove_2027_import',
+                                  'casting_groscove_2027_publish')
+                and p.prosrc ~ 'g[êÊ]ncia')
+  and exists (select 1 from pg_proc p where p.proname = 'deal_terms_payment_text' and p.prosrc like '%CONDIÇÕES DE PAGAMENTO (marca → indústria)%')
+  and position('indústria' in public.project_default_nda()) > 0);
+select tests.ok('S143 nomes internos intactos: papel agency, tabela agencies e funções agency_* continuam',
+  exists (select 1 from pg_proc where proname = 'agency_invite_brand') and to_regclass('public.agencies') is not null);
+
 drop function tests.s141_gate(text);
 delete from public.admin_audit where resource_id like 'c1410000-%';
 delete from public.invitations where email::text like '%@s141.test';

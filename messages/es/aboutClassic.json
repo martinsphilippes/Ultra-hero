@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Conoce Groscove Ultra",
-    "description": "La plataforma donde marca, Hero y agencia cierran negocios rápido: oportunidades, agenda, términos y entregas en un solo lugar, y la app donde el público sigue a los Heros."
+    "description": "La plataforma donde marca, Hero y industria cierran negocios rápido: oportunidades, agenda, términos y entregas en un solo lugar, y la app donde el público sigue a los Heros."
   },
   "nav": {
     "signup": "Crear cuenta",
@@ -13,7 +13,7 @@
   },
   "hero": {
     "eyebrow": "Groscove Ultra",
-    "title": "La plataforma donde marca, Hero y agencia cierran negocios rápido.",
+    "title": "La plataforma donde marca, Hero y industria cierran negocios rápido.",
     "lead": "Oportunidades, agenda, términos y entregas en un solo lugar. Y la app donde el público sigue a los Heros con contenidos, programas y recetas.",
     "signedIn": "Ya iniciaste sesión."
   },
@@ -30,7 +30,7 @@
         "body": "Recibe oportunidades claras, organiza la agenda y publica para su público."
       },
       "agency": {
-        "title": "Agencia",
+        "title": "Industria",
         "body": "Opera en el medio de todo: casting, negocios, plazos y la agenda central."
       },
       "app": {
@@ -41,7 +41,7 @@
   },
   "how": {
     "title": "Cómo funciona",
-    "lead": "De la elección del Hero al contenido aprobado, con la agencia en medio de cada conversación.",
+    "lead": "De la elección del Hero al contenido aprobado, con la industria en medio de cada conversación.",
     "steps": {
       "choose": {
         "title": "La marca elige",
@@ -49,11 +49,11 @@
       },
       "request": {
         "title": "Envía la campaña",
-        "body": "Describe la acción, el período y el presupuesto. La agencia recibe el pedido."
+        "body": "Describe la acción, el período y el presupuesto. La industria recibe el pedido."
       },
       "consult": {
         "title": "El Hero responde",
-        "body": "La agencia lleva la oportunidad al Hero, que acepta o rechaza."
+        "body": "La industria lleva la oportunidad al Hero, que acepta o rechaza."
       },
       "terms": {
         "title": "Términos aceptados",
@@ -68,7 +68,7 @@
         "body": "La marca sigue cada entrega por etapa y abre el informe de la campaña."
       }
     },
-    "note": "La marca no habla directo con el Hero: la agencia está en el medio y responde por ambos lados."
+    "note": "La marca no habla directo con el Hero: la industria está en el medio y responde por ambos lados."
   },
   "heroes": {
     "title": "Para Heros",
@@ -88,7 +88,7 @@
       },
       "opportunities": {
         "title": "Oportunidades",
-        "body": "Propuestas de las marcas, traídas por la agencia, para aceptar o rechazar."
+        "body": "Propuestas de las marcas, traídas por la industria, para aceptar o rechazar."
       },
       "agenda": {
         "title": "Agenda",
@@ -114,7 +114,7 @@
       },
       "calls": {
         "title": "Convocatorias",
-        "body": "Publica una necesidad, recibe propuestas de las agencias y compara antes de contratar."
+        "body": "Publica una necesidad, recibe propuestas de las industrias y compara antes de contratar."
       },
       "sponsorship": {
         "title": "Patrocinio",
@@ -131,7 +131,7 @@
     }
   },
   "agency": {
-    "title": "Para agencias",
+    "title": "Para industrias",
     "lead": "Toda la operación en un lugar: quién está disponible, qué está detenido y qué vence hoy.",
     "items": {
       "casting": {
@@ -180,8 +180,8 @@
     "lead": "La agenda cultural del año para planear acciones en el momento justo.",
     "points": {
       "territories": "Fechas por territorio: fútbol, deporte, música, entretenimiento, moda, comercio, feriados y más.",
-      "interest": "Marcas, agencias y Heros marcan interés y vinculan propuestas a los eventos.",
-      "where": "Disponible en los portales de marca, agencia y Hero."
+      "interest": "Marcas, industrias y Heros marcan interés y vinculan propuestas a los eventos.",
+      "where": "Disponible en los portales de marca, industria y Hero."
     }
   },
   "faq": {
@@ -196,8 +196,8 @@
         "a": "No. Ultra registra los valores de negocios y pedidos para control, sin cobrar ni mover dinero."
       },
       "access": {
-        "q": "¿Cómo entran marcas, agencias y Heros?",
-        "a": "Crea tu cuenta eligiendo tu perfil: Hero, Marca, Agencia o solo usar la app. ¿Recibiste una invitación? Entra con el correo invitado."
+        "q": "¿Cómo entran marcas, industrias y Heros?",
+        "a": "Crea tu cuenta eligiendo tu perfil: Hero, Marca, Industria o solo usar la app. ¿Recibiste una invitación? Entra con el correo invitado."
       },
       "devices": {
         "q": "¿Funciona en el celular?",
@@ -224,7 +224,7 @@
   "interlude": {
     "heroes": "Heros",
     "brands": "Marcas",
-    "agency": "Agencias",
+    "agency": "Industrias",
     "app": "Público"
   }
 }

@@ -21,7 +21,7 @@
   },
   "again": "Refazer o teste",
   "saved": "Resultado salvo no seu perfil.",
-  "notAllowed": "O teste é para quem trabalha na plataforma (agência, marca ou Hero).",
+  "notAllowed": "O teste é para quem trabalha na plataforma (indústria, marca ou Hero).",
   "cta": "Fazer o teste de personalidade",
   "ctaHint": "32 frases, 3 minutos. O resultado aparece para a sua equipe.",
   "myType": "Seu perfil: {name} ({type})",

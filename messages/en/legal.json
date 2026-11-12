@@ -7,7 +7,7 @@
     "deletion": "Delete account",
     "deletionDescription": "How to delete your account and what happens to your data.",
     "partner": "Partner Terms",
-    "partnerDescription": "Rules for heroes and agencies publishing on Groscove Ultra: rights to photos and videos, usage license and moderation."
+    "partnerDescription": "Rules for heroes and industries publishing on Groscove Ultra: rights to photos and videos, usage license and moderation."
   },
   "links": {
     "nav": "Legal documents",
@@ -40,7 +40,7 @@
   },
   "terms": {
     "title": "Terms of Use",
-    "intro": "These Terms explain the rules for using {app}, on the website and in the iOS and Android app. By creating an account or using the service, you agree to them. Please also read the <privacy>Privacy Policy</privacy>, which explains how we handle your data. Heroes and agencies also follow the <partner>Partner Terms</partner>.",
+    "intro": "These Terms explain the rules for using {app}, on the website and in the iOS and Android app. By creating an account or using the service, you agree to them. Please also read the <privacy>Privacy Policy</privacy>, which explains how we handle your data. Heroes and industries also follow the <partner>Partner Terms</partner>.",
     "sections": {
       "about": {
         "title": "About the service",
@@ -79,7 +79,7 @@
       "personalities": {
         "title": "Heroes",
         "blocks": {
-          "p1": "{app} heroes are real public figures who run their own profile, by invitation. Each hero, or the agency that represents them, accepts the <partner>Partner Terms</partner> and publishes their own photos, videos and texts, declaring that they hold the rights to them.",
+          "p1": "{app} heroes are real public figures who run their own profile, by invitation. Each hero, or the industry that represents them, accepts the <partner>Partner Terms</partner> and publishes their own photos, videos and texts, declaring that they hold the rights to them.",
           "p2": "Profile content is educational and does not replace individual professional advice. The sample suppliers in the website’s shop are fictional."
         }
       },
@@ -114,7 +114,7 @@
       "partners": {
         "title": "Partner content",
         "blocks": {
-          "p1": "Heroes, agencies and suppliers take part <strong>by invitation only</strong> from the {app} team. By accepting the invitation, the partner accepts the <partner>Partner Terms</partner>. Each partner uses their own portal and only sees and manages what is theirs.",
+          "p1": "Heroes, industries and suppliers take part <strong>by invitation only</strong> from the {app} team. By accepting the invitation, the partner accepts the <partner>Partner Terms</partner>. Each partner uses their own portal and only sees and manages what is theirs.",
           "list1": {
             "i1": "Content submitted by heroes goes through editorial review before it is published.",
             "i2": "Supplier products may be hidden or suspended by moderation at any time. Links between content and products may also be suspended, including automatically when a product changes significantly.",
@@ -204,7 +204,7 @@
             "reports": "<strong>Reports and blocks:</strong> if you report, we store the reported content or hero, the reason, any detail you write and the date; if you block a hero, we store which hero and since when, to hide them from you.",
             "recommendations": "<strong>Recommendations:</strong> the list of content recommended to you and a technical record of each calculation (engine used, time, number of items, estimated cost and errors).",
             "partners": "<strong>Partners and administration:</strong> if you are invited as a partner, the email address the invitation was sent to, your partner profile data and what you submit. The main actions taken through the admin panel, such as role changes, invitations, moderation and settings, are recorded in an audit log.",
-            "partnerTerms": "<strong>Acceptance of the Partner Terms (heroes and agencies only):</strong> the version of the <partner>Partner Terms</partner> you accepted when joining by invitation, the date of acceptance and the date on which you confirmed, before your first upload, that you hold the rights to the photos and videos, as proof of acceptance.",
+            "partnerTerms": "<strong>Acceptance of the Partner Terms (heroes and industries only):</strong> the version of the <partner>Partner Terms</partner> you accepted when joining by invitation, the date of acceptance and the date on which you confirmed, before your first upload, that you hold the rights to the photos and videos, as proof of acceptance.",
             "recipeStep": "<strong>Recipe step:</strong> your acceptance of the notice and the restrictions and allergies you mark (from a fixed list, no free text). Allergies and restrictions are sensitive health data: we only use them to remind you on each recipe page, with your consent, and you can change or delete them anytime.",
             "heroVideos": "<strong>Hero videos:</strong> if you are a hero and record or upload a video in the app, the file goes straight from your device to Cloudflare Stream. The app only keeps the video identifier, the content it belongs to and the upload and discard dates (to limit uploads and clean up abandoned videos).",
             "recipePhotos": "<strong>Recipe photos and videos:</strong> if you are a hero and upload photos to a recipe, the photo is resized on your device (losing location and camera data) and kept in a private area of Supabase storage, linked to the recipe. Who sees them: gallery photos, everyone, while the recipe is live; step photos, only people who can open the recipe; drafts, only you and the administration. A recipe video follows the rule for hero videos.",
@@ -507,12 +507,12 @@
   },
   "partner": {
     "title": "Partner Terms",
-    "intro": "These Partner Terms apply to agencies and their collaborators, Heroes, brands and everyone who works through {app}. They complement the <terms>Terms of Use</terms> and the <privacy>Privacy Policy</privacy> and work as the partnership agreement between you and {company}. By accepting these Terms at sign-up, in the access request or in an invitation, you agree to everything here.",
+    "intro": "These Partner Terms apply to industries and their collaborators, Heroes, brands and everyone who works through {app}. They complement the <terms>Terms of Use</terms> and the <privacy>Privacy Policy</privacy> and work as the partnership agreement between you and {company}. By accepting these Terms at sign-up, in the access request or in an invitation, you agree to everything here.",
     "sections": {
       "who": {
         "title": "Who is a partner",
         "blocks": {
-          "p1": "A partner is anyone who joins {app} by invitation from the team to publish or manage content: the <strong>hero</strong> (the real public figure who owns the profile), the <strong>agency</strong> that represents heroes or brands, the agency’s team members and anyone else invited to a partner portal (brands, professionals and suppliers).",
+          "p1": "A partner is anyone who joins {app} by invitation from the team to publish or manage content: the <strong>hero</strong> (the real public figure who owns the profile), the <strong>industry</strong> that represents heroes or brands, the industry’s team members and anyone else invited to a partner portal (brands, professionals and suppliers).",
           "p2": "The invitation is personal and tied to the email it was sent to. Do not share access to the portal."
         }
       },
@@ -530,7 +530,7 @@
       "access": {
         "title": "Access, account and security",
         "blocks": {
-          "p1": "Access is personal and non-transferable. In an agency, you join with the authorized domain e-mail and need the approval of an administrator, who sets the access level (Collaborator, Manager or Admin).",
+          "p1": "Access is personal and non-transferable. In an industry, you join with the authorized domain e-mail and need the approval of an administrator, who sets the access level (Collaborator, Manager or Admin).",
           "list1": {
             "i1": "Do not share your password or let anyone else use your account;",
             "i2": "tell us immediately about misuse, a lost device or a leak;",
@@ -544,7 +544,7 @@
           "p1": "When you submit any photo, video, audio or text, you declare that:",
           "list1": {
             "i1": "you own the rights to the material or have written permission from every rights holder, including the photographer, the producer and the people who appear in it;",
-            "i2": "you have the right to use the name, image and voice of the people who appear in the material. If you are an agency, you declare that you have a contract with the hero authorizing you to publish on their behalf;",
+            "i2": "you have the right to use the name, image and voice of the people who appear in the material. If you are an industry, you declare that you have a contract with the hero authorizing you to publish on their behalf;",
             "i3": "the material does not infringe trademarks, copyright, privacy or other third-party rights, nor the law;",
             "i4": "you do not submit material from stock image sites, other profiles or the internet without a license that allows this use."
           },
@@ -554,7 +554,7 @@
       "evidence": {
         "title": "Keeping the contracts",
         "blocks": {
-          "p1": "<strong>Whoever publishes keeps the evidence.</strong> The partner — and, when publishing on behalf of a hero, the agency — keeps the contracts and permissions behind each publication and presents them, within the requested time, whenever asked by {app}, by the hero, by rights holders or by authorities. {app} is an intermediary platform: it does not review or keep these contracts and, as provided by law (Brazilian Civil Rights Framework for the Internet, Law 12,965/2014), it removes content upon a court order or when the content breaches these Terms."
+          "p1": "<strong>Whoever publishes keeps the evidence.</strong> The partner — and, when publishing on behalf of a hero, the industry — keeps the contracts and permissions behind each publication and presents them, within the requested time, whenever asked by {app}, by the hero, by rights holders or by authorities. {app} is an intermediary platform: it does not review or keep these contracts and, as provided by law (Brazilian Civil Rights Framework for the Internet, Law 12,965/2014), it removes content upon a court order or when the content breaches these Terms."
         }
       },
       "license": {

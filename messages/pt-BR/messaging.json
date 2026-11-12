@@ -44,9 +44,9 @@
   "emptyFiltered": "Nenhuma conversa com esses filtros.",
   "emptyHint": {
     "agency": "As conversas nascem nos negócios: o canal com a marca, o canal com cada Hero consultado (aba Conversa do negócio) e a sala do projeto. Quando alguém escrever, aparece aqui, com a campanha e a etapa.",
-    "brand": "Cada campanha tem uma conversa com a agência (na página da campanha) e, quando a produção começa, a sala do projeto. Assim que a agência receber sua campanha, a conversa aparece aqui.",
-    "hero": "Cada oportunidade em que a agência consultar você tem uma conversa com a agência; nos projetos confirmados, também a sala do projeto. Elas aparecem aqui.",
-    "staff": "Quando a agência chamar você para um projeto, a sala dele aparece aqui. Depois de assinar o NDA, você conversa com a equipe por ela."
+    "brand": "Cada campanha tem uma conversa com a indústria (na página da campanha) e, quando a produção começa, a sala do projeto. Assim que a indústria receber sua campanha, a conversa aparece aqui.",
+    "hero": "Cada oportunidade em que a indústria consultar você tem uma conversa com a indústria; nos projetos confirmados, também a sala do projeto. Elas aparecem aqui.",
+    "staff": "Quando a indústria chamar você para um projeto, a sala dele aparece aqui. Depois de assinar o NDA, você conversa com a equipe por ela."
   },
   "clearFilters": "Ver todas as conversas",
   "unavailable": "As conversas não estão disponíveis agora. Tente de novo em instantes.",

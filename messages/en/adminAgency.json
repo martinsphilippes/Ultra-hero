@@ -1,9 +1,9 @@
 {
-  "title": "Agencies",
-  "description": "Management module agencies and their teams.",
+  "title": "Industries",
+  "description": "Management module industries and their teams.",
   "unavailable": "Module being updated.",
-  "forbidden": "Only the platform administration manages agencies.",
-  "listTitle": "Registered agencies",
+  "forbidden": "Only the platform administration manages industries.",
+  "listTitle": "Registered industries",
   "status": {
     "active": "Active",
     "suspended": "Suspended"
@@ -12,7 +12,7 @@
   "openPortal": "Open portal",
   "teamCount": "Admin: {admins} · Managers: {managers} · Staff: {staff}",
   "edit": "Edit details",
-  "newTitle": "New agency",
+  "newTitle": "New industry",
   "form": {
     "name": "Name",
     "slug": "Short address",
@@ -21,9 +21,9 @@
     "suspended": "Suspended",
     "email": "Contact email",
     "save": "Save",
-    "create": "Create agency"
+    "create": "Create industry"
   },
-  "saved": "Agency saved.",
+  "saved": "Industry saved.",
   "inviteCreated": "Invitation created. Copy the link and send it to the person.",
   "transferred": "Brand transferred."
 }

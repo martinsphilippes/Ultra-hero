@@ -41,12 +41,12 @@
     "newMessage": "New message",
     "placeholder": "Message, photo, audio or file",
     "internalToggle": "Internal",
-    "internalHint": "Only the agency and external staff see it.",
-    "internalHintStaff": "Only the agency team and staff see it.",
+    "internalHint": "Only the industry and external staff see it.",
+    "internalHintStaff": "Only the industry team and staff see it.",
     "send": "Send",
     "fileHint": "Photo, audio or PDF up to 20 MB. No amounts in the room.",
     "sides": {
-      "agency": "Agency",
+      "agency": "Industry",
       "brand": "Brand",
       "talent": "Hero",
       "staff": "External staff",
@@ -82,7 +82,7 @@
     "crew": "Crew and arrival",
     "arrived": "{n} of {total} arrived",
     "sides": {
-      "agency": "Agency",
+      "agency": "Industry",
       "talent": "Hero",
       "staff": "External staff"
     },
@@ -160,7 +160,7 @@
     "copied": "Link copied.",
     "copyFailed": "Could not copy. Select the link.",
     "sides": {
-      "agency": "Agency",
+      "agency": "Industry",
       "talent": "Hero",
       "staff": "External staff",
       "brand": "Brand"
@@ -201,7 +201,7 @@
     "ndaHeroes": "Heroes also sign the NDA",
     "ndaHeroesHint": "External staff always sign.",
     "save": "Save",
-    "confirmArchive": "Archive the room? Staff, heroes and brand lose access; the agency can still read it.",
+    "confirmArchive": "Archive the room? Staff, heroes and brand lose access; the industry can still read it.",
     "archive": "Archive room"
   },
   "room": {
@@ -210,12 +210,12 @@
     "open": "Open",
     "people": "{n} people",
     "count": {
-      "agency": "Agency {n}",
+      "agency": "Industry {n}",
       "talent": "Hero {n}",
       "staff": "External staff {n}",
       "brand": "Brand {n}"
     },
-    "archivedHint": "Room archived: read-only for the agency.",
+    "archivedHint": "Room archived: read-only for the industry.",
     "closingHint": "On closing, the room is archived and everyone's access is removed.",
     "clipping": "Project clipping",
     "pinned": "Pinned",
@@ -224,9 +224,9 @@
     "noBriefing": "Briefing not pinned yet.",
     "guide": "Material usage guide",
     "noShoot": "No shoot day scheduled.",
-    "tools": "Agency tools",
+    "tools": "Industry tools",
     "conversation": "Room conversation",
-    "clientHint": "Here you talk to the agency and the project team.",
+    "clientHint": "Here you talk to the industry and the project team.",
     "whoIsHere": "Who is in the room",
     "openFailed": "Could not open the file.",
     "openGuide": "Open",
@@ -270,7 +270,7 @@
     "guideHint": "Where and when to use each piece for best results.",
     "team": "Team",
     "roles": {
-      "agency": "Agency",
+      "agency": "Industry",
       "talent": "Hero"
     },
     "shootDays": "Shoot days",
@@ -335,7 +335,7 @@
     "nda": "NDA template (version {version})",
     "ndaHint": "Changing the text creates a new version; those who already signed keep the version they signed.",
     "save": "Save",
-    "adminOnly": "Only the agency Admin can edit.",
+    "adminOnly": "Only the industry Admin can edit.",
     "title": "Project room rules and NDA",
     "description": "What external staff read and sign before entering the room.",
     "back": "Settings",
@@ -364,20 +364,20 @@
     "description": "Rooms of the projects you were invited to.",
     "unavailable": "Projects are being updated.",
     "empty": "No projects here.",
-    "emptyHint": "When an agency invites you, the invitation arrives by email.",
+    "emptyHint": "When an industry invites you, the invitation arrives by email.",
     "heroTitle": "Project rooms",
-    "heroHint": "Conversation with the agency and team, shoot day and materials."
+    "heroHint": "Conversation with the industry and team, shoot day and materials."
   },
   "link": {
     "room": "Project room",
     "clipping": "Project clipping",
     "ndaHint": "Sign the NDA to enter.",
-    "roomHint": "Conversation with the agency and team, shoot day and usage guide.",
+    "roomHint": "Conversation with the industry and team, shoot day and usage guide.",
     "clippingHint": "Deliverables, links, metrics and usage guide."
   },
   "invite": {
     "title": "Project invitation",
-    "description": "An agency invited you to a project team.",
+    "description": "An industry invited you to a project team.",
     "missing": "Incomplete invitation link.",
     "missingHint": "Open the link exactly as it arrived in the email.",
     "hint": "By accepting, you join this project's room. Before seeing the conversation, you sign the NDA.",

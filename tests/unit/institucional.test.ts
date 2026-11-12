@@ -264,7 +264,7 @@ describe("/sobre · Conheça o Groscove Ultra (apresentação clássica)", () =>
   it("pt-BR traz o título, a proposta de valor e as seções de antes", () => {
     const pt = about["pt-BR"];
     expect(get(pt, "meta.title")).toBe("Conheça o Groscove Ultra");
-    expect(get(pt, "hero.title")).toBe("A plataforma onde marca, Hero e agência fecham negócio rápido.");
+    expect(get(pt, "hero.title")).toBe("A plataforma onde marca, Hero e indústria fecham negócio rápido.");
     expect(get(pt, "what.title")).toBe("O que é o Ultra");
     expect(get(pt, "calendar.title")).toBe("Calendário Groscove");
     expect(get(pt, "agency.items.castBuilder.title")).toBe("Montador de elenco");

@@ -27,7 +27,7 @@
     },
     "seeTeam": "Ver equipo",
     "upcomingTitle": "Próximamente en el portal",
-    "upcomingHint": "La agencia habilitará estas áreas por etapas.",
+    "upcomingHint": "La industria habilitará estas áreas por etapas.",
     "upcoming": {
       "campaigns": {
         "title": "Campañas",
@@ -43,14 +43,14 @@
       },
       "calendar": {
         "title": "Calendario comercial",
-        "body": "Fechas y oportunidades publicadas por la agencia."
+        "body": "Fechas y oportunidades publicadas por la industria."
       }
     },
     "newCampaign": "Nueva propuesta",
     "seeCreators": "Buscar Heros",
     "seeCampaigns": "Ver campañas",
     "approvalsNote": "Términos, guiones y entregas por aprobar están dentro de cada campaña.",
-    "suggestedTitle": "Heros sugeridos por la agencia",
+    "suggestedTitle": "Heros sugeridos por la industria",
     "suggestedHint": "Confirmados o contratados en tus campañas abiertas, con los datos que autorizaron mostrar.",
     "suggestedNone": "Todavía ningún Hero confirmado en las campañas abiertas.",
     "nextEventsTitle": "Próximas fechas",
@@ -80,8 +80,8 @@
   },
   "creators": {
     "title": "Heros",
-    "description": "Heros de la agencia {agency} disponibles para tu marca.",
-    "descriptionNoAgency": "Tu marca todavía no está vinculada a una agencia.",
+    "description": "Heros de la industria {agency} disponibles para tu marca.",
+    "descriptionNoAgency": "Tu marca todavía no está vinculada a una industria.",
     "filters": {
       "search": "Buscar",
       "searchPlaceholder": "Nombre del Hero",
@@ -98,10 +98,10 @@
       "available": "Disponible",
       "limited": "Agenda limitada"
     },
-    "sourceNote": "Métricas declaradas por el Hero o por la agencia, siempre con la fecha del dato. Sin valores: la propuesta comercial se hace con la agencia.",
+    "sourceNote": "Métricas declaradas por el Hero o por la industria, siempre con la fecha del dato. Sin valores: la propuesta comercial se hace con la industria.",
     "emptyFiltered": "Ningún Hero con estos filtros.",
     "empty": "Todavía no hay Heros liberados en el catálogo.",
-    "emptyHint": "La agencia libera a los Heros según el consentimiento de cada uno.",
+    "emptyHint": "La industria libera a los Heros según el consentimiento de cada uno.",
     "unavailable": "Catálogo en actualización",
     "unavailableHint": "El catálogo aparece en cuanto se actualice la base de datos.",
     "noHeadline": "Sin titular",
@@ -120,8 +120,8 @@
     "networksTitle": "Redes y métricas declaradas",
     "brandsTitle": "Marcas que ya acompañan",
     "availabilityTitle": "Disponibilidad comercial",
-    "availabilityHint": "Períodos declarados por el Hero o la agencia. La agenda privada nunca aparece.",
-    "noPeriods": "Ningún período declarado. Pregunta a la agencia en la propuesta.",
+    "availabilityHint": "Períodos declarados por el Hero o la industria. La agenda privada nunca aparece.",
+    "noPeriods": "Ningún período declarado. Pregunta a la industria en la propuesta.",
     "blocked": "no disponible",
     "representedBy": "Representado por {agency}.",
     "consentMissing": "sin consentimiento (kit no disponible)",
@@ -131,14 +131,14 @@
   },
   "campaigns": {
     "draftSaved": "Borrador guardado.",
-    "submitted": "Propuesta enviada a la agencia.",
+    "submitted": "Propuesta enviada a la industria.",
     "cancelled": "Propuesta cancelada.",
     "title": "Campañas",
-    "description": "Tus propuestas y el avance de cada campaña con la agencia.",
+    "description": "Tus propuestas y el avance de cada campaña con la industria.",
     "new": "Nueva propuesta",
     "unavailable": "Campañas en actualización",
     "unavailableHint": "Las campañas aparecen en cuanto se actualice la base de datos.",
-    "noAgency": "Tu marca todavía no está vinculada a una agencia: la propuesta solo puede enviarse después del vínculo.",
+    "noAgency": "Tu marca todavía no está vinculada a una industria: la propuesta solo puede enviarse después del vínculo.",
     "empty": "Todavía no hay campañas.",
     "emptyHint": "Arma la primera propuesta: objetivo, público, período, entregables y valor ofrecido.",
     "forCreator": "Para {name}",
@@ -151,7 +151,7 @@
     "stepsLabel": "Avance",
     "sections": {
       "summary": "Resumen de la propuesta",
-      "messages": "Conversación con la agencia",
+      "messages": "Conversación con la industria",
       "talents": "Heros",
       "deliverables": "Entregas",
       "attachments": "Adjuntos del briefing",
@@ -160,14 +160,14 @@
     },
     "requestedTalent": "Hero elegido por ti",
     "talentStatus": {
-      "proposed": "Confirmado por la agencia",
+      "proposed": "Confirmado por la industria",
       "contracted": "Contratado"
     },
-    "talentsPending": "La agencia está consultando a los Heros. Verás el elenco confirmado en cuanto la campaña sea aprobada.",
+    "talentsPending": "La industria está consultando a los Heros. Verás el elenco confirmado en cuanto la campaña sea aprobada.",
     "talentsNone": "Ningún Hero en esta campaña.",
     "deliverablesNone": "Las entregas aparecen después de la confirmación.",
     "dueAt": "plazo {date}",
-    "agencyNote": "Valores, contratos y la negociación con los Heros quedan con la agencia.",
+    "agencyNote": "Valores, contratos y la negociación con los Heros quedan con la industria.",
     "seeCatalog": "Ver catálogo",
     "form": {
       "blocks": {
@@ -177,7 +177,7 @@
         "deliverables": "4. Redes y entregables",
         "budget": "5. Valor y observaciones"
       },
-      "forCreator": "Propuesta dirigida a {name}. La agencia puede sugerir otros Heros.",
+      "forCreator": "Propuesta dirigida a {name}. La industria puede sugerir otros Heros.",
       "title": "Nombre de la campaña",
       "objective": "Objetivo",
       "product": "Producto o servicio",
@@ -206,15 +206,15 @@
       "remove": "Quitar",
       "addDeliverable": "Agregar entregable",
       "budget": "Valor ofrecido (R$)",
-      "budgetHint": "Opcional. Solo tu marca y el Adm de la agencia lo ven.",
+      "budgetHint": "Opcional. Solo tu marca y el Adm de la industria lo ven.",
       "budgetNote": "Observación sobre el valor",
       "notes": "Observaciones",
       "notesHint": "Briefing libre: tono, referencias, qué evitar.",
       "saveDraft": "Guardar borrador",
-      "submit": "Enviar a la agencia",
+      "submit": "Enviar a la industria",
       "incompleteHint": "Para enviar: título, objetivo, fecha de inicio, una red y un entregable.",
       "confirmTitle": "¿Enviar la propuesta?",
-      "confirmHint": "La agencia recibe el briefing y empieza a consultar a los Heros. Sigues el avance aquí y puedes cancelar mientras no haya confirmación.",
+      "confirmHint": "La industria recibe el briefing y empieza a consultar a los Heros. Sigues el avance aquí y puedes cancelar mientras no haya confirmación.",
       "back": "Volver",
       "budgetInvalid": "Indica el valor como 15.000,00.",
       "incomplete": "Falta algo: título, objetivo, fecha de inicio, una red y un entregable.",
@@ -243,7 +243,7 @@
     "cancel": {
       "action": "Cancelar propuesta",
       "title": "¿Cancelar esta propuesta?",
-      "hint": "La agencia es avisada. Después de la confirmación, solo la agencia puede cerrarla.",
+      "hint": "La industria es avisada. Después de la confirmación, solo la industria puede cerrarla.",
       "back": "Volver",
       "confirm": "Cancelar propuesta",
       "note": "Motivo",
@@ -255,7 +255,7 @@
   "agenda": {
     "title": "Agenda",
     "description": "Campañas confirmadas, publicaciones y reuniones agendadas por {agency}, más las fechas comerciales que publica.",
-    "descriptionNoAgency": "Tu marca todavía no está vinculada a una agencia.",
+    "descriptionNoAgency": "Tu marca todavía no está vinculada a una industria.",
     "unavailable": "Agenda en actualización",
     "unavailableHint": "La agenda aparece en cuanto se actualice la base de datos.",
     "empty": "Nada este mes.",
@@ -270,7 +270,7 @@
     "paid": "Pagado",
     "remaining": "Saldo",
     "none": "Sin presupuesto definido",
-    "sourceOffered": "Usando el máximo informado a la agencia",
+    "sourceOffered": "Usando el máximo informado a la industria",
     "sourceSet": "Presupuesto definido por la marca",
     "used": "{percent}% del presupuesto comprometido",
     "tone": {
@@ -280,7 +280,7 @@
       "none": "Sin presupuesto"
     },
     "committedHint": "Lo que la marca paga por los contratados (sin separar cachet y tasa).",
-    "paymentDue": "Pago a la agencia previsto para {date}",
+    "paymentDue": "Pago a la industria previsto para {date}",
     "byTalent": "Por Hero",
     "talentProposed": "En propuesta",
     "talentContracted": "Contratado",
@@ -290,7 +290,7 @@
     "editTitle": "Presupuesto de la campaña",
     "editTalentTitle": "Presupuesto · {name}",
     "amount": "Valor (R$)",
-    "amountHint": "En blanco vuelve a lo informado a la agencia.",
+    "amountHint": "En blanco vuelve a lo informado a la industria.",
     "amountTalentHint": "En blanco quita el presupuesto de este Hero.",
     "amountInvalid": "Valor inválido. Usa el formato 15.000,00.",
     "save": "Guardar",
@@ -304,6 +304,6 @@
     "overCount": "{count, plural, one {# campaña superó el presupuesto} other {# campañas superaron el presupuesto}}",
     "talentsOver": "{count, plural, one {# Hero sobre el presupuesto} other {# Heros sobre el presupuesto}}",
     "seeCampaign": "Ver campaña",
-    "lockedHint": "El presupuesto definido queda bloqueado. Para cambiarlo, usa “Pedir cambio de presupuesto”: la agencia lo evalúa y el dueño confirma."
+    "lockedHint": "El presupuesto definido queda bloqueado. Para cambiarlo, usa “Pedir cambio de presupuesto”: la industria lo evalúa y el dueño confirma."
   }
 }

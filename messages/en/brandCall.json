@@ -36,8 +36,8 @@
     "public": "Audience",
     "budget": "Budget",
     "budgetShown": {
-      "exact": "Agencies (Admin only) see the exact amount.",
-      "up_to": "Agencies (Admin only) see \"up to\" this amount."
+      "exact": "Industries (Admin only) see the exact amount.",
+      "up_to": "Industries (Admin only) see \"up to\" this amount."
     }
   },
   "form": {
@@ -63,8 +63,8 @@
     "nichesPlaceholder": "Beauty, beach, wellness",
     "networks": "Networks",
     "budget": "Budget (total amount)",
-    "budgetHint": "You decide how agencies see it.",
-    "budgetDisplay": "How to show it to agencies",
+    "budgetHint": "You decide how industries see it.",
+    "budgetDisplay": "How to show it to industries",
     "budgetDisplays": {
       "exact": "Show the exact amount",
       "up_to": "Show \"up to R$ X\"",
@@ -75,19 +75,19 @@
     "respondTime": "Time",
     "audience": "Who sees it",
     "audiences": {
-      "my_agencies": "Agencies that already serve me",
-      "selected": "Chosen agencies",
-      "all": "All agencies on the platform"
+      "my_agencies": "Industries that already serve me",
+      "selected": "Chosen industries",
+      "all": "All industries on the platform"
     },
     "audienceHints": {
-      "my_agencies": "Only the agency that serves your brand today.",
-      "selected": "Only the agencies you tick. They don't know who else was invited.",
-      "all": "Any active agency on the platform sees it and can propose."
+      "my_agencies": "Only the industry that serves your brand today.",
+      "selected": "Only the industries you tick. They don't know who else was invited.",
+      "all": "Any active industry on the platform sees it and can propose."
     },
-    "agencies": "Agencies",
-    "noAgencies": "No active agencies.",
+    "agencies": "Industries",
+    "noAgencies": "No active industries.",
     "agencyServes": "{name} (serves you)",
-    "ownerHint": "When you publish, the target agencies are notified. Heroes see the call without the budget.",
+    "ownerHint": "When you publish, the target industries are notified. Heroes see the call without the budget.",
     "staffHint": "The brand owner approves before publishing.",
     "saveDraft": "Save draft",
     "publish": "Publish call",
@@ -100,10 +100,10 @@
       "respondAfterPeriod": "The proposal deadline must be by the end of the period.",
       "deliverables": "Add at least one deliverable.",
       "networks": "Tick at least one network.",
-      "agencies": "Choose at least one agency.",
+      "agencies": "Choose at least one industry.",
       "maxHeroes": "For a per-hero value, enter the maximum number of heroes (1 to 50)."
     },
-    "published": "Call published. Agencies were notified.",
+    "published": "Call published. Industries were notified.",
     "toOwner": "Sent to the owner for approval.",
     "saved": "Draft saved."
   },
@@ -122,7 +122,7 @@
     "withdraw": "Withdraw request",
     "cancel": "Cancel call",
     "confirmCancelTitle": "Cancel the call?",
-    "confirmCancel": "It disappears for agencies and gets no more proposals.",
+    "confirmCancel": "It disappears for industries and gets no more proposals.",
     "back": "Back",
     "done": {
       "approve": "Call published.",
@@ -132,7 +132,7 @@
   },
   "compare": {
     "empty": "No proposals yet",
-    "emptyHint": "Target agencies were notified. Proposals show up here.",
+    "emptyHint": "Target industries were notified. Proposals show up here.",
     "title": "{count, plural, one {# proposal received} other {# proposals received}}",
     "hint": "Compare side by side. Swipe to see the others.",
     "amount": "Amount",
@@ -157,8 +157,8 @@
   "decide": {
     "pickOne": "Choose at least one proposal.",
     "title": "Decision",
-    "hint": "Tick the winners and hire. Each one gets a campaign with everything filled in; the other agencies are notified.",
-    "note": "Message to agencies (optional)",
+    "hint": "Tick the winners and hire. Each one gets a campaign with everything filled in; the other industries are notified.",
+    "note": "Message to industries (optional)",
     "contract": "{count, plural, one {Hire the chosen one} other {Hire the # chosen}}",
     "close": "Close without hiring",
     "closeWithAgreed": "Close with the deals",
@@ -166,7 +166,7 @@
     "confirmContractTitle": "Hire the chosen ones?",
     "confirmContract": "Amount and deliverables are frozen, campaigns are created and the call closes to new proposals.",
     "confirmCloseTitle": "Close the call?",
-    "confirmClose": "Open proposals are closed and agencies notified.",
+    "confirmClose": "Open proposals are closed and industries notified.",
     "back": "Back",
     "confirm": "Hire",
     "done": {
@@ -180,7 +180,7 @@
     "deliverBy": "Delivery by",
     "deliverables": "Deliverables",
     "note": "Message",
-    "sideAgency": "Agency",
+    "sideAgency": "Industry",
     "sideBrand": "Brand",
     "action": {
       "propose": "Proposal",
@@ -198,7 +198,7 @@
     "termsRequired": "Enter the amount and at least one deliverable.",
     "hideHistory": "Hide negotiation",
     "showHistory": "See negotiation ({count})",
-    "ownerReview": "{name} prepared a reply. Approve to send it to the agency.",
+    "ownerReview": "{name} prepared a reply. Approve to send it to the industry.",
     "reviewNote": "Note (required to send back)",
     "approveRound": "Approve and send",
     "returnRound": "Send back",
@@ -232,7 +232,7 @@
     "description": "Needs published by brands. Build the proposal with your roster.",
     "unavailable": "Brand requests unavailable",
     "empty": "No requests yet",
-    "emptyHint": "When a brand publishes a call for your agency, it shows up here and in the bell.",
+    "emptyHint": "When a brand publishes a call for your industry, it shows up here and in the bell.",
     "proposalBadge": {
       "yourTurn": "Your turn",
       "withBrand": "With the brand",
@@ -246,7 +246,7 @@
     "respondUntil": "proposals until {date}",
     "calendarTitle": "Request: {title}",
     "calendarSubtitle": "{brand} · proposals until {date}",
-    "privacy": "Only your agency sees your proposal. The brand doesn't show who else was invited.",
+    "privacy": "Only your industry sees your proposal. The brand doesn't show who else was invited.",
     "interestsTitle": "Interested heroes ({count})",
     "interestsEmpty": "No hero has shown interest yet.",
     "yourProposal": "Your proposal",
@@ -291,14 +291,14 @@
   },
   "brand": {
     "tabsLabel": "Opportunities",
-    "tabOffers": "Offered by the agency",
+    "tabOffers": "Offered by the industry",
     "tabCalls": "My calls",
     "title": "My calls",
-    "description": "Publish what you need and get proposals from agencies with heroes.",
+    "description": "Publish what you need and get proposals from industries with heroes.",
     "new": "New call",
     "unavailable": "Calls unavailable",
     "empty": "No calls yet",
-    "emptyHint": "Tell the brand's need (deliverables, audience, budget) and agencies answer with heroes.",
+    "emptyHint": "Tell the brand's need (deliverables, audience, budget) and industries answer with heroes.",
     "badgeApproval": "Waiting for the owner",
     "badgeYourTurn": "{count, plural, one {# your turn} other {# your turn}}",
     "badgeOwner": "Round waiting for the owner",
@@ -306,7 +306,7 @@
     "agreed": "{count, plural, one {# deal} other {# deals}}",
     "respondUntil": "Proposals until {date}",
     "newTitle": "New call",
-    "newDescription": "Agencies answer with heroes, deliverables and amount. You compare and choose.",
+    "newDescription": "Industries answer with heroes, deliverables and amount. You compare and choose.",
     "editTitle": "Edit call",
     "publishedAt": "Published on {date}",
     "edit": "Edit",
@@ -318,16 +318,16 @@
     "deadlineHint": "The proposal deadline is over. You can still negotiate and choose the winners.",
     "whoSees": "Who sees it",
     "audience": {
-      "my_agencies": "Agencies that already serve your brand.",
-      "selected": "Only the chosen agencies:",
-      "all": "All agencies on the platform."
+      "my_agencies": "Industries that already serve your brand.",
+      "selected": "Only the chosen industries:",
+      "all": "All industries on the platform."
     },
     "fromCall": "This campaign came from the deal in the call \"{title}\". The agreed amount is locked.",
     "seeCall": "See call"
   },
   "talent": {
     "title": "Brand requests",
-    "hint": "Brands looking for heroes through your agency. Show interest and the agency builds the proposal.",
+    "hint": "Brands looking for heroes through your industry. Show interest and the industry builds the proposal.",
     "status": {
       "open": "Open",
       "expired": "Deadline passed",
@@ -339,11 +339,11 @@
     "interest": "I'm interested",
     "editInterest": "Edit my message",
     "dialogTitle": "I'm interested",
-    "dialogHint": "Your agency gets the notice. The brand doesn't talk to you directly.",
+    "dialogHint": "Your industry gets the notice. The brand doesn't talk to you directly.",
     "back": "Back",
-    "send": "Send to the agency",
-    "message": "Message to the agency (optional)",
+    "send": "Send to the industry",
+    "message": "Message to the industry (optional)",
     "messagePlaceholder": "E.g.: I already use the product and have free dates.",
-    "interestSent": "Interest sent to your agency."
+    "interestSent": "Interest sent to your industry."
   }
 }

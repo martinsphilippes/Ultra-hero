@@ -27,7 +27,7 @@
     "backToList": "Voltar à lista"
   },
   "errors": {
-    "profile_conflict": "Este e-mail já é usado por {kind, select, hero {uma conta de Hero} brand {uma conta de Marca} agency {uma conta de Agência} other {uma conta de outro perfil}}. Use outro e-mail.",
+    "profile_conflict": "Este e-mail já é usado por {kind, select, hero {uma conta de Hero} brand {uma conta de Marca} agency {uma conta de Indústria} other {uma conta de outro perfil}}. Use outro e-mail.",
     "forbidden": "Você não tem permissão para esta ação.",
     "unauthenticated": "Sessão expirada. Entre novamente.",
     "invalid_input": "Dados inválidos. Revise o formulário.",
@@ -65,9 +65,9 @@
     "creator_not_found": "Hero não encontrado.",
     "product_not_found": "Produto não encontrado.",
     "professional_profile_already_linked": "Esta conta já está ligada a outro perfil profissional.",
-    "demo_account_forbidden": "Contas de exemplo não entram em agências reais.",
-    "agency_member_elsewhere": "Esta pessoa já faz parte de outra agência.",
-    "brand_not_linked": "A marca não está mais com esta agência.",
+    "demo_account_forbidden": "Contas de exemplo não entram em indústrias reais.",
+    "agency_member_elsewhere": "Esta pessoa já faz parte de outra indústria.",
+    "brand_not_linked": "A marca não está mais com esta indústria.",
     "partner_suspended": "Este acesso está suspenso no momento.",
     "user_has_talent": "Esta conta já está num casting.",
     "talent_already_linked": "Este convite já foi usado por outra conta.",
@@ -194,7 +194,7 @@
       "seller": "Fornecedor",
       "admin": "Admin",
       "professional": "Profissional",
-      "agency": "Agência",
+      "agency": "Indústria",
       "brand": "Marca"
     },
     "detail": {
@@ -292,7 +292,7 @@
     "revokeDescription": "O link deixará de funcionar imediatamente.",
     "revoked": "Convite revogado",
     "expiredNote": "expirado",
-    "roleAgency": "Agência",
+    "roleAgency": "Indústria",
     "roleBrand": "Marca",
     "talentTarget": "Ficha no casting"
   },
@@ -318,18 +318,18 @@
     "successProfessional": "Seu acesso de profissional foi liberado. Complete o perfil e os serviços.",
     "goProfessional": "Ir para o portal do profissional",
     "grantProfessional": "Você receberá acesso ao portal do profissional.",
-    "grantAgency": "Agência: entra na equipe da agência no nível do convite.",
-    "grantBrand": "Marca: acessa o portal da marca atendida pela agência.",
-    "successAgency": "Você agora faz parte da equipe da agência.",
+    "grantAgency": "Indústria: entra na equipe da indústria no nível do convite.",
+    "grantBrand": "Marca: acessa o portal da marca atendida pela indústria.",
+    "successAgency": "Você agora faz parte da equipe da indústria.",
     "successBrand": "Você agora acessa o portal da marca.",
-    "goAgency": "Abrir portal da agência",
+    "goAgency": "Abrir portal da indústria",
     "goBrand": "Abrir portal da marca",
     "inboxOnlyNote": "Os avisos ficam no sino do portal.",
     "successTalent": "Pronto! Você agora tem o Portal do Hero.",
     "goOffice": "Abrir o Portal do Hero",
     "alreadyHint": "Já entrou pela tela de login com este e-mail? Então o convite já foi aceito e seu acesso está liberado.",
     "openPortals": "Abrir meus portais",
-    "grantGeneric": "O acesso deste convite (agência, marca, Hero, fornecedor ou profissional) aparece logo depois de aceitar."
+    "grantGeneric": "O acesso deste convite (indústria, marca, Hero, fornecedor ou profissional) aparece logo depois de aceitar."
   },
   "creators": {
     "title": "Heros",
@@ -720,7 +720,7 @@
       "removeEmail": "Remover {email}",
       "missing": "Chave ausente no banco (será criada ao salvar).",
       "invites_enabled": "Convites ativos",
-      "invites_enabled_desc": "Desligado: ninguém cria convite (admin, agência, marca, equipe do Hero), direto no banco. Os convites já enviados continuam valendo. As pessoas se cadastram sozinhas como Hero, Marca ou Agência."
+      "invites_enabled_desc": "Desligado: ninguém cria convite (admin, indústria, marca, equipe do Hero), direto no banco. Os convites já enviados continuam valendo. As pessoas se cadastram sozinhas como Hero, Marca ou Indústria."
     },
     "ops": {
       "title": "Operações",

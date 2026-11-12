@@ -21,9 +21,9 @@
   },
   "brandStatus": {
     "draft": "Draft",
-    "received": "Received by the agency",
+    "received": "Received by the industry",
     "building": "Building the shortlist",
-    "proposal": "Agency proposal",
+    "proposal": "Industry proposal",
     "contracting": "Confirmed · contracting",
     "running": "In production",
     "done": "Completed",
@@ -103,7 +103,7 @@
     "empty": "No messages yet.",
     "listLabel": "Messages",
     "newMessage": "New message",
-    "placeholder": "Write here. Fees and commercial terms stay with the agency.",
+    "placeholder": "Write here. Fees and commercial terms stay with the industry.",
     "send": "Send"
   },
   "request": {
@@ -195,7 +195,7 @@
     },
     "method": {
       "in_app": "in the app",
-      "recorded_by_agency": "recorded by the agency",
+      "recorded_by_agency": "recorded by the industry",
       "e_signature": "electronic signature"
     },
     "disclaimer": "The brand and the hero accept these terms with a simple electronic signature (full name and CPF/CNPJ), with a receipt. Each new version needs a new signature.",
@@ -217,7 +217,7 @@
     "accept": "Sign terms",
     "ownerOnly": "Only the brand owner signs the terms.",
     "acceptTitle": "Accept the terms",
-    "acceptHint": "The acceptance is recorded with date and time. If in doubt, talk to the agency first.",
+    "acceptHint": "The acceptance is recorded with date and time. If in doubt, talk to the industry first.",
     "agree": "I have read and accept the conditions described.",
     "agreeRequired": "Tick the confirmation to accept.",
     "note": "Note (optional)",
@@ -235,7 +235,7 @@
       "cancelled": "Cancelled"
     },
     "side": {
-      "agency": "Agency",
+      "agency": "Industry",
       "talent": "Hero",
       "brand": "Brand"
     },
@@ -257,7 +257,7 @@
     "back": "Back",
     "decideScriptTitle": "Script",
     "decideScriptHint": "Approve or request changes. When requesting changes, explain what to change.",
-    "decideScriptAgencyHint": "Decision recorded by the agency on behalf of the brand: the note is required.",
+    "decideScriptAgencyHint": "Decision recorded by the industry on behalf of the brand: the note is required.",
     "openScript": "Open script",
     "feedbackLabel": "Notes",
     "feedbackHint": "Required when requesting changes.",
@@ -288,7 +288,7 @@
     "proofVersion": "Proof v{n}",
     "submittedBy": {
       "talent": "by the hero",
-      "agency": "by the agency"
+      "agency": "by the industry"
     },
     "openLink": "open",
     "withDocument": "with document",
@@ -298,7 +298,7 @@
     },
     "decidedBy": {
       "brand": "by the brand",
-      "agency": "by the agency"
+      "agency": "by the industry"
     },
     "actions": {
       "submit": "Send version",
@@ -368,7 +368,7 @@
   "finance": {
     "kinds": {
       "brand_receivable": "Receivable from brand",
-      "commission": "Agency commission",
+      "commission": "Industry commission",
       "talent_payout": "Hero payout",
       "client_receivable": "Receivable from client hero"
     },
@@ -433,7 +433,7 @@
     "ip": "IP",
     "ipUnknown": "not identified",
     "userAgent": "Browser",
-    "campaign": "Deal, brand and agency",
+    "campaign": "Deal, brand and industry",
     "termsVersion": "Terms",
     "version": "version {n}",
     "hash": "SHA-256 code of the signed text",

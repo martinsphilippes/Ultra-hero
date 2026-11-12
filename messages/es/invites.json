@@ -2,7 +2,7 @@
   "roles": {
     "consumer": "Consumidor",
     "admin": "Admin",
-    "agency": "Agencia",
+    "agency": "Industria",
     "brand": "Marca",
     "hero": "Hero",
     "seller": "Proveedor",
@@ -15,9 +15,9 @@
     "roleHints": {
       "consumer": "Solo crea la cuenta y entra en la app.",
       "admin": "Control total de Ultra. Vale como máximo 48 horas.",
-      "agency": "La persona crea la agencia en el primer acceso y pasa a ser Admin.",
-      "brand": "La persona crea la marca en el primer acceso y pasa a ser Dueño. No necesita agencia.",
-      "hero": "Hero nuevo (pendiente de aprobación), entrar en el equipo de un Hero o un Hero que ya está en el casting de una agencia.",
+      "agency": "La persona crea la industria en el primer acceso y pasa a ser Admin.",
+      "brand": "La persona crea la marca en el primer acceso y pasa a ser Dueño. No necesita industria.",
+      "hero": "Hero nuevo (pendiente de aprobación), entrar en el equipo de un Hero o un Hero que ya está en el casting de una industria.",
       "seller": "La persona crea la operación en el primer acceso (o entra en una ya registrada).",
       "professional": "La persona crea el perfil profesional en el primer acceso."
     },
@@ -65,16 +65,16 @@
       "title": "Tipo de invitación",
       "new": "Hero nuevo",
       "team": "Entrar en el equipo de un Hero",
-      "casting": "Hero que ya está en el casting de una agencia",
+      "casting": "Hero que ya está en el casting de una industria",
       "hints": {
         "new": "La página pública nace pendiente de aprobación y quien acepta pasa a ser titular.",
         "team": "Hero sin titular: la persona pasa a ser titular. Con titular: entra como miembro del equipo.",
-        "casting": "Da acceso a la ficha del Hero en el casting de la agencia (oportunidades, agenda, ganancias)."
+        "casting": "Da acceso a la ficha del Hero en el casting de la industria (oportunidades, agenda, ganancias)."
       }
     },
     "heroTalent": {
       "pick": "Hero en el casting",
-      "hint": "La lista muestra los Heros del casting de las agencias que aún no tienen acceso.",
+      "hint": "La lista muestra los Heros del casting de las industrias que aún no tienen acceso.",
       "none": "Ningún Hero del casting sin acceso ahora.",
       "withPage": "Con página pública",
       "withoutPage": "Aún sin página pública"
@@ -119,15 +119,15 @@
       "psychologist": "Psicólogo(a)"
     },
     "agency": {
-      "title": "Tu agencia",
-      "name": "Nombre de la agencia",
+      "title": "Tu industria",
+      "name": "Nombre de la industria",
       "contactEmail": "Correo de contacto",
       "contactEmailHint": "Opcional. Lo ven las marcas.",
-      "roleNote": "Serás Admin de la agencia.",
-      "create": "Crear agencia",
-      "doneTitle": "Agencia creada",
+      "roleNote": "Serás Admin de la industria.",
+      "create": "Crear industria",
+      "doneTitle": "Industria creada",
       "doneText": "Arma tu casting y atiende marcas desde el portal.",
-      "go": "Ir a la agencia"
+      "go": "Ir a la industria"
     },
     "brand": {
       "title": "Tu marca",
@@ -136,12 +136,12 @@
       "segmentHint": "Opcional. Ej.: bebidas, moda, suplementos.",
       "site": "Sitio de la marca",
       "siteHint": "Dirección con https (puede ser Instagram).",
-      "withAgency": "La marca nace atendida por la agencia {agency}.",
-      "noAgency": "No necesita agencia: puedes publicar convocatorias para todas las agencias.",
+      "withAgency": "La marca nace atendida por la industria {agency}.",
+      "noAgency": "No necesita industria: puedes publicar convocatorias para todas las industrias.",
       "roleNote": "Serás Dueño de la marca.",
       "create": "Crear marca",
       "doneTitle": "Marca creada",
-      "doneText": "Publica tu primera convocatoria para las agencias.",
+      "doneText": "Publica tu primera convocatoria para las industrias.",
       "go": "Ir a la marca"
     },
     "seller": {
@@ -245,13 +245,13 @@
     "cancel": "Cancelar",
     "transferConfirm": "Transferir",
     "noAgency": {
-      "title": "Sin agencia todavía",
-      "text": "Publica una convocatoria para todas las agencias o espera la invitación de una agencia.",
+      "title": "Sin industria todavía",
+      "text": "Publica una convocatoria para todas las industrias o espera la invitación de una industria.",
       "publishCall": "Publicar convocatoria"
     }
   },
   "agency": {
-    "linkRole": "Vínculo con la agencia",
+    "linkRole": "Vínculo con la industria",
     "newBrandRole": "Dueño de la marca",
     "linkSent": "Solicitud de vínculo creada",
     "newBrandSent": "Invitación de marca nueva creada",
@@ -271,7 +271,7 @@
     "emailed": "Enviamos el enlace a {email}. Cópialo también, si quieres.",
     "notEmailed": "Copia el enlace y envíalo a la persona: no se vuelve a mostrar.",
     "link": "Enlace de la invitación",
-    "brandHint": "Marca nueva: la persona crea la marca y ya queda con la agencia. Dueño de marca en Ultra: recibe una solicitud de vínculo para aceptar.",
+    "brandHint": "Marca nueva: la persona crea la marca y ya queda con la industria. Dueño de marca en Ultra: recibe una solicitud de vínculo para aceptar.",
     "heroHint": "Hero sin página pública: la página nace pendiente y la persona pasa a ser titular. Página sin titular: la persona la asume.",
     "noTalents": "Todos los Heros del casting ya tienen acceso.",
     "talent": "Hero del casting",
@@ -289,7 +289,7 @@
   "paused": {
     "note": "Invitaciones desactivadas por ahora",
     "hint": "Las invitaciones ya enviadas siguen valiendo.",
-    "adminBanner": "Invitaciones pausadas: nadie crea invitaciones nuevas; las ya enviadas siguen valiendo. Las personas se registran solas como Hero, Marca o Agencia.",
+    "adminBanner": "Invitaciones pausadas: nadie crea invitaciones nuevas; las ya enviadas siguen valiendo. Las personas se registran solas como Hero, Marca o Industria.",
     "adminTurnOn": "Reactivar en Configuración",
     "selfSignupsLink": "Ver registros nuevos"
   },
@@ -299,8 +299,8 @@
     "notNow": "Ahora no",
     "alreadyText": "Ya tienes este perfil.",
     "errors": {
-      "profile_conflict": "Este correo ya lo usa {kind, select, hero {una cuenta de Hero} brand {una cuenta de Marca} agency {una cuenta de Agencia} other {una cuenta de otro perfil}}. Usa otro correo.",
-      "agency_member_elsewhere": "Ya formas parte de una agencia.",
+      "profile_conflict": "Este correo ya lo usa {kind, select, hero {una cuenta de Hero} brand {una cuenta de Marca} agency {una cuenta de Industria} other {una cuenta de otro perfil}}. Usa otro correo.",
+      "agency_member_elsewhere": "Ya formas parte de una industria.",
       "brand_already_owned": "Ya eres Dueño de una marca.",
       "has_hero": "Ya tienes un Hero.",
       "rate_limited": "Demasiados intentos hoy. Inténtalo mañana.",
@@ -321,21 +321,21 @@
       "text": "Contrata Heros y haz campañas.",
       "step1": "Indica el nombre y el sitio de la marca.",
       "step2": "Te conviertes en Dueño de la marca.",
-      "step3": "Publica convocatorias para las agencias.",
+      "step3": "Publica convocatorias para las industrias.",
       "go": "Ir a la marca"
     },
     "agency": {
-      "title": "Registro de Agencia",
+      "title": "Registro de Industria",
       "text": "Representa Heros y gestiona negocios.",
-      "step1": "Indica el nombre de la agencia.",
-      "step2": "Te conviertes en Admin de la agencia.",
+      "step1": "Indica el nombre de la industria.",
+      "step2": "Te conviertes en Admin de la industria.",
       "step3": "Arma tu casting y atiende marcas.",
-      "go": "Ir a la agencia"
+      "go": "Ir a la industria"
     }
   },
   "selfSignups": {
     "title": "Registros nuevos",
-    "description": "Agencias, marcas y Heros creados sin invitación en los últimos 14 días.",
+    "description": "Industrias, marcas y Heros creados sin invitación en los últimos 14 días.",
     "back": "Inicio",
     "empty": "Ningún registro nuevo.",
     "unavailable": "Lista no disponible por ahora.",
@@ -343,7 +343,7 @@
     "open": "Ver y suspender",
     "approve": "Aprobar Hero",
     "kinds": {
-      "agency": "Agencia",
+      "agency": "Industria",
       "brand": "Marca",
       "hero": "Hero"
     },

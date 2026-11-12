@@ -44,9 +44,9 @@
   "emptyFiltered": "No conversations match these filters.",
   "emptyHint": {
     "agency": "Conversations start in deals: the channel with the brand, the channel with each consulted hero (deal Conversation tab) and the project room. When someone writes, it shows up here with the campaign and the stage.",
-    "brand": "Each campaign has a conversation with the agency (on the campaign page) and, once production starts, the project room. As soon as the agency receives your campaign, the conversation shows up here.",
-    "hero": "Each opportunity the agency consults you about has a conversation with the agency; confirmed projects also have the project room. They show up here.",
-    "staff": "When the agency calls you to a project, its room shows up here. After you sign the NDA, you talk to the team there."
+    "brand": "Each campaign has a conversation with the industry (on the campaign page) and, once production starts, the project room. As soon as the industry receives your campaign, the conversation shows up here.",
+    "hero": "Each opportunity the industry consults you about has a conversation with the industry; confirmed projects also have the project room. They show up here.",
+    "staff": "When the industry calls you to a project, its room shows up here. After you sign the NDA, you talk to the team there."
   },
   "clearFilters": "See all conversations",
   "unavailable": "Conversations are not available right now. Try again in a moment.",

@@ -21,9 +21,9 @@
   },
   "brandStatus": {
     "draft": "Rascunho",
-    "received": "Recebida pela agência",
+    "received": "Recebida pela indústria",
     "building": "Montando o elenco",
-    "proposal": "Proposta da agência",
+    "proposal": "Proposta da indústria",
     "contracting": "Confirmada · contratação",
     "running": "Em produção",
     "done": "Concluída",
@@ -103,7 +103,7 @@
     "empty": "Nenhuma mensagem ainda.",
     "listLabel": "Mensagens",
     "newMessage": "Nova mensagem",
-    "placeholder": "Escreva aqui. Valores e condições comerciais ficam com a agência.",
+    "placeholder": "Escreva aqui. Valores e condições comerciais ficam com a indústria.",
     "send": "Enviar"
   },
   "request": {
@@ -195,7 +195,7 @@
     },
     "method": {
       "in_app": "no app",
-      "recorded_by_agency": "registrado pela agência",
+      "recorded_by_agency": "registrado pela indústria",
       "e_signature": "assinatura eletrônica"
     },
     "disclaimer": "A marca e o Hero aceitam estes termos por assinatura eletrônica simples (nome completo e CPF/CNPJ), com comprovante. Cada versão nova precisa de nova assinatura.",
@@ -217,7 +217,7 @@
     "accept": "Assinar termos",
     "ownerOnly": "Só a pessoa dona da marca assina os termos.",
     "acceptTitle": "Aceitar os termos",
-    "acceptHint": "O aceite fica registrado com data e hora. Em caso de dúvida, fale com a agência antes.",
+    "acceptHint": "O aceite fica registrado com data e hora. Em caso de dúvida, fale com a indústria antes.",
     "agree": "Li e aceito as condições descritas.",
     "agreeRequired": "Marque a confirmação para aceitar.",
     "note": "Observação (opcional)",
@@ -235,7 +235,7 @@
       "cancelled": "Cancelada"
     },
     "side": {
-      "agency": "Agência",
+      "agency": "Indústria",
       "talent": "Hero",
       "brand": "Marca"
     },
@@ -257,7 +257,7 @@
     "back": "Voltar",
     "decideScriptTitle": "Roteiro",
     "decideScriptHint": "Aprove ou peça ajustes. Ao pedir ajustes, explique o que mudar.",
-    "decideScriptAgencyHint": "Decisão registrada pela agência em nome da marca: a observação é obrigatória.",
+    "decideScriptAgencyHint": "Decisão registrada pela indústria em nome da marca: a observação é obrigatória.",
     "openScript": "Abrir roteiro",
     "feedbackLabel": "Observações",
     "feedbackHint": "Obrigatórias ao pedir ajustes.",
@@ -288,7 +288,7 @@
     "proofVersion": "Comprovante v{n}",
     "submittedBy": {
       "talent": "pelo Hero",
-      "agency": "pela agência"
+      "agency": "pela indústria"
     },
     "openLink": "abrir",
     "withDocument": "com documento",
@@ -298,7 +298,7 @@
     },
     "decidedBy": {
       "brand": "pela marca",
-      "agency": "pela agência"
+      "agency": "pela indústria"
     },
     "actions": {
       "submit": "Enviar versão",
@@ -368,7 +368,7 @@
   "finance": {
     "kinds": {
       "brand_receivable": "A receber da marca",
-      "commission": "Comissão da agência",
+      "commission": "Comissão da indústria",
       "talent_payout": "Repasse ao Hero",
       "client_receivable": "A receber do Hero-cliente"
     },
@@ -433,7 +433,7 @@
     "ip": "IP",
     "ipUnknown": "não identificado",
     "userAgent": "Navegador",
-    "campaign": "Negócio, marca e agência",
+    "campaign": "Negócio, marca e indústria",
     "termsVersion": "Termos",
     "version": "versão {n}",
     "hash": "Código SHA-256 do texto assinado",

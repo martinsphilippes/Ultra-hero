@@ -44,7 +44,7 @@
     "seekTo": "Go to {time} in the video",
     "by": {
       "brand": "Brand",
-      "agency": "Agency"
+      "agency": "Industry"
     },
     "delete": "Delete comment",
     "invalidTime": "Invalid time. Use mm:ss, for example 1:15.",
