@@ -45,6 +45,21 @@ export function shouldReloadForStaleBuild(lastReloadAt: string | null, now: numb
  */
 export function recoverFromStaleBuild(error: unknown): boolean {
   if (typeof window === "undefined" || !isStaleBuildError(error)) return false;
+  return reloadOnce();
+}
+
+/**
+ * Falha na raiz do app (acima de todas as telas): recarrega uma vez, seja qual for o erro. Ali não sobra nenhuma tela
+ * nem botão (no app das lojas nem a barra de endereço), e o caso comum é o mesmo da versão desatualizada — a página
+ * ficou aberta durante uma publicação, a ação gravou no servidor e a resposta quebrou o JavaScript antigo. Mesma trava
+ * de 1 minuto (nunca entra em laço); armazenamento bloqueado: não recarrega e a tela de erro mostra o botão.
+ */
+export function recoverFromRootCrash(): boolean {
+  if (typeof window === "undefined") return false;
+  return reloadOnce();
+}
+
+function reloadOnce(): boolean {
   try {
     const store = window.sessionStorage;
     const now = Date.now();

@@ -39,3 +39,45 @@ describe("shouldReloadForStaleBuild", () => {
     expect(shouldReloadForStaleBuild(String(now + 10_000), now)).toBe(true);
   });
 });
+
+describe("recoverFromRootCrash (falha na raiz do app, ex.: app aberto durante uma publicação)", () => {
+  type FakeWindow = { sessionStorage: { getItem: (k: string) => string | null; setItem: (k: string, v: string) => void }; location: { reload: () => void } };
+  const install = (opts: { blocked?: boolean } = {}) => {
+    const store = new Map<string, string>();
+    const calls = { reloads: 0 };
+    const fake: FakeWindow = {
+      sessionStorage: {
+        getItem: (k) => {
+          if (opts.blocked) throw new Error("SecurityError");
+          return store.get(k) ?? null;
+        },
+        setItem: (k, v) => void store.set(k, v),
+      },
+      location: { reload: () => void calls.reloads++ },
+    };
+    (globalThis as { window?: unknown }).window = fake;
+    return calls;
+  };
+
+  it("recarrega uma vez, seja qual for o erro, e não entra em laço", async () => {
+    const { recoverFromRootCrash } = await import("@/lib/stale-build");
+    const calls = install();
+    expect(recoverFromRootCrash()).toBe(true);
+    expect(recoverFromRootCrash()).toBe(false);
+    expect(calls.reloads).toBe(1);
+    delete (globalThis as { window?: unknown }).window;
+  });
+
+  it("armazenamento bloqueado: não recarrega (a tela mostra o botão)", async () => {
+    const { recoverFromRootCrash } = await import("@/lib/stale-build");
+    const calls = install({ blocked: true });
+    expect(recoverFromRootCrash()).toBe(false);
+    expect(calls.reloads).toBe(0);
+    delete (globalThis as { window?: unknown }).window;
+  });
+
+  it("no servidor não faz nada", async () => {
+    const { recoverFromRootCrash } = await import("@/lib/stale-build");
+    expect(recoverFromRootCrash()).toBe(false);
+  });
+});
