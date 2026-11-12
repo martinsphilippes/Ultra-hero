@@ -150,7 +150,9 @@ describe("avisos, e-mail, agenda e menu", () => {
     expect(inboxKindEmails("sponsorship_interest", "/agencia/oportunidades/x")).toBe(true);
     expect(inboxKindEmails("sponsorship_decided", "/heroi/agenda")).toBe(true);
     expect(inboxKindPushes("sponsorship_decided", "/heroi/agenda")).toBe(false);
-    expect(sql).not.toMatch(/grant execute[^;]*to[^;]*\banon\b/i);
+    // única exceção (0141): a trava pre-request do PostgREST roda com o papel da própria requisição, inclusive o
+    // visitante — sem EXECUTE para anon toda chamada anônima à API falharia. Ela é security invoker e não lê nada para anon.
+    expect(sql.replace(/grant execute on function public\.api_access_gate\(\) to anon, authenticated, service_role;/i, "")).not.toMatch(/grant execute[^;]*to[^;]*\banon\b/i);
   });
   it("e-mails nos 3 idiomas com título, creator e situação", () => {
     for (const locale of ["pt-BR", "en", "es"] as const) {

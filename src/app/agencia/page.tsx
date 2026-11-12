@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { UserPlus, Wallet } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { getPresidencyPendingCount, isPresidency } from "@/lib/access/presidency";
 import { KpiCard } from "@/components/admin-ops/KpiCard";
 import { AgencySwitcher } from "@/components/agency/AgencySwitcher";
 import { SelfForm } from "@/components/agency/SettingsForms";
@@ -73,6 +74,9 @@ export default async function AgencyDashboardPage({ searchParams }: Props) {
     // 05/11: "Sua vez" no topo — o próximo passo de cada negócio aberto que é ação de quem lê (leitura em lote)
     agencyTurns({ agencyId: ctx.agency.id, role: ctx.role, platformAdmin: ctx.platformAdmin, userId: user?.id ?? null, timeZone: ctx.agency.timezone }),
   ]);
+  // 0141: cadastros esperando a Presidência (só a conta da Presidência vê; o banco confere a identidade)
+  const presidencyPending = (await isPresidency()) ? await getPresidencyPendingCount() : null;
+  const tp = await getTranslations("access.queue.card");
   // sem setor e sem filtro escolhido: o gestor vê todos os setores; o colaborador, as etapas dele
   const sectorToday =
     !asked && firstToday.data && firstToday.data.sectors.length === 0
@@ -91,6 +95,19 @@ export default async function AgencyDashboardPage({ searchParams }: Props) {
         description={ctx.memberName ? t("greeting", { name: ctx.memberName }) : t("adminView")}
         actions={ctx.role ? <RoleBadge role={ctx.role} /> : null}
       />
+      {presidencyPending ? (
+        <Link
+          href="/agencia/aprovacoes"
+          className="flex min-h-14 items-center justify-between gap-3 rounded-2xl border-2 border-accent bg-accent-soft p-4 transition-colors hover:bg-surface-hover"
+          data-testid="presidency-approvals-banner"
+        >
+          <span className="flex min-w-0 flex-col">
+            <span className="text-sm font-semibold text-fg">{tp("title")}</span>
+            <span className="type-body-sm text-fg-muted">{tp("count", { count: presidencyPending })}</span>
+          </span>
+          <span className="shrink-0 text-sm font-semibold text-accent-text">{tp("open")}</span>
+        </Link>
+      ) : null}
       {accessRequests.length > 0 ? (
         <Link
           href="/agencia/equipe#pedidos"

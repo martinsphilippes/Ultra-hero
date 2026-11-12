@@ -425,7 +425,8 @@
     "action_closed": "This action has already closed.",
     "sensitive_data": "Remove tax IDs and bank details from the minutes. That data follows the secure internal procedure, not the minutes.",
     "meeting_incomplete": "To finish, the minutes need a representative, an executive summary, a follow-up date and at least one next step with an owner and a due date.",
-    "meeting_final": "These minutes are already finished."
+    "meeting_final": "These minutes are already finished.",
+    "creator_app_only": "Creator access is exclusive to the Ultra Hero app. Open the app to continue."
   },
   "casting": {
     "title": "Roster",

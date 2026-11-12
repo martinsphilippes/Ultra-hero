@@ -2,6 +2,8 @@ import "server-only";
 import type { User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { cache } from "react";
+import { APP_ONLY_PATH, PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
+import { heroChannelBlocked } from "@/lib/access/server";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "./safe-next";
 import { isTalentOnly } from "./talent-scope";
@@ -91,9 +93,16 @@ export async function hasRole(role: AppRole): Promise<boolean> {
 }
 
 // Exige sessão; sem ela redireciona para /login?next=...
+// 0141: conta pendente ou recusada vai para a tela de status; conta Hero fora do aplicativo, para a mensagem do app (o
+// middleware já faz isso em toda requisição; aqui vale também para server actions chamadas por qualquer caminho).
 export async function requireUser(next?: string): Promise<User> {
   const user = await getUser();
-  if (user) return user;
+  if (user) {
+    const access = readAccessClaims(user.app_metadata);
+    if (access.status === "pending" || access.status === "rejected") redirect(PENDING_PATH);
+    if (access.appOnly && (await heroChannelBlocked())) redirect(APP_ONLY_PATH);
+    return user;
+  }
   const target = safeNext(next);
   redirect(target === "/" ? "/login" : `/login?next=${encodeURIComponent(target)}`);
 }

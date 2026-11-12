@@ -306,6 +306,14 @@
     "creator_meeting_action": {
       "title": "{count, plural, one {Un próximo paso de la reunión con {talent} quedó contigo} other {# próximos pasos de la reunión con {talent} quedaron contigo}}",
       "body": "Mira el acta y el plazo de cada uno, y márcalos cuando los hagas."
+    },
+    "account_access_requested": {
+      "title": "Registro esperando aprobación",
+      "body": "{name} pidió acceso con el {profile, select, hero {perfil Hero} brand {perfil Marca} agency {perfil Agencia} professional {perfil Profesional} seller {perfil Proveedor} staff {perfil Equipo de proyecto} admin {perfil Administración} other {perfil de usuario de la app}}. Abre la fila de la Presidencia."
+    },
+    "account_access_decided": {
+      "title": "{decision, select, approved {Registro aprobado} other {Registro no aprobado}}",
+      "body": "{decision, select, approved {La Presidencia aprobó tu registro.} other {La Presidencia no aprobó tu registro.}}"
     }
   }
 }

@@ -23,6 +23,19 @@ export async function hasPendingInvitation(admin: Client, email: string): Promis
   return (data ?? []).length > 0;
 }
 
+/** O convite pendente do e-mail é de Hero/Creator? (0141: esse primeiro acesso só pelo aplicativo) */
+export async function pendingInvitationIsHero(admin: Client, email: string): Promise<boolean> {
+  const { data, error } = await admin
+    .from("invitations")
+    .select("role")
+    .eq("status", "pending")
+    .ilike("email", email.replace(/[\\%_]/g, (c) => `\\${c}`))
+    .gte("expires_at", new Date().toISOString())
+    .limit(20);
+  if (error) return false;
+  return (data ?? []).some((row) => (row as { role?: string }).role === "creator");
+}
+
 /**
  * Aceita os convites pendentes do e-mail da sessão e devolve a área a abrir (agência, marca…), ou nulo
  * quando não havia convite. Melhor esforço: nunca impede o login.

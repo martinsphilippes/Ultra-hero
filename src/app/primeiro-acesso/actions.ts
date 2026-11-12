@@ -1,5 +1,6 @@
 "use server";
 
+import { heroChannelBlocked } from "@/lib/access/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { agencyFail } from "@/lib/agency/errors";
@@ -110,6 +111,8 @@ export async function createProfessionalAction(input: { name: string; specialty:
 // posts no Portal do Hero. A RPC aceita o passo 'hero' em aberto no lugar do papel creator.
 export async function createHeroAction(input: { name: string }): Promise<OnboardingResult> {
   await requireUser("/primeiro-acesso");
+  // 0141: Hero/Creator só pelo aplicativo
+  if (await heroChannelBlocked()) return agencyFail("creator_app_only");
   const parsed = z.object({ name: name(80) }).safeParse(input);
   if (!parsed.success) return agencyFail("name_required");
   try {

@@ -306,6 +306,14 @@
     "creator_meeting_action": {
       "title": "{count, plural, one {Um encaminhamento da reunião com {talent} ficou com você} other {# encaminhamentos da reunião com {talent} ficaram com você}}",
       "body": "Veja a ata, o prazo de cada um e marque quando fizer."
+    },
+    "account_access_requested": {
+      "title": "Cadastro aguardando aprovação",
+      "body": "{name} pediu acesso com o {profile, select, hero {perfil Hero} brand {perfil Marca} agency {perfil Agência} professional {perfil Profissional} seller {perfil Fornecedor} staff {perfil Equipe de projeto} admin {perfil Administração} other {perfil de usuário do app}}. Abra a fila da Presidência."
+    },
+    "account_access_decided": {
+      "title": "{decision, select, approved {Cadastro aprovado} other {Cadastro não aprovado}}",
+      "body": "{decision, select, approved {A Presidência aprovou o seu cadastro.} other {A Presidência não aprovou o seu cadastro.}}"
     }
   }
 }

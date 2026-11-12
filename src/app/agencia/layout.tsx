@@ -6,6 +6,7 @@ import { PortalShell } from "@/components/layout/PortalShell";
 import { Badge } from "@/components/ui";
 import { agencyNavKeys } from "@/lib/agency/roles";
 import { getAgencyContext } from "@/lib/agency/server";
+import { isPresidency } from "@/lib/access/presidency";
 import { requireRole } from "@/lib/auth/session";
 import { unreadInboxCount } from "@/lib/inbox/queries";
 import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
@@ -19,7 +20,7 @@ import { memberProfileComplete } from "@/lib/team/levels";
 export default async function AgencyLayout({ children }: { children: ReactNode }) {
   const { user } = await requireRole("agency", "/agencia");
   // tudo em paralelo (o contador de avisos não depende do contexto): uma ida ao banco a menos em cada tela
-  const [ctx, t, tg, unread] = await Promise.all([getAgencyContext(), getTranslations("agency"), getTranslations("team.gate"), unreadInboxCount()]);
+  const [ctx, t, tg, unread, presidency] = await Promise.all([getAgencyContext(), getTranslations("agency"), getTranslations("team.gate"), unreadInboxCount(), isPresidency()]);
   if (ctx.state !== "ok") {
     return (
       <PortalShell portal="agency" navKeys={["dashboard"]}>
@@ -30,7 +31,7 @@ export default async function AgencyLayout({ children }: { children: ReactNode }
   return (
     <PortalShell
       portal="agency"
-      navKeys={agencyNavKeys(ctx.role, ctx.platformAdmin, { groscove: ctx.agency.slug === "groscove" })}
+      navKeys={agencyNavKeys(ctx.role, ctx.platformAdmin, { groscove: ctx.agency.slug === "groscove", presidency })}
       headerAction={unread !== null ? <NotificationBell userId={user.id} initialUnread={unread} allHref="/agencia/notificacoes?aba=avisos" messages={{ portal: "agency", href: "/agencia/notificacoes?aba=mensagens", initialUnread: 0 }} /> : null}
     >
       {ctx.agency.isDemo ? (

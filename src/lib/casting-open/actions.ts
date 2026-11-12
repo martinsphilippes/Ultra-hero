@@ -1,5 +1,6 @@
 "use server";
 
+import { heroChannelBlocked } from "@/lib/access/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { agencyFail } from "@/lib/agency/errors";
@@ -59,6 +60,8 @@ export async function decideProfileClaimAction(input: { id: string; approve: boo
 /** O Hero pede o perfil do casting que é dele ("É você?"). */
 export async function claimProfileAction(talentId: string): Promise<Result> {
   await requireUser("/primeiro-acesso");
+  // 0141: Hero/Creator só pelo aplicativo
+  if (await heroChannelBlocked()) return agencyFail("creator_app_only");
   if (!z.uuid().safeParse(talentId).success) return agencyFail("invalid_input");
   const supabase = await createClient();
   const { error } = await supabase.rpc("hero_claim_request", { p_talent: talentId });

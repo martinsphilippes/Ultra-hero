@@ -107,6 +107,7 @@
   "backToProfile": "Profile",
   "agency": {
     "dashboard": "Home",
+    "approvals": "Approvals",
     "heroes": "Heroes",
     "brands": "Brands",
     "notifications": "Notices and messages",

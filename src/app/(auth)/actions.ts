@@ -4,9 +4,11 @@ import type { AuthError } from "@supabase/supabase-js";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
+import { heroChannelBlocked } from "@/lib/access/server";
 import { isSignupRefusedByDatabase, readExperimentOpen } from "@/lib/auth/experiment";
 import { generatePassword } from "@/lib/auth/generated-password";
-import { acceptMyInvitations, hasPendingInvitation } from "@/lib/auth/invite-first-access";
+import { acceptMyInvitations, hasPendingInvitation, pendingInvitationIsHero } from "@/lib/auth/invite-first-access";
 import { isPasswordlessActive } from "@/lib/auth/passwordless";
 import { recordPasswordlessAttempt, signInWithoutPassword, type PasswordlessResult } from "@/lib/auth/passwordless-server";
 import { getOrigin } from "@/lib/auth/origin";
@@ -100,7 +102,7 @@ export async function loginAction(_prev: AuthActionState, formData: FormData): P
 
   const next = safeNext(formData.get("next"), LOGIN_HOME);
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data: signedIn, error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
     // e-mail convidado sem conta: o primeiro acesso cria a conta com a senha digitada (0077)
     if (error.code === "invalid_credentials") {
@@ -110,7 +112,23 @@ export async function loginAction(_prev: AuthActionState, formData: FormData): P
     return { status: "error", error: mapAuthError(error) };
   }
 
+  const blocked = await accessAfterSignIn(supabase, signedIn?.user?.app_metadata);
+  if (blocked) return blocked;
   return finishLogin(supabase, next);
+}
+
+/**
+ * 0141, logo depois de abrir a sessão: conta Hero no navegador sai na hora com a mensagem do aplicativo; conta pendente ou
+ * recusada vai para a tela de status (não aceita convites nem abre passo a passo antes da aprovação da Presidência).
+ */
+async function accessAfterSignIn(supabase: Awaited<ReturnType<typeof createClient>>, appMetadata: unknown): Promise<AuthActionState | null> {
+  const access = readAccessClaims(appMetadata);
+  if (access.appOnly && (await heroChannelBlocked())) {
+    await supabase.auth.signOut({ scope: "local" });
+    return { status: "error", error: "creatorAppOnly" };
+  }
+  if (access.status === "pending" || access.status === "rejected") redirect(PENDING_PATH);
+  return null;
 }
 
 // Depois de abrir a sessão: convites pendentes do e-mail entram junto e o passo a passo em aberto é retomado.
@@ -174,6 +192,8 @@ async function inviteFirstAccess(email: string, password: string): Promise<AuthA
   if (!hasAdminClient()) return null;
   const admin = createAdminClient();
   if (!(await hasPendingInvitation(admin, email))) return null;
+  // 0141: convite de Hero/Creator só se aceita pelo aplicativo (a conta nem é criada no navegador)
+  if ((await pendingInvitationIsHero(admin, email)) && (await heroChannelBlocked())) return { status: "error", error: "creatorAppOnly" };
   const strong = passwordSchema.safeParse(password);
   if (!strong.success) return { status: "error", fieldErrors: { password: strong.error.issues[0]?.message ?? "passwordTooShort" } };
 
@@ -196,8 +216,11 @@ async function inviteFirstAccess(email: string, password: string): Promise<AuthA
   }
 
   const supabase = await createClient();
-  const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: signedIn, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
   if (signInError) return { status: "error", error: mapAuthError(signInError) };
+  // conta nova: pendente da Presidência → tela de status (os convites entram depois da aprovação)
+  const blocked = await accessAfterSignIn(supabase, signedIn?.user?.app_metadata);
+  if (blocked) return blocked;
   await acceptMyInvitations(supabase);
   redirect(LOGIN_HOME);
 }
@@ -337,6 +360,8 @@ export async function profileSignupAction(_prev: AuthActionState, formData: Form
   const profile = formData.get("profile");
   if (typeof profile !== "string" || !(BUSINESS_PROFILES as readonly string[]).includes(profile)) return { status: "error", error: "unknown" };
   const kind = profile as BusinessProfile;
+  // 0141: cadastro de Hero/Creator só pelo aplicativo (nada é criado no navegador)
+  if (kind === "hero" && (await heroChannelBlocked())) return { status: "error", error: "creatorAppOnly" };
 
   // Período sem senha (evento): o campo Senha some; o servidor gera uma senha forte (guardada no cofre, como no
   // cadastro rápido, para a pessoa consultar em Perfil › Conta) e e-mail já cadastrado só entra e segue.
@@ -395,8 +420,11 @@ export async function profileSignupAction(_prev: AuthActionState, formData: Form
 
   const supabase = await createClient();
   await supabase.auth.signOut({ scope: "local" });
-  const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: signedIn, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
   if (signInError) return { status: "error", error: mapAuthError(signInError) };
+  // conta nova: pendente da Presidência → tela de status; o passo a passo do perfil abre depois da aprovação
+  const blocked = await accessAfterSignIn(supabase, signedIn?.user?.app_metadata);
+  if (blocked) return blocked;
   await acceptMyInvitations(supabase);
   const { error: startError } = await supabase.rpc("self_onboarding_start", { p_kind: kind });
   redirect(startError ? startPathFor(kind) : PROFILE_ONBOARDING_PATH);

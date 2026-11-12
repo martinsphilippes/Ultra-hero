@@ -1,5 +1,6 @@
 "use server";
 
+import { heroChannelBlocked } from "@/lib/access/server";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -17,6 +18,10 @@ export async function startProfileAction(input: { profile: string }): Promise<St
   const parsed = z.object({ profile: z.enum(BUSINESS_PROFILES) }).safeParse(input);
   if (!parsed.success) return { ok: false, error: (await getTranslations("invites.start.errors"))("unknown") };
   await requireUser(startPathFor(parsed.data.profile));
+  // 0141: cadastro de Hero/Creator só pelo aplicativo
+  if (parsed.data.profile === "hero" && (await heroChannelBlocked())) {
+    return { ok: false, error: (await getTranslations("access.pending.errors"))("creatorAppOnly") };
+  }
   const supabase = await createClient();
   const { error } = await supabase.rpc("self_onboarding_start", { p_kind: parsed.data.profile });
   if (error) {

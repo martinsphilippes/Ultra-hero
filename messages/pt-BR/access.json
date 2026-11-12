@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "pending": "Cadastro em análise",
+    "appOnly": "Acesso pelo aplicativo",
+    "queue": "Aprovação de cadastros"
+  },
+  "profiles": {
+    "consumer": "Usuário do app",
+    "hero": "Hero",
+    "brand": "Marca",
+    "agency": "Agência",
+    "professional": "Profissional",
+    "seller": "Fornecedor",
+    "staff": "Equipe de projeto",
+    "admin": "Administração"
+  },
+  "origins": {
+    "password": "E-mail e senha",
+    "quick": "Cadastro rápido",
+    "google": "Google",
+    "apple": "Apple",
+    "invite": "Convite",
+    "admin": "Criada pela administração",
+    "legacy": "Conta já existente",
+    "other": "Outro"
+  },
+  "pending": {
+    "title": "Seu cadastro está aguardando aprovação da Presidência",
+    "intro": "Assim que a Presidência aprovar, você entra com o seu perfil. Não precisa se cadastrar de novo.",
+    "identityTitle": "Confira seus dados",
+    "name": "Nome",
+    "email": "E-mail",
+    "profile": "Perfil solicitado",
+    "origin": "Como entrou",
+    "requestedAt": "Pedido em",
+    "refresh": "Atualizar situação",
+    "signOut": "Sair",
+    "chooseTitle": "Como você vai usar o Ultra?",
+    "chooseText": "Você entrou com Google ou Apple. Escolha o perfil para a Presidência analisar.",
+    "chooseSave": "Enviar perfil",
+    "chooseSaved": "Perfil enviado para a Presidência.",
+    "approvedTitle": "Seu cadastro foi aprovado",
+    "approvedText": "A Presidência aprovou o seu acesso. Continue para entrar com o seu perfil.",
+    "continue": "Continuar",
+    "rejectedTitle": "Seu cadastro não foi aprovado",
+    "rejectedText": "A Presidência não aprovou este cadastro. Se achar que é um engano, fale com a equipe Groscove.",
+    "unavailable": "Não foi possível consultar a situação agora. Tente de novo em instantes.",
+    "errors": {
+      "creatorAppOnly": "O acesso de Creators é exclusivo pelo aplicativo Ultra Hero. Abra o app para continuar.",
+      "notPending": "Este cadastro já foi analisado. Atualize a situação.",
+      "unknown": "Algo deu errado. Tente de novo."
+    }
+  },
+  "appOnly": {
+    "title": "Acesso pelo aplicativo",
+    "message": "O acesso de Creators é exclusivo pelo aplicativo Ultra Hero. Abra o app para continuar.",
+    "open": "Abrir o app",
+    "appStore": "Baixar na App Store",
+    "playStore": "Baixar no Google Play",
+    "noApp": "Ainda não tem o app instalado? Fale com a equipe Groscove.",
+    "back": "Voltar ao início"
+  },
+  "queue": {
+    "title": "Aprovação de cadastros",
+    "description": "Toda conta nova espera a sua decisão. Só a Presidência aprova ou recusa.",
+    "tabPending": "Aguardando",
+    "tabDecided": "Decididos",
+    "tabsLabel": "Situação dos cadastros",
+    "emptyPending": "Nenhum cadastro esperando aprovação.",
+    "emptyDecided": "Nenhuma decisão registrada ainda.",
+    "unavailable": "A fila ainda não está disponível. Tente de novo em instantes.",
+    "requestedAt": "Pedido em {date}",
+    "decidedAt": "{status, select, approved {Aprovado em} other {Recusado em}} {date} por {name}",
+    "profileUnconfirmed": "perfil ainda não confirmado pela pessoa",
+    "noName": "Sem nome",
+    "approve": "Aprovar",
+    "reject": "Recusar",
+    "reconsider": "Aprovar mesmo assim",
+    "note": "Motivo (opcional)",
+    "notePlaceholder": "Ex.: não tem relação com a Groscove",
+    "confirmReject": "Confirmar recusa",
+    "cancel": "Cancelar",
+    "approved": "Cadastro aprovado.",
+    "rejected": "Cadastro recusado.",
+    "statusApproved": "Aprovado",
+    "statusRejected": "Recusado",
+    "card": {
+      "title": "Cadastros aguardando a Presidência",
+      "count": "{count, plural, =0 {Nenhum pedido} one {# pedido} other {# pedidos}}",
+      "open": "Abrir fila"
+    },
+    "errors": {
+      "forbidden": "Só a Presidência pode decidir.",
+      "already_approved": "Este cadastro já foi aprovado.",
+      "not_found": "Cadastro não encontrado.",
+      "cannot_decide_self": "Você não decide o próprio cadastro.",
+      "invalid_input": "Confira os dados.",
+      "unknown": "Não foi possível salvar. Tente de novo."
+    }
+  }
+}

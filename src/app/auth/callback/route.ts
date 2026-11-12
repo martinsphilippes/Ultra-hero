@@ -1,8 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { APP_ONLY_PATH, PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
+import { heroChannelBlocked } from "@/lib/access/server";
+import { profileFromStartPath } from "@/lib/access/status";
 import { isOAuthSignupRefused, isOAuthUserBanned, readExperimentOpen } from "@/lib/auth/experiment";
 import { getOriginFromRequest } from "@/lib/auth/origin";
 import { forgetGeneratedPassword, rotateGeneratedPassword } from "@/lib/auth/quick-signup-server";
 import { acceptMyInvitations } from "@/lib/auth/invite-first-access";
+import { PROFILE_ONBOARDING_PATH } from "@/lib/auth/profile-signup";
 import { LOGIN_HOME, safeNext } from "@/lib/auth/safe-next";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -30,17 +34,54 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { data: exchanged, error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
     return NextResponse.redirect(`${origin}/login?error=${error.code === "user_banned" ? "accountSuspended" : "callback"}`);
   }
 
   await secureQuickSignupOnGoogle(supabase);
+
+  // 0141: aprovação da Presidência e Hero só pelo aplicativo, já no retorno do Google. A troca de senha pela recuperação
+  // (/reset-password) segue liberada para qualquer conta.
+  if (next !== "/reset-password") {
+    let access = readAccessClaims(exchanged?.user?.app_metadata);
+    // conta nova que escolheu o perfil na entrada (/comecar/<perfil>): o pedido à Presidência sai com esse perfil
+    const chosen = profileFromStartPath(next);
+    if (access.status === "pending" && chosen && exchanged?.user && hasAdminClient()) {
+      try {
+        await createAdminClient().rpc("account_approval_annotate", { p_user: exchanged.user.id, p_profile: chosen, p_origin: null });
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        if (refreshed.user) access = readAccessClaims(refreshed.user.app_metadata);
+      } catch {
+        // a tela de status pergunta o perfil se ele não ficou registrado
+      }
+    }
+    if (access.appOnly && (await heroChannelBlocked())) {
+      await supabase.auth.signOut({ scope: "local" });
+      return NextResponse.redirect(`${origin}${APP_ONLY_PATH}`);
+    }
+    if (access.status === "pending" || access.status === "rejected") {
+      return NextResponse.redirect(`${origin}${PENDING_PATH}`);
+    }
+  }
   // convites pendentes do e-mail (0077): o Google já provou que a pessoa é dona dele
   // aceita os convites, mas a entrada é sempre a aba Hero (os portais ficam no menu)
   const home = await acceptMyInvitations(supabase);
   const target = home && (next === "/invite" || next.startsWith("/invite?")) ? LOGIN_HOME : next;
+  // 0141: passo a passo em aberto (ex.: aberto pela aprovação da Presidência) e nenhum destino pedido → retoma, como no login
+  if (!home && target === LOGIN_HOME && (await hasOpenOnboarding(supabase))) {
+    return NextResponse.redirect(`${origin}${PROFILE_ONBOARDING_PATH}`);
+  }
   return NextResponse.redirect(`${origin}${target}`);
+}
+
+async function hasOpenOnboarding(supabase: Awaited<ReturnType<typeof createClient>>): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.rpc("onboarding_pending");
+    return !error && Array.isArray(data) && data.length > 0;
+  } catch {
+    return false;
+  }
 }
 
 // Conta do cadastro rápido (e-mail nunca verificado) que agora entrou com o Google do mesmo e-mail:

@@ -21,10 +21,12 @@ const state = vi.hoisted(() => ({
   attemptInserts: [] as Record<string, unknown>[],
   pendingInvite: false,
   storedPasswords: 0,
+  // 0141: cadastro de Hero só pelo aplicativo — estes casos rodam na WebView da casca (user agent do app)
+  userAgent: "Mozilla/5.0 (iPhone) Mobile/15E148 GCHeroApp/1.0.0 (ios)",
 }));
 
 vi.mock("server-only", () => ({}));
-vi.mock("next/headers", () => ({ headers: async () => new Headers({ "x-forwarded-for": "203.0.113.9" }), cookies: async () => ({ set: () => undefined, get: () => undefined, delete: () => undefined }) }));
+vi.mock("next/headers", () => ({ headers: async () => new Headers({ "x-forwarded-for": "203.0.113.9", "user-agent": state.userAgent }), cookies: async () => ({ set: () => undefined, get: () => undefined, delete: () => undefined }) }));
 vi.mock("next/navigation", () => ({
   redirect: (to: string) => {
     throw new Error(`REDIRECT ${to}`);
@@ -136,6 +138,7 @@ beforeEach(() => {
     attemptInserts: [],
     pendingInvite: false,
     storedPasswords: 0,
+    userAgent: "Mozilla/5.0 (iPhone) Mobile/15E148 GCHeroApp/1.0.0 (ios)",
   });
   vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role-test");
   vi.stubEnv("ACCOUNT_PASSWORD_KEY_V1", Buffer.alloc(32, 7).toString("base64"));
@@ -221,6 +224,13 @@ describe("cadastro sem senha", () => {
     expect(state.signInCalls).toHaveLength(1);
     expect(state.storedPasswords).toBe(1);
     expect(state.rpcCalls).toContain("self_onboarding_start");
+  });
+
+  it("0141: perfil Hero no navegador é recusado antes de criar qualquer conta", async () => {
+    state.userAgent = "Mozilla/5.0 (Macintosh) Safari/605.1.15";
+    expect(await run(profileSignupAction(idle, form(profileForm)))).toEqual({ state: { status: "error", error: "creatorAppOnly" } });
+    expect(state.createUserCalls).toEqual([]);
+    expect(state.signInCalls).toEqual([]);
   });
 
   it("perfil com e-mail já cadastrado: só entra e segue", async () => {

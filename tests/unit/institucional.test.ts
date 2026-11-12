@@ -14,7 +14,18 @@ const session = vi.hoisted(() => ({ signedIn: false, checks: 0 }));
 vi.mock("@/lib/supabase/middleware", async () => {
   const { NextResponse } = await import("next/server");
   // a sessão é conferida uma vez só, dentro do updateSession (getClaims local)
-  return { updateSession: async (request: NextRequest) => ({ response: NextResponse.next({ request }), signedIn: session.signedIn }) };
+  // 0141: a sessão traz as claims (aprovada, sem "só app") e sabe encerrar a si mesma
+  return {
+    updateSession: async (request: NextRequest) => {
+      const response = NextResponse.next({ request });
+      return {
+        response: () => response,
+        signedIn: session.signedIn,
+        claims: session.signedIn ? { sub: "u1", app_metadata: { access: "approved", app_only: false } } : null,
+        signOut: async () => {},
+      };
+    },
+  };
 });
 
 vi.mock("@supabase/ssr", () => ({
@@ -102,12 +113,16 @@ describe("middleware no \"/\"", () => {
     expect(isBlockedInNativeApp("/sobre")).toBe(false);
   });
   it("rotas protegidas seguem exigindo sessão (autenticação inalterada)", async () => {
-    const res = await middleware(request("/heroi"));
+    const res = await middleware(request("/marca"));
     expect(location(res)?.pathname).toBe("/login");
-    expect(location(res)?.searchParams.get("next")).toBe("/heroi");
+    expect(location(res)?.searchParams.get("next")).toBe("/marca");
     session.signedIn = true;
-    const ok = await middleware(request("/heroi"));
+    const ok = await middleware(request("/marca"));
     expect(ok.headers.get("location")).toBeNull();
+  });
+  it("0141: área do Hero no navegador sem sessão vai direto à mensagem do aplicativo", async () => {
+    const res = await middleware(request("/heroi"));
+    expect(location(res)?.pathname).toBe("/acesso-pelo-app");
   });
 });
 

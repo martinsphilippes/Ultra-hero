@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { AuthAlert } from "@/components/auth/AuthAlert";
 import { AuthCard } from "@/components/auth/AuthCard";
+import { CreatorAppOnlyNotice } from "@/components/auth/CreatorAppOnlyNotice";
 import { AppleButton } from "@/components/auth/AppleButton";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { LoginForm } from "@/components/auth/LoginForm";
@@ -14,6 +15,7 @@ import { ProfileSignupForm } from "@/components/auth/ProfileSignupForm";
 import { QuickSignupForm } from "@/components/auth/QuickSignupForm";
 import { legalRichTags } from "@/components/legal/rich-tags";
 import { Divider } from "@/components/ui/divider";
+import { isCreatorAppOnlyEnabled } from "@/lib/access/gate";
 import { readExperimentOpen } from "@/lib/auth/experiment";
 import { isPasswordlessActive, passwordlessLastDayLabel } from "@/lib/auth/passwordless";
 import { isBusinessProfile, parseSignupProfile, SIGNUP_PROFILES, startPathFor } from "@/lib/auth/profile-signup";
@@ -121,6 +123,20 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
             {alerts}
             <ProfileChooser profiles={SIGNUP_PROFILES} next={rawNext ? next : null} email={prefillEmail} />
             {alternatives}
+          </div>
+        </AuthCard>
+      </div>
+    );
+  }
+
+  // 0141: Hero/Creator só pelo aplicativo — no navegador o cartão Hero mostra a mensagem do app (nada é criado aqui)
+  if (profile === "hero" && isCreatorAppOnlyEnabled() && !nativeApp) {
+    return (
+      <div className="flex flex-col gap-4">
+        <AuthCard title={t("profile.title.hero")} subtitle={t("profile.subtitle.hero")}>
+          <div className="flex flex-col gap-4" data-testid="hero-web-blocked">
+            {changeProfile}
+            <CreatorAppOnlyNotice backHref={chooseHref} backLabel={t("choose.change")} />
           </div>
         </AuthCard>
       </div>

@@ -13534,6 +13534,14 @@ isOneToOne: false
       brand_transfer_owner: { Args: { p_brand: string; p_user: string }; Returns: undefined };
       cnpj_valid: { Args: { p: string }; Returns: boolean };
       onboarding_pending: { Args: Record<PropertyKey, never>; Returns: Json };
+      // 0141: aprovação da Presidência
+      is_presidency: { Args: Record<PropertyKey, never>; Returns: boolean };
+      account_access_status: { Args: Record<PropertyKey, never>; Returns: Json };
+      account_request_profile: { Args: { p_profile: string }; Returns: Json };
+      account_approval_annotate: { Args: { p_user: string; p_profile?: string | null; p_origin?: string | null }; Returns: undefined };
+      presidency_access_queue: { Args: { p_view?: string }; Returns: Json };
+      presidency_access_pending_count: { Args: Record<PropertyKey, never>; Returns: number };
+      presidency_access_decide: { Args: { p_user: string; p_decision: string; p_note?: string | null }; Returns: Json };
       // 0103: cadastro por perfil e convites pausados
       self_onboarding_start: { Args: { p_kind: string }; Returns: Json };
       self_onboarding_cancel: { Args: { p_kind: string }; Returns: boolean };

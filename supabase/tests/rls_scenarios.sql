@@ -19943,5 +19943,231 @@ delete from public.agencies where id::text like 'c1390000-%';
 delete from auth.users where id::text like 'c1390000-%';
 drop table tests.s139;
 
+-- ================================================================ S141 · Aprovação da Presidência e trava da API (0141)
+-- Contas de antes da regra: gatilhos novos desligados para simular o passado; o \ir refaz a classificação da migração.
+select tests.su();
+alter table auth.users disable trigger account_access_before_insert;
+alter table auth.users disable trigger account_access_after_insert;
+insert into auth.users (id, email, created_at, last_sign_in_at) values
+  ('c1410000-0000-4000-8000-000000000001', 'presidencia@s141.test', now() - interval '20 days', now()),
+  ('c1410000-0000-4000-8000-000000000002', 'admin@s141.test', now() - interval '20 days', now()),
+  ('c1410000-0000-4000-8000-000000000003', 'outra-pessoa@s141.test', now() - interval '20 days', now()),
+  ('c1410000-0000-4000-8000-000000000021', 'antiga@s141.test', now() - interval '10 days', now() - interval '1 day'),
+  ('c1410000-0000-4000-8000-000000000022', 'nunca-entrou@s141.test', now() - interval '9 days', null),
+  ('c1410000-0000-4000-8000-000000000023', 'hero-antigo@s141.test', now() - interval '8 days', now() - interval '2 days');
+alter table auth.users enable trigger account_access_before_insert;
+alter table auth.users enable trigger account_access_after_insert;
+insert into public.role_assignments (user_id, role, scope_type) values
+  ('c1410000-0000-4000-8000-000000000002', 'admin', 'global'),
+  ('c1410000-0000-4000-8000-000000000023', 'creator', 'global');
+\ir ../migrations/0141_aprovacao_presidencia.sql
+select tests.su();
+insert into public.access_approvers (user_id) values ('c1410000-0000-4000-8000-000000000001');
+
+select tests.ok('S141 migração: conta antiga que já entrou fica aprovada (origem legacy, sem responsável, com a nota da migração)',
+  exists (select 1 from public.account_approvals where user_id = 'c1410000-0000-4000-8000-000000000021' and status = 'approved'
+          and origin = 'legacy' and decided_by is null and decided_at is not null and decision_note like 'Conta já em uso%'));
+select tests.ok('S141 migração: conta criada que nunca entrou vai para a fila (pendente, origem legacy)',
+  exists (select 1 from public.account_approvals where user_id = 'c1410000-0000-4000-8000-000000000022' and status = 'pending'
+          and origin = 'legacy' and decided_at is null and decision_note like 'Conta criada antes%'));
+select tests.ok('S141 migração: perfil pelo papel (Hero antigo = hero, admin = admin) e histórico "classified"',
+  (select requested_profile from public.account_approvals where user_id = 'c1410000-0000-4000-8000-000000000023') = 'hero'
+  and (select requested_profile from public.account_approvals where user_id = 'c1410000-0000-4000-8000-000000000002') = 'admin'
+  and (select count(*) from public.account_approval_events where user_id::text like 'c1410000-%' and action = 'classified') = 6);
+select tests.ok('S141 migração: app_metadata.access/app_only gravados nas contas antigas (Hero antigo = só app)',
+  (select raw_app_meta_data ->> 'access' from auth.users where id = 'c1410000-0000-4000-8000-000000000021') = 'approved'
+  and (select raw_app_meta_data -> 'app_only' from auth.users where id = 'c1410000-0000-4000-8000-000000000021') = 'false'::jsonb
+  and (select raw_app_meta_data -> 'app_only' from auth.users where id = 'c1410000-0000-4000-8000-000000000023') = 'true'::jsonb
+  and (select raw_app_meta_data ->> 'access' from auth.users where id = 'c1410000-0000-4000-8000-000000000022') = 'pending');
+
+-- cadastros novos de todos os jeitos: todos pendentes
+insert into public.creator_profiles (id, slug, name, status, user_id) values
+  ('c1410000-0000-4000-8000-0000000000c1', 's141-hero-convite', 'Hero convite S141', 'active', null);
+insert into public.invitations (email, role, creator_profile_id, token_hash, expires_at) values
+  ('convidado@s141.test', 'creator', 'c1410000-0000-4000-8000-0000000000c1', 's141-hash', now() + interval '5 days');
+insert into auth.users (id, email, raw_user_meta_data, raw_app_meta_data) values
+  ('c1410000-0000-4000-8000-000000000011', 'rapido@s141.test', '{"full_name":"Rapido S141"}', '{"provider":"email","quick_signup":true,"quick_signup_unverified":true}'),
+  ('c1410000-0000-4000-8000-000000000012', 'marca@s141.test', '{"full_name":"Marca S141"}', '{"provider":"email","quick_signup":true,"signup_profile":"brand"}'),
+  ('c1410000-0000-4000-8000-000000000013', 'agencia@s141.test', '{"full_name":"Agencia S141"}', '{"provider":"email","signup_profile":"agency"}'),
+  ('c1410000-0000-4000-8000-000000000014', 'hero@s141.test', '{"full_name":"Hero S141"}', '{"provider":"email","signup_profile":"hero"}'),
+  ('c1410000-0000-4000-8000-000000000015', 'google@s141.test', '{"name":"Google S141"}', '{"provider":"google","providers":["google"]}'),
+  ('c1410000-0000-4000-8000-000000000016', 'convidado@s141.test', '{}', '{"provider":"email","invite_first_access":true}'),
+  ('c1410000-0000-4000-8000-000000000017', 'feita-pelo-admin@s141.test', '{}', '{"provider":"email","created_by_admin":true}'),
+  ('c1410000-0000-4000-8000-000000000018', 'apple@s141.test', '{}', '{"provider":"apple","providers":["apple"]}');
+select tests.ok('S141 todo cadastro novo nasce pendente (rápido, marca, agência, Hero, Google, convite, admin, Apple)',
+  (select count(*) from public.account_approvals where user_id::text like 'c1410000-0000-4000-8000-00000000001%'
+     and status = 'pending' and decided_at is null and decided_by is null) = 8);
+select tests.ok('S141 origem de cada cadastro',
+  (select string_agg(origin, ',' order by user_id) from public.account_approvals where user_id::text like 'c1410000-0000-4000-8000-00000000001%')
+  = 'quick,password,password,password,google,invite,admin,apple');
+select tests.ok('S141 perfil pedido: escolhido no cadastro, do convite (Hero) ou usuário do app',
+  (select string_agg(requested_profile, ',' order by user_id) from public.account_approvals where user_id::text like 'c1410000-0000-4000-8000-00000000001%')
+  = 'consumer,brand,agency,hero,consumer,hero,consumer,consumer');
+select tests.ok('S141 Google/Apple sem perfil escolhido ficam para confirmar o perfil; os demais já vêm confirmados',
+  (select string_agg(user_id::text, ',' order by user_id) from public.account_approvals
+   where user_id::text like 'c1410000-0000-4000-8000-00000000001%' and not profile_confirmed)
+  = 'c1410000-0000-4000-8000-000000000015,c1410000-0000-4000-8000-000000000018');
+select tests.ok('S141 o primeiro token já sai pendente; Hero (escolhido ou por convite) = só pelo app',
+  (select bool_and(raw_app_meta_data ->> 'access' = 'pending') from auth.users where id::text like 'c1410000-0000-4000-8000-00000000001%')
+  and (select string_agg(id::text, ',' order by id) from auth.users
+       where id::text like 'c1410000-0000-4000-8000-00000000001%' and raw_app_meta_data -> 'app_only' = 'true'::jsonb)
+      = 'c1410000-0000-4000-8000-000000000014,c1410000-0000-4000-8000-000000000016');
+select tests.ok('S141 cada pedido avisa a Presidência no sino (um por cadastro, levando à fila) e fica no histórico',
+  (select count(*) from public.inbox_notifications where user_id = 'c1410000-0000-4000-8000-000000000001'
+     and kind = 'account_access_requested' and link = '/agencia/aprovacoes') = 8
+  and (select count(*) from public.account_approval_events where user_id::text like 'c1410000-0000-4000-8000-00000000001%' and action = 'requested') = 8);
+-- o Auth regrava app_metadata inteiro (ex.: cadastro com Google): o gatilho repõe access/app_only
+update auth.users set raw_app_meta_data = '{"provider":"google","providers":["google"]}' where id = 'c1410000-0000-4000-8000-000000000015';
+select tests.ok('S141 app_metadata regravado pelo Auth continua com access = pending',
+  (select raw_app_meta_data ->> 'access' = 'pending' and raw_app_meta_data ->> 'provider' = 'google'
+   from auth.users where id = 'c1410000-0000-4000-8000-000000000015'));
+
+-- trava da API (pre-request): pendente só consulta a própria situação
+create or replace function tests.s141_gate(p_path text) returns text language plpgsql as $$
+begin
+  perform set_config('request.path', p_path, true);
+  perform public.api_access_gate();
+  return 'ok';
+exception when others then
+  return sqlstate || ':' || sqlerrm;
+end $$;
+select tests.login('c1410000-0000-4000-8000-000000000012', 'marca@s141.test');
+select tests.ok('S141 API: pendente é barrado em RPC de negócio e em tabela (403 account_pending)',
+  tests.s141_gate('/rpc/brand_dashboard') = '42501:account_pending' and tests.s141_gate('/brands') = '42501:account_pending'
+  and tests.s141_gate('/rpc/presidency_access_queue') = '42501:account_pending');
+select tests.ok('S141 API: pendente consulta a própria situação, confirma o perfil e lê os ajustes públicos',
+  tests.s141_gate('/rpc/account_access_status') = 'ok' and tests.s141_gate('/rpc/account_request_profile') = 'ok'
+  and tests.s141_gate('/rpc/public_settings') = 'ok');
+select tests.login('c1410000-0000-4000-8000-000000000021', 'antiga@s141.test');
+select tests.ok('S141 API: conta aprovada passa', tests.s141_gate('/rpc/brand_dashboard') = 'ok' and tests.s141_gate('/brands') = 'ok');
+select tests.anon();
+select tests.ok('S141 API: visitante passa (as regras de visitante continuam no RLS)', tests.s141_gate('/rpc/explore_feed') = 'ok');
+select tests.su();
+select set_config('request.jwt.claims', '{"role":"service_role"}', true);
+select tests.ok('S141 API: service role passa', tests.s141_gate('/rpc/brand_dashboard') = 'ok');
+select tests.su();
+select tests.ok('S141 a trava roda com o papel da requisição (não é função privilegiada exposta ao visitante)',
+  not (select prosecdef from pg_proc where oid = 'public.api_access_gate()'::regprocedure)
+  and has_function_privilege('anon', 'public.api_access_gate()', 'execute'));
+
+-- a própria pessoa: situação e escolha do perfil
+select tests.login('c1410000-0000-4000-8000-000000000015', 'google@s141.test');
+select tests.ok('S141 situação da própria conta (Google, pendente, perfil a confirmar)',
+  (select public.account_access_status() ->> 'status') = 'pending'
+  and (select public.account_access_status() ->> 'origin') = 'google'
+  and (select public.account_access_status() -> 'profile_confirmed') = 'false'::jsonb
+  and (select public.account_access_status() ->> 'email') = 'google@s141.test');
+select tests.ok('S141 quem entrou com o Google escolhe o perfil enquanto espera',
+  (select public.account_request_profile('brand') ->> 'requested_profile') = 'brand');
+select tests.expect_error('S141 perfil inválido é recusado', $q$select public.account_request_profile('admin')$q$, 'invalid_input');
+select tests.login('c1410000-0000-4000-8000-000000000018', 'apple@s141.test');
+select public.account_request_profile('hero');
+select tests.su();
+select tests.ok('S141 escolher Hero vira "só pelo app" no token; a escolha fica no histórico',
+  (select raw_app_meta_data -> 'app_only' from auth.users where id = 'c1410000-0000-4000-8000-000000000018') = 'true'::jsonb
+  and (select profile_confirmed from public.account_approvals where user_id = 'c1410000-0000-4000-8000-000000000015')
+  and (select count(*) from public.account_approval_events where user_id::text in ('c1410000-0000-4000-8000-000000000015', 'c1410000-0000-4000-8000-000000000018') and action = 'profile_set') = 2);
+select tests.login('c1410000-0000-4000-8000-000000000021', 'antiga@s141.test');
+select tests.expect_error('S141 conta já aprovada não troca o perfil por aqui', $q$select public.account_request_profile('brand')$q$, 'not_pending');
+
+-- fila: só a Presidência
+select tests.login('c1410000-0000-4000-8000-000000000001', 'presidencia@s141.test');
+select tests.ok('S141 Presidência vê a fila com nome, e-mail, perfil, origem e data (inclui a conta antiga que nunca entrou)',
+  (select count(*) from jsonb_array_elements(public.presidency_access_queue('pending')) e
+   where e ->> 'user_id' like 'c1410000-%') = 9
+  and exists (select 1 from jsonb_array_elements(public.presidency_access_queue('pending')) e
+              where e ->> 'user_id' = 'c1410000-0000-4000-8000-000000000012' and e ->> 'email' = 'marca@s141.test'
+                and e ->> 'name' = 'Marca S141' and e ->> 'requested_profile' = 'brand' and e ->> 'origin' = 'password'
+                and (e ->> 'requested_at') is not null)
+  and public.presidency_access_pending_count() >= 9);
+select tests.login('c1410000-0000-4000-8000-000000000002', 'admin@s141.test');
+select tests.expect_error('S141 admin da plataforma não vê a fila', $q$select public.presidency_access_queue('pending')$q$, 'forbidden');
+select tests.expect_error('S141 admin da plataforma não aprova (mesmo chamando a API direto)',
+  $q$select public.presidency_access_decide('c1410000-0000-4000-8000-000000000012', 'approved', null)$q$, 'forbidden');
+select tests.login('c1410000-0000-4000-8000-000000000003', 'outra-pessoa@s141.test');
+select tests.expect_error('S141 outra conta aprovada não aprova', $q$select public.presidency_access_decide('c1410000-0000-4000-8000-000000000012', 'approved', null)$q$, 'forbidden');
+select tests.expect_error('S141 outra conta não conta a fila', $q$select public.presidency_access_pending_count()$q$, 'forbidden');
+select tests.login('c1410000-0000-4000-8000-000000000012', 'marca@s141.test');
+select tests.expect_error('S141 a própria pessoa pendente não se aprova', $q$select public.presidency_access_decide('c1410000-0000-4000-8000-000000000012', 'approved', null)$q$, 'forbidden');
+select tests.expect_error('S141 nem grava direto na tabela', $q$update public.account_approvals set status = 'approved' where user_id = 'c1410000-0000-4000-8000-000000000012'$q$, '42501');
+select tests.ok('S141 pendente lê só a própria linha e nenhum histórico',
+  (select count(*) from public.account_approvals) = 1 and (select count(*) from public.account_approval_events) = 0);
+select tests.su();
+select tests.ok('S141 nada disso para o visitante; funções internas só para o sistema',
+  not has_function_privilege('anon', 'public.presidency_access_decide(uuid, text, text)', 'execute')
+  and not has_function_privilege('anon', 'public.presidency_access_queue(text)', 'execute')
+  and not has_function_privilege('anon', 'public.account_access_status()', 'execute')
+  and not has_function_privilege('authenticated', 'public.account_approval_annotate(uuid, text, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.account_claims_sync(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.account_app_only(uuid)', 'execute')
+  and has_function_privilege('service_role', 'public.account_approval_annotate(uuid, text, text)', 'execute')
+  and not has_table_privilege('authenticated', 'public.access_approvers', 'select')
+  and not has_table_privilege('authenticated', 'public.account_approvals', 'update'));
+select public.account_approval_annotate('c1410000-0000-4000-8000-000000000017', 'agency', null);
+select tests.ok('S141 o servidor registra o perfil que só ele conhece (ex.: volta do Google com o perfil escolhido)',
+  (select requested_profile = 'agency' and profile_confirmed and origin = 'admin'
+       from public.account_approvals where user_id = 'c1410000-0000-4000-8000-000000000017'));
+
+-- decisões da Presidência
+select tests.login('c1410000-0000-4000-8000-000000000001', 'presidencia@s141.test');
+select tests.ok('S141 Presidência aprova',
+  (select public.presidency_access_decide('c1410000-0000-4000-8000-000000000012', 'approved', null) ->> 'changed') = 'true');
+select tests.ok('S141 Presidência recusa com nota',
+  (select public.presidency_access_decide('c1410000-0000-4000-8000-000000000013', 'rejected', 'Sem vínculo com a Groscove') ->> 'status') = 'rejected');
+select tests.ok('S141 repetir a mesma decisão não muda nada',
+  (select public.presidency_access_decide('c1410000-0000-4000-8000-000000000012', 'approved', null) ->> 'changed') = 'false');
+select tests.expect_error('S141 aprovada não volta a recusada por aqui', $q$select public.presidency_access_decide('c1410000-0000-4000-8000-000000000012', 'rejected', null)$q$, 'already_approved');
+select tests.expect_error('S141 Presidência não decide a própria conta', $q$select public.presidency_access_decide('c1410000-0000-4000-8000-000000000001', 'approved', null)$q$, 'cannot_decide_self');
+select tests.expect_error('S141 conta inexistente', $q$select public.presidency_access_decide('c1410000-0000-4000-8000-0000000000ff', 'approved', null)$q$, 'not_found');
+select tests.expect_error('S141 decisão inválida', $q$select public.presidency_access_decide('c1410000-0000-4000-8000-000000000014', 'talvez', null)$q$, 'invalid_input');
+select tests.expect_error('S141 nota longa demais', $q$select public.presidency_access_decide('c1410000-0000-4000-8000-000000000014', 'rejected', repeat('x', 501))$q$, 'invalid_input');
+select tests.ok('S141 histórico de decididos mostra quem decidiu e quando',
+  exists (select 1 from jsonb_array_elements(public.presidency_access_queue('decided')) e
+          where e ->> 'user_id' = 'c1410000-0000-4000-8000-000000000013' and e ->> 'status' = 'rejected'
+            and e ->> 'decision_note' = 'Sem vínculo com a Groscove' and (e ->> 'decided_by_name') is not null and (e ->> 'decided_at') is not null)
+  and (select count(*) from public.account_approval_events where action in ('approved', 'rejected')) >= 2);
+select tests.su();
+select tests.ok('S141 decisão registrada: responsável, horário, auditoria, token atualizado e aviso à pessoa',
+  (select decided_by = 'c1410000-0000-4000-8000-000000000001' and decided_at is not null and status = 'approved'
+   from public.account_approvals where user_id = 'c1410000-0000-4000-8000-000000000012')
+  and exists (select 1 from public.admin_audit where action = 'account.access_approved' and resource_id = 'c1410000-0000-4000-8000-000000000012'
+              and actor_id = 'c1410000-0000-4000-8000-000000000001')
+  and exists (select 1 from public.admin_audit where action = 'account.access_rejected' and resource_id = 'c1410000-0000-4000-8000-000000000013'
+              and justification = 'Sem vínculo com a Groscove')
+  and (select raw_app_meta_data ->> 'access' from auth.users where id = 'c1410000-0000-4000-8000-000000000012') = 'approved'
+  and (select raw_app_meta_data ->> 'access' from auth.users where id = 'c1410000-0000-4000-8000-000000000013') = 'rejected'
+  and exists (select 1 from public.inbox_notifications where user_id = 'c1410000-0000-4000-8000-000000000012'
+              and kind = 'account_access_decided' and params ->> 'decision' = 'approved'));
+select tests.ok('S141 aprovada (cadastro de Marca por conta própria): o passo a passo da marca já fica aberto para o próximo login',
+  exists (select 1 from public.account_onboardings where user_id = 'c1410000-0000-4000-8000-000000000012' and kind = 'brand'
+          and source = 'self' and completed_at is null));
+select tests.login('c1410000-0000-4000-8000-000000000012', 'marca@s141.test');
+select tests.ok('S141 aprovada passa na API sem nova aprovação', tests.s141_gate('/rpc/brand_dashboard') = 'ok');
+select tests.login('c1410000-0000-4000-8000-000000000013', 'agencia@s141.test');
+select tests.ok('S141 recusada continua barrada na API', tests.s141_gate('/rpc/brand_dashboard') = '42501:account_rejected'
+  and (select public.account_access_status() ->> 'status') = 'rejected');
+select tests.login('c1410000-0000-4000-8000-000000000001', 'presidencia@s141.test');
+select tests.ok('S141 recusada pode ser reconsiderada pela Presidência',
+  (select public.presidency_access_decide('c1410000-0000-4000-8000-000000000013', 'approved', 'Reconsiderado') ->> 'status') = 'approved');
+select tests.ok('S141 convidado aprovado não ganha passo a passo próprio (o convite decide o acesso)',
+  (select public.presidency_access_decide('c1410000-0000-4000-8000-000000000016', 'approved', null) ->> 'status') = 'approved');
+select tests.su();
+select tests.ok('S141 passo a passo aberto só para quem se cadastrou sozinho como Marca/Agência/Hero',
+  exists (select 1 from public.account_onboardings where user_id = 'c1410000-0000-4000-8000-000000000013' and kind = 'agency' and completed_at is null)
+  and not exists (select 1 from public.account_onboardings where user_id = 'c1410000-0000-4000-8000-000000000016'));
+
+-- papel creator ganho ou perdido muda o "só pelo aplicativo"
+select tests.su();
+insert into public.role_assignments (user_id, role, scope_type) values ('c1410000-0000-4000-8000-000000000021', 'creator', 'global');
+select tests.ok('S141 virou Hero: só pelo app', (select raw_app_meta_data -> 'app_only' from auth.users where id = 'c1410000-0000-4000-8000-000000000021') = 'true'::jsonb);
+update public.role_assignments set revoked_at = now() where user_id = 'c1410000-0000-4000-8000-000000000021' and role = 'creator';
+select tests.ok('S141 deixou de ser Hero: volta a usar a web', (select raw_app_meta_data -> 'app_only' from auth.users where id = 'c1410000-0000-4000-8000-000000000021') = 'false'::jsonb);
+
+drop function tests.s141_gate(text);
+delete from public.admin_audit where resource_id like 'c1410000-%';
+delete from public.invitations where email::text like '%@s141.test';
+delete from public.creator_profiles where id = 'c1410000-0000-4000-8000-0000000000c1';
+delete from auth.users where id::text like 'c1410000-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

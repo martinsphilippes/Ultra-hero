@@ -1,5 +1,6 @@
 "use server";
 
+import { heroChannelBlocked } from "@/lib/access/server";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
@@ -92,6 +93,8 @@ export async function revokeHeroTeamInviteAction(input: { creatorId: string; id:
 
 export async function createMyHeroAction(input: { name: string }): Promise<HeroTeamResult> {
   await requireUser("/heroi/equipe");
+  // 0141: Hero/Creator só pelo aplicativo
+  if (await heroChannelBlocked()) return agencyFail("creator_app_only");
   const parsed = z.object({ name: z.string().trim().min(2).max(80) }).safeParse(input);
   if (!parsed.success) return agencyFail("name_required");
   try {

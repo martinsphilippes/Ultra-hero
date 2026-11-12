@@ -28,7 +28,15 @@ function visibleTexts(locale: string): Array<[string, string]> {
 
 // Exceção pedida pela Groscove (reunião de 06/11/2026): no cadastro, o cartão do Hero diz "Sou um Creator e quero
 // trabalhar com marcas", porque quem chega ainda não sabe o que é um Hero. Só esta frase.
-const CREATOR_ALLOWED = new Set(["auth.choose.hero.text"]);
+// 0141 (pedido de 11/11/2026, texto exato): "O acesso de Creators é exclusivo pelo aplicativo Ultra Hero. Abra o app para
+// continuar." — a mesma frase no login, na mensagem do app, na tela de status e nos erros das ações do Hero.
+const CREATOR_ALLOWED = new Set([
+  "auth.choose.hero.text",
+  "auth.errors.creatorAppOnly",
+  "agency.errors.creator_app_only",
+  "access.pending.errors.creatorAppOnly",
+  "access.appOnly.message",
+]);
 // Onda Digital (0132, roteiro aprovado em 07/11/2026): a página repete os textos da apresentação da Groscove, que
 // fala em "creators" (a frente Creators, "Mais de mil creators para campanhas particulares", "com creators como
 // opcional"). Só os textos dessa página.

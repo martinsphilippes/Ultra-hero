@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "pending": "Registro en análisis",
+    "appOnly": "Acceso por la aplicación",
+    "queue": "Aprobación de registros"
+  },
+  "profiles": {
+    "consumer": "Usuario de la app",
+    "hero": "Hero",
+    "brand": "Marca",
+    "agency": "Agencia",
+    "professional": "Profesional",
+    "seller": "Proveedor",
+    "staff": "Equipo de proyecto",
+    "admin": "Administración"
+  },
+  "origins": {
+    "password": "Correo y contraseña",
+    "quick": "Registro rápido",
+    "google": "Google",
+    "apple": "Apple",
+    "invite": "Invitación",
+    "admin": "Creada por la administración",
+    "legacy": "Cuenta existente",
+    "other": "Otro"
+  },
+  "pending": {
+    "title": "Tu registro está esperando la aprobación de la Presidencia",
+    "intro": "En cuanto la Presidencia lo apruebe, entras con tu perfil. No hace falta registrarte de nuevo.",
+    "identityTitle": "Revisa tus datos",
+    "name": "Nombre",
+    "email": "Correo",
+    "profile": "Perfil solicitado",
+    "origin": "Cómo entraste",
+    "requestedAt": "Solicitado el",
+    "refresh": "Actualizar estado",
+    "signOut": "Salir",
+    "chooseTitle": "¿Cómo vas a usar Ultra?",
+    "chooseText": "Entraste con Google o Apple. Elige el perfil para que la Presidencia lo analice.",
+    "chooseSave": "Enviar perfil",
+    "chooseSaved": "Perfil enviado a la Presidencia.",
+    "approvedTitle": "Tu registro fue aprobado",
+    "approvedText": "La Presidencia aprobó tu acceso. Continúa para entrar con tu perfil.",
+    "continue": "Continuar",
+    "rejectedTitle": "Tu registro no fue aprobado",
+    "rejectedText": "La Presidencia no aprobó este registro. Si crees que es un error, habla con el equipo Groscove.",
+    "unavailable": "No pudimos consultar el estado ahora. Inténtalo de nuevo en unos instantes.",
+    "errors": {
+      "creatorAppOnly": "El acceso de Creators es exclusivo por la aplicación Ultra Hero. Abre la app para continuar.",
+      "notPending": "Este registro ya fue analizado. Actualiza el estado.",
+      "unknown": "Algo salió mal. Inténtalo de nuevo."
+    }
+  },
+  "appOnly": {
+    "title": "Acceso por la aplicación",
+    "message": "El acceso de Creators es exclusivo por la aplicación Ultra Hero. Abre la app para continuar.",
+    "open": "Abrir la app",
+    "appStore": "Descargar en App Store",
+    "playStore": "Disponible en Google Play",
+    "noApp": "¿Todavía no tienes la app instalada? Habla con el equipo Groscove.",
+    "back": "Volver al inicio"
+  },
+  "queue": {
+    "title": "Aprobación de registros",
+    "description": "Toda cuenta nueva espera tu decisión. Solo la Presidencia aprueba o rechaza.",
+    "tabPending": "En espera",
+    "tabDecided": "Decididos",
+    "tabsLabel": "Estado de los registros",
+    "emptyPending": "Ningún registro esperando aprobación.",
+    "emptyDecided": "Todavía no hay decisiones registradas.",
+    "unavailable": "La fila todavía no está disponible. Inténtalo de nuevo en unos instantes.",
+    "requestedAt": "Solicitado el {date}",
+    "decidedAt": "{status, select, approved {Aprobado el} other {Rechazado el}} {date} por {name}",
+    "profileUnconfirmed": "perfil aún no confirmado por la persona",
+    "noName": "Sin nombre",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "reconsider": "Aprobar de todos modos",
+    "note": "Motivo (opcional)",
+    "notePlaceholder": "Ej.: no tiene relación con Groscove",
+    "confirmReject": "Confirmar rechazo",
+    "cancel": "Cancelar",
+    "approved": "Registro aprobado.",
+    "rejected": "Registro rechazado.",
+    "statusApproved": "Aprobado",
+    "statusRejected": "Rechazado",
+    "card": {
+      "title": "Registros esperando a la Presidencia",
+      "count": "{count, plural, =0 {Ninguna solicitud} one {# solicitud} other {# solicitudes}}",
+      "open": "Abrir fila"
+    },
+    "errors": {
+      "forbidden": "Solo la Presidencia puede decidir.",
+      "already_approved": "Este registro ya fue aprobado.",
+      "not_found": "Registro no encontrado.",
+      "cannot_decide_self": "No decides tu propio registro.",
+      "invalid_input": "Revisa los datos.",
+      "unknown": "No se pudo guardar. Inténtalo de nuevo."
+    }
+  }
+}

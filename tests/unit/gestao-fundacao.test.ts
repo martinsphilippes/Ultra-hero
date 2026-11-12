@@ -106,7 +106,8 @@ describe("erros das RPCs", () => {
 
 describe("avisos", () => {
   it("tipos iguais ao check mais recente do banco (0125: acesso à agência; 0126: casting aberto, marca e perfil)", () => {
-    expect(INBOX_KINDS).toHaveLength(73);
+    // 0141: + cadastro na fila da Presidência e decisão
+    expect(INBOX_KINDS).toHaveLength(75);
     const sql = latestInboxCheckSql();
     for (const kind of INBOX_KINDS) expect(sql).toContain(`'${kind}'`);
     expect(isInboxKind("member_joined")).toBe(true);

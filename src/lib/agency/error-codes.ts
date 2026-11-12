@@ -1,5 +1,7 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // Hero/Creator só pelo aplicativo (0141): cadastro e área do Hero fechados no navegador
+  "creator_app_only",
   // ata de reunião (0138): CPF/dados bancários no texto, falta o mínimo para concluir, ata já concluída
   "sensitive_data",
   "meeting_incomplete",

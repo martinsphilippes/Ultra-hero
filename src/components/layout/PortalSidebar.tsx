@@ -2,6 +2,7 @@
 
 import {
   ArrowLeft,
+  UserCheck,
   MessagesSquare,
   BadgeCheck,
   Bell,
@@ -134,6 +135,8 @@ const ICONS: Record<string, LucideIcon> = {
   universes: Orbit,
   // Plano de projetos (0137)
   groupProjects: ListChecks,
+  // Aprovação de cadastros pela Presidência (0141)
+  approvals: UserCheck,
 };
 
 function isActive(pathname: string, href: string, root: string) {

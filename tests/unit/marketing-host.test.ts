@@ -18,7 +18,13 @@ vi.mock("@/lib/supabase/middleware", async () => {
   return {
     updateSession: async (request: NextRequest) => {
       session.refreshed += 1;
-      return { response: NextResponse.next({ request }), signedIn: session.signedIn };
+      const response = NextResponse.next({ request });
+      return {
+        response: () => response,
+        signedIn: session.signedIn,
+        claims: session.signedIn ? { sub: "u1", app_metadata: { access: "approved", app_only: false } } : null,
+        signOut: async () => {},
+      };
     },
   };
 });
@@ -119,7 +125,7 @@ describe("middleware com MARKETING_HOSTS", () => {
     const res = await middleware(request("/", "app.dominio.com"));
     expect(res.status).toBe(307);
     expect(new URL(res.headers.get("location")!).pathname).toBe(rootDestination({ signedIn: false, nativeApp: false, explored: false }));
-    const login = await middleware(request("/heroi", "app.dominio.com"));
+    const login = await middleware(request("/marca", "app.dominio.com"));
     expect(new URL(login.headers.get("location")!).pathname).toBe("/login");
     expect(session.refreshed).toBe(2);
   });

@@ -306,6 +306,14 @@
     "creator_meeting_action": {
       "title": "{count, plural, one {A next step from the meeting with {talent} is yours} other {# next steps from the meeting with {talent} are yours}}",
       "body": "See the minutes and each due date, and mark them when done."
+    },
+    "account_access_requested": {
+      "title": "Sign-up awaiting approval",
+      "body": "{name} asked for access with the {profile, select, hero {Hero profile} brand {Brand profile} agency {Agency profile} professional {Professional profile} seller {Supplier profile} staff {Project team profile} admin {Administration profile} other {app user profile}}. Open the Presidency queue."
+    },
+    "account_access_decided": {
+      "title": "{decision, select, approved {Sign-up approved} other {Sign-up not approved}}",
+      "body": "{decision, select, approved {The Presidency approved your sign-up.} other {The Presidency did not approve your sign-up.}}"
     }
   }
 }

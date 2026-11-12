@@ -3,9 +3,11 @@ import { isLibraryKey, legacyLibraryTarget } from "@/lib/catalog/creator-librari
 import { legacyHeroPortalTarget } from "@/lib/hero-portal/routes";
 import { LOGIN_HOME } from "@/lib/auth/safe-next";
 import { EXPLORE_COOKIE, NATIVE_VISITOR_ENTRY, rootDestination } from "@/lib/institutional/root";
+import { APP_ONLY_PATH, decideAccess, isApiPath, isCreatorAppOnlyEnabled, PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
+import { QUICK_SIGNUP_PENDING_COOKIE } from "@/lib/auth/quick-signup";
 import { isMarketingHost, marketingDecision, parseMarketingHosts, requestHost } from "@/lib/marketing-host";
 import { isBlockedInNativeApp, isOpenToNativeVisitor, NATIVE_BLOCKED_FALLBACK, parseNativeApp } from "@/lib/native-app/surface";
-import { updateSession } from "@/lib/supabase/middleware";
+import { updateSession, type SessionState } from "@/lib/supabase/middleware";
 
 // Rotas que exigem sessão. Papéis NÃO são checados aqui (os layouts fazem isso no servidor).
 // /profissional = portal do profissional (0058); /profissionais (lista pública) não entra.
@@ -103,12 +105,50 @@ function marketingResponse(request: NextRequest): NextResponse | null {
   return NextResponse.redirect(target, 307);
 }
 
+// 0141: aprovação da Presidência e Hero/Creator só pelo aplicativo (lib/access/gate). Página → redireciona para a tela de
+// status ou para a mensagem do app; API e server action (POST com Next-Action) → 403, porque um 307 repetiria o POST.
+async function accessResponse(request: NextRequest, session: SessionState): Promise<NextResponse | null> {
+  const { pathname } = request.nextUrl;
+  const decision = decideAccess({
+    pathname,
+    signedIn: session.signedIn,
+    claims: readAccessClaims(session.claims),
+    native: parseNativeApp(request.headers.get("user-agent")) !== null,
+    creatorAppOnly: isCreatorAppOnlyEnabled(),
+    quickSignupPending: request.cookies.get(QUICK_SIGNUP_PENDING_COOKIE)?.value === "1",
+  });
+  if (decision.action === "next") return null;
+
+  if (decision.action === "app-only" && decision.signOut) await session.signOut();
+  const json = isApiPath(pathname) || request.headers.has("next-action");
+  const target = decision.action === "pending" ? PENDING_PATH : APP_ONLY_PATH;
+  let blocked: NextResponse;
+  if (json) {
+    const error = decision.action === "pending" ? `account_${decision.status}` : "creator_app_only";
+    blocked = NextResponse.json({ error }, { status: 403 });
+  } else if (decision.action === "app-only" && !decision.redirect) {
+    // já está na mensagem do app: só encerra a sessão deste navegador e mostra a página
+    return session.response();
+  } else {
+    const url = request.nextUrl.clone();
+    url.pathname = target;
+    url.search = "";
+    blocked = NextResponse.redirect(url, 307);
+  }
+  for (const cookie of session.response().cookies.getAll()) blocked.cookies.set(cookie);
+  return blocked;
+}
+
 export async function middleware(request: NextRequest) {
   const marketing = marketingResponse(request);
   if (marketing) return marketing;
 
   // Renova a sessão (cookies) em toda requisição.
-  const { response, signedIn } = await updateSession(request);
+  const session = await updateSession(request);
+  const access = await accessResponse(request, session);
+  if (access) return access;
+  const response = session.response();
+  const { signedIn } = session;
 
   const { pathname, search } = request.nextUrl;
   const early = legacyHeroPortalResponse(request) ?? nativeAppResponse(request) ?? heroHubResponse(request) ?? legacyEvolutionResponse(request);
