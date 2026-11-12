@@ -8,9 +8,10 @@ import { getMyAccess } from "@/lib/access/presidency";
 import { heroChannelBlocked } from "@/lib/access/server";
 import { CHOOSABLE_PROFILES, onboardingKindAfterApproval } from "@/lib/access/status";
 import { acceptMyInvitations } from "@/lib/auth/invite-first-access";
-import { PROFILE_ONBOARDING_PATH, startPathFor } from "@/lib/auth/profile-signup";
+import { businessKindOfRoles } from "@/lib/auth/profile-conflict";
+import { PROFILE_HOME, PROFILE_ONBOARDING_PATH, startPathFor } from "@/lib/auth/profile-signup";
 import { LOGIN_HOME } from "@/lib/auth/safe-next";
-import { getUser } from "@/lib/auth/session";
+import { getRoles, getUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 
 export type PendingActionState = { status: "idle" } | { status: "saved" } | { status: "error"; error: "creatorAppOnly" | "notPending" | "unknown" };
@@ -37,6 +38,11 @@ export async function refreshAccessAction(): Promise<void> {
   // convites do e-mail (equipe da agência, marca, Hero da agência…) entram agora, depois da aprovação
   const home = await acceptMyInvitations(supabase);
   if (home) redirect(LOGIN_HOME);
+
+  // conta que já tem o perfil de negócio (criada pela administração já ligada à marca/indústria, ou Hero já criado):
+  // vai ao próprio portal, sem abrir o passo a passo de criar outra empresa
+  const current = businessKindOfRoles((await getRoles()).map((r) => r.role as string));
+  if (current) redirect(PROFILE_HOME[current]);
 
   // perfil de negócio pedido no cadastro: abre o passo a passo (a RPC retoma o que já existir)
   const kind = onboardingKindAfterApproval(access.requestedProfile);
