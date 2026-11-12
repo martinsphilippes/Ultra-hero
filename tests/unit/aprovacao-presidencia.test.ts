@@ -20,13 +20,13 @@ const at = (patch: Partial<AccessInput>) => decideAccess({ ...base, ...patch });
 
 describe("readAccessClaims", () => {
   it("lê access/app_only das claims do JWT ou do próprio app_metadata", () => {
-    expect(readAccessClaims({ sub: "u", app_metadata: { access: "pending", app_only: true } })).toEqual({ status: "pending", appOnly: true });
-    expect(readAccessClaims({ access: "approved", app_only: false })).toEqual({ status: "approved", appOnly: false });
+    expect(readAccessClaims({ sub: "u", app_metadata: { access: "pending", app_only: true } })).toEqual({ status: "pending", appOnly: true, mustChangePassword: false });
+    expect(readAccessClaims({ access: "approved", app_only: false })).toEqual({ status: "approved", appOnly: false, mustChangePassword: false });
   });
   it("token antigo (sem a chave) ou valor estranho = status nulo, nunca aprovado por engano", () => {
-    expect(readAccessClaims({ app_metadata: { provider: "email" } })).toEqual({ status: null, appOnly: false });
-    expect(readAccessClaims({ app_metadata: { access: "ok", app_only: "true" } })).toEqual({ status: null, appOnly: false });
-    expect(readAccessClaims(null)).toEqual({ status: null, appOnly: false });
+    expect(readAccessClaims({ app_metadata: { provider: "email" } })).toEqual({ status: null, appOnly: false, mustChangePassword: false });
+    expect(readAccessClaims({ app_metadata: { access: "ok", app_only: "true" } })).toEqual({ status: null, appOnly: false, mustChangePassword: false });
+    expect(readAccessClaims(null)).toEqual({ status: null, appOnly: false, mustChangePassword: false });
   });
 });
 

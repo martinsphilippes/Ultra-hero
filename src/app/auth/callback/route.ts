@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { APP_ONLY_PATH, PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
+import { APP_ONLY_PATH, CHANGE_PASSWORD_PATH, PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
 import { heroChannelBlocked } from "@/lib/access/server";
 import { profileFromStartPath } from "@/lib/access/status";
 import { isOAuthSignupRefused, isOAuthUserBanned, readExperimentOpen } from "@/lib/auth/experiment";
@@ -66,6 +66,8 @@ export async function GET(request: NextRequest) {
       await supabase.auth.signOut({ scope: "local" });
       return NextResponse.redirect(`${origin}${APP_ONLY_PATH}`);
     }
+    // senha provisória: a troca vem antes da tela de status e do app
+    if (access.mustChangePassword) return NextResponse.redirect(`${origin}${CHANGE_PASSWORD_PATH}`);
     if (access.status === "pending" || access.status === "rejected") {
       return NextResponse.redirect(`${origin}${PENDING_PATH}`);
     }

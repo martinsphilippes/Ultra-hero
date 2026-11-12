@@ -10,12 +10,19 @@
 export type AccessStatus = "pending" | "approved" | "rejected";
 
 /** O que o token diz da conta. status null = token emitido antes da 0141 (sem a chave). */
-export type AccessClaims = { status: AccessStatus | null; appOnly: boolean };
+export type AccessClaims = {
+  status: AccessStatus | null;
+  appOnly: boolean;
+  /** senha provisória (conta criada pela administração): trocar no primeiro acesso, antes de qualquer tela */
+  mustChangePassword?: boolean;
+};
 
 /** Tela de status do cadastro ("Seu cadastro está aguardando aprovação da Presidência"). */
 export const PENDING_PATH = "/aguardando-aprovacao";
 /** Mensagem "O acesso de Creators é exclusivo pelo aplicativo Ultra Hero". */
 export const APP_ONLY_PATH = "/acesso-pelo-app";
+/** Troca obrigatória da senha provisória no primeiro acesso. */
+export const CHANGE_PASSWORD_PATH = "/trocar-senha";
 
 const STATUSES: readonly AccessStatus[] = ["pending", "approved", "rejected"];
 
@@ -30,7 +37,7 @@ export function readAccessClaims(source: unknown): AccessClaims {
   const meta = asRecord(record?.app_metadata) ?? record;
   const raw = meta?.access;
   const status = typeof raw === "string" && (STATUSES as readonly string[]).includes(raw) ? (raw as AccessStatus) : null;
-  return { status, appOnly: meta?.app_only === true };
+  return { status, appOnly: meta?.app_only === true, mustChangePassword: meta?.must_change_password === true };
 }
 
 function matches(pathname: string, prefix: string): boolean {
@@ -62,8 +69,17 @@ export function isOpenWhilePending(pathname: string, opts: { quickSignupPending?
   return OPEN_WHILE_PENDING.some((prefix) => matches(pathname, prefix));
 }
 
+// Senha provisória: só a troca, os retornos do login (/auth: callback, sair), a recuperação, textos legais e offline.
+const OPEN_WHILE_CHANGING_PASSWORD = [CHANGE_PASSWORD_PATH, "/auth", "/reset-password", "/legal", "/offline"];
+
+export function isOpenWhileChangingPassword(pathname: string): boolean {
+  return OPEN_WHILE_CHANGING_PASSWORD.some((prefix) => matches(pathname, prefix));
+}
+
 export type AccessDecision =
   | { action: "next" }
+  /** página → troca da senha provisória; API → 403 */
+  | { action: "change-password" }
   /** página → tela de status; API → 403 */
   | { action: "pending"; status: "pending" | "rejected" }
   /** página → mensagem do app (redirect=false quando já está nela); signOut = encerrar a sessão do navegador */
@@ -96,7 +112,12 @@ export function decideAccess(input: AccessInput): AccessDecision {
     if (!signedIn && isHeroAreaPath(pathname)) return { action: "app-only", signOut: false, redirect: true };
   }
 
-  // 2) Conta aguardando a Presidência (ou recusada): só a tela de status
+  // 2) Senha provisória (conta criada pela administração): a troca vem antes de tudo, inclusive da tela de status
+  if (signedIn && claims.mustChangePassword) {
+    return isOpenWhileChangingPassword(pathname) ? { action: "next" } : { action: "change-password" };
+  }
+
+  // 3) Conta aguardando a Presidência (ou recusada): só a tela de status
   if (signedIn && (claims.status === "pending" || claims.status === "rejected")) {
     if (isOpenWhilePending(pathname, { quickSignupPending: input.quickSignupPending })) return { action: "next" };
     return { action: "pending", status: claims.status };

@@ -3,7 +3,7 @@ import { isLibraryKey, legacyLibraryTarget } from "@/lib/catalog/creator-librari
 import { legacyHeroPortalTarget } from "@/lib/hero-portal/routes";
 import { LOGIN_HOME } from "@/lib/auth/safe-next";
 import { EXPLORE_COOKIE, NATIVE_VISITOR_ENTRY, rootDestination } from "@/lib/institutional/root";
-import { APP_ONLY_PATH, decideAccess, isAndroidWebView, isApiPath, isCreatorAppOnlyEnabled, PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
+import { APP_ONLY_PATH, CHANGE_PASSWORD_PATH, decideAccess, isAndroidWebView, isApiPath, isCreatorAppOnlyEnabled, PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
 import { QUICK_SIGNUP_PENDING_COOKIE } from "@/lib/auth/quick-signup";
 import { isMarketingHost, marketingDecision, parseMarketingHosts, requestHost } from "@/lib/marketing-host";
 import { isBlockedInNativeApp, isOpenToNativeVisitor, NATIVE_BLOCKED_FALLBACK, NATIVE_CHANNEL_COOKIE, nativeAppFrom, parseNativeApp } from "@/lib/native-app/surface";
@@ -124,10 +124,10 @@ async function accessResponse(request: NextRequest, session: SessionState): Prom
   // WebView do Android sem a marca pode ser o próprio app: barra, mas não revoga a sessão (a tela da mensagem se recupera)
   if (decision.action === "app-only" && decision.signOut && !isAndroidWebView(userAgent)) await session.signOut();
   const json = isApiPath(pathname) || request.headers.has("next-action");
-  const target = decision.action === "pending" ? PENDING_PATH : APP_ONLY_PATH;
+  const target = decision.action === "pending" ? PENDING_PATH : decision.action === "change-password" ? CHANGE_PASSWORD_PATH : APP_ONLY_PATH;
   let blocked: NextResponse;
   if (json) {
-    const error = decision.action === "pending" ? `account_${decision.status}` : "creator_app_only";
+    const error = decision.action === "pending" ? `account_${decision.status}` : decision.action === "change-password" ? "password_change_required" : "creator_app_only";
     blocked = NextResponse.json({ error }, { status: 403 });
   } else if (decision.action === "app-only" && !decision.redirect) {
     // já está na mensagem do app: só encerra a sessão deste navegador e mostra a página

@@ -4,7 +4,7 @@ import type { AuthError } from "@supabase/supabase-js";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { APP_ONLY_PATH, PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
+import { APP_ONLY_PATH, CHANGE_PASSWORD_PATH, PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
 import { heroChannelBlocked } from "@/lib/access/server";
 import { isSignupRefusedByDatabase, readExperimentOpen } from "@/lib/auth/experiment";
 import { generatePassword } from "@/lib/auth/generated-password";
@@ -127,6 +127,8 @@ async function accessAfterSignIn(supabase: Awaited<ReturnType<typeof createClien
     await supabase.auth.signOut({ scope: "local" });
     return { status: "error", error: "creatorAppOnly" };
   }
+  // senha provisória (conta criada pela administração): troca obrigatória antes de qualquer tela, inclusive a de status
+  if (access.mustChangePassword) redirect(CHANGE_PASSWORD_PATH);
   if (access.status === "pending" || access.status === "rejected") redirect(PENDING_PATH);
   return null;
 }
@@ -355,9 +357,11 @@ export async function resetPasswordAction(_prev: AuthActionState, formData: Form
     try {
       const admin = createAdminClient();
       await forgetGeneratedPassword(admin, user.id);
-      if (user.app_metadata?.quick_signup_unverified === true) {
-        await admin.auth.admin.updateUserById(user.id, { app_metadata: { quick_signup_unverified: false } });
-      }
+      const meta: Record<string, boolean> = {};
+      if (user.app_metadata?.quick_signup_unverified === true) meta.quick_signup_unverified = false;
+      // a senha provisória (troca obrigatória) também deixa de valer: a pessoa já escolheu a própria
+      if (user.app_metadata?.must_change_password === true) meta.must_change_password = false;
+      if (Object.keys(meta).length > 0) await admin.auth.admin.updateUserById(user.id, { app_metadata: meta });
     } catch {
       // melhor esforço: a senha nova já vale
     }
@@ -365,6 +369,33 @@ export async function resetPasswordAction(_prev: AuthActionState, formData: Form
   await supabase.auth.signOut({ scope: "others" });
 
   return { status: "success" };
+}
+
+// Troca obrigatória da senha provisória (conta criada pela administração com uma senha combinada). A pessoa escolhe a
+// própria senha; a marca must_change_password sai do app_metadata (só o servidor grava), as outras sessões abertas com a
+// senha provisória caem e o token é renovado sem a marca. Depois: tela de status (pendente/recusada) ou o app.
+export async function forcedPasswordChangeAction(_prev: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  const parsed = resetSchema.safeParse({ password: formData.get("password"), confirmPassword: formData.get("confirmPassword") });
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error) };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  if (!hasAdminClient()) return { status: "error", error: "unknown" };
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+  if (error) return { status: "error", error: mapAuthError(error) };
+
+  const { error: flagError } = await createAdminClient().auth.admin.updateUserById(user.id, { app_metadata: { must_change_password: false } });
+  if (flagError) return { status: "error", error: "unknown" };
+  await supabase.auth.signOut({ scope: "others" });
+  const { data: refreshed } = await supabase.auth.refreshSession();
+
+  const access = readAccessClaims(refreshed?.user?.app_metadata ?? user.app_metadata);
+  if (access.status === "pending" || access.status === "rejected") redirect(PENDING_PATH);
+  redirect(LOGIN_HOME);
 }
 
 // Cadastro por perfil (0103): Hero, Marca ou Agência sem convite. Mesmas regras do cadastro rápido (campo-isca,

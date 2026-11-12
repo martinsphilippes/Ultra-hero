@@ -2,7 +2,7 @@ import "server-only";
 import type { User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import { APP_ONLY_PATH, PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
+import { APP_ONLY_PATH, CHANGE_PASSWORD_PATH, PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
 import { heroChannelBlocked } from "@/lib/access/server";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "./safe-next";
@@ -99,6 +99,8 @@ export async function requireUser(next?: string): Promise<User> {
   const user = await getUser();
   if (user) {
     const access = readAccessClaims(user.app_metadata);
+    // senha provisória: a troca vem antes de tudo (a action pode ser chamada por qualquer caminho)
+    if (access.mustChangePassword) redirect(CHANGE_PASSWORD_PATH);
     if (access.status === "pending" || access.status === "rejected") redirect(PENDING_PATH);
     if (access.appOnly && (await heroChannelBlocked())) redirect(APP_ONLY_PATH);
     return user;
