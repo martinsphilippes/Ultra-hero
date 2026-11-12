@@ -19961,6 +19961,8 @@ insert into public.role_assignments (user_id, role, scope_type) values
   ('c1410000-0000-4000-8000-000000000002', 'admin', 'global'),
   ('c1410000-0000-4000-8000-000000000023', 'creator', 'global');
 \ir ../migrations/0141_aprovacao_presidencia.sql
+-- 0142 vem logo depois da 0141 em produção (Hero aprovado continua só pelo app)
+\ir ../migrations/0142_hero_aprovado_so_app.sql
 select tests.su();
 insert into public.access_approvers (user_id) values ('c1410000-0000-4000-8000-000000000001');
 
@@ -20186,9 +20188,17 @@ select tests.ok('S141 admin da plataforma e Presidência com papel creator conti
 select tests.login('c1410000-0000-4000-8000-000000000001', 'presidencia@s141.test');
 select public.presidency_access_decide('c1410000-0000-4000-8000-000000000014', 'approved', null, 'hero');
 select tests.su();
-select tests.ok('S141 pedido de Hero aprovado: o "só pelo app" passa a seguir o papel creator (o Hero nasce no app)',
-  (select raw_app_meta_data -> 'app_only' from auth.users where id = 'c1410000-0000-4000-8000-000000000014') = 'false'::jsonb
+select tests.ok('S141/0142 pedido de Hero aprovado: continua só pelo app antes mesmo do papel creator, e o passo a passo do Hero fica aberto',
+  (select raw_app_meta_data -> 'app_only' from auth.users where id = 'c1410000-0000-4000-8000-000000000014') = 'true'::jsonb
+  and not exists (select 1 from public.role_assignments where user_id = 'c1410000-0000-4000-8000-000000000014' and role = 'creator' and revoked_at is null)
   and exists (select 1 from public.account_onboardings where user_id = 'c1410000-0000-4000-8000-000000000014' and kind = 'hero' and completed_at is null));
+insert into public.role_assignments (user_id, role, scope_type) values ('c1410000-0000-4000-8000-000000000014', 'creator', 'global');
+select tests.ok('S142 Hero aprovado que termina o passo a passo (ganha o papel creator) segue só pelo app',
+  (select raw_app_meta_data -> 'app_only' from auth.users where id = 'c1410000-0000-4000-8000-000000000014') = 'true'::jsonb);
+update public.role_assignments set revoked_at = now() where user_id = 'c1410000-0000-4000-8000-000000000014' and role = 'creator';
+update public.account_approvals set requested_profile = 'consumer' where user_id = 'c1410000-0000-4000-8000-000000000014';
+select tests.ok('S142 sem pedido de Hero e sem papel creator: volta à web',
+  (select public.account_app_only('c1410000-0000-4000-8000-000000000014')) is false);
 
 drop function tests.s141_gate(text);
 delete from public.admin_audit where resource_id like 'c1410000-%';

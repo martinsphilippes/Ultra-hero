@@ -8,7 +8,8 @@
    `access_approvers` pela migração. Trocar ou acrescentar quem aprova = nova migração (não há tela nem RPC para isso).
 2. **Hero/Creator só pelo aplicativo** — cadastro e área do Hero só na WebView da casca das lojas. No navegador, conta Hero
    é desconectada e vê "O acesso de Creators é exclusivo pelo aplicativo Ultra Hero. Abra o app para continuar."
-   Marca, Agência, usuário comum e os demais perfis seguem na web.
+   Marca, Agência, usuário comum e os demais perfis seguem na web. Conta que pediu o perfil Hero fica só pelo app em
+   qualquer situação — pendente, aprovada (antes e depois de terminar o passo a passo do Hero) ou recusada (0142).
 
 ## Onde fica cada trava
 
