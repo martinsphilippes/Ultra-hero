@@ -49,7 +49,8 @@
       "creatorAppOnly": "Creator access is exclusive to the Ultra Hero app. Open the app to continue.",
       "notPending": "This sign-up was already reviewed. Refresh the status.",
       "unknown": "Something went wrong. Try again."
-    }
+    },
+    "deleteAccount": "Delete my account"
   },
   "appOnly": {
     "title": "Access through the app",
@@ -95,7 +96,10 @@
       "not_found": "Sign-up not found.",
       "cannot_decide_self": "You don't decide your own sign-up.",
       "invalid_input": "Check the details.",
-      "unknown": "Couldn't save. Try again."
-    }
+      "unknown": "Couldn't save. Try again.",
+      "profile_changed": "The person changed the requested profile. Check again before deciding."
+    },
+    "emailUnverified": "Email not verified",
+    "emailHint": "Sign-ups with email and password do not prove the person owns the email. Check before approving, especially Groscove emails."
   }
 }

@@ -108,12 +108,15 @@ returns text language sql stable security definer set search_path = '' as $$
 $$;
 revoke execute on function public.account_profile_from_invitation(text) from public, anon, authenticated;
 
--- Hero/Creator: só pelo aplicativo. Vale para quem pediu o perfil Hero e para quem tem o papel creator (Hero, equipe do
--- Hero ou talento do casting).
+-- Hero/Creator: só pelo aplicativo. Vale para quem tem o papel creator ativo (Hero, equipe do Hero ou talento do casting) e
+-- para quem ainda espera a Presidência com o pedido de Hero. Nunca para o admin da plataforma nem para a Presidência (que
+-- precisam da web para supervisionar e aprovar).
 create or replace function public.account_app_only(p_user uuid)
 returns boolean language sql stable security definer set search_path = '' as $$
-  select coalesce((select a.requested_profile = 'hero' from public.account_approvals a where a.user_id = p_user), false)
-      or exists (select 1 from public.role_assignments r where r.user_id = p_user and r.role = 'creator' and r.revoked_at is null)
+  select not exists (select 1 from public.access_approvers a where a.user_id = p_user)
+     and not exists (select 1 from public.role_assignments r where r.user_id = p_user and r.role = 'admin' and r.revoked_at is null)
+     and (exists (select 1 from public.role_assignments r where r.user_id = p_user and r.role = 'creator' and r.revoked_at is null)
+          or exists (select 1 from public.account_approvals a where a.user_id = p_user and a.status <> 'approved' and a.requested_profile = 'hero'))
 $$;
 revoke execute on function public.account_app_only(uuid) from public, anon, authenticated;
 
@@ -168,10 +171,14 @@ begin
   -- aviso no sino da Presidência (sem dados pessoais além do nome)
   v_name := left(coalesce(nullif(btrim(new.raw_user_meta_data ->> 'full_name'), ''), nullif(btrim(new.raw_user_meta_data ->> 'name'), ''),
                           split_part(coalesce(new.email, ''), '@', 1)), 80);
-  perform public.inbox_notify(a.user_id, 'account_access_requested', '/agencia/aprovacoes',
-            jsonb_build_object('name', v_name, 'profile', v_profile), null, 'account', new.id,
-            'account_access:' || new.id::text || ':' || a.user_id::text)
-  from public.access_approvers a;
+  begin
+    perform public.inbox_notify(a.user_id, 'account_access_requested', '/agencia/aprovacoes',
+              jsonb_build_object('name', v_name, 'profile', v_profile), null, 'account', new.id,
+              'account_access:' || new.id::text || ':' || a.user_id::text)
+    from public.access_approvers a;
+  exception when others then
+    null; -- o aviso é melhor esforço: o cadastro nunca falha por causa dele
+  end;
   return new;
 end $$;
 revoke execute on function public.account_access_after_insert() from public, anon, authenticated;
@@ -183,9 +190,40 @@ returns trigger language plpgsql security definer set search_path = '' as $$
 declare v_status text;
         v_app_only boolean;
         v_meta jsonb := coalesce(new.raw_app_meta_data, '{}'::jsonb);
+        v_old jsonb := coalesce(old.raw_app_meta_data, '{}'::jsonb);
+        v_profile text;
+        v_origin text;
 begin
   select a.status into v_status from public.account_approvals a where a.user_id = new.id;
   if v_status is null then return new; end if;
+  -- O Auth (admin.createUser) insere a conta só com provider/providers e grava o resto do app_metadata num UPDATE logo
+  -- depois: quando essas chaves aparecem numa conta ainda pendente, o pedido ganha o perfil e a origem certos.
+  if v_status = 'pending' and v_meta is distinct from v_old then
+    v_profile := case
+      when (v_old ->> 'signup_profile') is null and v_meta ->> 'signup_profile' in ('hero', 'brand', 'agency') then v_meta ->> 'signup_profile'
+      when (v_old ->> 'requested_profile') is null
+           and v_meta ->> 'requested_profile' in ('consumer', 'hero', 'brand', 'agency', 'professional', 'seller', 'staff', 'admin')
+        then v_meta ->> 'requested_profile'
+      end;
+    v_origin := case
+      when (v_old ->> 'created_by_admin') is null and (v_meta ->> 'created_by_admin') = 'true' then 'admin'
+      when (v_old ->> 'invite_first_access') is null and (v_meta ->> 'invite_first_access') = 'true' then 'invite'
+      when (v_old ->> 'signup_profile') is null and (v_meta ->> 'signup_profile') is not null then 'password'
+      when (v_old ->> 'quick_signup') is null and (v_meta ->> 'quick_signup') = 'true' then 'quick'
+      end;
+    if v_profile is not null or v_origin is not null then
+      update public.account_approvals a
+         set requested_profile = coalesce(v_profile, a.requested_profile),
+             profile_confirmed = a.profile_confirmed or v_profile is not null or v_origin in ('quick', 'password'),
+             origin = case when a.origin in ('google', 'apple') then a.origin else coalesce(v_origin, a.origin) end,
+             updated_at = now()
+       where a.user_id = new.id;
+      if v_profile is not null then
+        insert into public.account_approval_events (user_id, action, status, requested_profile)
+        values (new.id, 'profile_set', 'pending', v_profile);
+      end if;
+    end if;
+  end if;
   v_app_only := public.account_app_only(new.id);
   if (v_meta -> 'access') is distinct from to_jsonb(v_status) or (v_meta -> 'app_only') is distinct from to_jsonb(v_app_only) then
     new.raw_app_meta_data := v_meta || jsonb_build_object('access', v_status, 'app_only', v_app_only);
@@ -215,7 +253,7 @@ revoke execute on function public.account_claims_sync(uuid) from public, anon, a
 create or replace function public.account_access_role_sync()
 returns trigger language plpgsql security definer set search_path = '' as $$
 begin
-  if new.role = 'creator' then perform public.account_claims_sync(new.user_id); end if;
+  if new.role in ('creator', 'admin') then perform public.account_claims_sync(new.user_id); end if;
   return new;
 end $$;
 revoke execute on function public.account_access_role_sync() from public, anon, authenticated;
@@ -232,7 +270,9 @@ declare v_uid uuid := auth.uid();
         v_name text;
 begin
   if v_uid is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
-  select u.email, coalesce(p.full_name, p.display_name) into v_email, v_name
+  select u.email, coalesce(nullif(btrim(p.full_name), ''), nullif(btrim(u.raw_user_meta_data ->> 'full_name'), ''),
+                          nullif(btrim(u.raw_user_meta_data ->> 'name'), ''), p.display_name)
+    into v_email, v_name
   from auth.users u left join public.profiles p on p.id = u.id where u.id = v_uid;
   select * into v_row from public.account_approvals a where a.user_id = v_uid;
   if v_row.user_id is null then
@@ -309,8 +349,13 @@ begin
              case when p_view = 'pending' then extract(epoch from q.requested_at) else -extract(epoch from q.decided_at) end)
     from (
       select a.user_id, coalesce(u.email, a.email) as email,
-             coalesce(nullif(btrim(p.full_name), ''), nullif(btrim(p.display_name), ''),
-                      nullif(btrim(u.raw_user_meta_data ->> 'full_name'), ''), nullif(btrim(u.raw_user_meta_data ->> 'name'), '')) as name,
+             coalesce(nullif(btrim(p.full_name), ''), nullif(btrim(u.raw_user_meta_data ->> 'full_name'), ''),
+                      nullif(btrim(u.raw_user_meta_data ->> 'name'), ''), nullif(btrim(p.display_name), '')) as name,
+             -- e-mail comprovado: Google/Apple provam a posse; senha e cadastro rápido não (e-mail nunca verificado pelo app)
+             ((u.raw_app_meta_data -> 'providers') ?| array['google', 'apple'])
+               or (u.raw_app_meta_data ->> 'provider') in ('google', 'apple')
+               or ((u.raw_app_meta_data ? 'quick_signup_unverified') and (u.raw_app_meta_data ->> 'quick_signup_unverified') = 'false')
+               as email_verified,
              a.requested_profile, a.profile_confirmed, a.origin, a.requested_at, a.status,
              a.decided_at, a.decision_note,
              coalesce(nullif(btrim(d.full_name), ''), d.display_name) as decided_by_name,
@@ -340,7 +385,11 @@ grant execute on function public.presidency_access_pending_count() to authentica
 
 -- Aprova ou recusa. Só a Presidência (identidade do token conferida aqui, no banco). Pendente → aprovada/recusada;
 -- recusada pode ser reconsiderada (→ aprovada). Aprovada não volta a pendente por aqui (para tirar acesso há a suspensão).
-create or replace function public.presidency_access_decide(p_user uuid, p_decision text, p_note text default null)
+-- p_expected_profile: o perfil que a tela mostrou; se a pessoa trocou o pedido depois disso, a decisão é recusada
+-- (profile_changed) para a Presidência olhar de novo.
+drop function if exists public.presidency_access_decide(uuid, text, text);
+create or replace function public.presidency_access_decide(p_user uuid, p_decision text, p_note text default null,
+                                                           p_expected_profile text default null)
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare v_actor uuid := auth.uid();
         v_old text;
@@ -356,6 +405,9 @@ begin
 
   select a.status, a.requested_profile into v_old, v_profile from public.account_approvals a where a.user_id = p_user for update;
   if v_old is null then raise exception 'not_found' using errcode = 'P0002'; end if;
+  if p_expected_profile is not null and p_expected_profile is distinct from v_profile then
+    raise exception 'profile_changed' using errcode = 'P0001';
+  end if;
   if v_old = p_decision then
     return jsonb_build_object('status', v_old, 'changed', false);
   end if;
@@ -377,15 +429,23 @@ begin
      and not exists (select 1 from public.role_assignments r where r.user_id = p_user and r.revoked_at is null
                      and r.role::text in ('creator', 'brand', 'agency'))
      and not exists (select 1 from public.account_onboardings o where o.user_id = p_user and o.kind = v_profile and o.completed_at is null) then
-    insert into public.account_onboardings (user_id, kind, source) values (p_user, v_profile, 'self');
+    begin
+      insert into public.account_onboardings (user_id, kind, source) values (p_user, v_profile, 'self');
+    exception when others then
+      null; -- ex.: a conta já tem outro perfil de negócio (0116); a aprovação vale e o passo a passo abre pelo /comecar
+    end;
   end if;
-  -- aviso no sino da pessoa (aparece quando ela entrar; a tela de status já mostra a decisão)
-  perform public.inbox_notify(p_user, 'account_access_decided', '/aguardando-aprovacao',
-            jsonb_build_object('decision', p_decision), null, 'account', p_user, null);
+  -- aviso no sino da pessoa (aparece quando ela entrar; a tela de status já mostra a decisão). Melhor esforço.
+  begin
+    perform public.inbox_notify(p_user, 'account_access_decided', '/aguardando-aprovacao',
+              jsonb_build_object('decision', p_decision), null, 'account', p_user, null);
+  exception when others then
+    null;
+  end;
   return jsonb_build_object('status', p_decision, 'changed', true);
 end $$;
-revoke execute on function public.presidency_access_decide(uuid, text, text) from public, anon;
-grant execute on function public.presidency_access_decide(uuid, text, text) to authenticated;
+revoke execute on function public.presidency_access_decide(uuid, text, text, text) from public, anon;
+grant execute on function public.presidency_access_decide(uuid, text, text, text) to authenticated;
 
 -- 7) Avisos novos no sino ---------------------------------------------------------------------------------------------------
 alter table public.inbox_notifications drop constraint if exists inbox_notifications_kind_check;
@@ -460,18 +520,12 @@ end $$;
 revoke execute on function public.api_access_gate() from public;
 grant execute on function public.api_access_gate() to anon, authenticated, service_role;
 
-do $$
-begin
-  if exists (select 1 from pg_roles where rolname = 'authenticator') then
-    execute 'alter role authenticator set pgrst.db_pre_request = ''public.api_access_gate''';
-  end if;
-end $$;
 
 -- 9) Contas que já existiam (classificação) ---------------------------------------------------------------------------------
 insert into public.account_approvals (user_id, email, status, requested_profile, profile_confirmed, origin, requested_at,
                                       decided_at, decision_note)
 select u.id, lower(u.email),
-       case when u.last_sign_in_at is null then 'pending' else 'approved' end,
+       case when u.last_sign_in_at is null or u.created_at > now() - interval '1 hour' then 'pending' else 'approved' end,
        case
          when exists (select 1 from public.role_assignments r where r.user_id = u.id and r.role = 'creator' and r.revoked_at is null) then 'hero'
          when exists (select 1 from public.role_assignments r where r.user_id = u.id and r.role = 'agency' and r.revoked_at is null) then 'agency'
@@ -483,9 +537,11 @@ select u.id, lower(u.email),
        true,
        'legacy',
        u.created_at,
-       case when u.last_sign_in_at is null then null else now() end,
+       case when u.last_sign_in_at is null or u.created_at > now() - interval '1 hour' then null else now() end,
        case when u.last_sign_in_at is null
             then 'Conta criada antes da regra e que nunca tinha entrado: aguarda a Presidência no primeiro acesso.'
+            when u.created_at > now() - interval '1 hour'
+            then 'Conta criada na hora da publicação da regra: entra na fila da Presidência.'
             else 'Conta já em uso antes da regra de 11/11/2026 (sem histórico de aprovação): mantida aprovada na migração.' end
 from auth.users u
 on conflict (user_id) do nothing;
@@ -498,6 +554,15 @@ where a.origin = 'legacy'
 
 -- grava access/app_only no app_metadata de todas as contas (o gatilho de atualização recalcula)
 update auth.users set raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb);
+
+-- 10) Liga a trava da Data API por último (depois da classificação). Para desligar numa emergência:
+--     alter role authenticator reset pgrst.db_pre_request; notify pgrst, 'reload config';
+do $$
+begin
+  if exists (select 1 from pg_roles where rolname = 'authenticator') then
+    execute 'alter role authenticator set pgrst.db_pre_request = ''public.api_access_gate''';
+  end if;
+end $$;
 
 notify pgrst, 'reload config';
 notify pgrst, 'reload schema';

@@ -47,6 +47,12 @@ export async function GET(request: NextRequest) {
     let access = readAccessClaims(exchanged?.user?.app_metadata);
     // conta nova que escolheu o perfil na entrada (/comecar/<perfil>): o pedido à Presidência sai com esse perfil
     const chosen = profileFromStartPath(next);
+    const webBlocked = await heroChannelBlocked();
+    // Hero escolhido no navegador: nada é registrado como Hero (cadastro de Hero só pelo aplicativo)
+    if (chosen === "hero" && webBlocked) {
+      await supabase.auth.signOut({ scope: "local" });
+      return NextResponse.redirect(`${origin}${APP_ONLY_PATH}`);
+    }
     if (access.status === "pending" && chosen && exchanged?.user && hasAdminClient()) {
       try {
         await createAdminClient().rpc("account_approval_annotate", { p_user: exchanged.user.id, p_profile: chosen, p_origin: null });
@@ -56,7 +62,7 @@ export async function GET(request: NextRequest) {
         // a tela de status pergunta o perfil se ele não ficou registrado
       }
     }
-    if (access.appOnly && (await heroChannelBlocked())) {
+    if (access.appOnly && webBlocked) {
       await supabase.auth.signOut({ scope: "local" });
       return NextResponse.redirect(`${origin}${APP_ONLY_PATH}`);
     }

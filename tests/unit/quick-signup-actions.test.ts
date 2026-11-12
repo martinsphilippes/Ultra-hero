@@ -73,7 +73,7 @@ function builder(table: string) {
       return b;
     };
   }
-  for (const name of ["eq", "gte", "lt", "limit"]) {
+  for (const name of ["eq", "ilike", "gte", "lt", "limit"]) {
     b[name] = (col: string, value: unknown) => {
       op.filters.push([col, value]);
       return b;

@@ -233,6 +233,8 @@ export async function acceptInvitation(input: { token: string; acceptTerms: bool
     // professional: convite de profissional (0058); agency e brand: gestão (0064); admin e consumer: 0091
     const roles: AcceptedRole[] = ["creator", "seller", "professional", "agency", "brand", "admin", "consumer"];
     if (!roles.includes(role as AcceptedRole)) return fail("generic");
+    // 0141: papel novo (ex.: Hero) muda o "só pelo app" do token; renova já
+    await supabase.auth.refreshSession().catch(() => undefined);
     revalidatePath("/admin/invitations");
     // convite do escritório com Hero ligado (0087): o escopo é do Hero, mas o destino é o escritório
     const scopeType = typeof row.talent_id === "string" ? "talent" : typeof row.scope_type === "string" ? row.scope_type : null;

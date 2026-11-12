@@ -24,11 +24,15 @@ function isSuspended(user: Pick<User, "banned_until"> & { banned_until?: string 
   return Number.isNaN(t) || t > Date.now();
 }
 
-/** Administrador da plataforma? Falha fechada (erro = sim). */
+/** Administrador da plataforma ou a Presidência (quem aprova os cadastros, 0141)? Falha fechada (erro = sim). */
 export async function isPlatformAdmin(admin: Admin, userId: string): Promise<boolean> {
   const { data, error } = await admin.from("role_assignments").select("user_id").eq("user_id", userId).eq("role", "admin").is("revoked_at", null).limit(1);
   if (error) return true;
-  return (data ?? []).length > 0;
+  if ((data ?? []).length > 0) return true;
+  const approver = await admin.from("access_approvers").select("user_id").eq("user_id", userId).limit(1);
+  // sem a tabela (antes da 0141) não há Presidência; outro erro = fecha
+  if (approver.error) return !/access_approvers|does not exist|42P01|PGRST205/i.test(`${approver.error.message} ${approver.error.code}`);
+  return (approver.data ?? []).length > 0;
 }
 
 /** Limite próprio do "entrar sem senha" (namespace separado do cadastro rápido). */

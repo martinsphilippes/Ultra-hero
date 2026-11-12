@@ -19985,15 +19985,23 @@ insert into public.creator_profiles (id, slug, name, status, user_id) values
   ('c1410000-0000-4000-8000-0000000000c1', 's141-hero-convite', 'Hero convite S141', 'active', null);
 insert into public.invitations (email, role, creator_profile_id, token_hash, expires_at) values
   ('convidado@s141.test', 'creator', 'c1410000-0000-4000-8000-0000000000c1', 's141-hash', now() + interval '5 days');
+-- como o Supabase Auth faz no admin.createUser: INSERT só com provider/providers e o resto do app_metadata num UPDATE
+-- logo depois (Google e Apple já entram com o provedor)
 insert into auth.users (id, email, raw_user_meta_data, raw_app_meta_data) values
-  ('c1410000-0000-4000-8000-000000000011', 'rapido@s141.test', '{"full_name":"Rapido S141"}', '{"provider":"email","quick_signup":true,"quick_signup_unverified":true}'),
-  ('c1410000-0000-4000-8000-000000000012', 'marca@s141.test', '{"full_name":"Marca S141"}', '{"provider":"email","quick_signup":true,"signup_profile":"brand"}'),
-  ('c1410000-0000-4000-8000-000000000013', 'agencia@s141.test', '{"full_name":"Agencia S141"}', '{"provider":"email","signup_profile":"agency"}'),
-  ('c1410000-0000-4000-8000-000000000014', 'hero@s141.test', '{"full_name":"Hero S141"}', '{"provider":"email","signup_profile":"hero"}'),
+  ('c1410000-0000-4000-8000-000000000011', 'rapido@s141.test', '{"full_name":"Rapido S141"}', '{"provider":"email","providers":["email"]}'),
+  ('c1410000-0000-4000-8000-000000000012', 'marca@s141.test', '{"full_name":"Marca S141"}', '{"provider":"email","providers":["email"]}'),
+  ('c1410000-0000-4000-8000-000000000013', 'agencia@s141.test', '{"full_name":"Agencia S141"}', '{"provider":"email","providers":["email"]}'),
+  ('c1410000-0000-4000-8000-000000000014', 'hero@s141.test', '{"full_name":"Hero S141"}', '{"provider":"email","providers":["email"]}'),
   ('c1410000-0000-4000-8000-000000000015', 'google@s141.test', '{"name":"Google S141"}', '{"provider":"google","providers":["google"]}'),
-  ('c1410000-0000-4000-8000-000000000016', 'convidado@s141.test', '{}', '{"provider":"email","invite_first_access":true}'),
-  ('c1410000-0000-4000-8000-000000000017', 'feita-pelo-admin@s141.test', '{}', '{"provider":"email","created_by_admin":true}'),
-  ('c1410000-0000-4000-8000-000000000018', 'apple@s141.test', '{}', '{"provider":"apple","providers":["apple"]}');
+  ('c1410000-0000-4000-8000-000000000016', 'convidado@s141.test', '{}', '{"provider":"email","providers":["email"]}'),
+  ('c1410000-0000-4000-8000-000000000017', 'feita-pelo-admin@s141.test', '{}', '{"provider":"email","providers":["email"]}'),
+  ('c1410000-0000-4000-8000-000000000018', 'apple@s141.test', '{"full_name":"Apple Pessoa S141"}', '{"provider":"apple","providers":["apple"]}');
+update auth.users set raw_app_meta_data = raw_app_meta_data || '{"quick_signup":true,"quick_signup_unverified":true}' where id = 'c1410000-0000-4000-8000-000000000011';
+update auth.users set raw_app_meta_data = raw_app_meta_data || '{"quick_signup":true,"quick_signup_unverified":true,"signup_profile":"brand"}' where id = 'c1410000-0000-4000-8000-000000000012';
+update auth.users set raw_app_meta_data = raw_app_meta_data || '{"quick_signup":true,"quick_signup_unverified":true,"signup_profile":"agency"}' where id = 'c1410000-0000-4000-8000-000000000013';
+update auth.users set raw_app_meta_data = raw_app_meta_data || '{"quick_signup":true,"quick_signup_unverified":true,"signup_profile":"hero"}' where id = 'c1410000-0000-4000-8000-000000000014';
+update auth.users set raw_app_meta_data = raw_app_meta_data || '{"invite_first_access":true}' where id = 'c1410000-0000-4000-8000-000000000016';
+update auth.users set raw_app_meta_data = raw_app_meta_data || '{"created_by_admin":true}' where id = 'c1410000-0000-4000-8000-000000000017';
 select tests.ok('S141 todo cadastro novo nasce pendente (rápido, marca, agência, Hero, Google, convite, admin, Apple)',
   (select count(*) from public.account_approvals where user_id::text like 'c1410000-0000-4000-8000-00000000001%'
      and status = 'pending' and decided_at is null and decided_by is null) = 8);
@@ -20015,7 +20023,8 @@ select tests.ok('S141 o primeiro token já sai pendente; Hero (escolhido ou por 
 select tests.ok('S141 cada pedido avisa a Presidência no sino (um por cadastro, levando à fila) e fica no histórico',
   (select count(*) from public.inbox_notifications where user_id = 'c1410000-0000-4000-8000-000000000001'
      and kind = 'account_access_requested' and link = '/agencia/aprovacoes') = 8
-  and (select count(*) from public.account_approval_events where user_id::text like 'c1410000-0000-4000-8000-00000000001%' and action = 'requested') = 8);
+  and (select count(*) from public.account_approval_events where user_id::text like 'c1410000-0000-4000-8000-00000000001%' and action = 'requested') = 8
+  and (select count(*) from public.account_approval_events where user_id::text like 'c1410000-0000-4000-8000-00000000001%' and action = 'profile_set') = 3);
 -- o Auth regrava app_metadata inteiro (ex.: cadastro com Google): o gatilho repõe access/app_only
 update auth.users set raw_app_meta_data = '{"provider":"google","providers":["google"]}' where id = 'c1410000-0000-4000-8000-000000000015';
 select tests.ok('S141 app_metadata regravado pelo Auth continua com access = pending',
@@ -20079,7 +20088,11 @@ select tests.ok('S141 Presidência vê a fila com nome, e-mail, perfil, origem e
               where e ->> 'user_id' = 'c1410000-0000-4000-8000-000000000012' and e ->> 'email' = 'marca@s141.test'
                 and e ->> 'name' = 'Marca S141' and e ->> 'requested_profile' = 'brand' and e ->> 'origin' = 'password'
                 and (e ->> 'requested_at') is not null)
-  and public.presidency_access_pending_count() >= 9);
+  and public.presidency_access_pending_count() >= 9
+  and exists (select 1 from jsonb_array_elements(public.presidency_access_queue('pending')) e
+              where e ->> 'user_id' = 'c1410000-0000-4000-8000-000000000018' and e ->> 'name' = 'Apple Pessoa S141' and (e -> 'email_verified') = 'true'::jsonb)
+  and exists (select 1 from jsonb_array_elements(public.presidency_access_queue('pending')) e
+              where e ->> 'user_id' = 'c1410000-0000-4000-8000-000000000012' and (e -> 'email_verified') = 'false'::jsonb));
 select tests.login('c1410000-0000-4000-8000-000000000002', 'admin@s141.test');
 select tests.expect_error('S141 admin da plataforma não vê a fila', $q$select public.presidency_access_queue('pending')$q$, 'forbidden');
 select tests.expect_error('S141 admin da plataforma não aprova (mesmo chamando a API direto)',
@@ -20094,7 +20107,7 @@ select tests.ok('S141 pendente lê só a própria linha e nenhum histórico',
   (select count(*) from public.account_approvals) = 1 and (select count(*) from public.account_approval_events) = 0);
 select tests.su();
 select tests.ok('S141 nada disso para o visitante; funções internas só para o sistema',
-  not has_function_privilege('anon', 'public.presidency_access_decide(uuid, text, text)', 'execute')
+  not has_function_privilege('anon', 'public.presidency_access_decide(uuid, text, text, text)', 'execute')
   and not has_function_privilege('anon', 'public.presidency_access_queue(text)', 'execute')
   and not has_function_privilege('anon', 'public.account_access_status()', 'execute')
   and not has_function_privilege('authenticated', 'public.account_approval_annotate(uuid, text, text)', 'execute')
@@ -20110,8 +20123,10 @@ select tests.ok('S141 o servidor registra o perfil que só ele conhece (ex.: vol
 
 -- decisões da Presidência
 select tests.login('c1410000-0000-4000-8000-000000000001', 'presidencia@s141.test');
-select tests.ok('S141 Presidência aprova',
-  (select public.presidency_access_decide('c1410000-0000-4000-8000-000000000012', 'approved', null) ->> 'changed') = 'true');
+select tests.expect_error('S141 a pessoa trocou o pedido depois que a Presidência viu: a decisão pede nova olhada',
+  $q$select public.presidency_access_decide('c1410000-0000-4000-8000-000000000012', 'approved', null, 'consumer')$q$, 'profile_changed');
+select tests.ok('S141 Presidência aprova (com o perfil que viu na tela)',
+  (select public.presidency_access_decide('c1410000-0000-4000-8000-000000000012', 'approved', null, 'brand') ->> 'changed') = 'true');
 select tests.ok('S141 Presidência recusa com nota',
   (select public.presidency_access_decide('c1410000-0000-4000-8000-000000000013', 'rejected', 'Sem vínculo com a Groscove') ->> 'status') = 'rejected');
 select tests.ok('S141 repetir a mesma decisão não muda nada',
@@ -20162,6 +20177,18 @@ insert into public.role_assignments (user_id, role, scope_type) values ('c141000
 select tests.ok('S141 virou Hero: só pelo app', (select raw_app_meta_data -> 'app_only' from auth.users where id = 'c1410000-0000-4000-8000-000000000021') = 'true'::jsonb);
 update public.role_assignments set revoked_at = now() where user_id = 'c1410000-0000-4000-8000-000000000021' and role = 'creator';
 select tests.ok('S141 deixou de ser Hero: volta a usar a web', (select raw_app_meta_data -> 'app_only' from auth.users where id = 'c1410000-0000-4000-8000-000000000021') = 'false'::jsonb);
+
+insert into public.role_assignments (user_id, role, scope_type) values
+  ('c1410000-0000-4000-8000-000000000002', 'creator', 'global'), ('c1410000-0000-4000-8000-000000000001', 'creator', 'global');
+select tests.ok('S141 admin da plataforma e Presidência com papel creator continuam na web (supervisão e aprovação)',
+  (select raw_app_meta_data -> 'app_only' from auth.users where id = 'c1410000-0000-4000-8000-000000000002') = 'false'::jsonb
+  and (select raw_app_meta_data -> 'app_only' from auth.users where id = 'c1410000-0000-4000-8000-000000000001') = 'false'::jsonb);
+select tests.login('c1410000-0000-4000-8000-000000000001', 'presidencia@s141.test');
+select public.presidency_access_decide('c1410000-0000-4000-8000-000000000014', 'approved', null, 'hero');
+select tests.su();
+select tests.ok('S141 pedido de Hero aprovado: o "só pelo app" passa a seguir o papel creator (o Hero nasce no app)',
+  (select raw_app_meta_data -> 'app_only' from auth.users where id = 'c1410000-0000-4000-8000-000000000014') = 'false'::jsonb
+  and exists (select 1 from public.account_onboardings where user_id = 'c1410000-0000-4000-8000-000000000014' and kind = 'hero' and completed_at is null));
 
 drop function tests.s141_gate(text);
 delete from public.admin_audit where resource_id like 'c1410000-%';

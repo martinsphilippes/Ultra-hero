@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { presidencyError, type PresidencyError } from "@/lib/access/status";
+import { presidencyError, REQUESTED_PROFILES, type PresidencyError } from "@/lib/access/status";
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,6 +12,8 @@ const schema = z.object({
   userId: z.uuid(),
   decision: z.enum(["approved", "rejected"]),
   note: z.string().trim().max(500).optional(),
+  // o perfil que a tela mostrou: se a pessoa trocou o pedido depois, o banco recusa (profile_changed)
+  expectedProfile: z.enum(REQUESTED_PROFILES).optional(),
 });
 
 /**
@@ -23,6 +25,7 @@ export async function decideAccessAction(_prev: DecideState, formData: FormData)
     userId: formData.get("userId"),
     decision: formData.get("decision"),
     note: typeof formData.get("note") === "string" ? formData.get("note") : undefined,
+    expectedProfile: typeof formData.get("expectedProfile") === "string" ? formData.get("expectedProfile") : undefined,
   });
   if (!parsed.success) return { status: "error", error: "invalid_input" };
   await requireUser("/agencia/aprovacoes");
@@ -31,6 +34,7 @@ export async function decideAccessAction(_prev: DecideState, formData: FormData)
     p_user: parsed.data.userId,
     p_decision: parsed.data.decision,
     p_note: parsed.data.note ? parsed.data.note : null,
+    p_expected_profile: parsed.data.expectedProfile ?? null,
   });
   if (error) return { status: "error", error: presidencyError(error.message) };
   revalidatePath("/agencia/aprovacoes");

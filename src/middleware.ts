@@ -3,10 +3,10 @@ import { isLibraryKey, legacyLibraryTarget } from "@/lib/catalog/creator-librari
 import { legacyHeroPortalTarget } from "@/lib/hero-portal/routes";
 import { LOGIN_HOME } from "@/lib/auth/safe-next";
 import { EXPLORE_COOKIE, NATIVE_VISITOR_ENTRY, rootDestination } from "@/lib/institutional/root";
-import { APP_ONLY_PATH, decideAccess, isApiPath, isCreatorAppOnlyEnabled, PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
+import { APP_ONLY_PATH, decideAccess, isAndroidWebView, isApiPath, isCreatorAppOnlyEnabled, PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
 import { QUICK_SIGNUP_PENDING_COOKIE } from "@/lib/auth/quick-signup";
 import { isMarketingHost, marketingDecision, parseMarketingHosts, requestHost } from "@/lib/marketing-host";
-import { isBlockedInNativeApp, isOpenToNativeVisitor, NATIVE_BLOCKED_FALLBACK, parseNativeApp } from "@/lib/native-app/surface";
+import { isBlockedInNativeApp, isOpenToNativeVisitor, NATIVE_BLOCKED_FALLBACK, NATIVE_CHANNEL_COOKIE, nativeAppFrom, parseNativeApp } from "@/lib/native-app/surface";
 import { updateSession, type SessionState } from "@/lib/supabase/middleware";
 
 // Rotas que exigem sessão. Papéis NÃO são checados aqui (os layouts fazem isso no servidor).
@@ -109,17 +109,20 @@ function marketingResponse(request: NextRequest): NextResponse | null {
 // status ou para a mensagem do app; API e server action (POST com Next-Action) → 403, porque um 307 repetiria o POST.
 async function accessResponse(request: NextRequest, session: SessionState): Promise<NextResponse | null> {
   const { pathname } = request.nextUrl;
+  const userAgent = request.headers.get("user-agent");
   const decision = decideAccess({
     pathname,
     signedIn: session.signedIn,
     claims: readAccessClaims(session.claims),
-    native: parseNativeApp(request.headers.get("user-agent")) !== null,
+    // o canal do app: marca no user agent ou o cookie que a lembra (navegação refeita pelo service worker no Android)
+    native: nativeAppFrom(userAgent, request.cookies.get(NATIVE_CHANNEL_COOKIE)?.value) !== null,
     creatorAppOnly: isCreatorAppOnlyEnabled(),
     quickSignupPending: request.cookies.get(QUICK_SIGNUP_PENDING_COOKIE)?.value === "1",
   });
   if (decision.action === "next") return null;
 
-  if (decision.action === "app-only" && decision.signOut) await session.signOut();
+  // WebView do Android sem a marca pode ser o próprio app: barra, mas não revoga a sessão (a tela da mensagem se recupera)
+  if (decision.action === "app-only" && decision.signOut && !isAndroidWebView(userAgent)) await session.signOut();
   const json = isApiPath(pathname) || request.headers.has("next-action");
   const target = decision.action === "pending" ? PENDING_PATH : APP_ONLY_PATH;
   let blocked: NextResponse;
@@ -145,6 +148,11 @@ export async function middleware(request: NextRequest) {
 
   // Renova a sessão (cookies) em toda requisição.
   const session = await updateSession(request);
+  // 0141: a WebView da casca se identifica no user agent; o cookie lembra o canal para as requisições sem a marca
+  const fromUa = parseNativeApp(request.headers.get("user-agent"));
+  if (fromUa && request.cookies.get(NATIVE_CHANNEL_COOKIE)?.value !== fromUa.platform) {
+    session.response().cookies.set(NATIVE_CHANNEL_COOKIE, fromUa.platform, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 365 });
+  }
   const access = await accessResponse(request, session);
   if (access) return access;
   const response = session.response();

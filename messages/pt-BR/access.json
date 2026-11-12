@@ -49,7 +49,8 @@
       "creatorAppOnly": "O acesso de Creators é exclusivo pelo aplicativo Ultra Hero. Abra o app para continuar.",
       "notPending": "Este cadastro já foi analisado. Atualize a situação.",
       "unknown": "Algo deu errado. Tente de novo."
-    }
+    },
+    "deleteAccount": "Excluir minha conta"
   },
   "appOnly": {
     "title": "Acesso pelo aplicativo",
@@ -95,7 +96,10 @@
       "not_found": "Cadastro não encontrado.",
       "cannot_decide_self": "Você não decide o próprio cadastro.",
       "invalid_input": "Confira os dados.",
-      "unknown": "Não foi possível salvar. Tente de novo."
-    }
+      "unknown": "Não foi possível salvar. Tente de novo.",
+      "profile_changed": "A pessoa mudou o perfil pedido. Confira de novo antes de decidir."
+    },
+    "emailUnverified": "E-mail não comprovado",
+    "emailHint": "Cadastros com e-mail e senha não comprovam que a pessoa é dona do e-mail. Confira antes de aprovar, principalmente e-mails da Groscove."
   }
 }

@@ -47,7 +47,10 @@ export async function acceptMyInvitations(supabase: Client): Promise<string | nu
       if (!isMissingSchema(error)) console.warn("[convite] aceite no login falhou:", error.code ?? "erro");
       return null;
     }
-    return portalHomeForAccepted((Array.isArray(data) ? data : []) as AcceptedInvitation[]);
+    const accepted = (Array.isArray(data) ? data : []) as AcceptedInvitation[];
+    // 0141: papel novo (ex.: Hero) muda o "só pelo app" do token; renova já, sem esperar o token vencer
+    if (accepted.length > 0) await supabase.auth.refreshSession().catch(() => undefined);
+    return portalHomeForAccepted(accepted);
   } catch {
     return null;
   }

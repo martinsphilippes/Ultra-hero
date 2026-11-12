@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { CreatorAppOnlyNotice } from "@/components/auth/CreatorAppOnlyNotice";
+import { NativeAppRecover } from "@/components/auth/NativeAppRecover";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export default async function AppOnlyPage() {
   const t = await getTranslations("access.appOnly");
   return (
     <AuthCard title={t("title")}>
+      <NativeAppRecover />
       <CreatorAppOnlyNotice backHref="/login" />
     </AuthCard>
   );

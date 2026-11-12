@@ -49,7 +49,8 @@
       "creatorAppOnly": "El acceso de Creators es exclusivo por la aplicación Ultra Hero. Abre la app para continuar.",
       "notPending": "Este registro ya fue analizado. Actualiza el estado.",
       "unknown": "Algo salió mal. Inténtalo de nuevo."
-    }
+    },
+    "deleteAccount": "Eliminar mi cuenta"
   },
   "appOnly": {
     "title": "Acceso por la aplicación",
@@ -95,7 +96,10 @@
       "not_found": "Registro no encontrado.",
       "cannot_decide_self": "No decides tu propio registro.",
       "invalid_input": "Revisa los datos.",
-      "unknown": "No se pudo guardar. Inténtalo de nuevo."
-    }
+      "unknown": "No se pudo guardar. Inténtalo de nuevo.",
+      "profile_changed": "La persona cambió el perfil solicitado. Revisa de nuevo antes de decidir."
+    },
+    "emailUnverified": "Correo no comprobado",
+    "emailHint": "Los registros con correo y contraseña no comprueban que la persona sea dueña del correo. Revisa antes de aprobar, sobre todo los correos de Groscove."
   }
 }

@@ -45,6 +45,7 @@ export default async function AccessApprovalsPage({ searchParams }: { searchPara
   return (
     <div className="flex flex-col gap-5" data-testid="presidency-approvals">
       <PageHeader title={t("queue.title")} description={t("queue.description")} />
+      <p className="type-body-sm text-fg-muted">{t("queue.emailHint")}</p>
       <nav aria-label={t("queue.tabsLabel")} className="flex flex-wrap gap-2">
         {tab("pending", "/agencia/aprovacoes", t("queue.tabPending"))}
         {tab("decided", "/agencia/aprovacoes?aba=decididos", t("queue.tabDecided"))}
@@ -85,7 +86,14 @@ function QueueRow({ item, view, t, locale }: { item: QueueItem; view: "pending" 
             </Badge>
           ) : null}
         </div>
-        <span className="break-all type-body-sm text-fg">{item.email ?? "—"}</span>
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="break-all type-body-sm text-fg">{item.email ?? "—"}</span>
+          {!item.emailVerified ? (
+            <Badge variant="warning" size="sm" data-testid="approvals-email-unverified">
+              {t("queue.emailUnverified")}
+            </Badge>
+          ) : null}
+        </span>
         <span className="type-caption text-fg-muted">
           {t(`origins.${item.origin}`)}
           {item.requestedAt ? ` · ${t("queue.requestedAt", { date: formatDateTime(item.requestedAt, locale) })}` : ""}
@@ -98,8 +106,8 @@ function QueueRow({ item, view, t, locale }: { item: QueueItem; view: "pending" 
         ) : null}
         {item.decisionNote ? <span className="type-body-sm text-fg">“{item.decisionNote}”</span> : null}
       </div>
-      {view === "pending" ? <DecisionForm userId={item.userId} mode="pending" /> : null}
-      {view === "decided" && item.status === "rejected" ? <DecisionForm userId={item.userId} mode="rejected" /> : null}
+      {view === "pending" ? <DecisionForm userId={item.userId} mode="pending" profile={item.requestedProfile} /> : null}
+      {view === "decided" && item.status === "rejected" ? <DecisionForm userId={item.userId} mode="rejected" profile={item.requestedProfile} /> : null}
     </li>
   );
 }

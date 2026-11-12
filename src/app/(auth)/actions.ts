@@ -240,6 +240,8 @@ export async function quickSignupAction(_prev: QuickSignupState, formData: FormD
 
   if (!hasAdminClient()) return { status: "error", error: "signupUnavailable" };
   const admin = createAdminClient();
+  // 0141: e-mail com convite de Hero/Creator só entra pelo aplicativo
+  if ((await pendingInvitationIsHero(admin, email)) && (await heroChannelBlocked())) return { status: "error", error: "creatorAppOnly" };
 
   // limite por IP e por e-mail (HMAC, nunca o valor puro)
   const ip = clientIp(await headers());

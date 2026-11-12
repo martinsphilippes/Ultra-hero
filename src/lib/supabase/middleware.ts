@@ -19,7 +19,7 @@ export type SessionState = {
 // JWT localmente (chave pública ES256 em memória) e só vai ao servidor de auth quando o token venceu e precisa ser
 // renovado — antes, getUser fazia essa ida em TODO clique.
 // 0141: token emitido antes da regra de aprovação não traz app_metadata.access; ele é renovado UMA vez (o token novo sai
-// com access/app_only gravados pelo banco) e um cookie evita repetir a renovação em toda requisição.
+// com access/app_only gravados pelo banco) e um cookie de 5 minutos evita repetir a renovação em toda requisição.
 export async function updateSession(request: NextRequest): Promise<SessionState> {
   let response = NextResponse.next({ request });
 
@@ -57,7 +57,7 @@ export async function updateSession(request: NextRequest): Promise<SessionState>
     } catch {
       // segue com o token atual; o banco continua barrando o que precisa
     }
-    response.cookies.set(CLAIMS_REFRESHED_COOKIE, "1", { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 3600 });
+    response.cookies.set(CLAIMS_REFRESHED_COOKIE, "1", { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 300 });
   }
 
   return {

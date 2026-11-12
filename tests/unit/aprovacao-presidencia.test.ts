@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   APP_ONLY_PATH,
   decideAccess,
+  isAndroidWebView,
   isCreatorAppOnlyEnabled,
   isHeroAreaPath,
   isOpenWhilePending,
@@ -10,6 +11,7 @@ import {
   type AccessInput,
 } from "@/lib/access/gate";
 import { onboardingKindAfterApproval, parseAccountAccess, parseQueue, presidencyError, profileFromStartPath } from "@/lib/access/status";
+import { nativeAppFrom } from "@/lib/native-app/surface";
 
 // 0141: aprovação da Presidência e Hero/Creator só pelo aplicativo (regras puras do middleware e das telas)
 
@@ -36,7 +38,7 @@ describe("conta pendente ou recusada (aprovação da Presidência)", () => {
     expect(at({ pathname: "/marca", claims: { status: "rejected", appOnly: false } })).toEqual({ action: "pending", status: "rejected" });
   });
   it("abre só a tela de status, os retornos do login, a recuperação de senha, textos legais e offline", () => {
-    for (const pathname of [PENDING_PATH, "/auth/callback", "/auth/signout", "/reset-password", "/legal/terms", "/offline"]) {
+    for (const pathname of [PENDING_PATH, APP_ONLY_PATH, "/auth/callback", "/auth/signout", "/reset-password", "/legal/terms", "/legal/account-deletion", "/offline"]) {
       expect(at({ pathname, claims: { status: "pending", appOnly: false } })).toEqual({ action: "next" });
     }
   });
@@ -85,6 +87,19 @@ describe("Hero/Creator só pelo aplicativo", () => {
       expect(at({ pathname })).toEqual({ action: "next" });
     }
   });
+  it("canal do app: marca do user agent ou, sem ela (service worker do Android), o cookie gravado pelo servidor", () => {
+    expect(nativeAppFrom("Mozilla/5.0 (Linux; Android 14; wv) GCHeroApp/1.2.0 (android)", undefined)).toEqual({ platform: "android", version: "1.2.0" });
+    expect(nativeAppFrom("Mozilla/5.0 (Linux; Android 14; wv) Chrome/120", "android")).toEqual({ platform: "android", version: "0" });
+    expect(nativeAppFrom("Mozilla/5.0 (iPhone)", "ios")).toEqual({ platform: "ios", version: "0" });
+    expect(nativeAppFrom("Mozilla/5.0 (Windows NT 10.0) Chrome/120", undefined)).toBeNull();
+    expect(nativeAppFrom("Mozilla/5.0 (Windows NT 10.0) Chrome/120", "desktop")).toBeNull();
+  });
+  it("WebView do Android sem a marca não perde a sessão (só o redirecionamento)", () => {
+    expect(isAndroidWebView("Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/AP2A; wv) AppleWebKit/537.36 Chrome/120 Mobile")).toBe(true);
+    expect(isAndroidWebView("Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/120 Mobile")).toBe(false);
+    expect(isAndroidWebView("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)")).toBe(false);
+    expect(isAndroidWebView(null)).toBe(false);
+  });
   it("válvula: CREATOR_APP_ONLY=false desliga a regra; ausente ou qualquer outro valor mantém ligada", () => {
     expect(isCreatorAppOnlyEnabled(undefined)).toBe(true);
     expect(isCreatorAppOnlyEnabled("true")).toBe(true);
@@ -102,14 +117,21 @@ describe("situação do cadastro e fila", () => {
     expect(parseAccountAccess(null)).toBeNull();
   });
   it("interpreta a fila e descarta linhas sem id", () => {
-    const items = parseQueue([{ user_id: "u1", email: "x@y.z", requested_profile: "hero", origin: "invite", status: "pending" }, { email: "sem-id" }, "lixo"]);
-    expect(items).toHaveLength(1);
-    expect(items[0]).toMatchObject({ userId: "u1", requestedProfile: "hero", origin: "invite", status: "pending", profileConfirmed: true });
+    const items = parseQueue([
+      { user_id: "u1", email: "x@y.z", requested_profile: "hero", origin: "invite", status: "pending" },
+      { email: "sem-id" },
+      "lixo",
+      { user_id: "u2", email: "g@y.z", origin: "google", status: "pending", email_verified: true },
+    ]);
+    expect(items).toHaveLength(2);
+    expect(items[0]).toMatchObject({ userId: "u1", requestedProfile: "hero", origin: "invite", status: "pending", profileConfirmed: true, emailVerified: false });
+    expect(items[1]).toMatchObject({ userId: "u2", origin: "google", emailVerified: true });
     expect(parseQueue({})).toEqual([]);
   });
   it("erros do banco viram chaves de tradução", () => {
     expect(presidencyError("forbidden")).toBe("forbidden");
     expect(presidencyError("cannot_decide_self")).toBe("cannot_decide_self");
+    expect(presidencyError("profile_changed")).toBe("profile_changed");
     expect(presidencyError("algo novo")).toBe("unknown");
   });
   it("depois da aprovação: perfil de negócio abre o passo a passo; usuário do app vai direto", () => {

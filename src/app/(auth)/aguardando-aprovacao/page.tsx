@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthAlert } from "@/components/auth/AuthAlert";
 import { AuthCard } from "@/components/auth/AuthCard";
@@ -32,11 +33,17 @@ export default async function PendingApprovalPage() {
   if (result.available && result.access.appOnly && webBlocked) redirect(APP_ONLY_PATH);
 
   const signOut = (
-    <form action="/auth/signout" method="post">
-      <Button type="submit" variant="ghost" className="w-full" data-testid="pending-signout">
-        {t("pending.signOut")}
-      </Button>
-    </form>
+    <div className="flex flex-col gap-2">
+      <form action="/auth/signout" method="post">
+        <Button type="submit" variant="ghost" className="w-full" data-testid="pending-signout">
+          {t("pending.signOut")}
+        </Button>
+      </form>
+      {/* exclusão da conta sempre ao alcance, mesmo pendente ou recusada (lojas e LGPD) */}
+      <Link href="/legal/account-deletion" className="self-center text-sm font-medium text-fg-muted underline-offset-2 hover:underline" data-testid="pending-delete-account">
+        {t("pending.deleteAccount")}
+      </Link>
+    </div>
   );
 
   if (!result.available) {

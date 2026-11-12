@@ -36,6 +36,8 @@ export type QueueItem = {
   decidedAt: string | null;
   decisionNote: string | null;
   decidedByName: string | null;
+  /** posse do e-mail comprovada (Google/Apple ou recuperação de senha); senha e cadastro rápido não comprovam */
+  emailVerified: boolean;
 };
 
 function record(value: unknown): Record<string, unknown> | null {
@@ -89,12 +91,13 @@ export function parseQueue(data: unknown): QueueItem[] {
       decidedAt: str(r.decided_at),
       decisionNote: str(r.decision_note),
       decidedByName: str(r.decided_by_name),
+      emailVerified: r.email_verified === true,
     });
   }
   return items;
 }
 
-export const PRESIDENCY_ERRORS = ["forbidden", "already_approved", "not_found", "cannot_decide_self", "invalid_input"] as const;
+export const PRESIDENCY_ERRORS = ["forbidden", "already_approved", "not_found", "cannot_decide_self", "profile_changed", "invalid_input"] as const;
 export type PresidencyError = (typeof PRESIDENCY_ERRORS)[number] | "unknown";
 
 /** Mensagem do banco → chave de tradução (access.queue.errors.*). */

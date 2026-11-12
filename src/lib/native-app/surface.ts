@@ -13,6 +13,20 @@ const NATIVE_UA = /\bGCHeroApp\/([0-9A-Za-z.\-]+) \((ios|android)\)/;
 /** Esquema próprio do app; a volta do login pelo navegador do sistema chega por ele. */
 export const NATIVE_SCHEME = "gchero";
 
+/**
+ * Cookie que lembra o canal do app nesta WebView (0141). No Android o service worker refaz as navegações com o user agent
+ * padrão da WebView, sem a marca; o cookie (gravado pelo servidor quando a marca aparece) mantém o canal. Mesmo nível de
+ * confiança do user agent (os dois podem ser imitados); a garantia exige atestação do aparelho.
+ */
+export const NATIVE_CHANNEL_COOKIE = "uh-app";
+
+/** App pela marca do user agent ou, na falta dela, pelo cookie do canal. */
+export function nativeAppFrom(userAgent: string | null | undefined, channelCookie: string | null | undefined): NativeApp | null {
+  const fromUa = parseNativeApp(userAgent);
+  if (fromUa) return fromUa;
+  return channelCookie === "ios" || channelCookie === "android" ? { platform: channelCookie, version: "0" } : null;
+}
+
 export function parseNativeApp(userAgent: string | null | undefined): NativeApp | null {
   if (!userAgent) return null;
   const match = NATIVE_UA.exec(userAgent);

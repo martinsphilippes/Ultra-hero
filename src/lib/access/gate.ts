@@ -55,7 +55,7 @@ export function isApiPath(pathname: string): boolean {
 // Conta pendente ou recusada: só a tela de status, os retornos do login (/auth: callback, confirmação, sair), a troca de
 // senha pela recuperação, os textos legais e a tela sem conexão. O /login só enquanto a tela "Sua senha" do cadastro
 // rápido está aberta (a senha gerada aparece uma vez).
-const OPEN_WHILE_PENDING = [PENDING_PATH, "/auth", "/reset-password", "/legal", "/offline"];
+const OPEN_WHILE_PENDING = [PENDING_PATH, APP_ONLY_PATH, "/auth", "/reset-password", "/legal", "/offline"];
 
 export function isOpenWhilePending(pathname: string, opts: { quickSignupPending?: boolean } = {}): boolean {
   if (opts.quickSignupPending && pathname === "/login") return true;
@@ -103,6 +103,14 @@ export function decideAccess(input: AccessInput): AccessDecision {
   }
 
   return { action: "next" };
+}
+
+/**
+ * WebView do Android sem a marca do app (ex.: navegação refeita pelo service worker, que no Android usa o user agent padrão).
+ * Nesse caso a conta Hero é barrada, mas a sessão não é revogada: pode ser o próprio app, e a tela da mensagem se recupera.
+ */
+export function isAndroidWebView(userAgent: string | null | undefined): boolean {
+  return /; wv\)/.test(userAgent ?? "");
 }
 
 /** Regra "Creator só pelo aplicativo" ligada? Ligada por padrão; CREATOR_APP_ONLY=false desliga (válvula de segurança). */

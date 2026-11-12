@@ -4436,6 +4436,26 @@ export type Database = {
         };
         Relationships: [];
       };
+      // 0141: quem aprova os cadastros (a Presidência); só o servidor (service role) lê
+      access_approvers: {
+        Row: {
+          granted_at: string;
+          label: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          granted_at?: string;
+          label?: string;
+          user_id: string;
+        };
+        Update: {
+          granted_at?: string;
+          label?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       quick_signup_attempts: {
         Row: {
           created_at: string;
@@ -13541,7 +13561,7 @@ isOneToOne: false
       account_approval_annotate: { Args: { p_user: string; p_profile?: string | null; p_origin?: string | null }; Returns: undefined };
       presidency_access_queue: { Args: { p_view?: string }; Returns: Json };
       presidency_access_pending_count: { Args: Record<PropertyKey, never>; Returns: number };
-      presidency_access_decide: { Args: { p_user: string; p_decision: string; p_note?: string | null }; Returns: Json };
+      presidency_access_decide: { Args: { p_user: string; p_decision: string; p_note?: string | null; p_expected_profile?: string | null }; Returns: Json };
       // 0103: cadastro por perfil e convites pausados
       self_onboarding_start: { Args: { p_kind: string }; Returns: Json };
       self_onboarding_cancel: { Args: { p_kind: string }; Returns: boolean };
