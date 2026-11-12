@@ -260,6 +260,12 @@ describe("quickSignupAction", () => {
     expect(state.cookieDeletes).toEqual(["uh-qs-pending"]);
     await expect(finishQuickSignup(form({ next: "https://evil.example" }))).rejects.toThrow("REDIRECT /personalities");
   });
+
+  it("0141: 'Já anotei' de conta nova (pendente da Presidência) vai direto para a tela de status", async () => {
+    state.user = { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", email: "nova@exemplo.com", app_metadata: { access: "pending" } };
+    await expect(finishQuickSignup(form({ next: "/personalities" }))).rejects.toThrow("REDIRECT /aguardando-aprovacao");
+    expect(state.cookieDeletes).toEqual(["uh-qs-pending"]);
+  });
 });
 
 describe("Perfil › Conta: Sua senha", () => {

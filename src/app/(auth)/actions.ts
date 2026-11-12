@@ -4,7 +4,7 @@ import type { AuthError } from "@supabase/supabase-js";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
+import { APP_ONLY_PATH, PENDING_PATH, readAccessClaims } from "@/lib/access/gate";
 import { heroChannelBlocked } from "@/lib/access/server";
 import { isSignupRefusedByDatabase, readExperimentOpen } from "@/lib/auth/experiment";
 import { generatePassword } from "@/lib/auth/generated-password";
@@ -131,6 +131,12 @@ async function accessAfterSignIn(supabase: Awaited<ReturnType<typeof createClien
   return null;
 }
 
+/** O mesmo, para a sessão aberta sem senha ou já aberta antes (o usuário vem da própria sessão). */
+async function accessOfSession(supabase: Awaited<ReturnType<typeof createClient>>): Promise<AuthActionState | null> {
+  const { data } = await supabase.auth.getUser();
+  return accessAfterSignIn(supabase, data?.user?.app_metadata);
+}
+
 // Depois de abrir a sessão: convites pendentes do e-mail entram junto e o passo a passo em aberto é retomado.
 async function finishLogin(supabase: Awaited<ReturnType<typeof createClient>>, next: string): Promise<never> {
   // convites pendentes do e-mail da conta entram junto com o login
@@ -158,11 +164,16 @@ async function passwordlessLogin(formData: FormData): Promise<AuthActionState> {
   const supabase = await createClient();
   let result = await signInWithoutPassword(admin, supabase, email);
   if (result === "not_found" && (await hasPendingInvitation(admin, email))) {
+    // 0141: convite de Hero/Creator só se aceita pelo aplicativo (a conta nem é criada no navegador)
+    if ((await pendingInvitationIsHero(admin, email)) && (await heroChannelBlocked())) return { status: "error", error: "creatorAppOnly" };
     const { error: createError } = await admin.auth.admin.createUser({ email, password: generatePassword(), email_confirm: true, app_metadata: { invite_first_access: true } });
     if (createError) return { status: "error", error: isSignupRefusedByDatabase(createError) ? "experimentClosed" : "unknown" };
     result = await signInWithoutPassword(admin, supabase, email);
   }
   if (result !== "ok") return { status: "error", error: passwordlessError(result) };
+  // 0141: mesma regra do login com senha (Hero no navegador sai; pendente ou recusada vai para a tela de status)
+  const blocked = await accessOfSession(supabase);
+  if (blocked) return blocked;
   return finishLogin(supabase, next);
 }
 
@@ -267,6 +278,8 @@ export async function quickSignupAction(_prev: QuickSignupState, formData: FormD
         const supabase = await createClient();
         const result = await signInWithoutPassword(admin, supabase, email);
         if (result !== "ok") return { status: "error", error: passwordlessError(result) };
+        // 0141: Hero no navegador sai com a mensagem do app; pendente ou recusada vai para a tela de status
+        if (await accessOfSession(supabase)) return { status: "error", error: "creatorAppOnly" };
         return finishLogin(supabase, safeNext(formData.get("next"), LOGIN_HOME));
       }
       return { status: "error", error: "emailExists" };
@@ -297,9 +310,11 @@ export async function quickSignupAction(_prev: QuickSignupState, formData: FormD
   return { status: "created", password, stored, signedIn };
 }
 
-// "Já anotei": libera a tela e segue para o app.
+// "Já anotei": libera a tela e segue para o app. 0141: o redirecionamento de uma action não passa pelo middleware, então
+// a conta pendente (toda conta nova) vai daqui direto para a tela de status, sem abrir o destino antes.
 export async function finishQuickSignup(formData: FormData): Promise<void> {
   (await cookies()).delete(QUICK_SIGNUP_PENDING_COOKIE);
+  if (await accessOfSession(await createClient())) redirect(APP_ONLY_PATH);
   redirect(safeNext(formData.get("next"), LOGIN_HOME));
 }
 
@@ -405,6 +420,8 @@ export async function profileSignupAction(_prev: AuthActionState, formData: Form
         const supabase = await createClient();
         const result = await signInWithoutPassword(admin, supabase, email);
         if (result !== "ok") return { status: "error", error: passwordlessError(result) };
+        const blocked = await accessOfSession(supabase);
+        if (blocked) return blocked;
         await acceptMyInvitations(supabase);
         const { error: startError } = await supabase.rpc("self_onboarding_start", { p_kind: kind });
         redirect(startError ? startPathFor(kind) : PROFILE_ONBOARDING_PATH);

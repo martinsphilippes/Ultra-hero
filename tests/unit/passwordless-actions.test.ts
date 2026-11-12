@@ -20,6 +20,8 @@ const state = vi.hoisted(() => ({
   attemptsCount: 0,
   attemptInserts: [] as Record<string, unknown>[],
   pendingInvite: false,
+  inviteRole: "brand",
+  sessionAccess: null as null | string,
   storedPasswords: 0,
   // 0141: cadastro de Hero só pelo aplicativo — estes casos rodam na WebView da casca (user agent do app)
   userAgent: "Mozilla/5.0 (iPhone) Mobile/15E148 GCHeroApp/1.0.0 (ios)",
@@ -40,7 +42,7 @@ function query(table: string) {
   const result = () => {
     if (table === "quick_signup_attempts") return { data: null, count: op === "select" ? state.attemptsCount : null, error: null };
     if (table === "role_assignments") return state.adminQueryError ? { data: null, error: { code: "XX000", message: "x" } } : { data: state.isAdmin ? [{ user_id: USER_ID }] : [], error: null };
-    if (table === "invitations") return { data: state.pendingInvite ? [{ id: "inv" }] : [], error: null };
+    if (table === "invitations") return { data: state.pendingInvite ? [{ id: "inv", role: state.inviteRole }] : [], error: null };
     if (table === "user_generated_passwords" && op === "upsert") state.storedPasswords++;
     return { data: null, error: null };
   };
@@ -87,6 +89,7 @@ vi.mock("@/lib/supabase/server", () => ({
     },
     auth: {
       signOut: async () => ({ error: null }),
+      getUser: async () => ({ data: { user: { id: USER_ID, app_metadata: state.sessionAccess ? { access: state.sessionAccess } : {} } } }),
       verifyOtp: async (params: Record<string, unknown>) => {
         state.verifyCalls.push(params);
         return { data: {}, error: state.verifyError };
@@ -137,6 +140,8 @@ beforeEach(() => {
     attemptsCount: 0,
     attemptInserts: [],
     pendingInvite: false,
+    inviteRole: "brand",
+    sessionAccess: null,
     storedPasswords: 0,
     userAgent: "Mozilla/5.0 (iPhone) Mobile/15E148 GCHeroApp/1.0.0 (ios)",
   });
@@ -195,6 +200,22 @@ describe("login só com e-mail", () => {
     expect(r).toEqual({ redirect: "/personalities" });
     expect(state.createUserCalls).toEqual([expect.objectContaining({ email: "ana@exemplo.com", email_confirm: true, app_metadata: { invite_first_access: true } })]);
     expect(String(state.createUserCalls[0].password)).toMatch(/^[A-Z].{13}$/);
+  });
+
+  it("0141: conta pendente da Presidência entra sem senha mas vai direto para a tela de status", async () => {
+    state.sessionAccess = "pending";
+    expect(await run(login())).toEqual({ redirect: "/aguardando-aprovacao" });
+    state.sessionAccess = "rejected";
+    expect(await run(login())).toEqual({ redirect: "/aguardando-aprovacao" });
+  });
+
+  it("0141: convite de Hero no navegador não vira conta sem senha", async () => {
+    state.userAgent = "Mozilla/5.0 (Windows NT 10.0) Chrome/130";
+    state.linkError = { status: 404, code: "user_not_found", message: "User with this email not found" };
+    state.pendingInvite = true;
+    state.inviteRole = "creator";
+    expect(await run(login())).toEqual({ state: { status: "error", error: "creatorAppOnly" } });
+    expect(state.createUserCalls).toEqual([]);
   });
 
   it("limite por IP/e-mail", async () => {
