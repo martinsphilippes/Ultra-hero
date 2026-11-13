@@ -8,6 +8,7 @@ import { decideAccessAction, type DecideState } from "./actions";
 const INITIAL: DecideState = { status: "idle" };
 
 // Aprovar (um toque) ou recusar (com motivo opcional e confirmação). Recusado ainda pode ser aprovado depois.
+// O modo é a situação que a tela mostrou: vai junto para o banco recusar se outro aprovador já decidiu (0144).
 export function DecisionForm({ userId, mode, profile }: { userId: string; mode: "pending" | "rejected"; profile: string }) {
   const t = useTranslations("access.queue");
   const [state, action, pending] = useActionState(decideAccessAction, INITIAL);
@@ -25,6 +26,7 @@ export function DecisionForm({ userId, mode, profile }: { userId: string; mode: 
     <form action={action} className="flex flex-col gap-2" data-testid={`decision-form-${userId}`}>
       <input type="hidden" name="userId" value={userId} />
       <input type="hidden" name="expectedProfile" value={profile} />
+      <input type="hidden" name="expectedStatus" value={mode} />
       {rejecting ? (
         <>
           <label className="flex flex-col gap-1 type-body-sm text-fg">

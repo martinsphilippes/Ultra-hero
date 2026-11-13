@@ -309,11 +309,11 @@
     },
     "account_access_requested": {
       "title": "Cadastro aguardando aprovação",
-      "body": "{name} pediu acesso com o {profile, select, hero {perfil Hero} brand {perfil Marca} agency {perfil Indústria} professional {perfil Profissional} seller {perfil Fornecedor} staff {perfil Equipe de projeto} admin {perfil Administração} other {perfil de usuário do app}}. Abra a fila da Presidência."
+      "body": "{name} pediu acesso com o {profile, select, hero {perfil Hero} brand {perfil Marca} agency {perfil Indústria} professional {perfil Profissional} seller {perfil Fornecedor} staff {perfil Equipe de projeto} admin {perfil Administração} other {perfil de usuário do app}}. Abra a fila de aprovação."
     },
     "account_access_decided": {
       "title": "{decision, select, approved {Cadastro aprovado} other {Cadastro não aprovado}}",
-      "body": "{decision, select, approved {A Presidência aprovou o seu cadastro.} other {A Presidência não aprovou o seu cadastro.}}"
+      "body": "{decision, select, approved {Seu cadastro foi aprovado.} other {Seu cadastro não foi aprovado.}}"
     }
   }
 }

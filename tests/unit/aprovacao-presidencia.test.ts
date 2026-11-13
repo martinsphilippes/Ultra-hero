@@ -144,6 +144,9 @@ describe("situação do cadastro e fila", () => {
     expect(presidencyError("forbidden")).toBe("forbidden");
     expect(presidencyError("cannot_decide_self")).toBe("cannot_decide_self");
     expect(presidencyError("profile_changed")).toBe("profile_changed");
+    // 0144: outro aprovador decidiu enquanto a tela estava aberta (não confunde com "já aprovado")
+    expect(presidencyError("already_decided")).toBe("already_decided");
+    expect(presidencyError("already_approved")).toBe("already_approved");
     expect(presidencyError("algo novo")).toBe("unknown");
   });
   it("depois da aprovação: perfil de negócio abre o passo a passo; usuário do app vai direto", () => {

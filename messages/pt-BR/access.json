@@ -26,7 +26,7 @@
   },
   "pending": {
     "title": "Seu cadastro está aguardando aprovação da Presidência",
-    "intro": "Assim que a Presidência aprovar, você entra com o seu perfil. Não precisa se cadastrar de novo.",
+    "intro": "Assim que o cadastro for aprovado, você entra com o seu perfil. Não precisa se cadastrar de novo.",
     "identityTitle": "Confira seus dados",
     "name": "Nome",
     "email": "E-mail",
@@ -36,14 +36,14 @@
     "refresh": "Atualizar situação",
     "signOut": "Sair",
     "chooseTitle": "Como você vai usar o Ultra?",
-    "chooseText": "Você entrou com Google ou Apple. Escolha o perfil para a Presidência analisar.",
+    "chooseText": "Você entrou com Google ou Apple. Escolha o perfil para a análise do seu cadastro.",
     "chooseSave": "Enviar perfil",
-    "chooseSaved": "Perfil enviado para a Presidência.",
+    "chooseSaved": "Perfil enviado para análise.",
     "approvedTitle": "Seu cadastro foi aprovado",
-    "approvedText": "A Presidência aprovou o seu acesso. Continue para entrar com o seu perfil.",
+    "approvedText": "Seu acesso foi aprovado. Continue para entrar com o seu perfil.",
     "continue": "Continuar",
     "rejectedTitle": "Seu cadastro não foi aprovado",
-    "rejectedText": "A Presidência não aprovou este cadastro. Se achar que é um engano, fale com a equipe Groscove.",
+    "rejectedText": "Este cadastro não foi aprovado. Se achar que é um engano, fale com a equipe Groscove.",
     "unavailable": "Não foi possível consultar a situação agora. Tente de novo em instantes.",
     "errors": {
       "creatorAppOnly": "O acesso de Creators é exclusivo pelo aplicativo Ultra Hero. Abra o app para continuar.",
@@ -63,7 +63,7 @@
   },
   "queue": {
     "title": "Aprovação de cadastros",
-    "description": "Toda conta nova espera a sua decisão. Só a Presidência aprova ou recusa.",
+    "description": "Toda conta nova espera aqui. A Presidência e os ADMs aprovam ou recusam: vale a primeira decisão, e fica registrado quem decidiu.",
     "tabPending": "Aguardando",
     "tabDecided": "Decididos",
     "tabsLabel": "Situação dos cadastros",
@@ -86,18 +86,19 @@
     "statusApproved": "Aprovado",
     "statusRejected": "Recusado",
     "card": {
-      "title": "Cadastros aguardando a Presidência",
+      "title": "Cadastros aguardando aprovação",
       "count": "{count, plural, =0 {Nenhum pedido} one {# pedido} other {# pedidos}}",
       "open": "Abrir fila"
     },
     "errors": {
-      "forbidden": "Só a Presidência pode decidir.",
+      "forbidden": "Só a Presidência e os ADMs podem decidir.",
       "already_approved": "Este cadastro já foi aprovado.",
       "not_found": "Cadastro não encontrado.",
       "cannot_decide_self": "Você não decide o próprio cadastro.",
       "invalid_input": "Confira os dados.",
       "unknown": "Não foi possível salvar. Tente de novo.",
-      "profile_changed": "A pessoa mudou o perfil pedido. Confira de novo antes de decidir."
+      "profile_changed": "A pessoa mudou o perfil pedido. Confira de novo antes de decidir.",
+      "already_decided": "Outra pessoa já decidiu este cadastro. Atualize a fila para ver a decisão."
     },
     "emailUnverified": "E-mail não comprovado",
     "emailHint": "Cadastros com e-mail e senha não comprovam que a pessoa é dona do e-mail. Confira antes de aprovar, principalmente e-mails da Groscove."

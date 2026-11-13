@@ -113,7 +113,7 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
   // Agência (0064): o menu é filtrado pelo papel no servidor (agencyNavKeys; só o Adm vê Equipe).
   agency: [
     { key: "dashboard", href: "/agencia" },
-    // Aprovação de cadastros (0141): fila da Presidência (só aparece para ela)
+    // Aprovação de cadastros (0141/0144): a fila só aparece para a Presidência e os ADMs
     { key: "approvals", href: "/agencia/aprovacoes" },
     // Heros (0070): perfis públicos que a agência gerencia e publica em nome deles
     { key: "heroes", href: "/agencia/herois" },

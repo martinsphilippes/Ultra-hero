@@ -11,6 +11,7 @@ import { PeriodSelector } from "@/components/admin-ops/PeriodSelector";
 import { Badge, Button, ErrorState, PageHeader, Skeleton, VisuallyHidden } from "@/components/ui";
 import { formatCurrency, formatNumber, formatPercent } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
+import { getPresidencyPendingCount } from "@/lib/access/presidency";
 import { isHeroCard, type HeroCard } from "@/lib/acting-hero/constants";
 import { actingAvailable, getActingHero } from "@/lib/acting-hero/server";
 import { createClient } from "@/lib/supabase/server";
@@ -63,10 +64,13 @@ const num = (m: Metrics, key: string) => (typeof m[key] === "number" ? (m[key] a
 
 async function DashboardContent({ days }: { days: number }) {
   const supabase = await createClient();
-  const [t, tn, locale, metricsRes, settingsRes, inReview, suggested, newFeedback, awaiting, preparing, pendingHeroes, selfSignups] = await Promise.all([
+  const [t, tn, ta, locale, accessPending, metricsRes, settingsRes, inReview, suggested, newFeedback, awaiting, preparing, pendingHeroes, selfSignups] = await Promise.all([
     getTranslations("adminOps.dashboard"),
     getTranslations("nav.admin"),
+    getTranslations("access.meta"),
     getLocale(),
+    // 0144: contas novas esperando aprovação (nulo para quem não aprova, ex.: conta de demonstração)
+    getPresidencyPendingCount(),
     supabase.rpc("admin_metrics", { p_days: days }),
     supabase.from("app_settings").select("key, value").in("key", ["commerce.enabled", "ai.enabled", "experiment.open", "invites.enabled"]),
     supabase.from("content").select("id", { count: "exact", head: true }).eq("review_status", "in_review"),
@@ -101,6 +105,9 @@ async function DashboardContent({ days }: { days: number }) {
   const events = `${metrics}#events-title`;
 
   const pending = [
+    // 0144: os ADMs aprovam os cadastros como a Presidência; a fila fica no portal da indústria (primeiro: tem gente
+    // esperando para entrar)
+    ...(accessPending !== null ? [{ key: "accessApprovals", count: accessPending, href: "/agencia/aprovacoes", nav: ta("queue") }] : []),
     // 0092: Heros criados por convite nascem pendentes; o admin aprova em Personalidades
     { key: "pendingHeroes", count: pendingHeroes.count ?? 0, href: "/admin/herois", nav: tn("creators") },
     { key: "selfSignups", count: selfSignups.count ?? 0, href: "/admin/cadastros", nav: tn("invitations") },

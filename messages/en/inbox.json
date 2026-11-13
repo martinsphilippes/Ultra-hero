@@ -309,11 +309,11 @@
     },
     "account_access_requested": {
       "title": "Sign-up awaiting approval",
-      "body": "{name} asked for access with the {profile, select, hero {Hero profile} brand {Brand profile} agency {Industry profile} professional {Professional profile} seller {Supplier profile} staff {Project team profile} admin {Administration profile} other {app user profile}}. Open the Presidency queue."
+      "body": "{name} asked for access with the {profile, select, hero {Hero profile} brand {Brand profile} agency {Industry profile} professional {Professional profile} seller {Supplier profile} staff {Project team profile} admin {Administration profile} other {app user profile}}. Open the approval queue."
     },
     "account_access_decided": {
       "title": "{decision, select, approved {Sign-up approved} other {Sign-up not approved}}",
-      "body": "{decision, select, approved {The Presidency approved your sign-up.} other {The Presidency did not approve your sign-up.}}"
+      "body": "{decision, select, approved {Your sign-up was approved.} other {Your sign-up was not approved.}}"
     }
   }
 }

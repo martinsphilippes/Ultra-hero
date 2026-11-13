@@ -97,7 +97,8 @@ export function parseQueue(data: unknown): QueueItem[] {
   return items;
 }
 
-export const PRESIDENCY_ERRORS = ["forbidden", "already_approved", "not_found", "cannot_decide_self", "profile_changed", "invalid_input"] as const;
+// already_decided (0144): outro aprovador decidiu enquanto a tela estava aberta (vale a primeira decisão)
+export const PRESIDENCY_ERRORS = ["forbidden", "already_approved", "already_decided", "not_found", "cannot_decide_self", "profile_changed", "invalid_input"] as const;
 export type PresidencyError = (typeof PRESIDENCY_ERRORS)[number] | "unknown";
 
 /** Mensagem do banco → chave de tradução (access.queue.errors.*). */

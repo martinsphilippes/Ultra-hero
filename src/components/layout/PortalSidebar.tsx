@@ -135,7 +135,7 @@ const ICONS: Record<string, LucideIcon> = {
   universes: Orbit,
   // Plano de projetos (0137)
   groupProjects: ListChecks,
-  // Aprovação de cadastros pela Presidência (0141)
+  // Aprovação de cadastros pela Presidência e pelos ADMs (0141/0144)
   approvals: UserCheck,
 };
 

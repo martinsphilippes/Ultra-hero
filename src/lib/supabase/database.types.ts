@@ -13561,7 +13561,13 @@ isOneToOne: false
       account_approval_annotate: { Args: { p_user: string; p_profile?: string | null; p_origin?: string | null }; Returns: undefined };
       presidency_access_queue: { Args: { p_view?: string }; Returns: Json };
       presidency_access_pending_count: { Args: Record<PropertyKey, never>; Returns: number };
-      presidency_access_decide: { Args: { p_user: string; p_decision: string; p_note?: string | null; p_expected_profile?: string | null }; Returns: Json };
+      presidency_access_decide: {
+        Args: { p_user: string; p_decision: string; p_note?: string | null; p_expected_profile?: string | null; p_expected_status?: string | null };
+        Returns: Json;
+      };
+      // 0144: os ADMs também aprovam (Presidência + admin da plataforma + Adm da indústria Groscove)
+      can_approve_access: { Args: Record<PropertyKey, never>; Returns: boolean };
+      is_access_approver: { Args: { p_user: string }; Returns: boolean };
       // 0103: cadastro por perfil e convites pausados
       self_onboarding_start: { Args: { p_kind: string }; Returns: Json };
       self_onboarding_cancel: { Args: { p_kind: string }; Returns: boolean };

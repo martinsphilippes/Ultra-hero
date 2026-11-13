@@ -37,11 +37,11 @@ export type AgencyNavKey = (typeof AGENCY_NAV)[number];
 
 /** Itens do menu da agência (P1a: + Pipeline para todos, o colaborador vê só os negócios dele;
  *  Configurações gestor+; Equipe só o Adm). */
-export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false, opts: { groscove?: boolean; presidency?: boolean } = {}): AgencyNavKey[] {
+export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false, opts: { groscove?: boolean; approver?: boolean } = {}): AgencyNavKey[] {
   // Estratégias para marcas (0111): banco de ideias mensal — todo membro propõe; Estratégia/Adm aprovam
   const keys: AgencyNavKey[] = ["dashboard", "pipeline", "tasks", "agenda", "strategies", "casting", "brands", "notifications"];
-  // Aprovação de cadastros (0141): só a Presidência (o banco confere de novo em cada leitura e decisão)
-  if (opts.presidency) keys.splice(1, 0, "approvals");
+  // Aprovação de cadastros (0141/0144): a Presidência e os ADMs (o banco confere de novo em cada leitura e decisão)
+  if (opts.approver) keys.splice(1, 0, "approvals");
   // Heros (0070): gestor+ cria os perfis e publica em nome deles
   if (agencyCan(role, "manager", platformAdmin)) keys.splice(1, 0, "heroes");
   // Patrocínio (0085): gestor+ publica e decide; as respostas das marcas não são do colaborador

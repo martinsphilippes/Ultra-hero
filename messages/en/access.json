@@ -26,7 +26,7 @@
   },
   "pending": {
     "title": "Your sign-up is awaiting approval from the Presidency",
-    "intro": "As soon as the Presidency approves it, you sign in with your profile. No need to sign up again.",
+    "intro": "As soon as your sign-up is approved, you sign in with your profile. No need to sign up again.",
     "identityTitle": "Check your details",
     "name": "Name",
     "email": "Email",
@@ -36,14 +36,14 @@
     "refresh": "Refresh status",
     "signOut": "Sign out",
     "chooseTitle": "How will you use Ultra?",
-    "chooseText": "You signed in with Google or Apple. Choose the profile for the Presidency to review.",
+    "chooseText": "You signed in with Google or Apple. Choose the profile for your sign-up review.",
     "chooseSave": "Send profile",
-    "chooseSaved": "Profile sent to the Presidency.",
+    "chooseSaved": "Profile sent for review.",
     "approvedTitle": "Your sign-up was approved",
-    "approvedText": "The Presidency approved your access. Continue to sign in with your profile.",
+    "approvedText": "Your access was approved. Continue to sign in with your profile.",
     "continue": "Continue",
     "rejectedTitle": "Your sign-up was not approved",
-    "rejectedText": "The Presidency did not approve this sign-up. If you think this is a mistake, contact the Groscove team.",
+    "rejectedText": "This sign-up was not approved. If you think this is a mistake, contact the Groscove team.",
     "unavailable": "We couldn't check the status right now. Try again in a moment.",
     "errors": {
       "creatorAppOnly": "Creator access is exclusive to the Ultra Hero app. Open the app to continue.",
@@ -63,7 +63,7 @@
   },
   "queue": {
     "title": "Sign-up approval",
-    "description": "Every new account waits for your decision. Only the Presidency approves or rejects.",
+    "description": "Every new account waits here. The Presidency and the admins approve or reject: the first decision stands, and who decided is recorded.",
     "tabPending": "Waiting",
     "tabDecided": "Decided",
     "tabsLabel": "Sign-up status",
@@ -86,18 +86,19 @@
     "statusApproved": "Approved",
     "statusRejected": "Rejected",
     "card": {
-      "title": "Sign-ups waiting for the Presidency",
+      "title": "Sign-ups awaiting approval",
       "count": "{count, plural, =0 {No requests} one {# request} other {# requests}}",
       "open": "Open queue"
     },
     "errors": {
-      "forbidden": "Only the Presidency can decide.",
+      "forbidden": "Only the Presidency and the admins can decide.",
       "already_approved": "This sign-up was already approved.",
       "not_found": "Sign-up not found.",
       "cannot_decide_self": "You don't decide your own sign-up.",
       "invalid_input": "Check the details.",
       "unknown": "Couldn't save. Try again.",
-      "profile_changed": "The person changed the requested profile. Check again before deciding."
+      "profile_changed": "The person changed the requested profile. Check again before deciding.",
+      "already_decided": "Someone else already decided this sign-up. Refresh the queue to see the decision."
     },
     "emailUnverified": "Email not verified",
     "emailHint": "Sign-ups with email and password do not prove the person owns the email. Check before approving, especially Groscove emails."

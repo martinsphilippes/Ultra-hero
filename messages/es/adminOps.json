@@ -132,7 +132,8 @@
       "open": "Abrir",
       "preparingFulfillments": "Envíos en preparación",
       "pendingHeroes": "Heros esperando aprobación",
-      "selfSignups": "Registros nuevos (7 días)"
+      "selfSignups": "Registros nuevos (7 días)",
+      "accessApprovals": "Registros esperando aprobación"
     }
   },
   "heroPublishing": {

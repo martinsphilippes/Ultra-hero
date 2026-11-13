@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
-import { getPresidencyQueue, isPresidency } from "@/lib/access/presidency";
+import { canApproveAccess, getPresidencyQueue } from "@/lib/access/presidency";
 import type { QueueItem } from "@/lib/access/status";
 import { cn } from "@/lib/utils";
 import { DecisionForm } from "./DecisionForm";
@@ -20,10 +20,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type SearchParams = Promise<{ aba?: string }>;
 
-// Fila da Presidência (0141): toda conta nova espera aqui. Só a conta da Presidência abre a tela; o banco confere de
-// novo a identidade em cada leitura e em cada decisão (presidency_access_queue / presidency_access_decide).
+// Fila de aprovação (0141/0144): toda conta nova espera aqui. Abrem a tela a Presidência e os ADMs (admin da plataforma e
+// Adm da indústria Groscove); o banco confere de novo a identidade em cada leitura e em cada decisão
+// (presidency_access_queue / presidency_access_decide). Vale a primeira decisão; "Decididos" mostra quem decidiu.
 export default async function AccessApprovalsPage({ searchParams }: { searchParams: SearchParams }) {
-  if (!(await isPresidency())) redirect("/agencia");
+  if (!(await canApproveAccess())) redirect("/agencia");
   const { aba } = await searchParams;
   const view = aba === "decididos" ? "decided" : "pending";
   const [t, locale, queue] = await Promise.all([getTranslations("access"), getLocale() as Promise<Locale>, getPresidencyQueue(view)]);

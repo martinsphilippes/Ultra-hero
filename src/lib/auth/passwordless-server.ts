@@ -1,14 +1,16 @@
 import "server-only";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
+import { isMissingSchema } from "@/lib/supabase/helpers";
 import { hashForRateLimit, recordQuickSignupAttempt } from "./quick-signup-server";
 import { PASSWORDLESS_LIMITS } from "./passwordless";
 
 // Entrar só com o e-mail (período do evento, ver passwordless.ts). Tudo pelo service role, sem enviar e-mail:
 // 1. generateLink tipo 'recovery' — devolve o usuário e o hashed_token, e FALHA para e-mail sem conta (o tipo
 //    'magiclink' criaria a conta sozinho para e-mail desconhecido, pulando o cadastro e o kill switch);
-// 2. conta suspensa (ban no Auth) é recusada; administrador da plataforma (role_assignments 'admin' ativo) exige
-//    senha — se a consulta falhar, trata como admin (falha fechada);
+// 2. conta suspensa (ban no Auth) é recusada; administrador da plataforma (role_assignments 'admin' ativo) e quem
+//    aprova os cadastros (Presidência e Adm da indústria Groscove, 0144) exigem senha — se a consulta falhar, trata
+//    como quem exige senha (falha fechada);
 // 3. verifyOtp com o cliente SSR (cookies) abre a sessão neste aparelho.
 // Nunca registra e-mail, IP ou token em log.
 
@@ -24,15 +26,23 @@ function isSuspended(user: Pick<User, "banned_until"> & { banned_until?: string 
   return Number.isNaN(t) || t > Date.now();
 }
 
-/** Administrador da plataforma ou a Presidência (quem aprova os cadastros, 0141)? Falha fechada (erro = sim). */
-export async function isPlatformAdmin(admin: Admin, userId: string): Promise<boolean> {
+/**
+ * A conta exige senha? Administrador da plataforma (qualquer conta com o papel, até a de demonstração) e quem aprova os
+ * cadastros — a mesma regra da fila (public.is_access_approver, 0144: Presidência e Adm da indústria Groscove).
+ * Falha fechada (erro = exige senha).
+ */
+export async function requiresPassword(admin: Admin, userId: string): Promise<boolean> {
   const { data, error } = await admin.from("role_assignments").select("user_id").eq("user_id", userId).eq("role", "admin").is("revoked_at", null).limit(1);
   if (error) return true;
   if ((data ?? []).length > 0) return true;
-  const approver = await admin.from("access_approvers").select("user_id").eq("user_id", userId).limit(1);
+  const approver = await admin.rpc("is_access_approver", { p_user: userId });
+  if (!approver.error) return approver.data === true;
+  if (!isMissingSchema(approver.error)) return true;
+  // banco ainda sem a 0144: só a Presidência (tabela da 0141)
+  const legacy = await admin.from("access_approvers").select("user_id").eq("user_id", userId).limit(1);
   // sem a tabela (antes da 0141) não há Presidência; outro erro = fecha
-  if (approver.error) return !/access_approvers|does not exist|42P01|PGRST205/i.test(`${approver.error.message} ${approver.error.code}`);
-  return (approver.data ?? []).length > 0;
+  if (legacy.error) return !/access_approvers|does not exist|42P01|PGRST205/i.test(`${legacy.error.message} ${legacy.error.code}`);
+  return (legacy.data ?? []).length > 0;
 }
 
 /** Limite próprio do "entrar sem senha" (namespace separado do cadastro rápido). */
@@ -54,7 +64,7 @@ export async function signInWithoutPassword(admin: Admin, supabase: Server, emai
     return "error";
   }
   if (isSuspended(data.user as User & { banned_until?: string | null })) return "suspended";
-  if (await isPlatformAdmin(admin, data.user.id)) return "admin";
+  if (await requiresPassword(admin, data.user.id)) return "admin";
 
   await supabase.auth.signOut({ scope: "local" });
   const { error: verifyError } = await supabase.auth.verifyOtp({ type: "recovery", token_hash: data.properties.hashed_token });

@@ -11,6 +11,10 @@ const state = vi.hoisted(() => ({
   linkCalls: [] as Record<string, unknown>[],
   isAdmin: false,
   adminQueryError: false,
+  // 0144: quem aprova os cadastros (Presidência e Adm da indústria Groscove) — public.is_access_approver
+  isApprover: false,
+  approverRpcError: null as null | { code: string; message: string },
+  isLegacyApprover: false,
   verifyCalls: [] as Record<string, unknown>[],
   verifyError: null as null | { code: string },
   createUserCalls: [] as Record<string, unknown>[],
@@ -43,6 +47,7 @@ function query(table: string) {
     if (table === "quick_signup_attempts") return { data: null, count: op === "select" ? state.attemptsCount : null, error: null };
     if (table === "role_assignments") return state.adminQueryError ? { data: null, error: { code: "XX000", message: "x" } } : { data: state.isAdmin ? [{ user_id: USER_ID }] : [], error: null };
     if (table === "invitations") return { data: state.pendingInvite ? [{ id: "inv", role: state.inviteRole }] : [], error: null };
+    if (table === "access_approvers") return { data: state.isLegacyApprover ? [{ user_id: USER_ID }] : [], error: null };
     if (table === "user_generated_passwords" && op === "upsert") state.storedPasswords++;
     return { data: null, error: null };
   };
@@ -62,6 +67,10 @@ vi.mock("@/lib/supabase/admin", () => ({
   hasAdminClient: () => true,
   createAdminClient: () => ({
     from: (table: string) => query(table),
+    rpc: async (name: string) => {
+      if (name !== "is_access_approver") return { data: null, error: null };
+      return state.approverRpcError ? { data: null, error: state.approverRpcError } : { data: state.isApprover, error: null };
+    },
     auth: {
       admin: {
         generateLink: async (params: Record<string, unknown>) => {
@@ -131,6 +140,9 @@ beforeEach(() => {
     linkCalls: [],
     isAdmin: false,
     adminQueryError: false,
+    isApprover: false,
+    approverRpcError: null,
+    isLegacyApprover: false,
     verifyCalls: [],
     verifyError: null,
     createUserCalls: [],
@@ -179,6 +191,26 @@ describe("login só com e-mail", () => {
     state.adminQueryError = true;
     expect(await run(login())).toEqual({ state: { status: "error", error: "passwordRequired" } });
     expect(state.verifyCalls).toEqual([]);
+  });
+
+  it("quem aprova os cadastros (ex.: Adm da indústria Groscove, 0144): exige senha, sem sessão", async () => {
+    state.isApprover = true;
+    expect(await run(login())).toEqual({ state: { status: "error", error: "passwordRequired" } });
+    expect(state.verifyCalls).toEqual([]);
+  });
+
+  it("falha ao checar quem aprova: exige senha (falha fechada)", async () => {
+    state.approverRpcError = { code: "XX000", message: "boom" };
+    expect(await run(login())).toEqual({ state: { status: "error", error: "passwordRequired" } });
+    expect(state.verifyCalls).toEqual([]);
+  });
+
+  it("banco ainda sem a 0144: a Presidência (tabela da 0141) continua exigindo senha; os demais entram", async () => {
+    state.approverRpcError = { code: "PGRST202", message: "Could not find the function public.is_access_approver" };
+    state.isLegacyApprover = true;
+    expect(await run(login())).toEqual({ state: { status: "error", error: "passwordRequired" } });
+    state.isLegacyApprover = false;
+    expect(await run(login())).toEqual({ redirect: "/personalities" });
   });
 
   it("conta suspensa: recusada", async () => {

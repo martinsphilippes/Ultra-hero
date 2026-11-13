@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { UserPlus, Wallet } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { getPresidencyPendingCount, isPresidency } from "@/lib/access/presidency";
+import { canApproveAccess, getPresidencyPendingCount } from "@/lib/access/presidency";
 import { KpiCard } from "@/components/admin-ops/KpiCard";
 import { AgencySwitcher } from "@/components/agency/AgencySwitcher";
 import { SelfForm } from "@/components/agency/SettingsForms";
@@ -74,8 +74,8 @@ export default async function AgencyDashboardPage({ searchParams }: Props) {
     // 05/11: "Sua vez" no topo — o próximo passo de cada negócio aberto que é ação de quem lê (leitura em lote)
     agencyTurns({ agencyId: ctx.agency.id, role: ctx.role, platformAdmin: ctx.platformAdmin, userId: user?.id ?? null, timeZone: ctx.agency.timezone }),
   ]);
-  // 0141: cadastros esperando a Presidência (só a conta da Presidência vê; o banco confere a identidade)
-  const presidencyPending = (await isPresidency()) ? await getPresidencyPendingCount() : null;
+  // 0141/0144: cadastros esperando aprovação (só a Presidência e os ADMs veem; o banco confere a identidade)
+  const presidencyPending = (await canApproveAccess()) ? await getPresidencyPendingCount() : null;
   const tp = await getTranslations("access.queue.card");
   // sem setor e sem filtro escolhido: o gestor vê todos os setores; o colaborador, as etapas dele
   const sectorToday =

@@ -94,7 +94,7 @@ export const INBOX_KINDS = [
   "group_project_assigned",
   // Ata de reunião (0138): encaminhamento da reunião com o Hero
   "creator_meeting_action",
-  // Aprovação da Presidência (0141): cadastro novo na fila (Presidência) e decisão (a própria pessoa)
+  // Aprovação de cadastros (0141/0144): cadastro novo na fila (Presidência e ADMs) e decisão (a própria pessoa)
   "account_access_requested",
   "account_access_decided",
 ] as const;

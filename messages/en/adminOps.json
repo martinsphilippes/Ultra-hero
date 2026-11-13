@@ -132,7 +132,8 @@
       "open": "Open",
       "preparingFulfillments": "Shipments being prepared",
       "pendingHeroes": "Heroes awaiting approval",
-      "selfSignups": "New sign-ups (7 days)"
+      "selfSignups": "New sign-ups (7 days)",
+      "accessApprovals": "Sign-ups awaiting approval"
     }
   },
   "heroPublishing": {
