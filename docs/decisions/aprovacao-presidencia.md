@@ -37,7 +37,11 @@ banco, `is_access_approver(usuário)`, usada pela fila, pela decisão, pelo RLS 
 - **Adm da indústria Groscove** (dona da plataforma): `agency_members` `admin` ativo da indústria de slug `groscove`, ativa
   — o mesmo grupo de `is_groscove_admin`, que já aprova marcas novas (0126).
 - **Nunca**: conta de demonstração (login público), mesmo com o papel; Adm de **outra** indústria (indústrias são clientes:
-  liberar contas da plataforma é da dona); gestor/colaborador da Groscove; papel revogado.
+  liberar contas da plataforma é da dona); gestor/colaborador da Groscove; papel revogado; indústria Groscove suspensa.
+- Para **decidir e receber os avisos**, a própria conta do aprovador também precisa estar aprovada (`can_approve_access`,
+  `access_approver_ids`): conta pendente ou recusada com o papel não age, mesmo com a trava da Data API desligada numa
+  emergência, e não recebe avisos pelo Realtime (que não passa pela trava). A senha obrigatória vale pelo papel, antes
+  mesmo da aprovação.
 
 Em 13/11/2026 isso dá 6 contas: a Presidência (que também é a Adm da Groscove) e os 5 admins da plataforma.
 
@@ -49,8 +53,9 @@ Decisões:
   guarda quem decidiu (fila "Decididos", `account_approval_events`, `admin_audit`).
 - **Vale a primeira decisão**: a tela manda a situação que mostrou (`p_expected_status`: `pending` na fila, `rejected` em
   "Decididos"); se outro aprovador decidiu nesse meio-tempo, o banco responde `already_decided` ("Outra pessoa já decidiu
-  este cadastro") em vez de sobrescrever. Repetir a mesma decisão continua sem efeito. Reconsiderar uma recusa é sempre
-  um ato deliberado, pela aba "Decididos", vendo a nota de quem recusou.
+  este cadastro") em vez de sobrescrever — também quando a decisão escolhida é a mesma, para ninguém achar que a nota e a
+  autoria são suas. A mesma pessoa repetindo a própria decisão (duplo envio) segue sem efeito. Reconsiderar uma recusa é
+  sempre um ato deliberado, pela aba "Decididos", vendo a nota de quem recusou.
 - **Avisos**: cada conta nova avisa no sino a Presidência e cada ADM (um aviso por pessoa). Decidido o pedido, o aviso
   sai como lido para todos (a tarefa acabou). O painel do `/admin` (que não tem sino) ganhou o cartão "Cadastros
   aguardando aprovação", primeiro das pendências, levando à fila.
@@ -62,10 +67,17 @@ Decisões:
 - `account_app_only` não mudou: Adm de indústria nunca é Hero (um perfil de negócio por conta, 0116) e o admin da
   plataforma e a Presidência já ficavam fora do "só pelo app".
 
-Publicação sem janela quebrada, em qualquer ordem: os nomes das RPCs (`presidency_*`) foram mantidos; o site publicado
+Publicação sem quebrar nada, em qualquer ordem: os nomes das RPCs (`presidency_*`) foram mantidos; o site publicado
 antes chama a decisão com 4 parâmetros e cai na assinatura nova pelo valor padrão do 5º; o site novo, num banco ainda sem
-a 0144, volta para `is_presidency` (a fila não some) e repete a decisão sem a situação vista (`PGRST202`). Ordem
-recomendada: aplicar a 0144 e depois publicar o site. Cenários S144 em `supabase/tests/rls_scenarios.sql`.
+a 0144, volta para `is_presidency` (a fila não some), repete a decisão sem a situação vista (`PGRST202`) e o "entrar sem
+senha" volta à tabela da Presidência. **Ordem recomendada: publicar o site e depois aplicar a 0144** — é a ordem sem
+janela nenhuma: com a 0144 antes, o site antigo mandaria os ADMs, pelo aviso, a uma fila que ainda os redireciona, e a trava
+antiga do "entrar sem senha" não conheceria o Adm da Groscove que não é admin da plataforma (hoje não existe nenhum).
+Cenários S144 em `supabase/tests/rls_scenarios.sql`.
+
+Cenário antigo sensível ao horário (não é desta mudança): o S97 ("data no futuro é recusada") usa `current_date` da
+sessão (UTC) contra a data de São Paulo, e falha entre 0h e 3h UTC; rodar a suíte com `PGTZ=America/Sao_Paulo` nesse
+horário.
 
 ## Classificação das contas que já existiam (migração)
 

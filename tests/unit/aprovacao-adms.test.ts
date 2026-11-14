@@ -85,7 +85,7 @@ describe("decisão de quem aprova (Presidência ou ADM)", () => {
     expect(state.rpcCalls[1]?.[1]).toEqual({ p_user: USER, p_decision: "approved", p_note: null, p_expected_profile: "brand" });
   });
 
-  it("quem não aprova continua barrado pelo banco", async () => {
+  it("recusa do banco (ex.: quem não aprova) vira a mensagem certa, sem nova tentativa (a trava é do banco, S144)", async () => {
     state.results.presidency_access_decide = [{ data: null, error: { code: "42501", message: "forbidden" } }];
     expect(await decide({ decision: "approved", expectedStatus: "pending" })).toEqual({ status: "error", error: "forbidden" });
     expect(state.rpcCalls).toHaveLength(1);

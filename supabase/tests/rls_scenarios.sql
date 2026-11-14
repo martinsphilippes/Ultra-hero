@@ -20243,10 +20243,11 @@ insert into auth.users (id, email, raw_user_meta_data, raw_app_meta_data) values
   ('c1440000-0000-4000-8000-000000000005', 'demo-admin@s144.test', '{}', '{"provider":"email","providers":["email"],"ultra_hero_demo":true}'),
   ('c1440000-0000-4000-8000-000000000006', 'admin-revogado@s144.test', '{}', '{"provider":"email","providers":["email"]}'),
   ('c1440000-0000-4000-8000-000000000007', 'gestor-groscove@s144.test', '{}', '{"provider":"email","providers":["email"]}'),
-  ('c1440000-0000-4000-8000-000000000008', 'pessoa@s144.test', '{}', '{"provider":"email","providers":["email"]}');
--- contas já em uso (aprovadas)
+  ('c1440000-0000-4000-8000-000000000008', 'pessoa@s144.test', '{}', '{"provider":"email","providers":["email"]}'),
+  ('c1440000-0000-4000-8000-000000000009', 'admin-pendente@s144.test', '{}', '{"provider":"email","providers":["email"]}');
+-- contas já em uso (aprovadas); a 009 ganha o papel de admin com a própria conta ainda pendente
 update public.account_approvals set status = 'approved', decided_at = now(), decision_note = 'Fixture S144'
- where user_id::text like 'c1440000-0000-4000-8000-00000000000%';
+ where user_id::text like 'c1440000-0000-4000-8000-00000000000%' and user_id <> 'c1440000-0000-4000-8000-000000000009';
 insert into public.agencies (id, slug, name) values
   ('c1440000-0000-4000-8000-0000000000a1', 'groscove', 'Groscove S144'),
   ('c1440000-0000-4000-8000-0000000000a2', 's144-outra', 'Outra S144');
@@ -20257,7 +20258,8 @@ insert into public.agency_members (agency_id, user_id, role, display_name) value
 insert into public.role_assignments (user_id, role, scope_type) values
   ('c1440000-0000-4000-8000-000000000002', 'admin', 'global'),
   ('c1440000-0000-4000-8000-000000000005', 'admin', 'global'),
-  ('c1440000-0000-4000-8000-000000000006', 'admin', 'global');
+  ('c1440000-0000-4000-8000-000000000006', 'admin', 'global'),
+  ('c1440000-0000-4000-8000-000000000009', 'admin', 'global');
 update public.role_assignments set revoked_at = now() where user_id = 'c1440000-0000-4000-8000-000000000006' and role = 'admin';
 insert into public.access_approvers (user_id) values ('c1440000-0000-4000-8000-000000000001');
 
@@ -20272,9 +20274,25 @@ select tests.ok('S144 quem não aprova: Adm de outra indústria, admin de demons
   and not public.is_access_approver('c1440000-0000-4000-8000-000000000007')
   and not public.is_access_approver('c1440000-0000-4000-8000-000000000008')
   and not public.is_access_approver(null));
-select tests.ok('S144 a lista dos avisos segue a mesma regra',
+select tests.ok('S144 a lista dos avisos segue a mesma regra (quem tem o papel e a própria conta aprovada)',
   (select string_agg(x::text, ',' order by x) from public.access_approver_ids() x where x::text like 'c1440000-%')
   = 'c1440000-0000-4000-8000-000000000001,c1440000-0000-4000-8000-000000000002,c1440000-0000-4000-8000-000000000003');
+select tests.ok('S144 com o papel mas a própria conta pendente: continua exigindo senha (papel), mas não decide nem recebe avisos',
+  public.is_access_approver('c1440000-0000-4000-8000-000000000009')
+  and not exists (select 1 from public.access_approver_ids() x where x = 'c1440000-0000-4000-8000-000000000009'));
+select tests.login('c1440000-0000-4000-8000-000000000009', 'admin-pendente@s144.test');
+select tests.expect_error('S144 aprovador com a própria conta pendente não vê a fila (mesmo com a trava da API desligada)',
+  $q$select public.presidency_access_queue('pending')$q$, 'forbidden');
+select tests.ok('S144 aprovador com a própria conta pendente lê só a própria linha e nenhum histórico',
+  not public.can_approve_access()
+  and (select count(*) from public.account_approvals) = 1 and (select count(*) from public.account_approval_events) = 0);
+select tests.su();
+update public.agencies set status = 'suspended' where id = 'c1440000-0000-4000-8000-0000000000a1';
+select tests.ok('S144 indústria Groscove suspensa: o Adm dela deixa de aprovar (o admin da plataforma e a Presidência seguem)',
+  not public.is_access_approver('c1440000-0000-4000-8000-000000000003')
+  and public.is_access_approver('c1440000-0000-4000-8000-000000000002')
+  and public.is_access_approver('c1440000-0000-4000-8000-000000000001'));
+update public.agencies set status = 'active' where id = 'c1440000-0000-4000-8000-0000000000a1';
 
 -- cadastros novos (como o Supabase Auth faz: INSERT só com o provedor e o resto do app_metadata num UPDATE)
 insert into auth.users (id, email, raw_user_meta_data, raw_app_meta_data) values
@@ -20289,15 +20307,15 @@ select tests.ok('S144 cadastro novo continua nascendo pendente, com a origem e o
     where user_id::text like 'c1440000-0000-4000-8000-00000000001%')
   = 'pending:password:brand,pending:quick:consumer,pending:google:consumer,pending:quick:consumer'
   and (select bool_and(raw_app_meta_data ->> 'access' = 'pending') from auth.users where id::text like 'c1440000-0000-4000-8000-00000000001%'));
-select tests.ok('S144 cada pedido avisa no sino a Presidência e cada ADM (um aviso por pessoa, levando à fila); ninguém mais',
+select tests.ok('S144 cada pedido avisa no sino a Presidência e cada ADM (um aviso por pessoa, levando à fila); ninguém mais no banco',
   (select count(*) from public.inbox_notifications n
     where n.kind = 'account_access_requested' and n.link = '/agencia/aprovacoes' and n.entity_type = 'account'
       and n.entity_id::text like 'c1440000-0000-4000-8000-00000000001%'
       and n.user_id in ('c1440000-0000-4000-8000-000000000001', 'c1440000-0000-4000-8000-000000000002', 'c1440000-0000-4000-8000-000000000003')) = 12
-  and not exists (select 1 from public.inbox_notifications n
-    where n.kind = 'account_access_requested' and n.entity_id::text like 'c1440000-0000-4000-8000-00000000001%'
-      and n.user_id::text like 'c1440000-%'
-      and n.user_id not in ('c1440000-0000-4000-8000-000000000001', 'c1440000-0000-4000-8000-000000000002', 'c1440000-0000-4000-8000-000000000003')));
+  -- destinatários de todos os usuários do banco (não só os desta seção): exatamente os três que aprovam
+  and (select string_agg(distinct n.user_id::text, ',' order by n.user_id::text) from public.inbox_notifications n
+       where n.kind = 'account_access_requested' and n.entity_id::text like 'c1440000-0000-4000-8000-00000000001%')
+      = 'c1440000-0000-4000-8000-000000000001,c1440000-0000-4000-8000-000000000002,c1440000-0000-4000-8000-000000000003');
 
 -- ADMs: fila, contagem, leitura e decisão como a Presidência
 select tests.login('c1440000-0000-4000-8000-000000000002', 'adm-plataforma@s144.test');
@@ -20311,7 +20329,7 @@ select tests.ok('S144 ADM da plataforma vê a fila e a contagem e lê a fila e o
 select tests.login('c1440000-0000-4000-8000-000000000003', 'adm-groscove@s144.test');
 select tests.ok('S144 Adm da indústria Groscove aprova (com o perfil e a situação que viu na tela)',
   (select public.presidency_access_decide('c1440000-0000-4000-8000-000000000011', 'approved', null, 'brand', 'pending') ->> 'changed') = 'true');
-select tests.ok('S144 a mesma decisão de novo (outra tela aberta) não muda nada nem dá erro',
+select tests.ok('S144 a mesma pessoa repete a própria decisão (duplo envio, outra aba): não muda nada nem dá erro',
   (select public.presidency_access_decide('c1440000-0000-4000-8000-000000000011', 'approved', null, 'brand', 'pending') ->> 'changed') = 'false');
 select tests.su();
 select tests.ok('S144 decisão do ADM registrada como a da Presidência: responsável, histórico, auditoria, token e aviso à pessoa',
@@ -20330,9 +20348,17 @@ select tests.ok('S144 pedido decidido: o aviso sai como lido no sino de todos os
   and (select count(*) from public.inbox_notifications where kind = 'account_access_requested' and user_id::text like 'c1440000-%'
        and entity_id = 'c1440000-0000-4000-8000-000000000012' and read_at is null) = 3);
 
--- vale a primeira decisão (vários aprovadores ao mesmo tempo)
+-- vale a primeira decisão (tela desatualizada: outro aprovador decidiu antes; as chamadas aqui são em sequência — o
+-- "for update" da decisão é que serializa duas chamadas simultâneas)
 select tests.login('c1440000-0000-4000-8000-000000000002', 'adm-plataforma@s144.test');
 select public.presidency_access_decide('c1440000-0000-4000-8000-000000000012', 'rejected', 'Sem vínculo com a Groscove', 'consumer', 'pending');
+select tests.login('c1440000-0000-4000-8000-000000000003', 'adm-groscove@s144.test');
+select tests.expect_error('S144 recusar numa tela antiga o que outro ADM já recusou: avisa em vez de dizer "Recusado" como se fosse desta pessoa',
+  $q$select public.presidency_access_decide('c1440000-0000-4000-8000-000000000012', 'rejected', 'Documento falso', 'consumer', 'pending')$q$, 'already_decided');
+select tests.su();
+select tests.ok('S144 a nota e a autoria de quem decidiu primeiro continuam valendo',
+  (select decided_by = 'c1440000-0000-4000-8000-000000000002' and decision_note = 'Sem vínculo com a Groscove'
+     from public.account_approvals where user_id = 'c1440000-0000-4000-8000-000000000012'));
 select tests.login('c1440000-0000-4000-8000-000000000001', 'presidencia@s144.test');
 select tests.expect_error('S144 aprovar numa tela antiga depois que um ADM recusou: a recusa dele não é sobrescrita',
   $q$select public.presidency_access_decide('c1440000-0000-4000-8000-000000000012', 'approved', null, 'consumer', 'pending')$q$, 'already_decided');
@@ -20347,11 +20373,13 @@ select public.presidency_access_decide('c1440000-0000-4000-8000-000000000013', '
 select tests.login('c1440000-0000-4000-8000-000000000002', 'adm-plataforma@s144.test');
 select tests.expect_error('S144 recusar numa tela antiga depois que outro aprovador aprovou: already_decided',
   $q$select public.presidency_access_decide('c1440000-0000-4000-8000-000000000013', 'rejected', null, 'consumer', 'pending')$q$, 'already_decided');
+select tests.expect_error('S144 aprovar numa tela antiga o que outro aprovador já aprovou: already_decided (a autoria é de quem aprovou)',
+  $q$select public.presidency_access_decide('c1440000-0000-4000-8000-000000000013', 'approved', null, 'consumer', 'pending')$q$, 'already_decided');
 select tests.expect_error('S144 sem a situação vista (site antigo), aprovada continua sem voltar a recusada',
   $q$select public.presidency_access_decide('c1440000-0000-4000-8000-000000000013', 'rejected', null)$q$, 'already_approved');
 select tests.expect_error('S144 situação vista inválida', $q$select public.presidency_access_decide('c1440000-0000-4000-8000-000000000014', 'approved', null, null, 'approved')$q$, 'invalid_input');
 select tests.expect_error('S144 ADM não decide a própria conta', $q$select public.presidency_access_decide('c1440000-0000-4000-8000-000000000002', 'approved', null)$q$, 'cannot_decide_self');
-select tests.ok('S144 o site publicado antes da 0144 (4 parâmetros, por nome) continua decidindo',
+select tests.ok('S144 chamada por nome com os 4 parâmetros de antes (site publicado antes da 0144) cai na assinatura nova',
   (select public.presidency_access_decide(p_user => 'c1440000-0000-4000-8000-000000000014', p_decision => 'approved', p_note => null,
                                           p_expected_profile => 'consumer') ->> 'changed') = 'true');
 
@@ -20364,10 +20392,16 @@ select tests.ok('S144 Adm de outra indústria lê só a própria linha da fila e
   and (select count(*) from public.account_approvals) = 1 and (select count(*) from public.account_approval_events) = 0);
 select tests.login('c1440000-0000-4000-8000-000000000005', 'demo-admin@s144.test');
 select tests.expect_error('S144 admin de demonstração (login público) não decide', $q$select public.presidency_access_decide('c1440000-0000-4000-8000-000000000012', 'rejected', null)$q$, 'forbidden');
+select tests.ok('S144 admin de demonstração lê só a própria linha da fila e nenhum histórico',
+  (select count(*) from public.account_approvals) = 1 and (select count(*) from public.account_approval_events) = 0);
 select tests.login('c1440000-0000-4000-8000-000000000006', 'admin-revogado@s144.test');
 select tests.expect_error('S144 admin revogado não conta a fila', $q$select public.presidency_access_pending_count()$q$, 'forbidden');
+select tests.ok('S144 admin revogado lê só a própria linha da fila e nenhum histórico',
+  (select count(*) from public.account_approvals) = 1 and (select count(*) from public.account_approval_events) = 0);
 select tests.login('c1440000-0000-4000-8000-000000000007', 'gestor-groscove@s144.test');
 select tests.expect_error('S144 gestor da Groscove (não Adm) não vê os decididos', $q$select public.presidency_access_queue('decided')$q$, 'forbidden');
+select tests.ok('S144 gestor da Groscove lê só a própria linha da fila e nenhum histórico',
+  (select count(*) from public.account_approvals) = 1 and (select count(*) from public.account_approval_events) = 0);
 select tests.login('c1440000-0000-4000-8000-000000000008', 'pessoa@s144.test');
 select tests.expect_error('S144 conta comum não decide', $q$select public.presidency_access_decide('c1440000-0000-4000-8000-000000000012', 'rejected', null)$q$, 'forbidden');
 
@@ -20380,8 +20414,11 @@ select tests.expect_error('S144 admin da plataforma revogado perde a fila na hor
 select tests.login('c1440000-0000-4000-8000-000000000003', 'adm-groscove@s144.test');
 select tests.expect_error('S144 Adm que saiu da equipe da Groscove perde a fila na hora', $q$select public.presidency_access_pending_count()$q$, 'forbidden');
 select tests.su();
-select tests.ok('S144 e deixa de receber os avisos de cadastro novo',
-  (select string_agg(x::text, ',' order by x) from public.access_approver_ids() x where x::text like 'c1440000-%')
+insert into auth.users (id, email, raw_user_meta_data, raw_app_meta_data) values
+  ('c1440000-0000-4000-8000-000000000015', 'depois@s144.test', '{"full_name":"Depois S144"}', '{"provider":"email","providers":["email"]}');
+select tests.ok('S144 e deixa de receber os avisos: o cadastro seguinte avisa só quem ainda aprova (aqui, só a Presidência)',
+  (select string_agg(n.user_id::text, ',') from public.inbox_notifications n
+    where n.kind = 'account_access_requested' and n.entity_id = 'c1440000-0000-4000-8000-000000000015')
   = 'c1440000-0000-4000-8000-000000000001');
 
 select tests.ok('S144 permissões: visitante nada; is_access_approver e a lista dos avisos só para o sistema; assinatura antiga removida',

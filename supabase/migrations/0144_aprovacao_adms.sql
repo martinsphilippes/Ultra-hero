@@ -13,10 +13,14 @@
 --   • Regra por PAPEL, não lista de nomes: quem deixa de ser ADM perde o poder na hora (nenhum privilégio esquecido numa
 --     tabela). A Presidência continua na tabela da 0141 (é uma pessoa, não um papel).
 --   • Adm de OUTRA indústria NÃO aprova: indústrias são clientes da plataforma; liberar contas é da dona (Groscove).
---   • Uma regra só (is_access_approver) para a fila, a decisão, o RLS das tabelas da fila, os avisos e o "entrar sem
---     senha" do site (quem aprova sempre usa senha).
+--   • Uma regra só (is_access_approver, pelo papel) para a fila, a decisão, o RLS das tabelas da fila, os avisos e o
+--     "entrar sem senha" do site (quem tem o papel sempre usa senha, mesmo antes de a própria conta ser aprovada).
+--     Para decidir e receber os avisos, a própria conta do aprovador também precisa estar aprovada (can_approve_access /
+--     access_approver_ids): conta pendente ou recusada não age, mesmo com a trava da Data API desligada numa emergência,
+--     e não recebe avisos pelo Realtime (que não passa pela trava).
 --   • Vale a primeira decisão: quem decide a partir de uma tela desatualizada (outra pessoa já decidiu) recebe
---     already_decided em vez de sobrescrever (p_expected_status). Repetir a mesma decisão continua sem efeito.
+--     already_decided em vez de sobrescrever (p_expected_status) — também quando escolheu a mesma decisão, para não
+--     achar que a nota e a autoria são suas. A mesma pessoa repetindo a própria decisão (duplo envio) segue sem efeito.
 --     Recusada continua podendo ser reconsiderada por qualquer aprovador, de propósito, pela aba "Decididos".
 --   • Pedido decidido: o aviso "cadastro aguardando aprovação" sai como lido para todos os aprovadores (a tarefa acabou).
 --   • Nomes das RPCs (presidency_*) mantidos: o site publicado continua funcionando durante a troca, e a decisão com 4
@@ -25,6 +29,8 @@
 --     plataforma e a Presidência já ficam fora do "só pelo app".
 
 -- 1) Quem aprova ----------------------------------------------------------------------------------------------------------
+-- tem o papel de quem aprova (Presidência, ADM da plataforma ou Adm da Groscove)? Base da senha obrigatória do site;
+-- para agir, can_approve_access/access_approver_ids exigem também a própria conta aprovada
 create or replace function public.is_access_approver(p_user uuid)
 returns boolean language sql stable security definer set search_path = '' as $$
   select p_user is not null and (
@@ -47,15 +53,16 @@ $$;
 revoke execute on function public.is_access_approver(uuid) from public, anon, authenticated;
 grant execute on function public.is_access_approver(uuid) to service_role;
 
--- a sessão aprova cadastros? (identidade do token, conferida no banco)
+-- a sessão aprova cadastros agora? (identidade do token, conferida no banco): o papel e a própria conta aprovada
 create or replace function public.can_approve_access()
 returns boolean language sql stable security definer set search_path = '' as $$
   select public.is_access_approver((select auth.uid()))
+     and exists (select 1 from public.account_approvals a where a.user_id = (select auth.uid()) and a.status = 'approved')
 $$;
 revoke execute on function public.can_approve_access() from public, anon;
 grant execute on function public.can_approve_access() to authenticated, service_role;
 
--- todos os que aprovam (avisos no sino): candidatos das três origens, filtrados pela mesma regra
+-- todos os que aprovam agora (avisos no sino): candidatos das três origens, filtrados pela mesma regra de can_approve_access
 create or replace function public.access_approver_ids()
 returns setof uuid language sql stable security definer set search_path = '' as $$
   select c.user_id from (
@@ -67,6 +74,7 @@ returns setof uuid language sql stable security definer set search_path = '' as 
     where m.agency_id = public.groscove_agency_id() and m.role = 'admin' and m.revoked_at is null
   ) c
   where public.is_access_approver(c.user_id)
+    and exists (select 1 from public.account_approvals ap where ap.user_id = c.user_id and ap.status = 'approved')
 $$;
 revoke execute on function public.access_approver_ids() from public, anon, authenticated;
 
@@ -128,7 +136,8 @@ grant execute on function public.presidency_access_pending_count() to authentica
 -- pode ser reconsiderada (→ aprovada). Aprovada não volta a pendente por aqui (para tirar acesso há a suspensão).
 -- p_expected_profile: o perfil que a tela mostrou; se a pessoa trocou o pedido depois, recusa (profile_changed).
 -- p_expected_status (0144): a situação que a tela mostrou ('pending' na fila, 'rejected' em "Decididos"); se outra
--- pessoa decidiu nesse meio-tempo, recusa (already_decided) em vez de sobrescrever a decisão dela.
+-- pessoa decidiu nesse meio-tempo, recusa (already_decided) em vez de sobrescrever a decisão dela — mesmo que a decisão
+-- escolhida seja a mesma (a nota e a autoria que valem são as de quem decidiu primeiro).
 drop function if exists public.presidency_access_decide(uuid, text, text, text);
 create or replace function public.presidency_access_decide(p_user uuid, p_decision text, p_note text default null,
                                                            p_expected_profile text default null,
@@ -137,6 +146,7 @@ returns jsonb language plpgsql security definer set search_path = '' as $$
 declare v_actor uuid := auth.uid();
         v_old text;
         v_profile text;
+        v_decided_by uuid;
         v_note text := nullif(btrim(coalesce(p_note, '')), '');
 begin
   if not public.can_approve_access() then raise exception 'forbidden' using errcode = '42501'; end if;
@@ -149,12 +159,18 @@ begin
   if v_note is not null and char_length(v_note) > 500 then raise exception 'invalid_input' using errcode = '22023'; end if;
   if p_user = v_actor then raise exception 'cannot_decide_self' using errcode = 'P0001'; end if;
 
-  select a.status, a.requested_profile into v_old, v_profile from public.account_approvals a where a.user_id = p_user for update;
+  select a.status, a.requested_profile, a.decided_by into v_old, v_profile, v_decided_by
+  from public.account_approvals a where a.user_id = p_user for update;
   if v_old is null then raise exception 'not_found' using errcode = 'P0002'; end if;
   if p_expected_profile is not null and p_expected_profile is distinct from v_profile then
     raise exception 'profile_changed' using errcode = 'P0001';
   end if;
   if v_old = p_decision then
+    -- a mesma decisão, já tomada por OUTRA pessoa enquanto a tela estava aberta: avisa em vez de responder como se fosse
+    -- desta. A mesma pessoa repetindo a própria decisão (duplo envio, outra aba) segue sem efeito.
+    if p_expected_status is not null and p_expected_status is distinct from v_old and v_decided_by is distinct from v_actor then
+      raise exception 'already_decided' using errcode = 'P0001';
+    end if;
     return jsonb_build_object('status', v_old, 'changed', false);
   end if;
   if p_expected_status is not null and p_expected_status is distinct from v_old then
