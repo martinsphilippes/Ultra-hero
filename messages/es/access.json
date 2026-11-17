@@ -26,7 +26,7 @@
   },
   "pending": {
     "title": "Tu registro está esperando la aprobación de la Presidencia",
-    "intro": "En cuanto la Presidencia lo apruebe, entras con tu perfil. No hace falta registrarte de nuevo.",
+    "intro": "En cuanto tu registro sea aprobado, entras con tu perfil. No hace falta registrarte de nuevo.",
     "identityTitle": "Revisa tus datos",
     "name": "Nombre",
     "email": "Correo",
@@ -36,14 +36,14 @@
     "refresh": "Actualizar estado",
     "signOut": "Salir",
     "chooseTitle": "¿Cómo vas a usar Ultra?",
-    "chooseText": "Entraste con Google o Apple. Elige el perfil para que la Presidencia lo analice.",
+    "chooseText": "Entraste con Google o Apple. Elige el perfil para el análisis de tu registro.",
     "chooseSave": "Enviar perfil",
-    "chooseSaved": "Perfil enviado a la Presidencia.",
+    "chooseSaved": "Perfil enviado para análisis.",
     "approvedTitle": "Tu registro fue aprobado",
-    "approvedText": "La Presidencia aprobó tu acceso. Continúa para entrar con tu perfil.",
+    "approvedText": "Tu acceso fue aprobado. Continúa para entrar con tu perfil.",
     "continue": "Continuar",
     "rejectedTitle": "Tu registro no fue aprobado",
-    "rejectedText": "La Presidencia no aprobó este registro. Si crees que es un error, habla con el equipo Groscove.",
+    "rejectedText": "Este registro no fue aprobado. Si crees que es un error, habla con el equipo Groscove.",
     "unavailable": "No pudimos consultar el estado ahora. Inténtalo de nuevo en unos instantes.",
     "errors": {
       "creatorAppOnly": "El acceso de Creators es exclusivo por la aplicación Ultra Hero. Abre la app para continuar.",
@@ -63,7 +63,7 @@
   },
   "queue": {
     "title": "Aprobación de registros",
-    "description": "Toda cuenta nueva espera tu decisión. Solo la Presidencia aprueba o rechaza.",
+    "description": "Toda cuenta nueva espera aquí. La Presidencia y los ADM aprueban o rechazan: vale la primera decisión y queda registrado quién decidió.",
     "tabPending": "En espera",
     "tabDecided": "Decididos",
     "tabsLabel": "Estado de los registros",
@@ -86,18 +86,19 @@
     "statusApproved": "Aprobado",
     "statusRejected": "Rechazado",
     "card": {
-      "title": "Registros esperando a la Presidencia",
+      "title": "Registros esperando aprobación",
       "count": "{count, plural, =0 {Ninguna solicitud} one {# solicitud} other {# solicitudes}}",
       "open": "Abrir fila"
     },
     "errors": {
-      "forbidden": "Solo la Presidencia puede decidir.",
+      "forbidden": "Solo la Presidencia y los ADM pueden decidir.",
       "already_approved": "Este registro ya fue aprobado.",
       "not_found": "Registro no encontrado.",
       "cannot_decide_self": "No decides tu propio registro.",
       "invalid_input": "Revisa los datos.",
       "unknown": "No se pudo guardar. Inténtalo de nuevo.",
-      "profile_changed": "La persona cambió el perfil solicitado. Revisa de nuevo antes de decidir."
+      "profile_changed": "La persona cambió el perfil solicitado. Revisa de nuevo antes de decidir.",
+      "already_decided": "Otra persona ya decidió este registro. Actualiza la fila para ver la decisión."
     },
     "emailUnverified": "Correo no comprobado",
     "emailHint": "Los registros con correo y contraseña no comprueban que la persona sea dueña del correo. Revisa antes de aprobar, sobre todo los correos de Groscove."
