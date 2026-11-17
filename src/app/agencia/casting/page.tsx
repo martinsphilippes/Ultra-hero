@@ -83,12 +83,14 @@ export default async function CastingPage({ searchParams }: Props) {
     archived,
     country,
   };
-  const [t, tm, tp, locale, list, segments, managers, access, countryCounts] = await Promise.all([
+  // a página vem do banco (o casting passou de mil Heros): só os 24 cartões da página e o total
+  const requestedPage = Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1);
+  const [t, tm, tp, locale, firstList, segments, managers, access, countryCounts] = await Promise.all([
     getTranslations("agency.casting"),
     getTranslations("creatorMeetings"),
     getTranslations("pickers"),
     getLocale(),
-    listTalents(ctx.agency.id, filters),
+    listTalents(ctx.agency.id, filters, { page: requestedPage, pageSize: PAGE_SIZE }),
     listSegments(ctx.agency.id),
     listManagers(ctx.agency.id),
     // selo do acesso do creator (0087); arquivado não tem acesso a mostrar
@@ -99,10 +101,12 @@ export default async function CastingPage({ searchParams }: Props) {
   const segmentName = new Map(segments.map((s) => [s.id, s.name]));
   const managerName = new Map(managers.map((m) => [m.userId, m.name]));
   const filtered = Boolean(filters.segment || filters.availability || filters.status || filters.manager || filters.q);
-  const total = list.items.length;
+  const total = firstList.total;
   const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const page = Math.min(lastPage, Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1));
-  const pageItems = list.items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const page = Math.min(lastPage, requestedPage);
+  // endereço antigo para uma página que não existe mais: mostra a última
+  const list = page === requestedPage ? firstList : await listTalents(ctx.agency.id, filters, { page, pageSize: PAGE_SIZE });
+  const pageItems = list.items;
   const pageParams = { segmento: sp.segmento, disponibilidade: sp.disponibilidade, situacao: sp.situacao, gestor: sp.gestor, q: sp.q, status: sp.status, pais: castingCountryParam(country) };
   const moreActive = [filters.segment, filters.availability, filters.status, filters.manager].filter(Boolean).length;
   const listHref = (path: string) => withCastingCountry(path, country);
@@ -226,7 +230,7 @@ export default async function CastingPage({ searchParams }: Props) {
         </details>
       </form>
 
-      {list.items.length > 0 ? (
+      {pageItems.length > 0 ? (
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3" data-testid="casting-list">
           {pageItems.map((talent) => {
             const accessState = talent.archived ? null : resolveTalentAccess(access.get(talent.id), talent);
@@ -264,10 +268,10 @@ export default async function CastingPage({ searchParams }: Props) {
           })}
         </ul>
       ) : null}
-      {list.items.length > PAGE_SIZE ? (
+      {total > PAGE_SIZE ? (
         <PaginationNav basePath="/agencia/casting" params={pageParams} page={page} hasNext={page < lastPage} total={total} />
       ) : null}
-      {list.items.length > 0 ? null : (
+      {total > 0 ? null : (
         <div className="rounded-2xl border border-border bg-surface">
           <EmptyState
             icon={<Contact />}

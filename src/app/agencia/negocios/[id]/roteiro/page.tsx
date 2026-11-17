@@ -13,7 +13,7 @@ import { getDealRecurrence } from "@/lib/roadmap/phase3-queries";
 import { getDealRoadmap, listServices, listTeamSectors } from "@/lib/roadmap/queries";
 import { addDays } from "@/lib/roadmap/recurrence";
 import { clientKindOf } from "@/lib/roadmap/vocab";
-import { listTalents } from "@/lib/talent/queries";
+import { listTalentOptions } from "@/lib/talent/queries";
 import { loadDeal } from "../_lib";
 
 export const dynamic = "force-dynamic";
@@ -37,7 +37,7 @@ export default async function DealRoadmapPage({ params }: Props) {
     listServices(ctx.agency.id, { activeOnly: true }),
     listTeam(ctx.agency.id),
     listTeamSectors(ctx.agency.id),
-    canEdit ? listTalents(ctx.agency.id) : Promise.resolve({ available: true, items: [] }),
+    canEdit ? listTalentOptions(ctx.agency.id) : Promise.resolve({ available: true, items: [] }),
     // 0111: contrato recorrente (assessoria de imprensa/artística): ciclos e etapas recorrentes
     getDealRecurrence(deal.id),
   ]);

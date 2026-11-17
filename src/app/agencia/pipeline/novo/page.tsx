@@ -7,7 +7,7 @@ import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { listAgencyBrands, listTeam } from "@/lib/agency/queries";
 import { requireAgency } from "@/lib/agency/server";
 import { listServices } from "@/lib/roadmap/queries";
-import { listTalents } from "@/lib/talent/queries";
+import { listTalentOptions } from "@/lib/talent/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +30,7 @@ export default async function NewDealPage({ searchParams }: Props) {
     // 0126: só marca aprovada pela Groscove entra num negócio
     listAgencyBrands(ctx.agency.id).then((list) => list.filter((b) => b.brand.approval !== "pending" && b.brand.approval !== "rejected")),
     listTeam(ctx.agency.id),
-    listTalents(ctx.agency.id),
+    listTalentOptions(ctx.agency.id),
     listServices(ctx.agency.id, { activeOnly: true }),
   ]);
   const clientTalents = talents.items.map((x) => ({ id: x.id, name: x.name, city: x.city, state: x.state, avatarUrl: x.hero?.avatarUrl ?? null }));

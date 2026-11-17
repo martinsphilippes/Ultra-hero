@@ -10,7 +10,7 @@ import { getUser } from "@/lib/auth/session";
 import { dealClientLabel } from "@/lib/deals/client-label";
 import { listDeals } from "@/lib/deals/queries";
 import { listTasks, taskCounts } from "@/lib/execution/queries";
-import { listTalents } from "@/lib/talent/queries";
+import { listTalentOptions } from "@/lib/talent/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +31,7 @@ export default async function AgencyTasksPage({ searchParams }: Props) {
     listTasks({ agencyId: ctx.agency.id, mine: filter === "mine" ? (user?.id ?? "") : undefined, overdue: filter === "overdue", open: filter !== "done" }),
     taskCounts(ctx.agency.id, user?.id ?? null),
     listTeam(ctx.agency.id),
-    listTalents(ctx.agency.id),
+    listTalentOptions(ctx.agency.id),
     listDeals(ctx.agency.id),
   ]);
   if (!list.available) {

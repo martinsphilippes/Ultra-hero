@@ -20237,6 +20237,46 @@ select tests.expect_error('S144 contato com número inválido dos EUA recusado',
   $q$update public.access_contacts set phone_e164 = '+10125550100' where email = 'hero@s144.test'$q$, 'access_contacts_phone_check');
 delete from public.talent_profiles where id = 'c1440000-0000-4000-8000-000000000001';
 
+-- S145: importação do Casting Fonográfico 2027 — Brasil e EUA, sem contato nem convite; rodar de novo não duplica
+\ir ../migrations/0145_casting_fonografico_2027.sql
+select tests.su();
+insert into public.agencies (id, name, slug, status) values ('c1450000-0000-4000-8000-000000000001', 'Indústria S145', 's145-industria', 'active');
+create temp table s145_rows as select $j$[
+  {"page":1,"origin":"Internacional","label":"Selo S145","name":"Artista EUA S145","handle":"s145_eua","url":"https://www.instagram.com/s145_eua/","category":"Musical artist","topics":["Hip-Hop","Selo S145"],"country":"US","photo":"/casting/s145-eua.webp"},
+  {"page":2,"origin":"Nacional","label":"Selo S145","name":"Artista BR S145","handle":"s145_br","url":"https://www.instagram.com/s145_br/","category":"Musical artist","topics":["Forró","Selo S145"],"country":"BR","photo":"/casting/s145-br.webp"},
+  {"page":3,"origin":"Internacional","label":"Selo S145","name":"Dupla S145","handle":"s145_dup","url":"https://www.instagram.com/s145_dup/","category":"Musical artist","topics":["Rap"],"country":"US","photo":"/casting/s145-dupla.webp"},
+  {"page":4,"origin":"Internacional","label":"Selo S145","name":"Dupla S145 & Amigo","handle":"s145_dup","url":"https://www.instagram.com/s145_dup/","category":"Musical artist","topics":["Rap"],"country":"US","photo":"/casting/s145-dupla-amigo.webp"}
+]$j$::jsonb as rows;
+select tests.ok('S145 primeira importação cria os 4 (o @ repetido com outro nome vira outro Hero)',
+  (select public.casting_bulk_import('s145-industria', 'Teste S145', rows) from s145_rows) ->> 'created' = '4');
+select tests.ok('S145 país, foto, selo, temas, Instagram e segmento Música gravados; sem contato e sem convite',
+  (select count(*) from public.talent_profiles where agency_id = 'c1450000-0000-4000-8000-000000000001' and country = 'US') = 3
+  and (select count(*) from public.talent_profiles where agency_id = 'c1450000-0000-4000-8000-000000000001' and country = 'BR') = 1
+  and not exists (select 1 from public.talent_profiles where agency_id = 'c1450000-0000-4000-8000-000000000001'
+                  and (photo_url is null or category_label <> 'Musical artist' or cardinality(topics) = 0 or catalog_visible))
+  and (select count(*) from public.talent_social_accounts where agency_id = 'c1450000-0000-4000-8000-000000000001' and network = 'instagram') = 4
+  and (select count(*) from public.talent_segment_links l join public.talent_segments s on s.id = l.segment_id
+       where l.agency_id = 'c1450000-0000-4000-8000-000000000001' and s.slug = 'musica') = 4
+  and not exists (select 1 from public.access_contacts c join public.talent_profiles t on t.id = c.talent_id
+                  where t.agency_id = 'c1450000-0000-4000-8000-000000000001')
+  and not exists (select 1 from public.invitations i join public.talent_profiles t on t.id = i.talent_id
+                  where t.agency_id = 'c1450000-0000-4000-8000-000000000001'));
+select tests.ok('S145 rodar de novo não duplica (os 4 já estão)',
+  (select public.casting_bulk_import('s145-industria', 'Teste S145', rows) from s145_rows) @> '{"created": 0, "existing": 4}'::jsonb
+  and (select count(*) from public.talent_profiles where agency_id = 'c1450000-0000-4000-8000-000000000001') = 4);
+update public.talent_profiles set topics = '{}' where agency_id = 'c1450000-0000-4000-8000-000000000001' and display_name = 'Artista BR S145';
+select public.casting_bulk_import('s145-industria', 'Teste S145', rows) from s145_rows;
+select tests.ok('S145 quem já está só tem o vazio completado (temas)',
+  (select topics from public.talent_profiles where agency_id = 'c1450000-0000-4000-8000-000000000001' and display_name = 'Artista BR S145') = array['Forró', 'Selo S145']);
+select tests.ok('S145 agência que não existe: nada é importado',
+  (select public.casting_bulk_import('s145-nao-existe', 'Teste S145', rows) from s145_rows) ->> 'agency' is null);
+select tests.ok('S145 importação só pelo servidor (visitante e usuário logado não executam)',
+  not has_function_privilege('anon', 'public.casting_bulk_import(text, text, jsonb, uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.casting_bulk_import(text, text, jsonb, uuid)', 'execute'));
+drop table s145_rows;
+delete from public.talent_profiles where agency_id = 'c1450000-0000-4000-8000-000000000001';
+delete from public.agencies where id = 'c1450000-0000-4000-8000-000000000001';
+
 drop function tests.s141_gate(text);
 delete from public.admin_audit where resource_id like 'c1410000-%';
 delete from public.invitations where email::text like '%@s141.test';

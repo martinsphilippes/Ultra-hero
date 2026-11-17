@@ -22,7 +22,7 @@ import { listDeals } from "@/lib/deals/queries";
 import { toZonedIso } from "@/lib/deals/schemas";
 import { formatDateTime } from "@/i18n/format";
 import type { Locale } from "@/i18n/config";
-import { listTalents } from "@/lib/talent/queries";
+import { listTalentOptions } from "@/lib/talent/queries";
 import { AgendaFilterBar } from "@/components/platform-calendar/AgendaFilterBar";
 import { groscoveForAgenda, mergeWithGroscove } from "@/lib/platform-calendar/agenda";
 import { agendaFilterParams, parseAgendaFilters } from "@/lib/platform-calendar/vocab";
@@ -73,7 +73,7 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
     getTranslations("sponsorship.agency"),
     getTranslations("pickers"),
     listEvents({ from, to, overlap: true, agencyId: ctx.agency.id, talentId: sp.creator, brandId: sp.marca, kind: sp.tipo }),
-    listTalents(ctx.agency.id),
+    listTalentOptions(ctx.agency.id),
     listAgencyBrands(ctx.agency.id),
     listDeals(ctx.agency.id),
     myFeedState(),

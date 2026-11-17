@@ -157,27 +157,109 @@ export async function listSegments(agencyId: string, activeOnly = true): Promise
   return (data ?? []).map((s) => ({ id: s.id, slug: s.slug, name: s.name, sortOrder: s.sort_order, active: s.active }));
 }
 
-export async function listTalents(agencyId: string, filters: TalentFilters = {}): Promise<ListResult<TalentDetail>> {
+/** O banco devolve no máximo 1000 linhas por consulta: listas maiores vêm em blocos. */
+const CHUNK = 1000;
+
+/**
+ * Casting da agência. Com `paging`, só a página pedida e o total (a tela Casting: o casting passou de mil Heros com o
+ * Fonográfico 2027). Sem `paging`, todos (em blocos de mil) — quem usa a ficha completa de cada um.
+ * Filtro por segmento pelo vínculo (junção no banco): a lista de ids não cabia mais no endereço.
+ */
+export async function listTalents(
+  agencyId: string,
+  filters: TalentFilters = {},
+  paging?: { page: number; pageSize: number },
+): Promise<ListResult<TalentDetail> & { total: number }> {
   const supabase = await createClient();
-  let ids: string[] | null = null;
-  if (filters.segment && /^[0-9a-f-]{36}$/i.test(filters.segment)) {
-    const { data } = await supabase.from("talent_segment_links").select("talent_id").eq("segment_id", filters.segment).eq("agency_id", agencyId);
-    ids = (data ?? []).map((l) => l.talent_id);
-    if (ids.length === 0) return { available: true, items: [] };
-  }
-  let query = supabase.from("talent_profiles").select(LIST_SELECT).eq("agency_id", agencyId).order("display_name").limit(300);
-  query = filters.archived ? query.not("archived_at", "is", null) : query.is("archived_at", null);
-  if (filters.country) query = query.eq("country", filters.country);
-  if (ids) query = query.in("id", ids);
-  if (filters.availability) query = query.eq("availability", filters.availability);
-  if (filters.status) query = query.eq("commercial_status", filters.status);
-  if (filters.manager === "none") query = query.is("manager_id", null);
-  else if (filters.manager && /^[0-9a-f-]{36}$/i.test(filters.manager)) query = query.eq("manager_id", filters.manager);
+  const segment = filters.segment && /^[0-9a-f-]{36}$/i.test(filters.segment) ? filters.segment : null;
   const q = filters.q?.trim().replace(/[%_,()]/g, " ").slice(0, 60);
-  if (q) query = query.ilike("display_name", `%${q}%`);
-  const { data, error } = await query;
-  if (error) return { available: !isMissingSchema(error), items: [] };
-  return { available: true, items: ((data ?? []) as unknown as TalentRow[]).map(toDetail) };
+  const build = (withCount: boolean) => {
+    let query = supabase
+      .from("talent_profiles")
+      .select(segment ? `${LIST_SELECT}, seg_filter:talent_segment_links!inner(segment_id)` : LIST_SELECT, withCount ? { count: "exact" } : undefined)
+      .eq("agency_id", agencyId)
+      .order("display_name")
+      .order("id");
+    query = filters.archived ? query.not("archived_at", "is", null) : query.is("archived_at", null);
+    if (filters.country) query = query.eq("country", filters.country);
+    if (segment) query = query.eq("seg_filter.segment_id", segment);
+    if (filters.availability) query = query.eq("availability", filters.availability);
+    if (filters.status) query = query.eq("commercial_status", filters.status);
+    if (filters.manager === "none") query = query.is("manager_id", null);
+    else if (filters.manager && /^[0-9a-f-]{36}$/i.test(filters.manager)) query = query.eq("manager_id", filters.manager);
+    if (q) query = query.ilike("display_name", `%${q}%`);
+    return query;
+  };
+  if (paging) {
+    const from = (Math.max(1, paging.page) - 1) * paging.pageSize;
+    const { data, error, count } = await build(true).range(from, from + paging.pageSize - 1);
+    if (error) return { available: !isMissingSchema(error), items: [], total: 0 };
+    const items = ((data ?? []) as unknown as TalentRow[]).map(toDetail);
+    return { available: true, items, total: count ?? items.length };
+  }
+  const items: TalentDetail[] = [];
+  for (let from = 0; ; from += CHUNK) {
+    const { data, error } = await build(false).range(from, from + CHUNK - 1);
+    if (error) return { available: !isMissingSchema(error), items: [], total: 0 };
+    const rows = (data ?? []) as unknown as TalentRow[];
+    items.push(...rows.map(toDetail));
+    if (rows.length < CHUNK || from >= 20 * CHUNK) break;
+  }
+  return { available: true, items, total: items.length };
+}
+
+export type TalentOption = {
+  id: string;
+  name: string;
+  city: string | null;
+  state: string | null;
+  country: string;
+  hasLogin: boolean;
+  managerId: string | null;
+  hero: { avatarUrl: string | null } | null;
+};
+type TalentOptionRow = {
+  id: string;
+  display_name: string;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  manager_id: string | null;
+  user_id: string | null;
+  creator_id: string | null;
+  creator: { avatar_url: string | null } | null;
+};
+
+/** Heros ativos para os seletores (tarefas, agenda, novo negócio, roteiro): só o básico, todos (em blocos de mil). */
+export async function listTalentOptions(agencyId: string): Promise<ListResult<TalentOption>> {
+  const supabase = await createClient();
+  const items: TalentOption[] = [];
+  for (let from = 0; ; from += CHUNK) {
+    const { data, error } = await supabase
+      .from("talent_profiles")
+      .select("id, display_name, city, state, country, manager_id, user_id, creator_id, creator:creator_profiles(avatar_url)")
+      .eq("agency_id", agencyId)
+      .is("archived_at", null)
+      .order("display_name")
+      .order("id")
+      .range(from, from + CHUNK - 1);
+    if (error) return { available: !isMissingSchema(error), items: [] };
+    const rows = (data ?? []) as unknown as TalentOptionRow[];
+    for (const r of rows) {
+      items.push({
+        id: r.id,
+        name: r.display_name,
+        city: r.city,
+        state: r.state,
+        country: r.country ?? "BR",
+        hasLogin: Boolean(r.user_id) || Boolean(r.creator_id),
+        managerId: r.manager_id,
+        hero: r.creator ? { avatarUrl: r.creator.avatar_url } : null,
+      });
+    }
+    if (rows.length < CHUNK || from >= 20 * CHUNK) break;
+  }
+  return { available: true, items };
 }
 
 /** 0144: quantos Heros em cada país (seletor Brasil | EUA da tela Casting), na mesma visão (no casting ou arquivados). */
