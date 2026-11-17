@@ -112,11 +112,23 @@ describe("Hero/Creator só pelo aplicativo", () => {
     expect(isAndroidWebView("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)")).toBe(false);
     expect(isAndroidWebView(null)).toBe(false);
   });
-  it("válvula: CREATOR_APP_ONLY=false desliga a regra; ausente ou qualquer outro valor mantém ligada", () => {
-    expect(isCreatorAppOnlyEnabled(undefined)).toBe(true);
+  it("17/11/2026: regra desligada por padrão; só CREATOR_APP_ONLY=true religa", () => {
+    expect(isCreatorAppOnlyEnabled(undefined)).toBe(false);
+    expect(isCreatorAppOnlyEnabled("")).toBe(false);
+    expect(isCreatorAppOnlyEnabled("false")).toBe(false);
+    expect(isCreatorAppOnlyEnabled("1")).toBe(false);
     expect(isCreatorAppOnlyEnabled("true")).toBe(true);
-    expect(isCreatorAppOnlyEnabled(" FALSE ")).toBe(false);
-    expect(at({ pathname: "/heroi", claims: hero, creatorAppOnly: false })).toEqual({ action: "next" });
+    expect(isCreatorAppOnlyEnabled(" TRUE ")).toBe(true);
+  });
+  it("regra desligada: conta Hero no navegador (site ou PWA) entra em qualquer rota, e o cadastro de Hero abre", () => {
+    for (const pathname of ["/heroi", "/heroi/oportunidades/1", "/personalities", "/profile", "/"]) {
+      expect(at({ pathname, claims: hero, creatorAppOnly: false })).toEqual({ action: "next" });
+    }
+    expect(at({ pathname: "/comecar/heroi", creatorAppOnly: false })).toEqual({ action: "next" });
+    expect(at({ pathname: "/heroi", signedIn: false, claims: { status: null, appOnly: false }, creatorAppOnly: false })).toEqual({ action: "next" });
+  });
+  it("regra desligada não mexe na aprovação: Hero pendente continua só com a tela de status", () => {
+    expect(at({ pathname: "/heroi", claims: { status: "pending", appOnly: true }, creatorAppOnly: false })).toEqual({ action: "pending", status: "pending" });
   });
 });
 

@@ -60,6 +60,7 @@ function location(res: Response) {
 beforeEach(() => {
   session.signedIn = false;
   session.checks = 0;
+  vi.unstubAllEnvs();
 });
 
 describe("destino do endereço principal (regra pura)", () => {
@@ -120,9 +121,15 @@ describe("middleware no \"/\"", () => {
     const ok = await middleware(request("/marca"));
     expect(ok.headers.get("location")).toBeNull();
   });
-  it("0141: área do Hero no navegador sem sessão vai direto à mensagem do aplicativo", async () => {
+  it("0141 (regra religada, CREATOR_APP_ONLY=true): área do Hero no navegador sem sessão vai direto à mensagem do aplicativo", async () => {
+    vi.stubEnv("CREATOR_APP_ONLY", "true");
     const res = await middleware(request("/heroi"));
     expect(location(res)?.pathname).toBe("/acesso-pelo-app");
+  });
+  it("17/11/2026, sem a regra (padrão): área do Hero no navegador sem sessão pede login como qualquer área", async () => {
+    const res = await middleware(request("/heroi"));
+    expect(location(res)?.pathname).toBe("/login");
+    expect(location(res)?.searchParams.get("next")).toBe("/heroi");
   });
 });
 

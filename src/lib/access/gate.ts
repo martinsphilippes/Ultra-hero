@@ -3,9 +3,11 @@
 // 1) Aprovação da Presidência: toda conta nova nasce "pendente" no banco (gatilho em auth.users) e o token traz
 //    app_metadata.access. Pendente ou recusada só vê a tela de status; o resto do site leva para lá (e a API do banco
 //    já responde 403 pela trava pre-request da 0141).
-// 2) Hero/Creator só pelo aplicativo: o token traz app_metadata.app_only. No navegador, conta Hero é desconectada e vê a
-//    mensagem do app; a área do Hero (/heroi, /comecar/heroi) também não abre no navegador para ninguém.
-//    O canal "aplicativo" é a WebView da casca das lojas, que se identifica no user agent (lib/native-app/surface).
+// 2) Hero/Creator só pelo aplicativo — DESLIGADA desde 17/11/2026 (pedido do responsável: o Hero volta a entrar pelo
+//    site, pelos links e pelo PWA). Fica atrás de CREATOR_APP_ONLY=true: ligada, o token traz app_metadata.app_only, no
+//    navegador a conta Hero é desconectada e vê a mensagem do app, e a área do Hero (/heroi, /comecar/heroi) não abre no
+//    navegador para ninguém. O canal "aplicativo" é a WebView da casca das lojas, que se identifica no user agent
+//    (lib/native-app/surface). O banco continua gravando app_only, então religar não pede migração.
 
 export type AccessStatus = "pending" | "approved" | "rejected";
 
@@ -91,7 +93,7 @@ export type AccessInput = {
   claims: AccessClaims;
   /** requisição veio do aplicativo das lojas (user agent da casca) */
   native: boolean;
-  /** regra "Creator só pelo aplicativo" ligada (CREATOR_APP_ONLY, padrão ligado) */
+  /** regra "Creator só pelo aplicativo" ligada (CREATOR_APP_ONLY=true; desligada por padrão desde 17/11/2026) */
   creatorAppOnly: boolean;
   quickSignupPending?: boolean;
 };
@@ -134,7 +136,11 @@ export function isAndroidWebView(userAgent: string | null | undefined): boolean 
   return /; wv\)/.test(userAgent ?? "");
 }
 
-/** Regra "Creator só pelo aplicativo" ligada? Ligada por padrão; CREATOR_APP_ONLY=false desliga (válvula de segurança). */
+/**
+ * Regra "Creator só pelo aplicativo" ligada? Desligada por padrão desde 17/11/2026 (o Hero entra pelo site, pelos links e
+ * pelo PWA, como antes da 0141). Só CREATOR_APP_ONLY=true (na Vercel, com nova publicação) religa; ausente ou qualquer
+ * outro valor = desligada.
+ */
 export function isCreatorAppOnlyEnabled(value: string | undefined = process.env.CREATOR_APP_ONLY): boolean {
-  return (value ?? "").trim().toLowerCase() !== "false";
+  return (value ?? "").trim().toLowerCase() === "true";
 }

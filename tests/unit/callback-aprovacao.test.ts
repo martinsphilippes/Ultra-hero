@@ -90,7 +90,11 @@ describe("retorno do Google com a aprovação da Presidência", () => {
   });
 });
 
-describe("retorno do Google com Hero só pelo aplicativo", () => {
+describe("retorno do Google com Hero só pelo aplicativo (regra religada: CREATOR_APP_ONLY=true)", () => {
+  beforeEach(() => {
+    vi.stubEnv("CREATOR_APP_ONLY", "true");
+  });
+
   it("Hero escolhido no navegador: nada é registrado como Hero e a sessão é encerrada", async () => {
     state.appMetadata = { provider: "google", access: "pending", app_only: false };
     expect(await callback("/comecar/heroi")).toBe("/acesso-pelo-app");
@@ -115,10 +119,26 @@ describe("retorno do Google com Hero só pelo aplicativo", () => {
     expect(state.signOutScopes).toEqual([]);
   });
 
-  it("válvula CREATOR_APP_ONLY=false: Hero aprovado volta a entrar pelo navegador", async () => {
+  it("CREATOR_APP_ONLY=false também desliga", async () => {
     vi.stubEnv("CREATOR_APP_ONLY", "false");
     state.appMetadata = { provider: "google", access: "approved", app_only: true };
     expect(await callback("/heroi")).toBe("/heroi");
+  });
+});
+
+describe("17/11/2026: sem a regra (padrão), o Hero volta a entrar pelo site e pelo PWA", () => {
+  it("Hero aprovado entrando com o Google no navegador vai ao portal, sem encerrar a sessão", async () => {
+    state.appMetadata = { provider: "google", access: "approved", app_only: true };
+    expect(await callback("/heroi")).toBe("/heroi");
+    expect(state.signOutScopes).toEqual([]);
+  });
+
+  it("Hero novo escolhido no navegador fica pendente com o perfil registrado (a aprovação continua valendo)", async () => {
+    state.appMetadata = { provider: "google", access: "pending", app_only: false };
+    state.refreshedMetadata = { provider: "google", access: "pending", app_only: true };
+    expect(await callback("/comecar/heroi")).toBe("/aguardando-aprovacao");
+    expect(state.annotateCalls).toEqual([{ p_user: USER_ID, p_profile: "hero", p_origin: null }]);
+    expect(state.signOutScopes).toEqual([]);
   });
 });
 

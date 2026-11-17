@@ -1,4 +1,4 @@
-# Aprovação da Presidência e dos ADMs e Hero só pelo aplicativo (0141, 11/11/2026; ADMs: 0146, 13/11/2026)
+# Aprovação da Presidência e dos ADMs e Hero só pelo aplicativo (0141, 11/11/2026; ADMs: 0146, 13/11/2026; Hero de volta ao site: 17/11/2026)
 
 ## Regras
 
@@ -8,10 +8,15 @@
    `presidencia@groscovegroup.com` (Jon), na tabela `access_approvers` — e os **ADMs**: quem tem o papel `admin` da
    plataforma e o Adm da indústria Groscove. Os ADMs entram pela regra do papel (ver "Quem aprova", abaixo); trocar a
    Presidência continua sendo nova migração (não há tela nem RPC para isso).
-2. **Hero/Creator só pelo aplicativo** — cadastro e área do Hero só na WebView da casca das lojas. No navegador, conta Hero
-   é desconectada e vê "O acesso de Creators é exclusivo pelo aplicativo Ultra Hero. Abra o app para continuar."
-   Marca, Agência, usuário comum e os demais perfis seguem na web. Conta que pediu o perfil Hero fica só pelo app em
-   qualquer situação — pendente, aprovada (antes e depois de terminar o passo a passo do Hero) ou recusada (0142).
+2. **Hero/Creator só pelo aplicativo — DESLIGADA desde 17/11/2026.** Pedido do responsável: o Hero volta a entrar pelo
+   site, pelos links (convite, primeiro acesso, Google) e pelo PWA, como antes da 0141, além do app. A aprovação da
+   regra 1 continua valendo para o Hero como para todos. A regra ficou atrás de `CREATOR_APP_ONLY=true` (na Vercel, com
+   nova publicação); ausente ou qualquer outro valor = desligada, e a tela `/acesso-pelo-app` manda ao login. Como era,
+   quando ligada: cadastro e área do Hero só na WebView da casca das lojas; no navegador, conta Hero é desconectada e vê
+   "O acesso de Creators é exclusivo pelo aplicativo Ultra Hero. Abra o app para continuar."; conta que pediu o perfil
+   Hero fica só pelo app em qualquer situação — pendente, aprovada ou recusada (0142). O banco continua gravando
+   `app_metadata.app_only`, então religar não pede migração. As linhas "Site, middleware", "Site, canal do app" e "Site,
+   servidor" abaixo descrevem a regra ligada.
 
 ## Onde fica cada trava
 
@@ -101,7 +106,9 @@ horário.
 - Storage e Realtime não passam pela trava da Data API; conta pendente não tem vínculo de negócio, então o risco é baixo.
 - Avisos por e-mail dependem do Resend configurado na Vercel; hoje a Presidência e os ADMs são avisados no sino (e os
   admins da plataforma veem a contagem no painel do `/admin`).
-- Válvula: `CREATOR_APP_ONLY=false` na Vercel (e nova publicação) desliga só a regra do Hero (a aprovação continua).
+- Interruptor da regra do Hero: desligada por padrão desde 17/11/2026; `CREATOR_APP_ONLY=true` na Vercel (e nova
+  publicação) religa só ela (a aprovação continua de qualquer jeito). Antes era o contrário: ligada por padrão e
+  `CREATOR_APP_ONLY=false` desligava.
 - App aberto durante uma publicação (12/11/2026): o cadastro grava no servidor, mas a resposta pode quebrar o JavaScript
   antigo acima de todas as telas. `src/app/global-error.tsx` recarrega sozinho uma vez por minuto e, se não der, mostra
   "Recarregar" (no app não há barra de endereço); antes a pessoa ficava presa em "Application error".

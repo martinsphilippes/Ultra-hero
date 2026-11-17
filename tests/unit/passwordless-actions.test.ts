@@ -241,13 +241,23 @@ describe("login só com e-mail", () => {
     expect(await run(login())).toEqual({ redirect: "/aguardando-aprovacao" });
   });
 
-  it("0141: convite de Hero no navegador não vira conta sem senha", async () => {
+  it("0141 (regra religada, CREATOR_APP_ONLY=true): convite de Hero no navegador não vira conta sem senha", async () => {
+    vi.stubEnv("CREATOR_APP_ONLY", "true");
     state.userAgent = "Mozilla/5.0 (Windows NT 10.0) Chrome/130";
     state.linkError = { status: 404, code: "user_not_found", message: "User with this email not found" };
     state.pendingInvite = true;
     state.inviteRole = "creator";
     expect(await run(login())).toEqual({ state: { status: "error", error: "creatorAppOnly" } });
     expect(state.createUserCalls).toEqual([]);
+  });
+
+  it("17/11/2026, sem a regra (padrão): convite de Hero aberto no navegador cria a conta e entra", async () => {
+    state.userAgent = "Mozilla/5.0 (Windows NT 10.0) Chrome/130";
+    state.linkError = { status: 404, code: "user_not_found", message: "User with this email not found" };
+    state.pendingInvite = true;
+    state.inviteRole = "creator";
+    expect(await run(login())).toEqual({ redirect: "/personalities" });
+    expect(state.createUserCalls).toHaveLength(1);
   });
 
   it("limite por IP/e-mail", async () => {
@@ -279,11 +289,19 @@ describe("cadastro sem senha", () => {
     expect(state.rpcCalls).toContain("self_onboarding_start");
   });
 
-  it("0141: perfil Hero no navegador é recusado antes de criar qualquer conta", async () => {
+  it("0141 (regra religada, CREATOR_APP_ONLY=true): perfil Hero no navegador é recusado antes de criar qualquer conta", async () => {
+    vi.stubEnv("CREATOR_APP_ONLY", "true");
     state.userAgent = "Mozilla/5.0 (Macintosh) Safari/605.1.15";
     expect(await run(profileSignupAction(idle, form(profileForm)))).toEqual({ state: { status: "error", error: "creatorAppOnly" } });
     expect(state.createUserCalls).toEqual([]);
     expect(state.signInCalls).toEqual([]);
+  });
+
+  it("17/11/2026, sem a regra (padrão): cadastro de Hero pelo navegador (site ou PWA) cria a conta e abre o passo a passo", async () => {
+    state.userAgent = "Mozilla/5.0 (Macintosh) Safari/605.1.15";
+    expect(await run(profileSignupAction(idle, form(profileForm)))).toEqual({ redirect: "/primeiro-acesso" });
+    expect(state.createUserCalls).toHaveLength(1);
+    expect(state.rpcCalls).toContain("self_onboarding_start");
   });
 
   it("perfil com e-mail já cadastrado: só entra e segue", async () => {
