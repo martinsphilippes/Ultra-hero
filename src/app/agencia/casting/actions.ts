@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
-import { accessEmailSchema, accessErrorCode, accessPhoneSchema, parseAccessProvision } from "@/lib/agency/access-contact";
+import { accessEmailSchema, accessErrorCode, parseAccessProvision } from "@/lib/agency/access-contact";
+import { normalizeMobileFor } from "@/lib/auth/phone";
+import { CASTING_COUNTRIES } from "@/lib/talent/country";
 import { deliverAccess, type AccessOutcome } from "@/lib/agency/access-deliver";
 import { agencyFail } from "@/lib/agency/errors";
 import { daysSchema, emailSchema, justificationSchema } from "@/lib/agency/schemas";
@@ -27,7 +29,7 @@ function revalidateTalent(id?: string) {
   if (id) revalidatePath(`/agencia/casting/${id}`, "layout");
 }
 
-export async function saveTalentAction(input: Omit<TalentInput, "state"> & { state: string; id?: string | null }): Promise<CastingResult> {
+export async function saveTalentAction(input: Omit<TalentInput, "state" | "country"> & { state: string; country?: string; id?: string | null }): Promise<CastingResult> {
   const ctx = await requireAgency("staff");
   const parsed = talentSchema.safeParse(input);
   const id = input.id ? uuid.safeParse(input.id) : null;
@@ -42,6 +44,8 @@ export async function saveTalentAction(input: Omit<TalentInput, "state"> & { sta
         display_name: d.displayName,
         city: d.city,
         state: d.state,
+        // 0144: só manda o país quando a ficha o informa (ausente, o banco mantém o atual)
+        ...(d.country ? { country: d.country } : {}),
         manager_id: d.managerId,
         commercial_status: d.commercialStatus,
         availability: d.availability,
@@ -177,14 +181,25 @@ const pageSchema = z.object({
   headline: z.string().trim().max(160),
   bio: z.string().trim().max(2000),
 });
-const newHeroSchema = z.object({
-  displayName: z.string().trim().min(2).max(80),
-  email: accessEmailSchema,
-  phone: accessPhoneSchema,
-  managerId: z.union([z.literal(""), uuid]),
-  segmentIds: z.array(uuid).max(5),
-  page: pageSchema.nullable(),
-});
+const newHeroSchema = z
+  .object({
+    displayName: z.string().trim().min(2).max(80),
+    email: accessEmailSchema,
+    phone: z.string().max(40),
+    // 0144: país do casting (o seletor da tela); o celular segue o país (EUA: número americano)
+    country: z.enum(CASTING_COUNTRIES).default("BR"),
+    managerId: z.union([z.literal(""), uuid]),
+    segmentIds: z.array(uuid).max(5),
+    page: pageSchema.nullable(),
+  })
+  .transform((d, ctx) => {
+    const phone = normalizeMobileFor(d.country, d.phone);
+    if (!phone) {
+      ctx.addIssue({ code: "custom", message: "invalid_phone", path: ["phone"] });
+      return z.NEVER;
+    }
+    return { ...d, phone };
+  });
 
 export type NewHeroResult = ({ ok: true; talentId: string; creatorId: string | null } & AccessOutcome) | { ok: false; error: string };
 
@@ -197,7 +212,7 @@ export async function createHeroAction(input: z.input<typeof newHeroSchema>): Pr
     const supabase = await createClient();
     const { data, error } = await supabase.rpc("agency_hero_create", {
       p_agency: ctx.agency.id,
-      p_talent: { display_name: d.displayName, manager_id: d.managerId, commercial_status: "active" },
+      p_talent: { display_name: d.displayName, manager_id: d.managerId, commercial_status: "active", country: d.country },
       p_email: d.email,
       p_phone: d.phone,
       p_segment_ids: d.segmentIds,

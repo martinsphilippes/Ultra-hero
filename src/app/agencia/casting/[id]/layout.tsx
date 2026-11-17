@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { RouteTabs } from "@/components/agency/RouteTabs";
 import { TalentStatusBadges } from "@/components/agency/TalentStatusBadges";
 import { Avatar, PageHeader } from "@/components/ui";
+import { isCastingCountry, withCastingCountry } from "@/lib/talent/country";
 import { loadTalent } from "./_lib";
 
 type Props = { children: ReactNode; params: Promise<{ id: string }> };
@@ -21,7 +22,7 @@ export default async function TalentLayout({ children, params }: Props) {
             <span className="min-w-0">{talent.name}</span>
           </span>
         }
-        backHref="/agencia/casting"
+        backHref={withCastingCountry("/agencia/casting", isCastingCountry(talent.country) ? talent.country : "BR")}
         backLabel={t("title")}
         description={<TalentStatusBadges status={talent.commercialStatus} availability={talent.availability} consent={talent.consent} catalogVisible={talent.catalogVisible} archived={talent.archived} />}
       />

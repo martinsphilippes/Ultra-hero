@@ -8,8 +8,9 @@ import { createHeroAction, createTalentPageAction, type NewHeroResult } from "@/
 import { AccessContactFields, AccessOutcomeNote } from "@/components/agency/AccessPanel";
 import { Button, Checkbox, Dialog, EntitySelect, FormField, Input, Switch, Textarea } from "@/components/ui";
 import { normalizeAccessEmail, slugifyHeroName } from "@/lib/agency/access-contact";
-import { normalizeBrMobile } from "@/lib/auth/phone";
+import { normalizeMobileFor } from "@/lib/auth/phone";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
+import type { CastingCountry } from "@/lib/talent/country";
 import { memberOption } from "@/lib/ui/entity";
 
 type Manager = { userId: string; name: string; role?: string | null; jobTitle?: string | null };
@@ -17,7 +18,8 @@ type PageValues = { slug: string; pillars: Pillar[]; headline: string; bio: stri
 
 // Um só "Novo Hero" (0112): a pessoa (ficha do casting) com e-mail e celular obrigatórios — o acesso nasce junto
 // (conta existente ligada na hora ou convite no e-mail) — gestor, segmentos e, se quiser, a página pública já ligada.
-export function NewHeroForm({ managers, segments }: { managers: Manager[]; segments: { id: string; name: string }[] }) {
+// 0144: o país vem do seletor do Casting; Hero dos EUA usa celular americano.
+export function NewHeroForm({ managers, segments, country = "BR" }: { managers: Manager[]; segments: { id: string; name: string }[]; country?: CastingCountry }) {
   const t = useTranslations("agency.casting.newHero");
   const tp = useTranslations("pickers");
   const router = useRouter();
@@ -38,13 +40,14 @@ export function NewHeroForm({ managers, segments }: { managers: Manager[]; segme
     setError(null);
     if (name.trim().length < 2) return setError(t("nameRequired"));
     if (!normalizeAccessEmail(email)) return setError(t("emailInvalid"));
-    if (!normalizeBrMobile(phone)) return setError(t("phoneInvalid"));
+    if (!normalizeMobileFor(country, phone)) return setError(t("phoneInvalid"));
     if (withPage && page.pillars.length === 0) return setError(t("pillarsRequired"));
     start(async () => {
       const result = await createHeroAction({
         displayName: name,
         email,
         phone,
+        country,
         managerId,
         segmentIds,
         page: withPage ? { ...page, slug: page.slug || slugifyHeroName(name) } : null,
@@ -67,7 +70,13 @@ export function NewHeroForm({ managers, segments }: { managers: Manager[]; segme
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4" noValidate data-testid="new-hero-form">
+    <form onSubmit={submit} className="flex flex-col gap-4" noValidate data-testid="new-hero-form" data-country={country}>
+      {country === "US" ? (
+        <p className="rounded-xl border border-border bg-surface-hover px-3 py-2 type-body-sm text-fg" data-testid="new-hero-country">
+          <span aria-hidden="true">🇺🇸 </span>
+          {t("countryUs")}
+        </p>
+      ) : null}
       <FormField label={t("name")} hint={t("nameHint")} required>
         <Input
           value={name}
@@ -79,7 +88,7 @@ export function NewHeroForm({ managers, segments }: { managers: Manager[]; segme
           disabled={pending}
         />
       </FormField>
-      <AccessContactFields email={email} phone={phone} onEmail={setEmail} onPhone={setPhone} disabled={pending} emailLabel={t("email")} emailHint={t("emailHint")} />
+      <AccessContactFields email={email} phone={phone} onEmail={setEmail} onPhone={setPhone} disabled={pending} emailLabel={t("email")} emailHint={t("emailHint")} country={country} />
       <FormField label={t("manager")} hint={tp("hints.talentManager")}>
         <EntitySelect
           value={managerId}

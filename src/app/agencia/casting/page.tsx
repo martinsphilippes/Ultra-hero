@@ -11,8 +11,9 @@ import { Button, EmptyState, EntitySelect, Input, PageHeader, Select } from "@/c
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
 import { resolveTalentAccess } from "@/lib/talent/access";
+import { CASTING_COUNTRIES, castingCountryFromParam, castingCountryParam, withCastingCountry } from "@/lib/talent/country";
 import { formatCount } from "@/lib/talent/media-kit";
-import { listManagers, listSegments, listTalentAccess, listTalents } from "@/lib/talent/queries";
+import { countTalentsByCountry, listManagers, listSegments, listTalentAccess, listTalents } from "@/lib/talent/queries";
 import { AVAILABILITIES, COMMERCIAL_STATUSES } from "@/lib/talent/vocab";
 import { memberOption } from "@/lib/ui/entity";
 
@@ -23,7 +24,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("casting") };
 }
 
-type Props = { searchParams: Promise<{ aba?: string; territorio?: string; segmento?: string; disponibilidade?: string; situacao?: string; gestor?: string; q?: string; status?: string; page?: string }> };
+type Props = { searchParams: Promise<{ aba?: string; territorio?: string; segmento?: string; disponibilidade?: string; situacao?: string; gestor?: string; q?: string; status?: string; page?: string; pais?: string }> };
+
+/** 0144: bandeira do seletor de país (decorativa; o nome do país vai escrito ao lado). */
+const COUNTRY_FLAG = { BR: "🇧🇷", US: "🇺🇸" } as const;
 
 /** Velocidade: 24 cartões por página (o casting tem centenas de Heros; antes ia tudo de uma vez, ~1,5 MB). */
 const PAGE_SIZE = 24;
@@ -68,6 +72,8 @@ export default async function CastingPage({ searchParams }: Props) {
     );
   }
   const archived = sp.status === "arquivados";
+  // 0144: o casting se divide por país (Brasil | EUA); sem ?pais é o Brasil, o casting de sempre
+  const country = castingCountryFromParam(sp.pais);
   const filters = {
     segment: sp.segmento,
     availability: pick(sp.disponibilidade, AVAILABILITIES),
@@ -75,8 +81,9 @@ export default async function CastingPage({ searchParams }: Props) {
     manager: sp.gestor,
     q: sp.q?.slice(0, 60),
     archived,
+    country,
   };
-  const [t, tm, tp, locale, list, segments, managers, access] = await Promise.all([
+  const [t, tm, tp, locale, list, segments, managers, access, countryCounts] = await Promise.all([
     getTranslations("agency.casting"),
     getTranslations("creatorMeetings"),
     getTranslations("pickers"),
@@ -86,6 +93,7 @@ export default async function CastingPage({ searchParams }: Props) {
     listManagers(ctx.agency.id),
     // selo do acesso do creator (0087); arquivado não tem acesso a mostrar
     archived ? Promise.resolve(new Map()) : listTalentAccess(ctx.agency.id),
+    countTalentsByCountry(ctx.agency.id, archived),
   ]);
   const canEdit = agencyCan(ctx.role, "manager", ctx.platformAdmin);
   const segmentName = new Map(segments.map((s) => [s.id, s.name]));
@@ -95,8 +103,10 @@ export default async function CastingPage({ searchParams }: Props) {
   const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const page = Math.min(lastPage, Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1));
   const pageItems = list.items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const pageParams = { segmento: sp.segmento, disponibilidade: sp.disponibilidade, situacao: sp.situacao, gestor: sp.gestor, q: sp.q, status: sp.status };
+  const pageParams = { segmento: sp.segmento, disponibilidade: sp.disponibilidade, situacao: sp.situacao, gestor: sp.gestor, q: sp.q, status: sp.status, pais: castingCountryParam(country) };
   const moreActive = [filters.segment, filters.availability, filters.status, filters.manager].filter(Boolean).length;
+  const listHref = (path: string) => withCastingCountry(path, country);
+  const newHeroHref = listHref("/agencia/casting/novo");
 
   if (!list.available) {
     return (
@@ -124,18 +134,35 @@ export default async function CastingPage({ searchParams }: Props) {
             ) : null}
             {canEdit ? (
               <Button asChild size="sm" leadingIcon={<Plus />}>
-                <Link href="/agencia/casting/novo">{t("new")}</Link>
+                <Link href={newHeroHref}>{t("new")}</Link>
               </Button>
             ) : null}
           </div>
         }
       />
+      {/* 0144: um casting por país — o seletor troca a lista inteira (filtros e páginas valem dentro do país) */}
+      <nav aria-label={t("countryLabel")} className="grid grid-cols-2 gap-1 rounded-2xl border border-border bg-surface-hover p-1" data-testid="casting-country">
+        {CASTING_COUNTRIES.map((c) => (
+          <a
+            key={c}
+            href={withCastingCountry(archived ? "/agencia/casting?status=arquivados" : "/agencia/casting", c)}
+            aria-current={country === c ? "page" : undefined}
+            data-testid={`casting-country-${c.toLowerCase()}`}
+            className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold ${country === c ? "bg-surface text-fg shadow-sm" : "text-fg-muted hover:text-fg"}`}
+          >
+            <span aria-hidden="true">{COUNTRY_FLAG[c]}</span>
+            {t(`countries.${c}`)}
+            <span className="rounded-full bg-surface-hover px-2 py-0.5 text-xs font-medium tabular-nums text-fg-muted">{countryCounts[c]}</span>
+          </a>
+        ))}
+      </nav>
       <nav aria-label={t("filterLabel")} className="flex flex-wrap gap-2">
-        <FilterAnchor href="/agencia/casting" active={!archived} label={t("filterActive")} />
-        <FilterAnchor href="/agencia/casting?status=arquivados" active={archived} label={t("filterArchived")} />
+        <FilterAnchor href={listHref("/agencia/casting")} active={!archived} label={t("filterActive")} />
+        <FilterAnchor href={listHref("/agencia/casting?status=arquivados")} active={archived} label={t("filterArchived")} />
       </nav>
       <form method="get" action="/agencia/casting" className="flex flex-col gap-2" data-testid="casting-filters">
         {archived ? <input type="hidden" name="status" value="arquivados" /> : null}
+        {castingCountryParam(country) ? <input type="hidden" name="pais" value={castingCountryParam(country)} /> : null}
         {/* uma linha: busca compacta + filtrar + "Mais filtros" (os demais filtros ficam recolhidos) */}
         <div className="flex flex-wrap items-center gap-2">
           <label className="relative min-w-0 flex-1 basis-48">
@@ -147,7 +174,7 @@ export default async function CastingPage({ searchParams }: Props) {
             {t("filters.apply")}
           </Button>
           {filtered ? (
-            <a href={archived ? "/agencia/casting?status=arquivados" : "/agencia/casting"} className="inline-flex min-h-9 items-center px-1 text-sm text-fg-muted underline-offset-2 hover:underline">
+            <a href={listHref(archived ? "/agencia/casting?status=arquivados" : "/agencia/casting")} className="inline-flex min-h-9 items-center px-1 text-sm text-fg-muted underline-offset-2 hover:underline">
               {t("filters.clear")}
             </a>
           ) : null}
@@ -244,12 +271,12 @@ export default async function CastingPage({ searchParams }: Props) {
         <div className="rounded-2xl border border-border bg-surface">
           <EmptyState
             icon={<Contact />}
-            title={filtered ? t("emptyFiltered") : archived ? t("emptyArchived") : t("empty")}
+            title={filtered ? t("emptyFiltered") : archived ? t("emptyArchived") : country === "US" ? t("emptyUs") : t("empty")}
             description={canEdit && !archived && !filtered ? t("emptyHint") : undefined}
             action={
               canEdit && !archived && !filtered ? (
                 <Button asChild leadingIcon={<Plus />}>
-                  <Link href="/agencia/casting/novo">{t("new")}</Link>
+                  <Link href={newHeroHref}>{t("new")}</Link>
                 </Button>
               ) : undefined
             }

@@ -79,6 +79,7 @@ export default async function TalentSummaryPage({ params }: Props) {
             displayName: talent.name,
             city: talent.city ?? "",
             state: talent.state ?? "",
+            country: talent.country,
             managerId: talent.managerId ?? "",
             commercialStatus: talent.commercialStatus,
             availability: talent.availability,
@@ -141,7 +142,7 @@ export default async function TalentSummaryPage({ params }: Props) {
           {accessStatus && !locked ? (
             <div className="flex flex-col gap-2 rounded-xl border border-border p-3" data-testid="talent-account">
               <h3 className="text-sm font-semibold text-fg">{t("accountTitle")}</h3>
-              <AccessPanel kind="talent" targetId={talent.id} status={accessStatus} />
+              <AccessPanel kind="talent" targetId={talent.id} status={accessStatus} country={talent.country} />
             </div>
           ) : null}
           {!talent.creatorId && canEdit && !locked ? (

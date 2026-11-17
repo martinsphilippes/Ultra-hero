@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { emailSchema, httpsUrl } from "@/lib/agency/schemas";
-import { AGE_BANDS, AVAILABILITIES, COMMERCIAL_STATUSES, GENDER_KEYS, KIT_FIELDS, NETWORKS, UFS } from "./vocab";
+import { CASTING_COUNTRIES } from "./country";
+import { AGE_BANDS, AVAILABILITIES, COMMERCIAL_STATUSES, GENDER_KEYS, KIT_FIELDS, NETWORKS, UFS, US_STATES } from "./vocab";
 
 // Formas dos formulários do casting e do media kit (os checks e as RPCs da 0065 são a regra).
 
@@ -78,7 +79,9 @@ const phone = z.string().trim().regex(/^\+?[0-9 ()-]{8,20}$/);
 export const talentSchema = z.object({
   displayName: z.string().trim().min(2).max(80),
   city: z.string().trim().max(60),
-  state: z.union([z.literal(""), z.enum(UFS)]),
+  // 0144: UF para o Brasil, sigla do estado para os EUA (o banco confere o par país/estado)
+  state: z.union([z.literal(""), z.enum(UFS), z.enum(US_STATES)]),
+  country: z.enum(CASTING_COUNTRIES).optional(),
   managerId: z.union([z.literal(""), z.uuid()]),
   commercialStatus: z.enum(COMMERCIAL_STATUSES),
   availability: z.enum(AVAILABILITIES),

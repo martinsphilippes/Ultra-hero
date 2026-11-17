@@ -6,6 +6,8 @@ export type TalentFormValues = {
   displayName: string;
   city: string;
   state: string;
+  /** 0144: país do casting ("BR" ou "US"); os estados da ficha seguem o país. */
+  country: string;
   managerId: string;
   commercialStatus: CommercialStatus;
   availability: Availability;
@@ -21,6 +23,7 @@ export const EMPTY_TALENT: TalentFormValues = {
   displayName: "",
   city: "",
   state: "",
+  country: "BR",
   managerId: "",
   commercialStatus: "prospect",
   availability: "available",

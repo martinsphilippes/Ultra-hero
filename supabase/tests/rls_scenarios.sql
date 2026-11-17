@@ -20215,6 +20215,28 @@ select tests.ok('S143 termo, condições de pagamento, NDA e normas padrão fala
 select tests.ok('S143 nomes internos intactos: papel agency, tabela agencies e funções agency_* continuam',
   exists (select 1 from pg_proc where proname = 'agency_invite_brand') and to_regclass('public.agencies') is not null);
 
+-- S144: casting por país — Hero dos EUA com estado americano e celular +1; o Brasil continua como era
+\ir ../migrations/0144_casting_por_pais.sql
+select tests.su();
+insert into public.talent_profiles (id, agency_id, display_name, country, state)
+values ('c1440000-0000-4000-8000-000000000001', (select id from public.agencies order by created_at limit 1), 'Hero dos EUA (S144)', 'US', 'CA');
+select tests.ok('S144 Hero dos EUA aceita estado americano', (select state from public.talent_profiles where id = 'c1440000-0000-4000-8000-000000000001') = 'CA');
+select tests.expect_error('S144 Hero do Brasil não aceita estado americano',
+  $q$update public.talent_profiles set country = 'BR' where id = 'c1440000-0000-4000-8000-000000000001'$q$, 'talent_profiles_state_check');
+select tests.expect_error('S144 Hero dos EUA não aceita UF brasileira',
+  $q$update public.talent_profiles set state = 'SP' where id = 'c1440000-0000-4000-8000-000000000001'$q$, 'talent_profiles_state_check');
+update public.talent_profiles set country = 'BR', state = 'SP' where id = 'c1440000-0000-4000-8000-000000000001';
+select tests.ok('S144 Hero do Brasil segue com UF', (select country || '/' || state from public.talent_profiles where id = 'c1440000-0000-4000-8000-000000000001') = 'BR/SP');
+select tests.ok('S144 celular do acesso: Brasil e EUA valem; fixo, número sem +1 e código de área começando com 1 não',
+  public.access_contact_valid('hero@s144.test', '+5511912345678') and public.access_contact_valid('hero@s144.test', '+12125550100')
+  and not public.access_contact_valid('hero@s144.test', '+552134567890') and not public.access_contact_valid('hero@s144.test', '2125550100')
+  and not public.access_contact_valid('hero@s144.test', '+11125550100'));
+insert into public.access_contacts (talent_id, email, phone_e164) values ('c1440000-0000-4000-8000-000000000001', 'hero@s144.test', '+12125550100');
+select tests.ok('S144 contato com celular dos EUA gravado', exists (select 1 from public.access_contacts where email = 'hero@s144.test' and phone_e164 = '+12125550100'));
+select tests.expect_error('S144 contato com número inválido dos EUA recusado',
+  $q$update public.access_contacts set phone_e164 = '+10125550100' where email = 'hero@s144.test'$q$, 'access_contacts_phone_check');
+delete from public.talent_profiles where id = 'c1440000-0000-4000-8000-000000000001';
+
 drop function tests.s141_gate(text);
 delete from public.admin_audit where resource_id like 'c1410000-%';
 delete from public.invitations where email::text like '%@s141.test';

@@ -2,6 +2,7 @@ import "server-only";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { toTalentAccess, type TalentAccessInfo } from "./access";
+import type { CastingCountry } from "./country";
 import { toKitStats, toPortfolio, type KitStats, type PortfolioItem } from "./kit-auto";
 import type { KitSource, SocialRow } from "./media-kit";
 import { DEFAULT_KIT_FIELDS, type Availability, type CommercialStatus } from "./vocab";
@@ -15,6 +16,8 @@ export type TalentListItem = {
   name: string;
   city: string | null;
   state: string | null;
+  /** 0144: país do casting (ISO de 2 letras: "BR" ou "US"). */
+  country: string;
   commercialStatus: CommercialStatus;
   availability: Availability;
   consent: "active" | "revoked" | "none";
@@ -64,16 +67,17 @@ export type MediaKitRow = {
   lastViewedAt: string | null;
   updatedAt: string | null;
 };
-export type TalentFilters = { segment?: string; availability?: string; status?: string; manager?: string; q?: string; archived?: boolean };
+export type TalentFilters = { segment?: string; availability?: string; status?: string; manager?: string; q?: string; archived?: boolean; country?: CastingCountry };
 
 const LIST_SELECT =
-  "id, display_name, city, state, commercial_status, availability, consent_at, consent_revoked_at, catalog_visible, creator_id, user_id, manager_id, archived_at, availability_note, contact_email, contact_phone, internal_notes, last_contact_at, consent_version, created_at, updated_at, photo_url, category_label, topics, segments, level, creator:creator_profiles(name, slug, avatar_url), talent_segment_links(segment_id), talent_social_accounts(network, handle, url, followers)";
+  "id, display_name, city, state, country, commercial_status, availability, consent_at, consent_revoked_at, catalog_visible, creator_id, user_id, manager_id, archived_at, availability_note, contact_email, contact_phone, internal_notes, last_contact_at, consent_version, created_at, updated_at, photo_url, category_label, topics, segments, level, creator:creator_profiles(name, slug, avatar_url), talent_segment_links(segment_id), talent_social_accounts(network, handle, url, followers)";
 
 type TalentRow = {
   id: string;
   display_name: string;
   city: string | null;
   state: string | null;
+  country: string | null;
   commercial_status: string;
   availability: string;
   consent_at: string | null;
@@ -109,6 +113,7 @@ function toDetail(r: TalentRow): TalentDetail {
     name: r.display_name,
     city: r.city,
     state: r.state,
+    country: r.country ?? "BR",
     commercialStatus: r.commercial_status as CommercialStatus,
     availability: r.availability as Availability,
     consent: r.consent_at && !r.consent_revoked_at ? "active" : r.consent_revoked_at ? "revoked" : "none",
@@ -162,6 +167,7 @@ export async function listTalents(agencyId: string, filters: TalentFilters = {})
   }
   let query = supabase.from("talent_profiles").select(LIST_SELECT).eq("agency_id", agencyId).order("display_name").limit(300);
   query = filters.archived ? query.not("archived_at", "is", null) : query.is("archived_at", null);
+  if (filters.country) query = query.eq("country", filters.country);
   if (ids) query = query.in("id", ids);
   if (filters.availability) query = query.eq("availability", filters.availability);
   if (filters.status) query = query.eq("commercial_status", filters.status);
@@ -172,6 +178,19 @@ export async function listTalents(agencyId: string, filters: TalentFilters = {})
   const { data, error } = await query;
   if (error) return { available: !isMissingSchema(error), items: [] };
   return { available: true, items: ((data ?? []) as unknown as TalentRow[]).map(toDetail) };
+}
+
+/** 0144: quantos Heros em cada país (seletor Brasil | EUA da tela Casting), na mesma visão (no casting ou arquivados). */
+export async function countTalentsByCountry(agencyId: string, archived: boolean): Promise<Record<CastingCountry, number>> {
+  const supabase = await createClient();
+  const count = async (country: CastingCountry) => {
+    let query = supabase.from("talent_profiles").select("id", { count: "exact", head: true }).eq("agency_id", agencyId).eq("country", country);
+    query = archived ? query.not("archived_at", "is", null) : query.is("archived_at", null);
+    const { count: total, error } = await query;
+    return error ? 0 : (total ?? 0);
+  };
+  const [br, us] = await Promise.all([count("BR"), count("US")]);
+  return { BR: br, US: us };
 }
 
 export async function getTalent(agencyId: string, id: string): Promise<TalentDetail | null> {

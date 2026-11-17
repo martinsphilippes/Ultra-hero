@@ -433,6 +433,11 @@
     "description": "Heroes with and without a public page, with declared networks and media kit.",
     "new": "New hero",
     "filterLabel": "Roster status",
+    "countryLabel": "Casting country",
+    "countries": {
+      "BR": "Brazil",
+      "US": "USA"
+    },
     "filterActive": "In roster",
     "filterArchived": "Archived",
     "filters": {
@@ -460,6 +465,7 @@
     "emptyFiltered": "No heroes match these filters.",
     "emptyArchived": "No archived heroes.",
     "empty": "The roster is empty.",
+    "emptyUs": "The USA casting is still empty.",
     "emptyHint": "Add the first hero (with or without a public page).",
     "status": {
       "prospect": "Prospect",
@@ -536,7 +542,9 @@
       "name": "Name",
       "nameHint": "How the hero is presented to brands.",
       "city": "City",
+      "country": "Country",
       "state": "State",
+      "stateUs": "State",
       "status": "Status",
       "availability": "Availability",
       "manager": "Responsible manager",
@@ -604,6 +612,7 @@
     "noPageHint": "No public page. Create one now (already linked to this record) or link a page that already exists.",
     "newHero": {
       "description": "Register who the industry represents. The hero gets an e-mail invitation to access the account.",
+      "countryUs": "This Hero joins the USA casting.",
       "name": "Name",
       "nameHint": "Stage name, as the industry and brands see it.",
       "email": "Hero e-mail",
@@ -1386,6 +1395,7 @@
     "phone": "Mobile",
     "phoneLabel": "Mobile",
     "phoneHint": "With area code, e.g. (11) 91234-5678. Only the industry sees it.",
+    "phoneHintUs": "US mobile with area code, e.g. +1 (212) 555-0100. Only the industry sees it.",
     "phoneInvalid": "Check the mobile: area code + 9 digits, e.g. (11) 91234-5678.",
     "noEmail": "No e-mail",
     "noPhone": "No mobile",

@@ -20,6 +20,11 @@ export const NETWORK_METRIC_FIELDS: KitField[] = ["followers", "views", "reach",
 
 export const UFS = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"] as const;
 export type Uf = (typeof UFS)[number];
+/** 0144: estados dos EUA (50 + DC) para a ficha dos Heros do casting dos EUA. */
+export const US_STATES = [
+  "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO",
+  "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+] as const;
 
 export const COMMERCIAL_STATUSES = ["prospect", "active", "paused", "inactive"] as const;
 export type CommercialStatus = (typeof COMMERCIAL_STATUSES)[number];

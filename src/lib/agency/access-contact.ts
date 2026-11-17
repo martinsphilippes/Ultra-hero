@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { normalizeBrMobile } from "@/lib/auth/phone";
+import { normalizeMobileFor } from "@/lib/auth/phone";
 
 // Contato e acesso de quem a agência cadastra (0112): o Hero (talento do Casting) e o contato da marca. Lógica pura
 // (testável): o servidor valida de novo com o schema e o banco confere outra vez (access_contact_check).
@@ -24,9 +24,9 @@ export const accessEmailSchema = z.string().transform((value, ctx) => {
   return email;
 });
 
-/** Celular BR → E.164 (+55DD9XXXXXXXX); a tela usa a máscara "(11) 91234-5678". */
+/** Celular → E.164: o brasileiro (+55DD9XXXXXXXX, máscara "(11) 91234-5678") ou, com "+1" na frente, o dos EUA (0144). */
 export const accessPhoneSchema = z.string().transform((value, ctx) => {
-  const phone = normalizeBrMobile(value);
+  const phone = normalizeMobileFor(null, value);
   if (!phone) {
     ctx.addIssue({ code: "custom", message: "invalid_phone" });
     return z.NEVER;

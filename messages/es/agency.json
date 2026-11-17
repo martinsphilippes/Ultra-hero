@@ -433,6 +433,11 @@
     "description": "Heros con y sin página pública, con redes declaradas y media kit.",
     "new": "Nuevo Hero",
     "filterLabel": "Situación del casting",
+    "countryLabel": "País del casting",
+    "countries": {
+      "BR": "Brasil",
+      "US": "EE. UU."
+    },
     "filterActive": "En el casting",
     "filterArchived": "Archivados",
     "filters": {
@@ -460,6 +465,7 @@
     "emptyFiltered": "Ningún Hero con estos filtros.",
     "emptyArchived": "Ningún Hero archivado.",
     "empty": "El casting está vacío.",
+    "emptyUs": "El casting de EE. UU. todavía está vacío.",
     "emptyHint": "Registra el primer Hero (con o sin página pública).",
     "status": {
       "prospect": "Prospección",
@@ -536,7 +542,9 @@
       "name": "Nombre",
       "nameHint": "Cómo se presenta el Hero a las marcas.",
       "city": "Ciudad",
+      "country": "País",
       "state": "Estado",
+      "stateUs": "Estado",
       "status": "Situación",
       "availability": "Disponibilidad",
       "manager": "Gestor responsable",
@@ -604,6 +612,7 @@
     "noPageHint": "Sin página pública. Créala ahora (ya vinculada a esta ficha) o vincula una página que ya existe.",
     "newHero": {
       "description": "Registra a quien la industria representa. El Hero recibe una invitación por e-mail para acceder a la cuenta.",
+      "countryUs": "Este Hero entra en el casting de EE. UU.",
       "name": "Nombre",
       "nameHint": "Nombre artístico, como lo ven la industria y las marcas.",
       "email": "E-mail del Hero",
@@ -1386,6 +1395,7 @@
     "phone": "Celular",
     "phoneLabel": "Celular",
     "phoneHint": "Con código de área, ej.: (11) 91234-5678. Solo lo ve la industria.",
+    "phoneHintUs": "Celular de EE. UU. con código de área, ej.: +1 (212) 555-0100. Solo lo ve la industria.",
     "phoneInvalid": "Revisa el celular: código de área + 9 dígitos, ej.: (11) 91234-5678.",
     "noEmail": "Sin e-mail",
     "noPhone": "Sin celular",

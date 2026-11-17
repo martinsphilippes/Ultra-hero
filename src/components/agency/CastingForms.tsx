@@ -6,7 +6,8 @@ import { useTranslations } from "next-intl";
 import { useId, useState, useTransition, type FormEvent } from "react";
 import { archiveTalentAction, linkCreatorAction, recordConsentAction, saveTalentAction, setCatalogAction, setSegmentsAction } from "@/app/agencia/casting/actions";
 import { Button, Checkbox, DatePicker, Dialog, EntitySelect, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
-import { AVAILABILITIES, COMMERCIAL_STATUSES, UFS, type Availability, type CommercialStatus } from "@/lib/talent/vocab";
+import { CASTING_COUNTRIES, statesFor } from "@/lib/talent/country";
+import { AVAILABILITIES, COMMERCIAL_STATUSES, type Availability, type CommercialStatus } from "@/lib/talent/vocab";
 
 export { EMPTY_TALENT, type TalentFormValues } from "@/lib/talent/form-values";
 import type { TalentFormValues } from "@/lib/talent/form-values";
@@ -42,14 +43,32 @@ export function TalentForm({ initial, managers, canEdit }: { initial: TalentForm
       <FormField label={t("name")} hint={t("nameHint")} required>
         <Input value={v.displayName} maxLength={80} onChange={(e) => set("displayName", e.target.value)} disabled={disabled} />
       </FormField>
-      <div className="grid gap-4 sm:grid-cols-[1fr_8rem]">
+      <div className="grid gap-4 sm:grid-cols-[9rem_1fr_8rem]">
+        {/* 0144: país do casting (Brasil | EUA); trocar o país limpa o estado que não existe no outro */}
+        <FormField label={t("country")}>
+          <Select
+            value={v.country}
+            onChange={(e) => {
+              const country = e.target.value;
+              setV((cur) => ({ ...cur, country, state: statesFor(country).includes(cur.state) ? cur.state : "" }));
+            }}
+            disabled={disabled}
+            data-testid="talent-country"
+          >
+            {CASTING_COUNTRIES.map((c) => (
+              <option key={c} value={c}>
+                {tv(`countries.${c}`)}
+              </option>
+            ))}
+          </Select>
+        </FormField>
         <FormField label={t("city")}>
           <Input value={v.city} maxLength={60} onChange={(e) => set("city", e.target.value)} disabled={disabled} />
         </FormField>
-        <FormField label={t("state")}>
+        <FormField label={v.country === "US" ? t("stateUs") : t("state")}>
           <Select value={v.state} onChange={(e) => set("state", e.target.value)} disabled={disabled}>
             <option value="">—</option>
-            {UFS.map((uf) => (
+            {statesFor(v.country).map((uf) => (
               <option key={uf} value={uf}>
                 {uf}
               </option>

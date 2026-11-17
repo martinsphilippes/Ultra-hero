@@ -10,7 +10,7 @@ import { Badge, Button, Dialog, FormField, Input } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import type { AccessKind, AccessStatus } from "@/lib/agency/access-contact";
-import { formatBrPhoneInput, formatE164ForDisplay } from "@/lib/auth/phone";
+import { formatE164ForDisplay, formatPhoneInput } from "@/lib/auth/phone";
 
 // Acesso de quem a agência cadastrou (0112): Hero (talento) ou contato da marca. Só gestor+ e admin geral veem (a
 // página só monta para eles; o banco também confere). Situação, e-mail e celular (dado pessoal: só aqui) e as ações
@@ -46,7 +46,20 @@ export function AccessStatusBadge({ kind, status }: { kind: AccessKind; status: 
   }
 }
 
-export function AccessPanel({ kind, targetId, status, compact = false }: { kind: AccessKind; targetId: string; status: AccessStatus; compact?: boolean }) {
+export function AccessPanel({
+  kind,
+  targetId,
+  status,
+  compact = false,
+  country,
+}: {
+  kind: AccessKind;
+  targetId: string;
+  status: AccessStatus;
+  compact?: boolean;
+  /** 0144: país do Hero (o celular dos EUA usa a máscara americana). */
+  country?: string | null;
+}) {
   const t = useTranslations("agency.access");
   const locale = useLocale() as Locale;
   const router = useRouter();
@@ -125,6 +138,7 @@ export function AccessPanel({ kind, targetId, status, compact = false }: { kind:
         <AccessContactDialog
           kind={kind}
           targetId={targetId}
+          country={country}
           onClose={() => setOpen(false)}
           initialName={status.contactName ?? ""}
           initialEmail={status.email ?? ""}
@@ -169,8 +183,11 @@ export function AccessContactFields(props: {
   disabled?: boolean;
   emailLabel: string;
   emailHint?: string;
+  /** 0144: "US" usa a máscara e o exemplo dos EUA; número digitado com "+1" vira americano em qualquer país. */
+  country?: string | null;
 }) {
   const t = useTranslations("agency.access");
+  const us = props.country === "US";
   return (
     <>
       <FormField label={props.emailLabel} hint={props.emailHint} required>
@@ -185,15 +202,15 @@ export function AccessContactFields(props: {
           data-testid="access-email"
         />
       </FormField>
-      <FormField label={t("phoneLabel")} hint={t("phoneHint")} required>
+      <FormField label={t("phoneLabel")} hint={us ? t("phoneHintUs") : t("phoneHint")} required>
         <Input
           type="tel"
           inputMode="tel"
           autoComplete="off"
-          placeholder="(11) 91234-5678"
+          placeholder={us ? "+1 (212) 555-0100" : "(11) 91234-5678"}
           value={props.phone}
           maxLength={20}
-          onChange={(e) => props.onPhone(formatBrPhoneInput(e.target.value))}
+          onChange={(e) => props.onPhone(formatPhoneInput(e.target.value, props.country))}
           disabled={props.disabled}
           data-testid="access-phone"
         />
@@ -205,6 +222,7 @@ export function AccessContactFields(props: {
 function AccessContactDialog(props: {
   kind: AccessKind;
   targetId: string;
+  country?: string | null;
   onClose: () => void;
   initialName: string;
   initialEmail: string;
@@ -267,6 +285,7 @@ function AccessContactDialog(props: {
           disabled={pending}
           emailLabel={t("email")}
           emailHint={props.kind === "talent" ? t("hero.emailHint") : t("brand.emailHint")}
+          country={props.country}
         />
         {error ? (
           <p role="alert" className="type-body-sm text-danger">

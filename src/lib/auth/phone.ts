@@ -46,9 +46,53 @@ export function formatBrPhoneInput(raw: string): string {
   return `${prefix}(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5)}`;
 }
 
-/** "+5511912345678" → "(11) 91234-5678" (outros formatos voltam como estão). */
+/** "+5511912345678" → "(11) 91234-5678"; "+12125550100" → "+1 (212) 555-0100" (outros formatos voltam como estão). */
 export function formatE164ForDisplay(e164: string | null | undefined): string {
   if (!e164) return "";
   const m = /^\+55(\d{2})(\d{5})(\d{4})$/.exec(e164);
-  return m ? `(${m[1]}) ${m[2]}-${m[3]}` : e164;
+  if (m) return `(${m[1]}) ${m[2]}-${m[3]}`;
+  const us = /^\+1(\d{3})(\d{3})(\d{4})$/.exec(e164);
+  return us ? `+1 (${us[1]}) ${us[2]}-${us[3]}` : e164;
+}
+
+// 0144 — casting dos EUA: o acesso do Hero americano usa o número dos EUA (plano norte-americano).
+
+/** Número dos EUA → "+1NPANXXXXXX"; aceita "(212) 555-0100", "212-555-0100", "+1 212 555 0100". */
+export function normalizeUsPhone(input: unknown): string | null {
+  if (typeof input !== "string" || input.length > 40) return null;
+  let digits = input.replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("1")) digits = digits.slice(1);
+  // código de área e prefixo nunca começam com 0 ou 1
+  return /^[2-9]\d{2}[2-9]\d{6}$/.test(digits) ? `+1${digits}` : null;
+}
+
+/**
+ * Celular do acesso conforme o país do Hero. EUA: número americano. Brasil (padrão): celular brasileiro, ou número
+ * americano digitado com "+1" na frente (o contato pode morar fora). Sem o "+1", nada vira americano por engano: um
+ * fixo do Rio, "(21) 3456-7890", continua recusado.
+ */
+export function normalizeMobileFor(country: string | null | undefined, input: unknown): string | null {
+  if (country === "US") return normalizeUsPhone(input);
+  const br = normalizeBrMobile(input);
+  if (br) return br;
+  return typeof input === "string" && input.trim().startsWith("+1") ? normalizeUsPhone(input) : null;
+}
+
+/** Máscara dos EUA enquanto digita: "+1 (212) 555-0100". */
+export function formatUsPhoneInput(raw: string): string {
+  const intl = raw.trimStart().startsWith("+");
+  const all = raw.replace(/\D/g, "");
+  let digits = all;
+  if ((intl || digits.length > 10) && digits.startsWith("1")) digits = digits.slice(1);
+  digits = digits.slice(0, 10);
+  // só "+1" digitado: mantém o código do país; apagando tudo, o campo fica vazio
+  if (digits.length === 0) return intl && all === "1" ? "+1" : "";
+  if (digits.length <= 3) return `+1 (${digits}`;
+  if (digits.length <= 6) return `+1 (${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `+1 (${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+/** Máscara conforme o país: EUA (ou número começando com "+1") no formato americano; senão, o brasileiro. */
+export function formatPhoneInput(raw: string, country?: string | null): string {
+  return country === "US" || raw.trimStart().startsWith("+1") ? formatUsPhoneInput(raw) : formatBrPhoneInput(raw);
 }

@@ -92,7 +92,9 @@ describe("celular brasileiro", () => {
   it("exibe E.164 no formato nacional", () => {
     expect(formatE164ForDisplay("+5511912345678")).toBe("(11) 91234-5678");
     expect(formatE164ForDisplay(null)).toBe("");
-    expect(formatE164ForDisplay("+14155550100")).toBe("+14155550100");
+    // 0144: número dos EUA (casting dos EUA) ganha a máscara americana; outros países voltam como estão
+    expect(formatE164ForDisplay("+14155550100")).toBe("+1 (415) 555-0100");
+    expect(formatE164ForDisplay("+447700900123")).toBe("+447700900123");
   });
 });
 
